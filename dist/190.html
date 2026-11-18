@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Consulta por OAB</title>
+</head>
+<body>
+  <h1>Buscar por OAB</h1>
+  <form id="formBusca">
+    <label for="oab">Número da OAB:</label>
+    <input type="text" id="oab" name="oab" placeholder="09494128648">
+    <button type="submit">Pesquisar</button>
+  </form>
+
+  <div id="resultado"></div>
+
+  <script>
+    const BASE_URL = "https://planilha.tramitacaointeligente.com.br/api";
+    const jwtToken = localStorage.getItem("jwtToken"); // JWT gerado pelo botão fixo
+
+    document.getElementById("formBusca").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const numeroOAB = document.getElementById("oab").value;
+      const resultadoDiv = document.getElementById("resultado");
+      resultadoDiv.innerHTML = "<h2>Resultados:</h2>";
+
+      // Lista de endpoints que aceitam OAB
+      const endpoints = ["documentos", "publicacoes", "jurisprudencia", "beneficios"];
+
+      for (const ep of endpoints) {
+        const url = `${BASE_URL}/${ep}?oab=${numeroOAB}`;
+        const response = await fetch(url, {
+          headers: {
+            "Authorization": `Bearer ${jwtToken}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (response.ok) {
+          const dados = await response.json();
+          resultadoDiv.innerHTML += `<h3>${ep.toUpperCase()}</h3>`;
+          dados.forEach(item => {
+            resultadoDiv.innerHTML += `<p>${item.titulo || item.nome} - ${item.data || item.ano}</p>`;
+          });
+        } else {
+          resultadoDiv.innerHTML += `<p>Erro em ${ep}: ${response.status}</p>`;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

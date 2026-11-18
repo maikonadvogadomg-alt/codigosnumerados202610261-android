@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Filtrador de Documentos Jurídicos</title>
+    <style>
+        body { background-color: #e8eaeb; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; }
+        
+        /* CONTAINER PRINCIPAL (TELA DIVIDIDA) */
+        .main-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* LADO ESQUERDO: ENTRADA E CONTROLES */
+        .painel-input {
+            width: 35%;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 5px solid #f39c12;
+            overflow-y: auto;
+        }
+
+        .painel-input h2 { color: #f39c12; margin-top: 0; font-size: 18px; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; }
+        
+        label { font-size: 12px; font-weight: bold; color: #bdc3c7; margin-top: 10px; display: block; }
+        
+        textarea {
+            flex-grow: 1; background: #34495e; color: white; border: 1px solid #7f8c8d; padding: 10px;
+            font-family: monospace; font-size: 11pt; resize: none; margin-bottom: 15px; min-height: 150px;
+        }
+
+        .btn {
+            padding: 12px; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; 
+            margin-bottom: 10px; width: 100%; text-transform: uppercase; font-size: 13px; transition: 0.3s;
+        }
+        .btn-processar { background-color: #f39c12; color: #2c3e50; }
+        .btn-processar:hover { background-color: #d68910; }
+        .btn-limpar { background-color: #c0392b; color: white; }
+
+        /* OPÇÕES DE FILTRO */
+        .filtros { background: #34495e; padding: 10px; border-radius: 4px; margin-bottom: 10px; }
+        .filtros label { display: inline-block; margin-right: 10px; cursor: pointer; color: white; }
+
+        /* LADO DIREITO: RESULTADO */
+        .painel-output {
+            width: 65%;
+            background: #bdc3c7;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .resultado {
+            background: white; padding: 20px; border: 1px solid #7f8c8d; min-height: 80%; 
+            font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; text-align: justify;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    
+    <div class="painel-input">
+        <h2>FILTRADOR DE DOCUMENTOS</h2>
+        
+        <label>COLE O TEXTO OU FAÇA UPLOAD:</label>
+        <textarea id="textoBruto" placeholder="Cole aqui o texto do documento..."></textarea>
+        
+        <label>UPLOAD DE ARQUIVOS (APENAS TEXTO POR ENQUANTO):</label>
+        <input type="file" id="uploadArquivos" multiple accept=".txt" style="color: white; margin-bottom: 10px;">
+        
+        <div class="filtros">
+            <label>NÍVEL DE RESUMO:</label><br>
+            <input type="radio" name="nivel" value="suave" checked> <span style="color:white">Suave (Remove repetições)</span><br>
+            <input type="radio" name="nivel" value="agressivo"> <span style="color:white">Agressivo (Mantém apenas conteúdo relevante)</span>
+        </div>
+
+        <div class="filtros">
+            <label>FILTROS PERSONALIZADOS (SEPARADOS POR VÍRGULA):</label>
+            <input type="text" id="excluirPalavras" placeholder="Ex: asterisco, jogo da velha, #, *" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+            <input type="text" id="manterPalavras" placeholder="Palavras-chave para manter (ex: embargo, lei)" style="width: 100%; padding: 5px;">
+        </div>
+
+        <button class="btn btn-processar" onclick="processarTexto()">⚡ FILTRAR E RESUMIR</button>
+        <button class="btn btn-limpar" onclick="limparCampos()">🗑️ LIMPAR TUDO</button>
+        <button class="btn" style="background:#27ae60; color:white;" onclick="exportarResultado()">💾 EXPORTAR RESULTADO</button>
+    </div>
+
+    <div class="painel-output">
+        <div class="resultado" id="textoFiltrado">
+            <p>[O RESULTADO FILTRADO APARECERÁ AQUI]</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Palavras-chave padrão para categorizar ou priorizar conteúdo (opcional)
+    const keywordsRelevantes = [
+        "embargo", "súmula", "tema", "lei", "artigo", "art.", "constituição", "cf/88", 
+        "jurisprudência", "precedente", "stj", "tnu", "trf", "turma", "nulidade", 
+        "cerceamento", "perícia", "laudo", "omissão", "contradição"
+    ];
+
+    // Função para carregar arquivos de texto
+    document.getElementById('uploadArquivos').addEventListener('change', function(e) {
+        const arquivos = e.target.files;
+        let textoCombinado = document.getElementById('textoBruto').value;
+        
+        for (let arquivo of arquivos) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                textoCombinado += '\n\n' + event.target.result;
+                document.getElementById('textoBruto').value = textoCombinado;
+            };
+            reader.readAsText(arquivo);
+        }
+    });
+
+    // Função principal para processar o texto
+    function processarTexto() {
+        let texto = document.getElementById('textoBruto').value.trim();
+        const modoAgressivo = document.querySelector('input[name="nivel"]:checked').value === 'agressivo';
+        const excluirStr = document.getElementById('excluirPalavras').value;
+        const manterStr = document.getElementById('manterPalavras').value;
+
+        if (!texto) {
+            alert("Cole um texto ou faça upload de um arquivo primeiro!");
+            return;
+        }
+
+        // Obter filtros personalizados
+        const excluirLista = excluirStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+        const manterLista = manterStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+
+        // 1. Limpar texto "sujo" (remover asteriscos, jogo da velha, etc.)
+        let textoLimpo = texto;
+        excluirLista.forEach(padrao => {
+            const regex = new RegExp(`[${padrao}]`, 'g');
+            textoLimpo = textoLimpo.replace(regex, '');
+        });
+
+        // 2. Quebrar em parágrafos e limpar espaços
+        let paragrafos = textoLimpo.split(/\n+/).map(p => p.trim()).filter(p => p.length > 20);
+        
+        let paragrafosFiltrados = [];
+        let setChecagem = new Set(); // Para evitar duplicatas
+
+        // 3. Filtrar repetições
+        paragrafos.forEach(p => {
+            let pCheck = p.toLowerCase().replace(/[^a-z0-9]/g, ""); // Normaliza para comparar
+            
+            let duplicado = false;
+            for (let existente of setChecagem) {
+                if (existente.includes(pCheck) || pCheck.includes(existente)) {
+                    duplicado = true;
+                    break;
+                }
+            }
+
+            if (!duplicado) {
+                setChecagem.add(pCheck);
+                let relevante = true;
+
+                // Modo agressivo: só mantém parágrafos com palavras-chave relevantes
+                if (modoAgressivo) {
+                    relevante = keywordsRelevantes.some(key => p.toLowerCase().includes(key)) ||
+                                manterLista.some(key => p.toLowerCase().includes(key));
+                }
+
+                if (relevante) {
+                    paragrafosFiltrados.push(`<p>${p}</p>`);
+                }
+            }
+        });
+
+        // 4. Exibir resultado
+        const output = document.getElementById('textoFiltrado');
+        output.innerHTML = paragrafosFiltrados.length > 0 ? paragrafosFiltrados.join("") : "<p>Nenhum conteúdo relevante encontrado após filtragem.</p>";
+        
+        alert("Texto processado! Repetições removidas.");
+    }
+
+    // Função para limpar todos os campos
+    function limparCampos() {
+        document.getElementById('textoBruto').value = '';
+        document.getElementById('excluirPalavras').value = '';
+        document.getElementById('manterPalavras').value = '';
+        document.getElementById('textoFiltrado').innerHTML = '<p>[O RESULTADO FILTRADO APARECERÁ AQUI]</p>';
+        document.getElementById('uploadArquivos').value = '';
+    }
+
+    // Função para exportar o resultado
+    function exportarResultado() {
+        const resultado = document.getElementById('textoFiltrado').innerText;
+        const blob = new Blob([resultado], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'documento_filtrado.txt';
+        link.click();
+    }
+</script>
+
+</body>
+</html>

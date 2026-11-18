@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Docs Hub PT — Documentação em Português</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar {
+      width: 320px;
+      background: #222;
+      border-right: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .search-header {
+      padding: 16px;
+      background: #333;
+      border-bottom: 1px solid #444;
+    }
+
+    .search-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #1a1a1a;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #0088ff;
+      box-shadow: 0 0 0 2px rgba(0, 136, 255, 0.2);
+    }
+
+    .search-filters {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 6px 10px;
+      background: #444;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 10px;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: #555;
+    }
+
+    .filter-btn.active {
+      background: #0066cc;
+      border-color: #0088ff;
+    }
+
+    .search-results {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .result-item {
+      padding: 12px;
+      background: #333;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .result-item:hover {
+      background: #444;
+    }
+
+    .result-item.active {
+      background: #0066cc;
+      border-left-color: #0088ff;
+    }
+
+    .result-name {
+      font-size: 12px;
+      font-weight: bold;
+      color: #e0e0e0;
+    }
+
+    .result-type {
+      font-size: 10px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .result-source {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #0066cc;
+      color: white;
+      border-radius: 3px;
+      font-size: 9px;
+      margin-top: 4px;
+    }
+
+    /* ═══ MAIN ═══ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #0088ff;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      background: #0066cc;
+      border: 1px solid #0088ff;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #0077dd;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .description {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #ccc;
+      margin-bottom: 12px;
+    }
+
+    .code-block {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      overflow-x: auto;
+      font-family: monospace;
+      font-size: 12px;
+      color: #88ff88;
+      line-height: 1.6;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+
+    .table th {
+      background: #333;
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #444;
+      color: #0088ff;
+      font-weight: bold;
+    }
+
+    .table td {
+      padding: 10px;
+      border-bottom: 1px solid #444;
+    }
+
+    .table tr:hover {
+      background: #2a2a2a;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #0066cc;
+      color: white;
+      border-radius: 3px;
+      font-size: 10px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .box {
+      background: #333;
+      border-left: 4px solid #0088ff;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 12px 0;
+    }
+
+    .box-title {
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 6px;
+    }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      text-align: center;
+    }
+
+    .copy-btn {
+      padding: 6px 10px;
+      background: #0066cc;
+      border: none;
+      color: white;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 10px;
+      margin-top: 8px;
+    }
+
+    .copy-btn:hover {
+      background: #0077dd;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="search-header">
+        <div class="search-title">🔍 Buscar</div>
+        <input type="text" id="searchInput" class="search-input" placeholder="Pesquise: fetch, flexbox, onclick..." onkeyup="search()">
+        <div class="search-filters">
+          <button class="filter-btn active" onclick="filterByType('all')">Todos</button>
+          <button class="filter-btn" onclick="filterByType('html')">HTML</button>
+          <button class="filter-btn" onclick="filterByType('css')">CSS</button>
+          <button class="filter-btn" onclick="filterByType('js')">JS</button>
+          <button class="filter-btn" onclick="filterByType('api')">API</button>
+        </div>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="header">
+        <div class="header-title" id="contentTitle">SK-Docs Hub PT</div>
+        <div class="header-actions">
+          <button class="btn" onclick="copyContent()">📋 Copiar</button>
+          <button class="btn" onclick="clearSearch()">🗑️ Limpar</button>
+        </div>
+      </div>
+
+      <div class="content" id="contentBody">
+        <div class="empty-state">
+          <div>
+            <div style="font-size: 24px; margin-bottom: 12px;">📚</div>
+            <div>Pesquise por uma tag, propriedade ou função</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // DATABASE EM PORTUGUÊS
+    // ═══════════════════════════════════════════════════════════════
+
+    const docs = [
+      // ═══ HTML ═══
+      {
+        id: 'html-div',
+        name: 'div',
+        type: 'html',
+        source: 'MDN',
+        title: 'Elemento div',
+        description: 'Contêiner genérico para agrupar elementos HTML',
+        syntax: '<div>Conteúdo</div>',
+        example: '<div class="container">\n  <h1>Título</h1>\n  <p>Parágrafo</p>\n</div>',
+        attributes: ['id', 'class', 'style', 'data-*'],
+        usage: 'Use div para agrupar elementos e aplicar estilos CSS',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'html-button',
+        name: 'button',
+        type: 'html',
+        source: 'MDN',
+        title: 'Elemento button',
+        description: 'Cria um botão clicável',
+        syntax: '<button>Clique aqui</button>',
+        example: '<button onclick="alert(\'Clicado!\')">\n  Enviar\n</button>',
+        attributes: ['type', 'onclick', 'disabled', 'class'],
+        usage: 'Use para criar botões interativos',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'html-input',
+        name: 'input',
+        type: 'html',
+        source: 'MDN',
+        title: 'Elemento input',
+        description: 'Campo de entrada de dados do usuário',
+        syntax: '<input type="text">',
+        example: '<input type="text" placeholder="Digite seu nome">\n<input type="email" placeholder="Email">\n<input type="password" placeholder="Senha">',
+        attributes: ['type', 'placeholder', 'value', 'required', 'disabled'],
+        usage: 'Para receber entrada de texto, email, senha, etc',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'html-form',
+        name: 'form',
+        type: 'html',
+        source: 'MDN',
+        title: 'Elemento form',
+        description: 'Agrupa elementos de formulário',
+        syntax: '<form action="/enviar" method="POST">\n  <input type="text">\n  <button type="submit">Enviar</button>\n</form>',
+        example: '<form action="/api/dados" method="POST">\n  <input type="text" name="nome" required>\n  <input type="email" name="email" required>\n  <button type="submit">Enviar</button>\n</form>',
+        attributes: ['action', 'method', 'id', 'name'],
+        usage: 'Agrupar e enviar dados de formulário',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'html-img',
+        name: 'img',
+        type: 'html',
+        source: 'MDN',
+        title: 'Elemento img',
+        description: 'Insere uma imagem na página',
+        syntax: '<img src="imagem.jpg" alt="Descrição">',
+        example: '<img src="foto.jpg" alt="Minha foto" width="200" height="150">',
+        attributes: ['src', 'alt', 'width', 'height', 'class'],
+        usage: 'Exibir imagens. Sempre use alt para acessibilidade',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'html-a',
+        name: 'a (âncora)',
+        type: 'html',
+        source: 'MDN',
+        title: 'Elemento a (link)',
+        description: 'Cria um link para outra página',
+        syntax: '<a href="url">Link</a>',
+        example: '<a href="https://google.com" target="_blank">Abrir Google</a>\n<a href="#secao">Ir para seção</a>',
+        attributes: ['href', 'target', 'title', 'rel'],
+        usage: 'Criar links. Use target="_blank" para abrir em nova aba',
+        browserSupport: 'Todos os navegadores'
+      },
+
+      // ═══ CSS ═══
+      {
+        id: 'css-display',
+        name: 'display',
+        type: 'css',
+        source: 'MDN',
+        title: 'Propriedade display',
+        description: 'Define como o elemento é exibido na página',
+        syntax: 'display: block | inline | flex | grid | none;',
+        example: '.container {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}',
+        values: ['block', 'inline', 'inline-block', 'flex', 'grid', 'none'],
+        usage: 'Controlar layout e visibilidade dos elementos',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'css-flexbox',
+        name: 'flexbox',
+        type: 'css',
+        source: 'MDN',
+        title: 'Flexbox - Layout Flexível',
+        description: 'Sistema de layout flexível para organizar elementos',
+        syntax: 'display: flex;\njustify-content: center;\nalign-items: center;',
+        example: '.flex-container {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 10px;\n}\n\n.flex-item {\n  flex: 1;\n}',
+        values: ['flex-direction', 'justify-content', 'align-items', 'gap', 'flex-wrap'],
+        usage: 'Criar layouts responsivos e flexíveis',
+        browserSupport: 'Todos os navegadores modernos'
+      },
+      {
+        id: 'css-grid',
+        name: 'grid',
+        type: 'css',
+        source: 'MDN',
+        title: 'CSS Grid - Layout em Grade',
+        description: 'Sistema de layout em grade (linhas e colunas)',
+        syntax: 'display: grid;\ngrid-template-columns: 1fr 1fr 1fr;',
+        example: '.grid-container {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 20px;\n}\n\n.grid-item {\n  background: blue;\n}',
+        values: ['grid-template-columns', 'grid-template-rows', 'gap', 'grid-auto-flow'],
+        usage: 'Criar layouts complexos em grade',
+        browserSupport: 'Todos os navegadores modernos'
+      },
+      {
+        id: 'css-padding-margin',
+        name: 'padding e margin',
+        type: 'css',
+        source: 'MDN',
+        title: 'Padding e Margin',
+        description: 'Espaço dentro (padding) e fora (margin) do elemento',
+        syntax: 'padding: 10px;\nmargin: 20px;',
+        example: '.box {\n  padding: 20px;        /* espaço dentro */\n  margin: 10px;         /* espaço fora */\n  border: 1px solid;    /* borda */\n}',
+        values: ['px', '%', 'em', 'auto'],
+        usage: 'Controlar espaçamento dos elementos',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'css-color',
+        name: 'color',
+        type: 'css',
+        source: 'MDN',
+        title: 'Propriedade color',
+        description: 'Define a cor do texto',
+        syntax: 'color: #ff0000;\ncolor: rgb(255, 0, 0);\ncolor: red;',
+        example: 'p {\n  color: #0066cc;\n  font-size: 16px;\n}',
+        values: ['hex', 'rgb', 'rgba', 'hsl', 'nomes de cores'],
+        usage: 'Mudar a cor do texto',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'css-background',
+        name: 'background',
+        type: 'css',
+        source: 'MDN',
+        title: 'Propriedade background',
+        description: 'Define cor ou imagem de fundo',
+        syntax: 'background: #ff0000;\nbackground: url(imagem.jpg);\nbackground: linear-gradient(45deg, blue, red);',
+        example: '.container {\n  background: linear-gradient(45deg, #0066cc, #ff0066);\n  padding: 20px;\n  border-radius: 8px;\n}',
+        values: ['cor', 'url()', 'linear-gradient', 'radial-gradient'],
+        usage: 'Definir fundo do elemento',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'css-border',
+        name: 'border',
+        type: 'css',
+        source: 'MDN',
+        title: 'Propriedade border',
+        description: 'Adiciona borda ao redor do elemento',
+        syntax: 'border: 2px solid black;',
+        example: '.box {\n  border: 3px solid #0066cc;\n  border-radius: 8px;\n  padding: 20px;\n}',
+        values: ['width', 'style', 'color'],
+        usage: 'Adicionar borda aos elementos',
+        browserSupport: 'Todos os navegadores'
+      },
+
+      // ═══ JAVASCRIPT ═══
+      {
+        id: 'js-onclick',
+        name: 'onclick',
+        type: 'js',
+        source: 'MDN',
+        title: 'Evento onclick',
+        description: 'Executa código quando elemento é clicado',
+        syntax: '<button onclick="funcao()">Clique</button>',
+        example: '<button onclick="alert(\'Botão clicado!\')\">Clique aqui</button>\n\n<script>\nfunction minhaFuncao() {\n  console.log(\'Função executada\');\n}\n</script>',
+        attributes: ['onclick', 'onchange', 'onload', 'onsubmit'],
+        usage: 'Executar ações ao clicar em um elemento',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'js-addeventlistener',
+        name: 'addEventListener',
+        type: 'js',
+        source: 'MDN',
+        title: 'Método addEventListener',
+        description: 'Adiciona um listener de evento a um elemento',
+        syntax: 'elemento.addEventListener(\'click\', funcao);',
+        example: 'const botao = document.getElementById(\'meuBotao\');\n\nbotao.addEventListener(\'click\', function() {\n  console.log(\'Botão clicado!\');\n  alert(\'Você clicou no botão!\');\n});',
+        attributes: ['click', 'change', 'input', 'submit', 'keydown'],
+        usage: 'Adicionar listeners de eventos dinamicamente',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'js-getelementbyid',
+        name: 'getElementById',
+        type: 'js',
+        source: 'MDN',
+        title: 'Método getElementById',
+        description: 'Seleciona um elemento pelo seu ID',
+        syntax: 'document.getElementById(\'id\');',
+        example: 'const elemento = document.getElementById(\'meuDiv\');\nelemento.style.color = \'red\';\nelemento.textContent = \'Novo texto\';',
+        attributes: ['id'],
+        usage: 'Acessar elementos do DOM pelo ID',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'js-queryselector',
+        name: 'querySelector',
+        type: 'js',
+        source: 'MDN',
+        title: 'Método querySelector',
+        description: 'Seleciona elemento usando CSS selector',
+        syntax: 'document.querySelector(\'.classe\');\ndocument.querySelector(\'#id\');',
+        example: 'const elemento = document.querySelector(\'.container\');\nelemento.textContent = \'Novo texto\';\n\nconst todos = document.querySelectorAll(\'.item\');',
+        attributes: ['class', 'id', 'tag', 'atributo'],
+        usage: 'Selecionar elementos com CSS selectors',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'js-innerhtml',
+        name: 'innerHTML',
+        type: 'js',
+        source: 'MDN',
+        title: 'Propriedade innerHTML',
+        description: 'Muda o conteúdo HTML de um elemento',
+        syntax: 'elemento.innerHTML = \'<p>Novo conteúdo</p>\';',
+        example: 'document.getElementById(\'container\').innerHTML = \'<h1>Olá</h1>\';\n\n// Adicionar\nelemento.innerHTML += \'<p>Mais conteúdo</p>\';',
+        attributes: ['innerHTML', 'textContent'],
+        usage: 'Modificar conteúdo HTML dinamicamente',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'js-classlist',
+        name: 'classList',
+        type: 'js',
+        source: 'MDN',
+        title: 'Propriedade classList',
+        description: 'Gerencia classes CSS de um elemento',
+        syntax: 'elemento.classList.add(\'classe\');\nelemento.classList.remove(\'classe\');',
+        example: 'const elemento = document.getElementById(\'box\');\n\nelemento.classList.add(\'ativo\');\nelemento.classList.remove(\'inativo\');\nelemento.classList.toggle(\'escondido\');',
+        attributes: ['add', 'remove', 'toggle', 'contains'],
+        usage: 'Adicionar/remover classes dinamicamente',
+        browserSupport: 'Todos os navegadores'
+      },
+
+      // ═══ API ═══
+      {
+        id: 'api-fetch',
+        name: 'fetch',
+        type: 'api',
+        source: 'MDN',
+        title: 'API Fetch',
+        description: 'Faz requisições HTTP para servidores',
+        syntax: 'fetch(url).then(response => response.json());',
+        example: 'fetch(\'https://api.exemplo.com/dados\')\n  .then(response => response.json())\n  .then(data => {\n    console.log(data);\n  })\n  .catch(error => console.error(\'Erro:\', error));',
+        attributes: ['GET', 'POST', 'PUT', 'DELETE'],
+        usage: 'Fazer requisições de API e receber dados',
+        browserSupport: 'Todos os navegadores modernos'
+      },
+      {
+        id: 'api-localstorage',
+        name: 'localStorage',
+        type: 'api',
+        source: 'MDN',
+        title: 'API localStorage',
+        description: 'Armazena dados no navegador (persistente)',
+        syntax: 'localStorage.setItem(\'chave\', \'valor\');\nlocalStorage.getItem(\'chave\');',
+        example: '// Salvar\nlocalStorage.setItem(\'nome\', \'João\');\n\n// Recuperar\nconst nome = localStorage.getItem(\'nome\');\nconsole.log(nome); // João\n\n// Remover\nlocalStorage.removeItem(\'nome\');',
+        attributes: ['setItem', 'getItem', 'removeItem', 'clear'],
+        usage: 'Armazenar dados que persistem após fechar navegador',
+        browserSupport: 'Todos os navegadores'
+      },
+      {
+        id: 'api-json',
+        name: 'JSON',
+        type: 'api',
+        source: 'MDN',
+        title: 'Formato JSON',
+        description: 'Formato de dados para trocar informações',
+        syntax: 'JSON.stringify(objeto);\nJSON.parse(string);',
+        example: '// Converter objeto para JSON\nconst usuario = { nome: \'João\', idade: 30 };\nconst json = JSON.stringify(usuario);\nconsole.log(json); // {\"nome\":\"João\",\"idade\":30}\n\n// Converter JSON para objeto\nconst obj = JSON.parse(json);\nconsole.log(obj.nome); // João',
+        attributes: ['stringify', 'parse'],
+        usage: 'Converter entre objetos JavaScript e JSON',
+        browserSupport: 'Todos os navegadores'
+      }
+    ];
+
+    // ═══════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════
+
+    let currentFilter = 'all';
+    let selectedDoc = null;
+    let searchTerm = '';
+
+    // ═══════════════════════════════════════════════════════════════
+    // SEARCH
+    // ═══════════════════════════════════════════════════════════════
+
+    function search() {
+      searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      renderResults();
+    }
+
+    function filterByType(type) {
+      currentFilter = type;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderResults();
+    }
+
+    function renderResults() {
+      const results = docs.filter(doc => {
+        const matchesSearch = doc.name.toLowerCase().includes(searchTerm) ||
+                            doc.description.toLowerCase().includes(searchTerm) ||
+                            doc.title.toLowerCase().includes(searchTerm);
+        const matchesFilter = currentFilter === 'all' || doc.type === currentFilter;
+        return matchesSearch && matchesFilter;
+      });
+
+      const resultsDiv = document.getElementById('searchResults');
+      
+      if (results.length === 0) {
+        resultsDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #666; font-size: 12px;">Nenhum resultado encontrado</div>';
+        return;
+      }
+
+      resultsDiv.innerHTML = results.map(doc => `
+        <div class="result-item ${selectedDoc?.id === doc.id ? 'active' : ''}" onclick="selectDoc(${docs.indexOf(doc)})">
+          <div class="result-name">${doc.name}</div>
+          <div class="result-type">${doc.title}</div>
+          <div class="result-source">${doc.source}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectDoc(index) {
+      const results = docs.filter(doc => {
+        const matchesSearch = doc.name.toLowerCase().includes(searchTerm) ||
+                            doc.description.toLowerCase().includes(searchTerm) ||
+                            doc.title.toLowerCase().includes(searchTerm);
+        const matchesFilter = currentFilter === 'all' || doc.type === currentFilter;
+        return matchesSearch && matchesFilter;
+      });
+
+      selectedDoc = results[index];
+      renderResults();
+      renderContent();
+    }
+
+    function renderContent() {
+      if (!selectedDoc) {
+        document.getElementById('contentBody').innerHTML = '<div class="empty-state"><div>Selecione um item</div></div>';
+        return;
+      }
+
+      document.getElementById('contentTitle').textContent = selectedDoc.name;
+
+      let html = `
+        <div class="section">
+          <div class="section-title">📝 Descrição</div>
+          <div class="description">${selectedDoc.description}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">💻 Sintaxe</div>
+          <div class="code-block">${escapeHtml(selectedDoc.syntax)}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">📚 Exemplo</div>
+          <div class="code-block">${escapeHtml(selectedDoc.example)}</div>
+          <button class="copy-btn" onclick="copyExample()">📋 Copiar Exemplo</button>
+        </div>
+      `;
+
+      if (selectedDoc.values) {
+        html += `
+          <div class="section">
+            <div class="section-title">🎯 Valores Possíveis</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              ${selectedDoc.values.map(v => `<div class="tag">${v}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (selectedDoc.attributes) {
+        html += `
+          <div class="section">
+            <div class="section-title">🔧 Atributos/Propriedades</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              ${selectedDoc.attributes.map(a => `<div class="tag">${a}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      html += `
+        <div class="section">
+          <div class="section-title">💡 Como Usar</div>
+          <div class="description">${selectedDoc.usage}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">🌐 Compatibilidade</div>
+          <div class="box">
+            <div class="box-title">${selectedDoc.browserSupport}</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">📖 Fonte</div>
+          <div class="box">
+            <div class="box-title">${selectedDoc.source}</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('contentBody').innerHTML = html;
+    }
+
+    function copyExample() {
+      const text = selectedDoc.example;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✓ Exemplo copiado!');
+      });
+    }
+
+    function copyContent() {
+      if (!selectedDoc) return;
+      const text = selectedDoc.example || selectedDoc.syntax;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✓ Copiado para a área de transferência!');
+      });
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      searchTerm = '';
+      selectedDoc = null;
+      renderResults();
+      document.getElementById('contentBody').innerHTML = '<div class="empty-state"><div><div style="font-size: 24px; margin-bottom: 12px;">📚</div><div>Pesquise por uma tag, propriedade ou função</div></div></div>';
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderResults();
+    });
+  </script>
+</body>
+</html>

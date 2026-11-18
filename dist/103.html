@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Code Editor Functions Explained</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar {
+      width: 300px;
+      background: #222;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin: 16px 0 8px 0;
+      letter-spacing: 1px;
+    }
+
+    .menu-item {
+      padding: 10px 12px;
+      background: #333;
+      margin: 4px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover {
+      background: #444;
+    }
+
+    .menu-item.active {
+      background: #0066cc;
+      border-left-color: #0088ff;
+    }
+
+    /* ═══ MAIN ═══ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0088ff;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .description {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #ccc;
+      margin-bottom: 12px;
+    }
+
+    .code-block {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      overflow-x: auto;
+      font-family: monospace;
+      font-size: 11px;
+      color: #88ff88;
+      line-height: 1.6;
+    }
+
+    .box {
+      background: #333;
+      border-left: 4px solid #0088ff;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 12px 0;
+    }
+
+    .box-title {
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 6px;
+    }
+
+    .step {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    .step-num {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: #0066cc;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .step-title {
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 6px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-title">📚 Funções</div>
+      
+      <div class="menu-item active" onclick="loadTopic('toggle-sidebar')">1️⃣ toggleSidebar</div>
+      <div class="menu-item" onclick="loadTopic('preview-mode')">2️⃣ setPM (Preview)</div>
+      <div class="menu-item" onclick="loadTopic('preview-min')">3️⃣ togglePreviewMin</div>
+      <div class="menu-item" onclick="loadTopic('drag-start')">4️⃣ startVDrag</div>
+      <div class="menu-item" onclick="loadTopic('drag-move')">5️⃣ onVDrag</div>
+      <div class="menu-item" onclick="loadTopic('drag-stop')">6️⃣ stopVDrag</div>
+      <div class="menu-item" onclick="loadTopic('mapper-tab')">7️⃣ mTab</div>
+      <div class="menu-item" onclick="loadTopic('init-tabs')">8️⃣ initTabs</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="header">
+        <div class="header-title" id="pageTitle">Funções do Editor</div>
+      </div>
+
+      <div class="content" id="pageContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT DATABASE
+    // ═══════════════════════════════════════════════════════════════
+
+    const topics = {
+      'toggle-sidebar': {
+        title: '1️⃣ toggleSidebar — Mostrar/Esconder Painel',
+        content: `
+          <div class="section">
+            <div class="section-title">O que faz?</div>
+            <div class="description">
+              Mostra ou esconde a barra lateral (sidebar) do editor.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Código Original</div>
+            <div class="code-block">
+function toggleSidebar(){
+  const sb  = qs('#ed-sidebar');
+  const btn = qs('#btn-sidebar');
+  const isHidden = sb.classList.contains('hidden');
+  sb.classList.toggle('hidden');
+  if(btn) btn.style.color = isHidden ? 'var(--muted)' : 'var(--primary)';
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Tradução Linha por Linha</div>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-title">const sb = qs('#ed-sidebar');</div>
+              <div>Pega o elemento sidebar (painel lateral) do HTML</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-title">const btn = qs('#btn-sidebar');</div>
+              <div>Pega o botão que controla o sidebar</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-title">const isHidden = sb.classList.contains('hidden');</div>
+              <div>Verifica se o sidebar tem a classe 'hidden' (escondido)</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-title">sb.classList.toggle('hidden');</div>
+              <div>Alterna a classe 'hidden' (se tem, remove; se não tem, adiciona)</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-title">if(btn) btn.style.color = isHidden ? 'var(--muted)' : 'var(--primary)';</div>
+              <div>Muda a cor do botão: se estava escondido fica colorido, se estava visível fica cinza</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Resumo</div>
+            <div class="box">
+              <div class="box-title">🎯 O que acontece:</div>
+              <div>
+                <p>1. Pega o sidebar</p>
+                <p>2. Verifica se está escondido</p>
+                <p>3. Alterna entre visível/escondido</p>
+                <p>4. Muda a cor do botão</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Versão Simplificada</div>
+            <div class="code-block">
+function toggleSidebar(){
+  // Pega o sidebar
+  const sidebar = document.getElementById('ed-sidebar');
+  
+  // Alterna a classe 'hidden'
+  sidebar.classList.toggle('hidden');
+}
+            </div>
+          </div>
+        `
+      },
+
+      'preview-mode': {
+        title: '2️⃣ setPM — Mudar Modo de Preview',
+        content: `
+          <div class="section">
+            <div class="section-title">O que faz?</div>
+            <div class="description">
+              Muda o modo de visualização do preview (desligado, pequeno ou tela cheia).
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Código Original</div>
+            <div class="code-block">
+let prevMode = 'off';
+let prevMinimized = false;
+
+function setPM(mode){
+  prevMode = mode;
+  qsa('.pmb[id^="pm-"]').forEach(b => b.classList.remove('active'));
+  qs('#pm-'+mode)?.classList.add('active');
+
+  const ps = qs('#preview-section');
+  const pw = qs('#preview-frame');
+
+  if(mode === 'off'){
+    ps.classList.remove('visible');
+    ps.style.height = '';
+    prevMinimized = false;
+  } else {
+    ps.classList.add('visible');
+    ps.style.height = mode === 'full' ? '65vh' : '240px';
+    prevMinimized = false;
+    qs('#preview-bar .prev-btn').textContent = '⬆ Preview';
+    pw.style.display = '';
+    refreshPreview();
+  }
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Modos Disponíveis</div>
+            <div class="box">
+              <div class="box-title">🎯 3 Modos:</div>
+              <div>
+                <p><strong>off</strong> = Preview desligado (escondido)</p>
+                <p><strong>small</strong> = Preview pequeno (240px)</p>
+                <p><strong>full</strong> = Preview tela cheia (65% da altura)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Passo a Passo</div>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-title">prevMode = mode;</div>
+              <div>Salva qual modo foi escolhido</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-title">qsa('.pmb[id^="pm-"]').forEach(b => b.classList.remove('active'));</div>
+              <div>Remove a classe 'active' de todos os botões de modo</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-title">qs('#pm-'+mode)?.classList.add('active');</div>
+              <div>Adiciona 'active' ao botão do modo escolhido</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-title">if(mode === 'off') { ... } else { ... }</div>
+              <div>Se for 'off', esconde; senão, mostra com o tamanho correto</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Como Usar</div>
+            <div class="code-block">
+// Desligar preview
+setPM('off');
+
+// Preview pequeno (240px)
+setPM('small');
+
+// Preview tela cheia
+setPM('full');
+            </div>
+          </div>
+        `
+      },
+
+      'preview-min': {
+        title: '3️⃣ togglePreviewMin — Minimizar Preview',
+        content: `
+          <div class="section">
+            <div class="section-title">O que faz?</div>
+            <div class="description">
+              Minimiza o preview para apenas a barra de título, economizando espaço.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Código Original</div>
+            <div class="code-block">
+function togglePreviewMin(){
+  if(prevMode === 'off') return;
+  const ps  = qs('#preview-section');
+  const btn = qs('#preview-bar .prev-btn');
+  const pf  = qs('#preview-frame');
+  if(prevMinimized){
+    ps.style.height = '240px';
+    pf.style.display = '';
+    btn.textContent = '⬆ Preview';
+    prevMinimized = false;
+  } else {
+    ps.style.height = '30px';
+    pf.style.display = 'none';
+    btn.textContent = '⬇ Preview';
+    prevMinimized = true;
+  }
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">O que Acontece</div>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-title">if(prevMode === 'off') return;</div>
+              <div>Se preview está desligado, não faz nada</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-title">if(prevMinimized) { ... }</div>
+              <div>Se já está minimizado, restaura o tamanho normal (240px)</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-title">else { ... }</div>
+              <div>Se não está minimizado, minimiza para 30px (só a barra)</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-title">btn.textContent = '⬆ Preview' ou '⬇ Preview';</div>
+              <div>Muda o ícone do botão para indicar estado</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Estados</div>
+            <div class="box">
+              <div class="box-title">📊 Dois Estados:</div>
+              <div>
+                <p><strong>Normal:</strong> Altura 240px, mostra conteúdo, botão ⬆</p>
+                <p><strong>Minimizado:</strong> Altura 30px, esconde conteúdo, botão ⬇</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      'drag-start': {
+        title: '4️⃣ startVDrag — Iniciar Arrasto Vertical',
+        content: `
+          <div class="section">
+            <div class="section-title">O que faz?</div>
+            <div class="description">
+              Inicia o processo de arrastar a barra divisória entre código e preview (redimensionar).
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Código Original</div>
+            <div class="code-block">
+let vDragging = false, vDragStartY = 0, vDragStartH = 0;
+
+function startVDrag(e){
+  if(prevMode === 'off' || prevMinimized) return;
+  vDragging   = true;
+  vDragStartY = e.clientY;
+  vDragStartH = qs('#preview-section').getBoundingClientRect().height;
+  document.addEventListener('mousemove', onVDrag);
+  document.addEventListener('mouseup',   stopVDrag);
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Variáveis Globais</div>
+            <div class="box">
+              <div class="box-title">🔧 O que cada uma faz:</div>
+              <div>
+                <p><strong>vDragging:</strong> Indica se está arrastando (true/false)</p>
+                <p><strong>vDragStartY:</strong> Posição Y inicial do mouse</p>
+                <p><strong>vDragStartH:</strong> Altura inicial do preview</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Passo a Passo</div>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-title">if(prevMode === 'off' || prevMinimized) return;</div>
+              <div>Se preview está desligado ou minimizado, cancela</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-title">vDragging = true;</div>
+              <div>Marca que começou o arrasto</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-title">vDragStartY = e.clientY;</div>
+              <div>Salva a posição Y do mouse no início</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-title">vDragStartH = qs('#preview-section').getBoundingClientRect().height;</div>
+              <div>Salva a altura atual do preview</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-title">document.addEventListener('mousemove', onVDrag);</div>
+              <div>Adiciona listener para detectar movimento do mouse</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">6</div>
+              <div class="step-title">document.addEventListener('mouseup', stopVDrag);</div>
+              <div>Adiciona listener para detectar quando soltar o mouse</div>
+            </div>
+          </div>
+        `
+      },
+
+      'drag-move': {
+        title: '5️⃣ onVDrag — Mover Durante Arrasto',
+        content: `
+          <div class="section">
+            <div class="section-title">O que faz?</div>
+            <div class="description">
+              Calcula a nova altura do preview enquanto está arrastando a barra divisória.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Código Original</div>
+            <div class="code-block">
+function onVDrag(e){
+  if(!vDragging) return;
+  const col   = qs('#code-col').getBoundingClientRect().height;
+  const delta = vDragStartY - e.clientY;
+  const newH  = Math.max(60, Math.min(col - 60, vDragStartH + delta));
+  qs('#preview-section').style.height = newH + 'px';
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Cálculo Matemático</div>
+            <div class="box">
+              <div class="box-title">📐 Fórmula:</div>
+              <div>
+                <p><strong>delta:</strong> Quanto o mouse se moveu (vDragStartY - e.clientY)</p>
+                <p><strong>newH:</strong> Nova altura = altura anterior + movimento</p>
+                <p><strong>Limites:</strong> Mínimo 60px, máximo (altura total - 60px)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Passo a Passo</div>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-title">if(!vDragging) return;</div>
+              <div>Se não está arrastando, sai da função</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-title">const col = qs('#code-col').getBoundingClientRect().height;</div>
+              <div>Pega a altura total do container</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-title">const delta = vDragStartY - e.clientY;</div>
+              <div>Calcula quanto o mouse se moveu (positivo = para cima, negativo = para baixo)</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-title">const newH = Math.max(60, Math.min(col - 60, vDragStartH + delta));</div>
+              <div>Calcula nova altura com limites (mín 60px, máx altura total - 60px)</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-title">qs('#preview-section').style.height = newH + 'px';</div>
+              <div>Aplica a nova altura ao preview</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Exemplo Visual</div>
+            <div class="code-block">
+Altura inicial: 240px
+Mouse se move 50px para cima
+Delta = -50
+Nova altura = 240 + (-50) = 190px
+            </div>
+          </div>
+        `
+      },
+
+      'drag-stop': {
+        title: '6️⃣ stopVDrag — Parar Arrasto',
+        content: `
+          <div class="section">
+            <div class="section-title">O que faz?</div>
+            <div class="description">
+              Para o arrasto e remove os listeners de mouse.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Código Original</div>
+            <div class="code-block">
+function stopVDrag(){
+  vDragging = false;
+  document.removeEventListener('mousemove', onVDrag);
+  document.removeEventListener('mouseup',   stopVDrag);
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">O que Acontece</div>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-title">vDragging = false;</div>
+              <div>Marca que parou de arrastar</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-title">document.removeEventListener('mousemove', onVDrag);</div>
+              <div>Remove o listener de movimento do mouse</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-title">document.removeEventListener('mouseup', stopVDrag);</div>
+              <div>Remove o listener de soltar o mouse</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Por que remover listeners?</div>
+            <div class="box">
+              <div class="box-title">💡 Boas Práticas:</div>
+              <div>
+                <p>Remover listeners economiza memória e evita bugs</p>
+                <p>Se não remover, pode ficar recebendo eventos mesmo depois de parar</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Fluxo Completo</div>
+            <div class="code-block">
+startVDrag()    → Clica na barra
+  ↓
+onVDrag()       → Arrasta (chamado múltiplas vezes)
+  ↓
+stopVDrag()     → Solta o mouse
+            </div>
+          </div>
+        `
+      },
+
+      'mapper-tab': {
+        title: '7️⃣ mTab — Trocar Abas (Mapper Tab)',
+        content: `
+          <div class="section">
+            <div class="section-title">O que faz?</div>
+            <div class="description">
+              Muda entre diferentes abas/painéis (como HTML, CSS, JS).
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Código Original</div>
+            <div class="code-block">
+function mTab(name, btn){
+  qsa('.ext-tab').forEach(b => b.classList.remove('active'));
+  qsa('.ext-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  const el = qs('#mc-'+name);
+  if(el) el.classList.add('active');
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Passo a Passo</div>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-title">qsa('.ext-tab').forEach(b => b.classList.remove('active'));</div>
+              <div>Remove 'active' de TODAS as abas</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-title">qsa('.ext-content').forEach(c => c.classList.remove('active'));</div>
+              <div>Remove 'active' de TODO o conteúdo</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-title">btn.classList.add('active');</div>
+              <div>Adiciona 'active' ao botão clicado</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-title">const el = qs('#mc-'+name);</div>
+              <div>Pega o elemento com ID 'mc-' + nome da aba</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-title">if(el) el.classList.add('active');</div>
+              <div>Se existe, adiciona 'active' ao conteúdo</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Como Usar no HTML</div>
+            <div class="code-block">
+&lt;button class="ext-tab" onclick="mTab('html', this)"&gt;HTML&lt;/button&gt;
+&lt;button class="ext-tab" onclick="mTab('css', this)"&gt;CSS&lt;/button&gt;
+&lt;button class="ext-tab" onclick="mTab('js', this)"&gt;JavaScript&lt;/button&gt;
+
+&lt;div id="mc-html" class="ext-content"&gt;Conteúdo HTML&lt;/div&gt;
+&lt;div id="mc-css" class="ext-content"&gt;Conteúdo CSS&lt;/div&gt;
+&lt;div id="mc-js" class="ext-content"&gt;Conteúdo JS&lt;/div&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Fluxo</div>
+            <div class="code-block">
+Clica em "CSS"
+  ↓
+mTab('css', botão)
+  ↓
+Remove 'active' de todos
+  ↓
+Adiciona 'active' ao botão CSS
+  ↓
+Adiciona 'active' ao #mc-css
+  ↓
+Mostra conteúdo CSS
+            </div>
+          </div>
+        `
+      },
+
+      'init-tabs': {
+        title: '8️⃣ initTabs — Inicializar Abas',
+        content: `
+          <div class="section">
+            <div class="section-title">O que faz?</div>
+            <div class="description">
+              Configura os listeners de clique para todos os botões de aba.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Código Original</div>
+            <div class="code-block">
+function initTabs(){
+  qsa('.tab-btn[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      qsa('.tab-btn').forEach(x => x.classList.remove('active'));
+      qsa('.panel').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      const panel = qs('#'+btn.dataset.tab+'-panel');
+      if(panel) panel.classList.add('active');
+    });
+  });
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Passo a Passo</div>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-title">qsa('.tab-btn[data-tab]').forEach(btn => { ... });</div>
+              <div>Pega TODOS os botões com atributo data-tab e faz algo em cada um</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-title">btn.addEventListener('click', () => { ... });</div>
+              <div>Adiciona listener de clique a cada botão</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-title">qsa('.tab-btn').forEach(x => x.classList.remove('active'));</div>
+              <div>Remove 'active' de todos os botões</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-title">qsa('.panel').forEach(x => x.classList.remove('active'));</div>
+              <div>Remove 'active' de todos os painéis</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-title">btn.classList.add('active');</div>
+              <div>Adiciona 'active' ao botão clicado</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">6</div>
+              <div class="step-title">const panel = qs('#'+btn.dataset.tab+'-panel');</div>
+              <div>Pega o painel correspondente (ex: #html-panel)</div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">7</div>
+              <div class="step-title">if(panel) panel.classList.add('active');</div>
+              <div>Se existe, adiciona 'active' ao painel</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Como Usar no HTML</div>
+            <div class="code-block">
+&lt;button class="tab-btn" data-tab="html"&gt;HTML&lt;/button&gt;
+&lt;button class="tab-btn" data-tab="css"&gt;CSS&lt;/button&gt;
+
+&lt;div id="html-panel" class="panel"&gt;...&lt;/div&gt;
+&lt;div id="css-panel" class="panel"&gt;...&lt;/div&gt;
+
+&lt;script&gt;
+initTabs(); // Chamar uma vez ao carregar a página
+&lt;/script&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Diferença: mTab vs initTabs</div>
+            <div class="box">
+              <div class="box-title">📊 Comparação:</div>
+              <div>
+                <p><strong>mTab:</strong> Função chamada no onclick do botão</p>
+                <p><strong>initTabs:</strong> Configura listeners automaticamente (melhor prática)</p>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function loadTopic(topicId) {
+      const topic = topics[topicId];
+      
+      document.getElementById('pageTitle').textContent = topic.title;
+      document.getElementById('pageContent').innerHTML = topic.content;
+
+      // Update active menu item
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTopic('toggle-sidebar');
+    });
+  </script>
+</body>
+</html>

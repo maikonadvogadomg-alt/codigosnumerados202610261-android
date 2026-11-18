@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Calculadora Judicial Híbrida (Fixo vs Variável)</title>
+<style>
+  :root { --bg: #1e293b; --panel: #0f172a; --text: #f8fafc; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --border: #334155; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+  body { background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  
+  /* Layout */
+  header { background: var(--panel); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  h1 { font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); }
+  .container { display: flex; flex: 1; overflow: hidden; }
+  
+  /* Painel Esquerdo (Controles) */
+  .controls { width: 400px; background: var(--panel); border-right: 1px solid var(--border); overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+  .section { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+  .section h2 { font-size: 0.85rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+  
+  /* Inputs */
+  label { display: block; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 4px; margin-top: 10px; }
+  input, select, textarea { width: 100%; background: #1e293b; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 4px; font-size: 0.9rem; }
+  textarea { min-height: 120px; font-family: monospace; font-size: 0.8rem; white-space: pre; overflow-x: auto; }
+  
+  /* Botões */
+  .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+  button { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.75rem; transition: 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-success { background: var(--success); color: #064e3b; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-secondary { background: #475569; color: white; }
+  button:hover { opacity: 0.9; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Painel Direito (Resultados) */
+  .results { flex: 1; padding: 20px; overflow-y: auto; background: #334155; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+  .card { background: white; color: #0f172a; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+  .card h3 { font-size: 0.9rem; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
+  .card .value { font-size: 1.5rem; font-weight: 800; color: #0f172a; }
+  .card .details { font-size: 0.8rem; margin-top: 5px; color: #475569; }
+
+  /* Tabela */
+  .table-container { background: white; border-radius: 8px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; color: #334155; }
+  th, td { padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0; }
+  th { background: #f1f5f9; font-weight: 700; text-align: center; position: sticky; top: 0; }
+  td:first-child { text-align: center; font-family: monospace; font-weight: bold; }
+  tr:hover { background: #f8fafc; }
+
+  /* Utilitários */
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; background: #e0f2fe; color: #0369a1; margin-right: 5px; }
+  .loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; color: white; flex-direction: column; }
+  .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="loading" id="loader">
+  <div class="spinner"></div>
+  <span id="loaderText">Processando...</span>
+</div>
+
+<header>
+  <h1>Calculadora Judicial Híbrida</h1>
+  <div style="font-size: 0.8rem; color: #94a3b8;" id="statusClock">--:--</div>
+</header>
+
+<div class="container">
+  <div class="controls">
+    
+    <div class="section">
+      <h2>1. Dados Básicos</h2>
+      <label>Valor Principal (R$)</label>
+      <input type="number" id="inpValor" value="10000.00">
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label>Data Início</label>
+          <input type="date" id="inpInicio" value="2022-01-01">
+        </div>
+        <div>
+          <label>Data Fim</label>
+          <input type="date" id="inpFim" value="2023-12-31">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2. Importar Taxas Variáveis (Juiz/Bacen)</h2>
+      <div class="btn-group" style="margin-bottom: 10px;">
+         <input type="text" id="inpSerieBCB" placeholder="Cód. Série (ex: 433)" style="flex:2">
+         <button class="btn-secondary" id="btnBacen" onclick="buscarBacen()">Busca BCB</button>
+      </div>
+      
+      <label>Cole aqui (Excel, CSV ou do Site do Tribunal):</label>
+      <textarea id="txtImport" placeholder="Data	Indice	Juros
+01/01/2022	1.005	0.5
+01/02/2022	1.002	0.8..."></textarea>
+      
+      <div class="btn-group">
+        <button class="btn-success" onclick="processarImportacao()">Processar Colagem</button>
+        <button class="btn-danger" onclick="limparImportacao()">Limpar</button>
+      </div>
+      <div id="importStatus" style="font-size: 0.75rem; color: var(--success); margin-top: 5px; min-height: 15px;"></div>
+    </div>
+
+    <div class="section">
+      <h2>3. Configurar Cenários</h2>
+      
+      <div style="border-left: 3px solid var(--accent); padding-left: 10px; margin-bottom: 15px;">
+        <label style="color: var(--accent); font-weight: bold;">Cenário A (Banco/Fixo)</label>
+        <label>Taxa de Juros (%) - <i>Use número (ex: 4.5) OU nome da coluna</i></label>
+        <input type="text" id="cenA_taxa" value="4.5">
+        <label>Tipo de Juros</label>
+        <select id="cenA_tipo">
+          <option value="composto">Composto (Capitalizado)</option>
+          <option value="simples">Simples (Linear)</option>
+        </select>
+      </div>
+
+      <div style="border-left: 3px solid var(--success); padding-left: 10px;">
+        <label style="color: var(--success); font-weight: bold;">Cenário B (Juiz/Variável)</label>
+        <label>Taxa de Juros (%) - <i>Use número OU nome da coluna importada</i></label>
+        <input type="text" id="cenB_taxa" placeholder="Ex: valor_bcb" value="valor_bcb">
+        <label>Tipo de Juros</label>
+        <select id="cenB_tipo">
+          <option value="simples">Simples (Linear)</option>
+          <option value="composto">Composto (Capitalizado)</option>
+        </select>
+        <label>Correção Monetária (Opcional - Nome da Coluna)</label>
+        <input type="text" id="cenB_correcao" placeholder="Ex: indice_tjmg">
+      </div>
+    </div>
+
+    <button class="btn-primary" style="padding: 15px; font-size: 1rem;" onclick="calcularTudo()">CALCULAR AGORA</button>
+
+  </div>
+
+  <div class="results">
+    <div id="resultadoVazio" style="text-align: center; color: #94a3b8; margin-top: 100px;">
+      <h3>Aguardando Cálculo</h3>
+      <p>Importe os dados e clique em Calcular.</p>
+    </div>
+
+    <div id="resultadoFinal" style="display: none;">
+      <div class="card-grid">
+        <div class="card" style="border-top: 4px solid var(--accent);">
+          <h3>Cenário A (Banco)</h3>
+          <div class="value" id="resTotalA">R$ 0,00</div>
+          <div class="details" id="resDetA">Juros compostos fixos</div>
+        </div>
+        <div class="card" style="border-top: 4px solid var(--success);">
+          <h3>Cenário B (Juiz)</h3>
+          <div class="value" id="resTotalB">R$ 0,00</div>
+          <div class="details" id="resDetB">Juros variáveis + Correção</div>
+        </div>
+        <div class="card" style="border-top: 4px solid #f59e0b;">
+          <h3>Diferença (Indébito)</h3>
+          <div class="value" id="resDiff">R$ 0,00</div>
+          <div class="details">Economia se aplicar B</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês/Ano</th>
+              <th>Taxa A</th>
+              <th>Total A</th>
+              <th>Correção B</th>
+              <th>Taxa B</th>
+              <th>Juros B (Acum)</th>
+              <th>Total B</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaBody">
+            </tbody>
+        </table>
+      </div>
+      
+      <button class="btn-secondary" style="margin-top: 20px; width: auto;" onclick="exportarCSV()">Baixar Tabela (CSV)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- VARIÁVEIS GLOBAIS ---
+let DADOS_IMPORTADOS = []; // Array de objetos { dataStr: "YYYY-MM", [coluna]: valor }
+let COLUNAS_DISPONIVEIS = [];
+
+// --- FUNÇÕES UTILITÁRIAS ---
+const $ = id => document.getElementById(id);
+const toBRL = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const parseDataBR = str => {
+  const parts = str.split('/');
+  if (parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
+  return null;
+}
+const dataParaTexto = date => date.toISOString().slice(0, 7); // YYYY-MM
+
+// --- 1. IMPORTAÇÃO INTELIGENTE (O SEGREDO) ---
+function processarImportacao() {
+  const txt = $('txtImport').value.trim();
+  if (!txt) return alert("Cole os dados primeiro.");
+
+  const linhas = txt.split('\n');
+  if (linhas.length < 2) return alert("Dados insuficientes. Precisa de cabeçalho e dados.");
+
+  // Detectar separador (Tab ou Ponto e Vírgula ou Vírgula)
+  const primeiraLinha = linhas[0];
+  let sep = ',';
+  if (primeiraLinha.includes('\t')) sep = '\t';
+  else if (primeiraLinha.includes(';')) sep = ';';
+
+  // Ler cabeçalho e limpar nomes
+  const headers = primeiraLinha.split(sep).map(h => h.trim().toLowerCase()
+    .replace(/[^\w]/g, '_') // Remove caracteres especiais
+  );
+
+  DADOS_IMPORTADOS = [];
+  
+  // Ler linhas
+  for (let i = 1; i < linhas.length; i++) {
+    const cols = linhas[i].split(sep);
+    if (cols.length < 2) continue;
+
+    let obj = {};
+    let dataValida = false;
+
+    headers.forEach((h, index) => {
+      let val = cols[index] ? cols[index].trim() : "";
+      
+      // Tentar detectar data
+      if (val.match(/^\d{2}\/\d{2}\/\d{4}/)) {
+        const d = parseDataBR(val);
+        if (d) {
+          obj.dataStr = dataParaTexto(d);
+          dataValida = true;
+        }
+      } 
+      // Tentar detectar número (virgula para ponto)
+      else if (val.match(/^[\d.,-]+$/)) {
+        obj[h] = parseFloat(val.replace('.', '').replace(',', '.'));
+      } 
+      else {
+        obj[h] = val;
+      }
+    });
+
+    if (dataValida) DADOS_IMPORTADOS.push(obj);
+  }
+
+  // Ordenar por data
+  DADOS_IMPORTADOS.sort((a,b) => a.dataStr.localeCompare(b.dataStr));
+  
+  COLUNAS_DISPONIVEIS = headers.filter(h => h !== 'data' && h !== 'dataStr');
+  
+  $('importStatus').innerText = `Sucesso! ${DADOS_IMPORTADOS.length} linhas importadas. Colunas: ${COLUNAS_DISPONIVEIS.join(', ')}`;
+  
+  // Sugerir nomes nos inputs
+  if(COLUNAS_DISPONIVEIS.length > 0) {
+    $('cenB_taxa').placeholder = "Disponível: " + COLUNAS_DISPONIVEIS[0];
+    // Se tiver algo com 'bcb' ou 'juros', sugere
+    const sugestaoJuros = COLUNAS_DISPONIVEIS.find(c => c.includes('bcb') || c.includes('juros'));
+    if(sugestaoJuros) $('cenB_taxa').value = sugestaoJuros;
+  }
+}
+
+// --- 2. BUSCAR BCB (Mantendo o que funcionava) ---
+async function buscarBacen() {
+  const serie = $('inpSerieBCB').value;
+  if (!serie) return alert("Digite o código da série.");
+  
+  const loader = $('loader');
+  loader.style.display = 'flex';
+  $('loaderText').innerText = "Buscando no Banco Central...";
+
+  try {
+    const dIni = $('inpInicio').value.split('-').reverse().join('/');
+    const dFim = $('inpFim').value.split('-').reverse().join('/');
+    
+    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${serie}/dados?formato=json&dataInicial=${dIni}&dataFinal=${dFim}`;
+    const resp = await fetch(url);
+    const dados = await resp.json();
+
+    // Converter para CSV texto e jogar no textarea
+    let csv = "data\tvalor_bcb\n";
+    dados.forEach(d => {
+      csv += `${d.data}\t${d.valor}\n`;
+    });
+
+    $('txtImport').value = csv;
+    processarImportacao();
+    alert("Dados do BCB baixados! Cliquei em 'Processar Colagem' automaticamente.");
+
+  } catch (err) {
+    alert("Erro ao buscar BCB. Verifique internet ou código da série.");
+  } finally {
+    loader.style.display = 'none';
+  }
+}
+
+function limparImportacao() {
+  $('txtImport').value = "";
+  DADOS_IMPORTADOS = [];
+  $('importStatus').innerText = "";
+}
+
+// --- 3. MOTOR DE CÁLCULO ---
+function getValor(inputVal, mesAno) {
+  // Verifica se é número fixo
+  const num = parseFloat(inputVal.replace(',', '.'));
+  if (!isNaN(num)) return num; // É fixo
+
+  // Se não é número, busca na tabela importada pelo nome da coluna
+  const linha = DADOS_IMPORTADOS.find(d => d.dataStr === mesAno);
+  if (linha && linha[inputVal] !== undefined) {
+    return linha[inputVal];
+  }
+  return 0; // Não achou
+}
+
+function calcularTudo() {
+  const vp = parseFloat($('inpValor').value);
+  const dtIni = new Date($('inpInicio').value);
+  const dtFim = new Date($('inpFim').value);
+  
+  // Configs Cenário A
+  const taxaA_Input = $('cenA_taxa').value;
+  const tipoA = $('cenA_tipo').value;
+
+  // Configs Cenário B
+  const taxaB_Input = $('cenB_taxa').value;
+  const tipoB = $('cenB_tipo').value;
+  const corrB_Input = $('cenB_correcao').value;
+
+  // Gerar Loop de meses
+  let current = new Date(dtIni.getFullYear(), dtIni.getMonth(), 1);
+  const end = new Date(dtFim.getFullYear(), dtFim.getMonth(), 1);
+  
+  let saldoA = vp;
+  let saldoB_Principal = vp; // Base para correção
+  let saldoB_JurosAcum = 0;  // Juros simples separados
+  let saldoB_Total = vp;     // Se for composto
+
+  let htmlRows = "";
+
+  while (current <= end) {
+    const mesStr = dataParaTexto(current);
+    
+    // --- CÁLCULO A (BANCO) ---
+    const tA = getValor(taxaA_Input, mesStr);
+    let jurosA = 0;
+    if (tipoA === 'composto') {
+      jurosA = saldoA * (tA / 100);
+      saldoA += jurosA;
+    } else {
+      // Simples (raro pra banco, mas ok)
+      jurosA = vp * (tA / 100);
+      saldoA += jurosA; 
+    }
+
+    // --- CÁLCULO B (JUIZ/VARIÁVEL) ---
+    const tB = getValor(taxaB_Input, mesStr);
+    const correcaoIdx = corrB_Input ? getValor(corrB_Input, mesStr) : 0;
+    
+    let jurosB = 0;
+    let correcaoVal = 0;
+
+    // 1. Aplica Correção Monetária primeiro (regra comum)
+    if (correcaoIdx !== 0) {
+      // Se o índice for ex: 1.005 (fator) ou 0.5 (percentual)
+      // Assumindo percentual aqui para simplificar a vida do advogado
+      const fator = (correcaoIdx / 100); 
+      correcaoVal = saldoB_Principal * fator;
+      saldoB_Principal += correcaoVal;
+    }
+
+    // 2. Aplica Juros sobre o principal corrigido
+    if (tipoB === 'simples') {
+      jurosB = saldoB_Principal * (tB / 100);
+      saldoB_JurosAcum += jurosB;
+    } else {
+      // Composto
+      const base = (tipoB === 'composto') ? saldoB_Total : saldoB_Principal;
+      jurosB = base * (tB / 100);
+      saldoB_Total += jurosB;
+      // Se tiver correção no composto, ela incide sobre o total também
+      if(correcaoIdx !== 0) saldoB_Total += (saldoB_Total * (correcaoIdx/100));
+    }
+
+    const totalB_Mes = (tipoB === 'simples') ? (saldoB_Principal + saldoB_JurosAcum) : saldoB_Total;
+
+    // Renderizar linha da tabela
+    htmlRows += `
+      <tr>
+        <td>${mesStr}</td>
+        <td>${tA.toFixed(2)}%</td>
+        <td>${toBRL(saldoA)}</td>
+        <td style="color:var(--accent)">${correcaoIdx > 0 ? correcaoIdx.toFixed(4)+'%' : '-'}</td>
+        <td style="color:var(--success)">${tB.toFixed(2)}%</td>
+        <td>${toBRL(tipoB === 'simples' ? saldoB_JurosAcum : (saldoB_Total - vp))}</td>
+        <td style="font-weight:bold">${toBRL(totalB_Mes)}</td>
+      </tr>
+    `;
+
+    // Avançar mês
+    current.setMonth(current.getMonth() + 1);
+  }
+
+  // Totais Finais
+  const finalA = saldoA;
+  const finalB = (tipoB === 'simples') ? (saldoB_Principal + saldoB_JurosAcum) : saldoB_Total;
+
+  $('resTotalA').innerText = toBRL(finalA);
+  $('resTotalB').innerText = toBRL(finalB);
+  
+  const diff = finalA - finalB;
+  $('resDiff').innerText = toBRL(diff);
+  $('resDiff').style.color = diff > 0 ? 'var(--success)' : 'var(--danger)';
+
+  $('tabelaBody').innerHTML = htmlRows;
+  $('resultadoVazio').style.display = 'none';
+  $('resultadoFinal').style.display = 'block';
+}
+
+function exportarCSV() {
+  const rows = document.querySelectorAll('table tr');
+  let csv = [];
+  rows.forEach(row => {
+    const cols = row.querySelectorAll('td, th');
+    let rowData = [];
+    cols.forEach(c => rowData.push(c.innerText.replace('R$', '').trim()));
+    csv.push(rowData.join('\t')); // Tab separated melhor pro Excel Brasil
+  });
+  
+  const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'calculo_judicial_hibrido.csv';
+  a.click();
+}
+
+// Relógio
+setInterval(() => {
+  const now = new Date();
+  $('statusClock').innerText = now.toLocaleTimeString();
+}, 1000);
+
+</script>
+</body>
+</html>

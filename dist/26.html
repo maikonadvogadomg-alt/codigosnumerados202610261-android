@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Mini Playground</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ EDITOR ═══ */
+    .editor-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #333;
+    }
+
+    .editor-header {
+      padding: 12px;
+      background: #222;
+      border-bottom: 1px solid #333;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      background: #333;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #444;
+      border-color: #666;
+    }
+
+    .btn.primary {
+      background: #0066cc;
+      border-color: #0088ff;
+    }
+
+    .btn.primary:hover {
+      background: #0077dd;
+    }
+
+    .editor-wrapper {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .line-numbers {
+      background: #222;
+      border-right: 1px solid #333;
+      padding: 12px 8px;
+      text-align: right;
+      color: #666;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow: hidden;
+      user-select: none;
+      min-width: 40px;
+    }
+
+    .editor-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-textarea {
+      flex: 1;
+      padding: 12px;
+      background: #1a1a1a;
+      border: none;
+      color: #e0e0e0;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+    }
+
+    .editor-textarea::selection {
+      background: #0066cc;
+    }
+
+    .search-box {
+      padding: 12px;
+      background: #222;
+      border-top: 1px solid #333;
+      display: flex;
+      gap: 8px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 8px 10px;
+      background: #333;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+    }
+
+    .search-stats {
+      padding: 8px 10px;
+      background: #333;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #999;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .highlight {
+      background: #ffff00;
+      color: #000;
+    }
+
+    .highlight.active {
+      background: #ff6600;
+      color: #fff;
+    }
+
+    /* ═══ PREVIEW ═══ */
+    .preview-section {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #333;
+    }
+
+    .preview-header {
+      padding: 12px;
+      background: #222;
+      border-bottom: 1px solid #333;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .preview-content {
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+      background: #1a1a1a;
+    }
+
+    .preview-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    .preview-code {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #e0e0e0;
+      overflow-x: auto;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .preview-error {
+      background: #3d1a1a;
+      border: 1px solid #662222;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 12px;
+      color: #ff6b6b;
+    }
+
+    .preview-success {
+      background: #1a3d1a;
+      border: 1px solid #226622;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 12px;
+      color: #6bff6b;
+    }
+
+    /* ═══ MODAL ═══ */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #222;
+      border: 1px solid #555;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    textarea.modal-textarea {
+      width: 100%;
+      height: 300px;
+      padding: 10px;
+      background: #333;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      font-family: monospace;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      justify-content: flex-end;
+    }
+
+    .modal-buttons .btn {
+      flex: 1;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .stats {
+      font-size: 11px;
+      color: #999;
+      padding: 4px 0;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- EDITOR -->
+    <div class="editor-section">
+      <div class="editor-header">
+        <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Importar</button>
+        <button class="btn" onclick="downloadCode()">💾 Baixar</button>
+        <button class="btn" onclick="openPasteModal()">📋 Colar</button>
+        <button class="btn" onclick="clearCode()">🗑️ Limpar</button>
+        <button class="btn primary" onclick="runCode()">▶️ Executar</button>
+      </div>
+
+      <div class="editor-wrapper">
+        <div class="line-numbers" id="lineNumbers"></div>
+        <div class="editor-content">
+          <textarea id="codeEditor" class="editor-textarea" placeholder="Cole seu código aqui..." onscroll="syncScroll()" oninput="updateLineNumbers()"></textarea>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <input type="text" class="search-input" id="searchInput" placeholder="Pesquisar..." onkeyup="searchCode()">
+        <div class="search-stats" id="searchStats">0 encontrados</div>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="preview-section">
+      <div class="preview-header">👁️ Preview</div>
+      <div class="preview-content" id="previewContent">
+        <div style="color: #999; text-align: center; padding: 20px;">
+          Cole código e clique em "Executar"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PASTE -->
+  <div id="pasteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">📋 Colar Código</div>
+      <textarea id="pasteInput" class="modal-textarea" placeholder="Cole seu código aqui..."></textarea>
+      <div class="modal-buttons">
+        <button class="btn" onclick="closePasteModal()">Cancelar</button>
+        <button class="btn primary" onclick="handlePaste()">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" onchange="handleFileImport(event)">
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════
+
+    let code = "";
+    let searchMatches = [];
+    let currentMatchIndex = 0;
+
+    // ═══════════════════════════════════════════════════════════════
+    // EDITOR FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function updateLineNumbers() {
+      const editor = document.getElementById("codeEditor");
+      const lines = editor.value.split('\n').length;
+      const lineNumbers = document.getElementById("lineNumbers");
+      
+      let html = "";
+      for (let i = 1; i <= lines; i++) {
+        html += i + "\n";
+      }
+      lineNumbers.textContent = html;
+    }
+
+    function syncScroll() {
+      const editor = document.getElementById("codeEditor");
+      const lineNumbers = document.getElementById("lineNumbers");
+      lineNumbers.scrollTop = editor.scrollTop;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SEARCH FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function searchCode() {
+      const editor = document.getElementById("codeEditor");
+      const searchTerm = document.getElementById("searchInput").value;
+      const stats = document.getElementById("searchStats");
+
+      if (!searchTerm) {
+        stats.textContent = "0 encontrados";
+        editor.value = code;
+        return;
+      }
+
+      // Encontrar todas as ocorrências
+      searchMatches = [];
+      const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      let match;
+      
+      while ((match = regex.exec(code)) !== null) {
+        searchMatches.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          text: match[0]
+        });
+      }
+
+      stats.textContent = `${searchMatches.length} encontrado${searchMatches.length !== 1 ? 's' : ''}`;
+      currentMatchIndex = 0;
+
+      highlightMatches();
+    }
+
+    function highlightMatches() {
+      const editor = document.getElementById("codeEditor");
+      let highlighted = code;
+
+      // Aplicar highlight
+      searchMatches.forEach((match, index) => {
+        const className = index === currentMatchIndex ? 'active' : '';
+        const replacement = `<span class="highlight ${className}">${code.substring(match.start, match.end)}</span>`;
+        highlighted = highlighted.substring(0, match.start) + replacement + highlighted.substring(match.end);
+      });
+
+      // Atualizar editor com HTML (simulado com cores)
+      if (searchMatches.length > 0) {
+        const currentMatch = searchMatches[currentMatchIndex];
+        const before = code.substring(0, currentMatch.start);
+        const match = code.substring(currentMatch.start, currentMatch.end);
+        const after = code.substring(currentMatch.end);
+
+        // Mover para o match
+        const lines = before.split('\n').length;
+        editor.focus();
+        editor.setSelectionRange(currentMatch.start, currentMatch.end);
+
+        // Scroll para o match
+        const lineHeight = parseInt(getComputedStyle(editor).lineHeight);
+        editor.scrollTop = (lines - 1) * lineHeight - editor.clientHeight / 2;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FILE HANDLING
+    // ═══════════════════════════════════════════════════════════════
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        code = e.target.result;
+        document.getElementById("codeEditor").value = code;
+        updateLineNumbers();
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function downloadCode() {
+      const editor = document.getElementById("codeEditor");
+      const text = editor.value;
+      if (!text) {
+        alert("Nada para baixar!");
+        return;
+      }
+
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `code-${Date.now()}.txt`;
+      a.click();
+    }
+
+    function clearCode() {
+      if (!confirm("Limpar tudo?")) return;
+      code = "";
+      document.getElementById("codeEditor").value = "";
+      document.getElementById("searchInput").value = "";
+      document.getElementById("previewContent").innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">Cole código e clique em "Executar"</div>';
+      updateLineNumbers();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // EXECUTION
+    // ═══════════════════════════════════════════════════════════════
+
+    function runCode() {
+      const editor = document.getElementById("codeEditor");
+      const codeToRun = editor.value;
+      const preview = document.getElementById("previewContent");
+
+      if (!codeToRun.trim()) {
+        preview.innerHTML = '<div class="preview-error">❌ Nenhum código para executar</div>';
+        return;
+      }
+
+      try {
+        // Se for HTML
+        if (codeToRun.trim().startsWith('<')) {
+          preview.innerHTML = codeToRun;
+          return;
+        }
+
+        // Se for JavaScript
+        if (codeToRun.includes('console.log') || codeToRun.includes('return') || codeToRun.includes('function')) {
+          const output = [];
+          const customConsole = {
+            log: (...args) => output.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '))
+          };
+
+          // Executar com console customizado
+          const func = new Function('console', codeToRun);
+          func(customConsole);
+
+          preview.innerHTML = `
+            <div class="preview-success">
+              ✅ Executado com sucesso
+            </div>
+            <div class="preview-code">
+              <strong>Output:</strong><br>
+              ${output.join('<br>')}
+            </div>
+          `;
+          return;
+        }
+
+        // Se for expressão simples
+        const result = eval(codeToRun);
+        preview.innerHTML = `
+          <div class="preview-success">
+            ✅ Resultado:
+          </div>
+          <div class="preview-code">
+            ${typeof result === 'object' ? JSON.stringify(result, null, 2) : result}
+          </div>
+        `;
+      } catch (e) {
+        preview.innerHTML = `
+          <div class="preview-error">
+            ❌ Erro: ${e.message}
+          </div>
+        `;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL
+    // ═══════════════════════════════════════════════════════════════
+
+    function openPasteModal() {
+      document.getElementById("pasteModal").classList.add("open");
+    }
+
+    function closePasteModal() {
+      document.getElementById("pasteModal").classList.remove("open");
+    }
+
+    function handlePaste() {
+      const text = document.getElementById("pasteInput").value;
+      if (!text.trim()) {
+        alert("Cole algum código!");
+        return;
+      }
+
+      code = text;
+      document.getElementById("codeEditor").value = code;
+      updateLineNumbers();
+      closePasteModal();
+      document.getElementById("pasteInput").value = "";
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener("DOMContentLoaded", () => {
+      updateLineNumbers();
+    });
+  </script>
+</body>
+</html>

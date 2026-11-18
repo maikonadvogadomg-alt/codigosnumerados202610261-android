@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Comparar custo IA: barato vs caro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, button {
+      margin: 5px;
+      padding: 8px;
+    }
+    .result {
+      margin-top: 15px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Comparar custo de IA: modelo barato vs modelo caro</h1>
+
+  <label>Páginas do processo: </label>
+  <input type="number" id="paginas" value="2000" />
+
+  <label>Tokens por página (média): </label>
+  <input type="number" id="tokensPerPagina" value="450" />
+
+  <label>Preço por 1.000 tokens (modelo barato, US$): </label>
+  <input type="number" id="precoBarato" value="0.02" step="0.001"/>
+
+  <label>Preço por 1.000 tokens (modelo caro, US$): </label>
+  <input type="number" id="precoCaro" value="0.10" step="0.001"/>
+
+  <br />
+  <button id="calcular">Calcular diferença</button>
+
+  <div class="result" id="resultado">
+    (Clique no botão para ver o cálculo.)
+  </div>
+
+  <!-- Aqui vem o JavaScript todo, dentro do HTML -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const calcularBtn = document.getElementById("calcular");
+      const resultadoEl = document.getElementById("resultado");
+
+      const paginasEl = document.getElementById("paginas");
+      const tokensPerPaginaEl = document.getElementById("tokensPerPagina");
+      const precoBaratoEl = document.getElementById("precoBarato");
+      const precoCaroEl = document.getElementById("precoCaro");
+
+      calcularBtn.addEventListener("click", () => {
+        // pega os valores dos inputs
+        const paginas = Number(paginasEl.value) || 0;
+        const tokensPerPagina = Number(tokensPerPaginaEl.value) || 0;
+        const precoBarato = Number(precoBaratoEl.value) || 0;
+        const precoCaro = Number(precoCaroEl.value) || 0;
+
+        // calcula tokens totais
+        const tokensTotais = paginas * tokensPerPagina;
+        const milTokens = 1000;
+
+        // custo em US$
+        const custoBarato = (tokensTotais * precoBarato) / milTokens;
+        const custoCaro = (tokensTotais * precoCaro) / milTokens;
+
+        // diferença em porcentagem
+        const diferenca = custoCaro - custoBarato;
+        const porcentagem = custoBarato > 0 ? (diferenca / custoBarato) * 100 : 0;
+
+        // mostra resultado
+        resultadoEl.innerHTML = `
+          <p><b>Processo: ${paginas} páginas</b></p>
+          <p><b>Modelo barato (ex: mini / Gemini econômico):</b> ${custoBarato.toFixed(2)} US$</p>
+          <p><b>Modelo caro (ex: GPT‑4o full / premium):</b> ${custoCaro.toFixed(2)} US$</p>
+          <p><b>Diferença nominal:</b> ${diferenca.toFixed(2)} US$</p>
+          <p><b>Diferença em porcentagem:</b> ${porcentagem.toFixed(2)}%</p>
+        `;
+      });
+    });
+  </script>
+</body>
+</html>

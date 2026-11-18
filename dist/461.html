@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisador Automático + Debugger Visual</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', monospace;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container { max-width: 1800px; margin: 0 auto; }
+h1 { color: #a3a082; margin-bottom: 10px; text-align: center; font-size: 24px; }
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 13px; }
+h2 { color: #4ade80; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #334155; padding-bottom: 8px; }
+h3 { color: #60a5fa; margin: 12px 0 8px 0; font-size: 13px; }
+
+.upload-area {
+  background: #1e293b;
+  border: 2px dashed #334155;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover { border-color: #a3a082; background: #334155; }
+.upload-area.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+
+input[type="file"] { display: none; }
+
+.btn {
+  background: #a3a082;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+.btn:hover { background: #d4d0a8; transform: translateY(-2px); }
+.btn-secondary { background: #3b82f6; color: #fff; }
+.btn-secondary:hover { background: #2563eb; }
+.btn-danger { background: #f87171; color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-success { background: #4ade80; color: #000; }
+.btn-success:hover { background: #22c55e; }
+.btn-small { padding: 6px 12px; font-size: 11px; }
+
+.loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px;
+  font-size: 14px;
+}
+.spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #334155;
+  border-top-color: #a3a082;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.tab:hover { color: #e2e8f0; }
+.tab.active { color: #a3a082; border-bottom-color: #a3a082; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.results {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #0f172a;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.card-error { border-left-color: #f87171; }
+.card-warning { border-left-color: #fbbf24; }
+.card-success { border-left-color: #4ade80; }
+.card-info { border-left-color: #60a5fa; }
+.card-critical { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+
+.card-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.card-content {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.stat-box {
+  background: #334155;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-box strong {
+  display: block;
+  color: #a3a082;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.stat-box span {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.issue-list {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.issue-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  background: #1e293b;
+  border-left: 4px solid #fbbf24;
+}
+
+.issue-item.error { border-left-color: #f87171; }
+.issue-item.warning { border-left-color: #fbbf24; }
+.issue-item.critical { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+.issue-item.info { border-left-color: #60a5fa; }
+
+.issue-severity {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.issue-severity.error { background: #f87171; color: #fff; }
+.issue-severity.warning { background: #fbbf24; color: #000; }
+.issue-severity.critical { background: #ef4444; color: #fff; }
+.issue-severity.info { background: #60a5fa; color: #fff; }
+
+.issue-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.issue-detail {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 5px 0;
+}
+
+.issue-file {
+  font-size: 11px;
+  color: #60a5fa;
+  margin-top: 8px;
+}
+
+.code-block {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  max-height: 200px;
+  overflow-y: auto;
+  color: #60a5fa;
+}
+
+.debug-flow {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.flow-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-left: 4px solid #60a5fa;
+  background: #1e293b;
+  border-radius: 4px;
+  position: relative;
+}
+
+.flow-item.error { border-left-color: #f87171; }
+.flow-item.warning { border-left-color: #fbbf24; }
+.flow-item.success { border-left-color: #4ade80; }
+
+.flow-arrow {
+  text-align: center;
+  color: #60a5fa;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.flow-label {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 5px;
+}
+
+.flow-content {
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dependency-graph {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 15px 0;
+  overflow-x: auto;
+}
+
+.dep-item {
+  display: inline-block;
+  background: #334155;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 5px;
+  font-size: 11px;
+  border: 1px solid #60a5fa;
+}
+
+.dep-item.missing { border-color: #f87171; background: rgba(248, 113, 113, 0.1); }
+.dep-item.ok { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+.dep-item.broken { border-color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.progress-bar {
+  background: #334155;
+  border-radius: 4px;
+  height: 20px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #4ade80, #60a5fa);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔍 Analisador Automático + Debugger Visual</h1>
+  <p class="subtitle">Análise completa sem modificar nada - Gera relatório detalhado de todos os problemas</p>
+
+  <div class="upload-area" id="dropZone">
+    <p style="font-size: 18px; margin-bottom: 10px;">📦 Arraste seu ZIP da Replit aqui</p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Será analisado completamente e gerará relatório detalhado</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecionar ZIP</button>
+    <input type="file" id="fileInput" accept=".zip" />
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Analisando projeto... Isso pode levar alguns segundos...</p>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+
+let projectAnalysis = {
+  files: {},
+  issues: [],
+  endpoints: [],
+  dependencies: [],
+  replitBindings: [],
+  configFiles: {},
+  dataFlow: [],
+  warnings: []
+};
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+async function handleFile(file) {
+  if (!file) return;
+  
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  projectAnalysis = {
+    files: {},
+    issues: [],
+    endpoints: [],
+    dependencies: [],
+    replitBindings: [],
+    configFiles: {},
+    dataFlow: [],
+    warnings: []
+  };
+  
+  try {
+    const zip = new JSZip();
+    const content = await zip.loadAsync(file);
+    
+    // Extrai todos os arquivos
+    for (let [path, zipEntry] of Object.entries(content.files)) {
+      if (!zipEntry.dir) {
+        try {
+          const fileContent = await zipEntry.async('text');
+          projectAnalysis.files[path] = {
+            content: fileContent,
+            size: zipEntry._data.uncompressedSize,
+            ext: path.split('.').pop().toLowerCase()
+          };
+        } catch (e) {}
+      }
+    }
+    
+    // Executa análises
+    await analyzeProject();
+    
+    loadingDiv.style.display = 'none';
+    displayResults();
+    
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultsDiv.innerHTML = `<div class="card card-error">
+      <div class="card-title">❌ Erro ao processar</div>
+      <div class="card-content">${err.message}</div>
+    </div>`;
+  }
+}
+
+async function analyzeProject() {
+  // Análise de configuração
+  analyzeConfig();
+  
+  // Análise de dependências
+  analyzeDependencies();
+  
+  // Análise de endpoints
+  analyzeEndpoints();
+  
+  // Análise de vínculos Replit
+  analyzeReplitBindings();
+  
+  // Análise de erros
+  analyzeErrors();
+  
+  // Análise de fluxo de dados
+  analyzeDataFlow();
+  
+  // Análise de segurança
+  analyzeSecurity();
+}
+
+function analyzeConfig() {
+  const configFiles = ['package.json', '.replit', 'replit.nix', 'vite.config.js', 'webpack.config.js', '.env', '.env.local'];
+  
+  for (let [path, file] of Object.entries(projectAnalysis.files)) {
+    const fileName = path.split('/').pop();
+    
+    if (configFiles.includes(fileName)) {
+      projectAnalysis.configFiles[path] = file.content;
+      
+      if (fileName === 'package.json') {
+        try {
+          const pkg = JSON.parse(file.content);
+          
+          // Detecta problemas no package.json
+          if (!pkg.name) {
+            projectAnalysis.issues.push({
+              severity: 'warning',
+              type: 'config',
+              title: 'package.json sem nome',
+              detail: 'O arquivo package.json não tem um campo "name"',
+              file: path,
+              fix: 'Adicione um nome ao projeto'
+            });
+          }
+          
+          if (!pkg.scripts || !pkg.scripts.start) {
+            projectAnalysis.issues.push({
+              severity: 'warning',
+              type: 'config',
+              title: 'Script "start" não definido',
+              detail: 'Não há script de inicialização',
+              file: path,
+              fix: 'Adicione "start" em scripts'
+            });
+          }
+          
+          // Detecta dependências faltando
+          const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+          Object.keys(allDeps).forEach(dep => {
+            projectAnalysis.dependencies.push({
+              name: dep,
+              version: allDeps[dep],
+              type: pkg.dependencies[dep] ? 'production' : 'development'
+            });
+          });
+          
+        } catch (e) {
+          projectAnalysis.issues.push({
+            severity: 'error',
+            type: 'config',
+            title: 'package.json inválido',
+            detail: 'JSON malformado: ' + e.message,
+            file: path,
+            fix: 'Corrija a sintaxe JSON'
+          });
+        }
+      }
+      
+      if (fileName === '.replit') {
+        projectAnalysis.issues.push({
+          severity: 'info',
+          type: 'replit',
+          title: 'Arquivo .replit detectado',
+          detail: 'Este arquivo contém configurações específicas da Replit',
+          file: path,
+          note: 'Pode precisar ser ajustado em outro ambiente'
+        });
+      }
+      
+      if (fileName === 'vite.config.js') {
+        projectAnalysis.issues.push({
+          severity: 'info',
+          type: 'build',
+          title: 'Vite detectado',
+          detail: 'Projeto usa Vite como bundler',
+          file: path
+        });
+      }
+    }
+  }
+}
+
+function analyzeDependencies() {
+  for (let [path, file] of Object.entries(projectAnalysis.files)) {
+    if (path.includes('package.json')) {
+      try {
+        const pkg = JSON.parse(file.content);
+        const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+        
+        // Verifica dependências críticas
+        const criticalDeps = ['express', 'react', 'vue', 'angular', 'next', 'nuxt'];
+        
+        criticalDeps.forEach(dep => {
+          if (allDeps[dep]) {
+            projectAnalysis.dependencies.push({
+              name: dep,
+              version: allDeps[dep],
+              status: 'found'
+            });
+          }
+        });
+        
+      } catch (e) {}
+    }
+  }
+}
+
+function analyzeEndpoints() {
+  for (let [path, file] of Object.entries(projectAnalysis.files)) {
+    if (file.ext === 'js' || file.ext === 'ts') {
+      const content = file.content;
+      
+      // Detecta endpoints
+      const endpointPatterns = [
+        { regex: /app\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g, type: 'express' },
+        { regex: /router\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g, type: 'express' },
+        { regex: /fetch\s*\(\s*['"`]([^'"`]+)['"`]/g, type: 'fetch' },
+        { regex: /axios\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g, type: 'axios' }
+      ];
+      
+      endpointPatterns.forEach(pattern => {
+        let match;
+        const regex = new RegExp(pattern.regex.source, 'g');
+        
+        while ((match = regex.exec(content)) !== null) {
+          const method = match[1] || 'GET';
+          const endpoint = match[2] || match[1];
+          
+          projectAnalysis.endpoints.push({
+            method: method.toUpperCase(),
+            path: endpoint,
+            file: path,
+            type: pattern.type,
+            line: content.substring(0, match.index).split('\n').length
+          });
+          
+          // Detecta problemas em endpoints
+          if (!endpoint.startsWith('/') && !endpoint.startsWith('http')) {
+            projectAnalysis.issues.push({
+              severity: 'warning',
+              type: 'endpoint',
+              title: 'Endpoint sem caminho claro',
+              detail: `Endpoint "${endpoint}" pode estar mal formatado`,
+              file: path,
+              line: content.substring(0, match.index).split('\n').length,
+              fix: 'Verifique se o caminho está correto'
+            });
+          }
+        }
+      });
+    }
+  }
+}
+
+function analyzeReplitBindings() {
+  for (let [path, file] of Object.entries(projectAnalysis.files)) {
+    const content = file.content.toLowerCase();
+    
+    // Detecta referências a Replit
+    const replitPatterns = [
+      { pattern: 'process.env.replit', type: 'env_var' },
+      { pattern: 'replit_db', type: 'database' },
+      { pattern: 'replit_audio', type: 'audio' },
+      { pattern: 'replit_code', type: 'code_execution' },
+      { pattern: '.replit', type: 'config' },
+      { pattern: 'replit.com', type: 'url' }
+    ];
+    
+    replitPatterns.forEach(p => {
+      if (content.includes(p.pattern)) {
+        projectAnalysis.replitBindings.push({
+          type: p.type,
+          pattern: p.pattern,
+          file: path,
+          severity: 'warning'
+        });
+        
+        projectAnalysis.issues.push({
+          severity: 'warning',
+          type: 'replit_binding',
+          title: `Vínculo Replit detectado: ${p.type}`,
+          detail: `Arquivo contém referência a "${p.pattern}"`,
+          file: path,
+          note: 'Este código pode não funcionar fora da Replit',
+          fix: 'Considere abstrair em variáveis de ambiente'
+        });
+      }
+    });
+  }
+}
+
+function analyzeErrors() {
+  for (let [path, file] of Object.entries(projectAnalysis.files)) {
+    if (file.ext === 'js' || file.ext === 'ts' || file.ext === 'json') {
+      const content = file.content;
+      const lines = content.split('\n');
+      
+      // Detecta erros comuns
+      lines.forEach((line, idx) => {
+        // Chaves não fechadas
+        const opens = (line.match(/[\{\[\(]/g) || []).length;
+        const closes = (line.match(/[\}\]\)]/g) || []).length;
+        if (opens !== closes && opens > 0) {
+          projectAnalysis.issues.push({
+            severity: 'error',
+            type: 'syntax',
+            title: 'Possível erro de sintaxe',
+            detail: 'Chaves/parênteses não balanceados',
+            file: path,
+            line: idx + 1,
+            code: line.trim(),
+            fix: 'Verifique se todas as chaves estão fechadas'
+          });
+        }
+        
+        // Variáveis não definidas
+        if (line.includes('undefined') && !line.includes('typeof')) {
+          projectAnalysis.issues.push({
+            severity: 'warning',
+            type: 'reference',
+            title: 'Possível referência indefinida',
+            detail: 'Linha contém "undefined"',
+            file: path,
+            line: idx + 1,
+            code: line.trim()
+          });
+        }
+        
+        // Senhas/tokens
+        if (/(password|token|secret|apikey|api_key)\s*[:=]/i.test(line) && !line.includes('//')) {
+          projectAnalysis.issues.push({
+            severity: 'critical',
+            type: 'security',
+            title: '🔐 CRÍTICO: Possível credencial exposta',
+            detail: 'Linha contém possível senha/token',
+            file: path,
+            line: idx + 1,
+            fix: 'Mova para variáveis de ambiente'
+          });
+        }
+      });
+    }
+  }
+}
+
+function analyzeDataFlow() {
+  // Rastreia fluxo de dados entre componentes
+  const flows = [];
+  
+  for (let [path, file] of Object.entries(projectAnalysis.files)) {
+    if (file.ext === 'js' || file.ext === 'ts') {
+      const content = file.content;
+      
+      // Detecta imports/exports
+      const imports = content.match(/import\s+.*from\s+['"`]([^'"`]+)['"`]/g) || [];
+      const exports = content.match(/export\s+(default\s+)?(function|const|class|interface)\s+(\w+)/g) || [];
+      
+      imports.forEach(imp => {
+        flows.push({
+          type: 'import',
+          from: path,
+          source: imp,
+          status: 'detected'
+        });
+      });
+      
+      exports.forEach(exp => {
+        flows.push({
+          type: 'export',
+          from: path,
+          source: exp,
+          status: 'detected'
+        });
+      });
+    }
+  }
+  
+  projectAnalysis.dataFlow = flows;
+}
+
+function analyzeSecurity() {
+  for (let [path, file] of Object.entries(projectAnalysis.files)) {
+    const content = file.content;
+    
+    // Detecta problemas de segurança
+    const securityPatterns = [
+      { pattern: /eval\s*\(/g, issue: 'eval() detectado - RISCO DE SEGURANÇA' },
+      { pattern: /innerHTML\s*=/g, issue: 'innerHTML detectado - Risco de XSS' },
+      { pattern: /dangerouslySetInnerHTML/g, issue: 'dangerouslySetInnerHTML - Risco de XSS' },
+      { pattern: /localStorage\.setItem/g, issue: 'localStorage - Dados sensíveis podem ser expostos' },
+      { pattern: /document\.write/g, issue: 'document.write() - Método obsoleto' }
+    ];
+    
+    securityPatterns.forEach(p => {
+      if (p.pattern.test(content)) {
+        projectAnalysis.issues.push({
+          severity: 'warning',
+          type: 'security',
+          title: p.issue,
+          detail: `Detectado em ${path}`,
+          file: path,
+          fix: 'Revise o código para possíveis vulnerabilidades'
+        });
+      }
+    });
+  }
+}
+
+function displayResults() {
+  const criticalCount = projectAnalysis.issues.filter(i => i.severity === 'critical').length;
+  const errorCount = projectAnalysis.issues.filter(i => i.severity === 'error').length;
+  const warningCount = projectAnalysis.issues.filter(i => i.severity === 'warning').length;
+  const infoCount = projectAnalysis.issues.filter(i => i.severity === 'info').length;
+  
+  let html = `
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">📊 Visão Geral</button>
+      <button class="tab" onclick="switchTab('issues')">⚠️ Problemas</button>
+      <button class="tab" onclick="switchTab('endpoints')">🔌 Endpoints</button>
+      <button class="tab" onclick="switchTab('replit')">🔗 Vínculos Replit</button>
+      <button class="tab" onclick="switchTab('debug')">🔍 Debugger Visual</button>
+      <button class="tab" onclick="switchTab('report')">📋 Relatório</button>
+    </div>
+    
+    <!-- TAB: VISÃO GERAL -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="results">
+        <h2>📊 Resumo da Análise</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <strong>${Object.keys(projectAnalysis.files).length}</strong>
+            <span>Arquivos Analisados</span>
+          </div>
+          <div class="stat-box">
+            <strong style="color: #ef4444;">${criticalCount}</strong>
+            <span>Críticos</span>
+          </div>
+          <div class="stat-box">
+            <strong style="color: #f87171;">${errorCount}</strong>
+            <span>Erros</span>
+          </div>
+          <div class="stat-box">
+            <strong style="color: #fbbf24;">${warningCount}</strong>
+            <span>Avisos</span>
+          </div>
+          <div class="stat-box">
+            <strong style="color: #60a5fa;">${infoCount}</strong>
+            <span>Informações</span>
+          </div>
+          <div class="stat-box">
+            <strong>${projectAnalysis.endpoints.length}</strong>
+            <span>Endpoints</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="results">
+        <h2>🎯 Problemas Críticos Encontrados</h2>
+        ${criticalCount > 0 ? `
+          <div class="issue-list">
+            ${projectAnalysis.issues.filter(i => i.severity === 'critical').map(issue => `
+              <div class="issue-item critical">
+                <span class="issue-severity critical">CRÍTICO</span>
+                <div class="issue-title">${issue.title}</div>
+                <div class="issue-detail">${issue.detail}</div>
+                <div class="issue-file">📄 ${issue.file}${issue.line ? ` (linha ${issue.line})` : ''}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : '<p style="color: #4ade80;">✅ Nenhum problema crítico detectado!</p>'}
+      </div>
+      
+      <div class="results">
+        <h2>📦 Dependências Detectadas</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+          ${projectAnalysis.dependencies.map(dep => `
+            <div class="dep-item ok">
+              <strong>${dep.name}</strong><br>
+              <span style="font-size: 10px; color: #94a3b8;">${dep.version}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    
+    <!-- TAB: PROBLEMAS -->
+    <div id="tab-issues" class="tab-content">
+      <div class="results">
+        <h2>⚠️ Todos os Problemas Encontrados</h2>
+        <div class="issue-list">
+          ${projectAnalysis.issues.length > 0 ? projectAnalysis.issues.map(issue => `
+            <div class="issue-item ${issue.severity}">
+              <span class="issue-severity ${issue.severity}">
+                ${issue.severity.toUpperCase()}
+              </span>
+              <div class="issue-title">${issue.title}</div>
+              <div class="issue-detail">${issue.detail}</div>
+              ${issue.code ? `<div class="code-block">${escapeHtml(issue.code)}</div>` : ''}
+              <div class="issue-file">
+                📄 ${issue.file}${issue.line ? ` (linha ${issue.line})` : ''}
+              </div>
+              ${issue.fix ? `<div style="margin-top: 8px; padding: 8px; background: #334155; border-radius: 3px; font-size: 11px;">💡 <strong>Sugestão:</strong> ${issue.fix}</div>` : ''}
+            </div>
+          `).join('') : '<p style="color: #4ade80;">✅ Nenhum problema encontrado!</p>'}
+        </div>
+      </div>
+    </div>
+    
+    <!-- TAB: ENDPOINTS -->
+    <div id="tab-endpoints" class="tab-content">
+      <div class="results">
+        <h2>🔌 Endpoints Detectados</h2>
+        <div class="issue-list">
+          ${projectAnalysis.endpoints.length > 0 ? projectAnalysis.endpoints.map(ep => `
+            <div class="issue-item info">
+              <span class="issue-severity info">${ep.method}</span>
+              <div class="issue-title">${ep.path}</div>
+              <div class="issue-detail">Tipo: ${ep.type}</div>
+              <div class="issue-file">📄 ${ep.file} (linha ${ep.line})</div>
+            </div>
+          `).join('') : '<p style="color: #94a3b8;">Nenhum endpoint detectado</p>'}
+        </div>
+      </div>
+    </div>
+    
+    <!-- TAB: VÍNCULOS REPLIT -->
+    <div id="tab-replit" class="tab-content">
+      <div class="results">
+        <h2>🔗 Vínculos Replit Detectados</h2>
+        ${projectAnalysis.replitBindings.length > 0 ? `
+          <div class="issue-list">
+            ${projectAnalysis.replitBindings.map(binding => `
+              <div class="issue-item warning">
+                <span class="issue-severity warning">REPLIT</span>
+                <div class="issue-title">${binding.type.toUpperCase()}</div>
+                <div class="issue-detail">Padrão: <code>${binding.pattern}</code></div>
+                <div class="issue-file">📄 ${binding.file}</div>
+                <div style="margin-top: 8px; padding: 8px; background: #334155; border-radius: 3px; font-size: 11px;">
+                  ⚠️ Este código é específico da Replit e pode não funcionar em outro ambiente
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : '<p style="color: #4ade80;">✅ Nenhum vínculo Replit detectado!</p>'}
+      </div>
+    </div>
+    
+    <!-- TAB: DEBUGGER VISUAL -->
+    <div id="tab-debug" class="tab-content">
+      <div class="results">
+        <h2>🔍 Debugger Visual - Fluxo de Dados</h2>
+        <div class="debug-flow">
+          ${projectAnalysis.dataFlow.length > 0 ? projectAnalysis.dataFlow.slice(0, 20).map((flow, idx) => `
+            <div class="flow-item ${flow.status === 'error' ? 'error' : 'success'}">
+              <div class="flow-label">${flow.type.toUpperCase()}</div>
+              <div class="flow-content">${flow.source}</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">📄 ${flow.from}</div>
+            </div>
+            ${idx < projectAnalysis.dataFlow.length - 1 ? '<div class="flow-arrow">⬇️</div>' : ''}
+          `).join('') : '<p style="color: #94a3b8;">Nenhum fluxo de dados detectado</p>'}
+        </div>
+      </div>
+      
+      <div class="results">
+        <h2>📊 Gráfico de Dependências</h2>
+        <div class="dependency-graph">
+          ${projectAnalysis.dependencies.map(dep => `
+            <div class="dep-item ok">
+              ${dep.name}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    
+    <!-- TAB: RELATÓRIO -->
+    <div id="tab-report" class="tab-content">
+      <div class="results">
+        <h2>📋 Relatório Completo</h2>
+        <div class="export-buttons">
+          <button class="btn btn-secondary" onclick="exportReport('markdown')">📝 Markdown</button>
+          <button class="btn btn-secondary" onclick="exportReport('json')">📊 JSON</button>
+          <button class="btn btn-secondary" onclick="exportReport('html')">🌐 HTML</button>
+          <button class="btn btn-secondary" onclick="exportReport('text')">📄 Texto</button>
+        </div>
+        
+        <div class="card card-info" style="margin-top: 20px;">
+          <div class="card-title">📋 Resumo do Relatório</div>
+          <div class="card-content">
+            <strong>Total de Arquivos:</strong> ${Object.keys(projectAnalysis.files).length}<br>
+            <strong>Problemas Críticos:</strong> ${criticalCount}<br>
+            <strong>Erros:</strong> ${errorCount}<br>
+            <strong>Avisos:</strong> ${warningCount}<br>
+            <strong>Endpoints:</strong> ${projectAnalysis.endpoints.length}<br>
+            <strong>Vínculos Replit:</strong> ${projectAnalysis.replitBindings.length}<br>
+            <strong>Dependências:</strong> ${projectAnalysis.dependencies.length}<br>
+            <br>
+            <strong>Saúde do Projeto:</strong>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${calculateHealth()}%">
+                ${calculateHealth()}%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  resultsDiv.innerHTML = html;
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
+function calculateHealth() {
+  const total = projectAnalysis.issues.length;
+  if (total === 0) return 100;
+  
+  const critical = projectAnalysis.issues.filter(i => i.severity === 'critical').length * 10;
+  const errors = projectAnalysis.issues.filter(i => i.severity === 'error').length * 5;
+  const warnings = projectAnalysis.issues.filter(i => i.severity === 'warning').length * 2;
+  
+  const health = Math.max(0, 100 - (critical + errors + warnings));
+  return Math.round(health);
+}
+
+function exportReport(format) {
+  const criticalCount = projectAnalysis.issues.filter(i => i.severity === 'critical').length;
+  const errorCount = projectAnalysis.issues.filter(i => i.severity === 'error').length;
+  const warningCount = projectAnalysis.issues.filter(i => i.severity === 'warning').length;
+  
+  if (format === 'markdown') {
+    let md = `# Relatório de Análise do Projeto\n\n`;
+    md += `**Gerado em:** ${new Date().toLocaleString('pt-BR')}\n\n`;
+    
+    md += `## 📊 Resumo\n\n`;
+    md += `- **Arquivos Analisados:** ${Object.keys(projectAnalysis.files).length}\n`;
+    md += `- **Problemas Críticos:** ${criticalCount}\n`;
+    md += `- **Erros:** ${errorCount}\n`;
+    md += `- **Avisos:** ${warningCount}\n`;
+    md += `- **Endpoints:** ${projectAnalysis.endpoints.length}\n`;
+    md += `- **Vínculos Replit:** ${projectAnalysis.replitBindings.length}\n`;
+    md += `- **Saúde do Projeto:** ${calculateHealth()}%\n\n`;
+    
+    md += `## 🔴 Problemas Críticos\n\n`;
+    projectAnalysis.issues.filter(i => i.severity === 'critical').forEach(issue => {
+      md += `### ${issue.title}\n`;
+      md += `- **Arquivo:** ${issue.file}${issue.line ? ` (linha ${issue.line})` : ''}\n`;
+      md += `- **Detalhe:** ${issue.detail}\n`;
+      if (issue.fix) md += `- **Sugestão:** ${issue.fix}\n`;
+      md += '\n';
+    });
+    
+    md += `## 🟠 Erros\n\n`;
+    projectAnalysis.issues.filter(i => i.severity === 'error').forEach(issue => {
+      md += `### ${issue.title}\n`;
+      md += `- **Arquivo:** ${issue.file}${issue.line ? ` (linha ${issue.line})` : ''}\n`;
+      md += `- **Detalhe:** ${issue.detail}\n`;
+      if (issue.fix) md += `- **Sugestão:** ${issue.fix}\n`;
+      md += '\n';
+    });
+    
+    md += `## 🟡 Avisos\n\n`;
+    projectAnalysis.issues.filter(i => i.severity === 'warning').forEach(issue => {
+      md += `### ${issue.title}\n`;
+      md += `- **Arquivo:** ${issue.file}${issue.line ? ` (linha ${issue.line})` : ''}\n`;
+      md += `- **Detalhe:** ${issue.detail}\n`;
+      if (issue.fix) md += `- **Sugestão:** ${issue.fix}\n`;
+      md += '\n';
+    });
+    
+    md += `## 🔌 Endpoints Detectados\n\n`;
+    projectAnalysis.endpoints.forEach(ep => {
+      md += `- **${ep.method}** \`${ep.path}\` (${ep.file}:${ep.line})\n`;
+    });
+    
+    md += `\n## 🔗 Vínculos Replit\n\n`;
+    projectAnalysis.replitBindings.forEach(binding => {
+      md += `- **${binding.type}:** \`${binding.pattern}\` em ${binding.file}\n`;
+    });
+    
+    downloadFile(md, `relatorio-${new Date().toISOString().split('T')[0]}.md`, 'text/markdown');
+    
+  } else if (format === 'json') {
+    const json = JSON.stringify(projectAnalysis, null, 2);
+    downloadFile(json, `relatorio-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+    
+  } else if (format === 'html') {
+    let html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Análise</title>
+  <style>
+    body { font-family: Arial; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+    h1 { color: #333; }
+    .critical { color: #ef4444; }
+    .error { color: #f87171; }
+    .warning { color: #fbbf24; }
+    .issue { margin: 15px 0; padding: 15px; background: #f9f9f9; border-left: 4px solid #fbbf24; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 20px 0; }
+    .stat { padding: 15px; background: #f0f0f0; border-radius: 4px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📋 Relatório de Análise do Projeto</h1>
+    <p><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+    
+    <h2>📊 Resumo</h2>
+    <div class="stats">
+      <div class="stat">
+        <strong>${Object.keys(projectAnalysis.files).length}</strong><br>
+        Arquivos
+      </div>
+      <div class="stat">
+        <strong class="critical">${criticalCount}</strong><br>
+        Críticos
+      </div>
+      <div class="stat">
+        <strong>${calculateHealth()}%</strong><br>
+        Saúde
+      </div>
+    </div>
+    
+    <h2>🔴 Problemas Críticos</h2>
+    ${projectAnalysis.issues.filter(i => i.severity === 'critical').map(issue => `
+      <div class="issue critical">
+        <strong>${issue.title}</strong><br>
+        ${issue.detail}<br>
+        <small>${issue.file}${issue.line ? ` (linha ${issue.line})` : ''}</small>
+      </div>
+    `).join('')}
+    
+    <h2>🔌 Endpoints</h2>
+    ${projectAnalysis.endpoints.map(ep => `
+      <div class="issue">
+        <strong>${ep.method} ${ep.path}</strong><br>
+        <small>${ep.file}:${ep.line}</small>
+      </div>
+    `).join('')}
+  </div>
+</body>
+</html>`;
+    downloadFile(html, `relatorio-${new Date().toISOString().split('T')[0]}.html`, 'text/html');
+    
+  } else if (format === 'text') {
+    let text = `RELATÓRIO DE ANÁLISE DO PROJETO\n`;
+    text += `${'='.repeat(50)}\n\n`;
+    text += `Gerado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
+    
+    text += `RESUMO\n`;
+    text += `${'-'.repeat(50)}\n`;
+    text += `Arquivos Analisados: ${Object.keys(projectAnalysis.files).length}\n`;
+    text += `Problemas Críticos: ${criticalCount}\n`;
+    text += `Erros: ${errorCount}\n`;
+    text += `Avisos: ${warningCount}\n`;
+    text += `Endpoints: ${projectAnalysis.endpoints.length}\n`;
+    text += `Vínculos Replit: ${projectAnalysis.replitBindings.length}\n`;
+    text += `Saúde do Projeto: ${calculateHealth()}%\n\n`;
+    
+    text += `PROBLEMAS CRÍTICOS\n`;
+    text += `${'-'.repeat(50)}\n`;
+    projectAnalysis.issues.filter(i => i.severity === 'critical').forEach(issue => {
+      text += `${issue.title}\n`;
+      text += `  Arquivo: ${issue.file}${issue.line ? ` (linha ${issue.line})` : ''}\n`;
+      text += `  Detalhe: ${issue.detail}\n\n`;
+    });
+    
+    downloadFile(text, `relatorio-${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
+  }
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+</script>
+
+</body>
+</html>

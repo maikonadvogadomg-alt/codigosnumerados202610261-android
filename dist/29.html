@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Code Debugger — Verificar Código</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ INPUT PANEL ═══ */
+    .input-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      border-right: 1px solid #333;
+    }
+
+    .panel-header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 10px;
+    }
+
+    .panel-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px 12px;
+      background: #0066cc;
+      border: 1px solid #0088ff;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #0077dd;
+    }
+
+    .btn.secondary {
+      background: #333;
+      border-color: #555;
+      color: #e0e0e0;
+    }
+
+    .btn.secondary:hover {
+      background: #444;
+    }
+
+    .textarea {
+      flex: 1;
+      padding: 12px;
+      background: #1a1a1a;
+      border: none;
+      color: #e0e0e0;
+      font-family: inherit;
+      font-size: 12px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    /* ═══ OUTPUT PANEL ═══ */
+    .output-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+    }
+
+    .tabs {
+      display: flex;
+      background: #222;
+      border-bottom: 1px solid #333;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #8b949e;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      color: #0088ff;
+    }
+
+    .tab.active {
+      color: #0088ff;
+      border-bottom-color: #0088ff;
+    }
+
+    .tab-content {
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .output-content {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 11px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #88ff88;
+      max-height: 100%;
+      overflow: auto;
+    }
+
+    .issue {
+      background: #2a1a1a;
+      border-left: 4px solid #ff6b6b;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 4px;
+    }
+
+    .issue-title {
+      font-weight: bold;
+      color: #ff6b6b;
+      margin-bottom: 6px;
+    }
+
+    .issue-desc {
+      font-size: 11px;
+      color: #ccc;
+      margin-bottom: 6px;
+    }
+
+    .issue-code {
+      background: #1a1a1a;
+      padding: 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: #88ff88;
+      margin-bottom: 6px;
+    }
+
+    .issue-fix {
+      background: #1a2a1a;
+      border-left: 2px solid #6bff6b;
+      padding: 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: #6bff6b;
+    }
+
+    .success {
+      background: #1a2a1a;
+      border-left: 4px solid #6bff6b;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 4px;
+      color: #6bff6b;
+    }
+
+    .warning {
+      background: #2a2a1a;
+      border-left: 4px solid #ffff6b;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 4px;
+      color: #ffff6b;
+    }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      text-align: center;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .stat-box {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0088ff;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #999;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- INPUT -->
+    <div class="input-panel">
+      <div class="panel-header">
+        <div class="panel-title">📝 Cole seu Código</div>
+        <div class="panel-buttons">
+          <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Importar</button>
+          <button class="btn secondary" onclick="pasteCode()">📋 Colar</button>
+          <button class="btn secondary" onclick="clearInput()">🗑️ Limpar</button>
+        </div>
+      </div>
+      <textarea id="inputCode" class="textarea" placeholder="Cole seu código aqui para verificar..."></textarea>
+      <input type="file" id="fileInput" accept=".js,.html,.txt" onchange="handleFileImport(event)" style="display: none;">
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-panel">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('analysis')">📊 Análise</button>
+        <button class="tab" onclick="switchTab('issues')">⚠️ Problemas</button>
+        <button class="tab" onclick="switchTab('fixes')">✅ Correções</button>
+        <button class="tab" onclick="switchTab('functions')">🔧 Funções</button>
+      </div>
+      <div id="analysis" class="tab-content active"></div>
+      <div id="issues" class="tab-content"></div>
+      <div id="fixes" class="tab-content"></div>
+      <div id="functions" class="tab-content"></div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // REQUIRED FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    const REQUIRED_FUNCTIONS = {
+      'toggleSidebar': {
+        name: 'toggleSidebar',
+        description: 'Mostra/esconde painel lateral',
+        critical: false,
+        code: `function toggleSidebar(){
+  const sb  = qs('#ed-sidebar');
+  const btn = qs('#btn-sidebar');
+  const isHidden = sb.classList.contains('hidden');
+  sb.classList.toggle('hidden');
+  if(btn) btn.style.color = isHidden ? 'var(--muted)' : 'var(--primary)';
+}`
+      },
+      'setPM': {
+        name: 'setPM',
+        description: 'Muda modo de preview (off, small, full)',
+        critical: true,
+        code: `function setPM(mode){
+  prevMode = mode;
+  qsa('.pmb[id^="pm-"]').forEach(b => b.classList.remove('active'));
+  qs('#pm-'+mode)?.classList.add('active');
+  const ps = qs('#preview-section');
+  const pw = qs('#preview-frame');
+  if(mode === 'off'){
+    ps.classList.remove('visible');
+    ps.style.height = '';
+    prevMinimized = false;
+  } else {
+    ps.classList.add('visible');
+    ps.style.height = mode === 'full' ? '65vh' : '240px';
+    prevMinimized = false;
+    qs('#preview-bar .prev-btn').textContent = '⬆ Preview';
+    pw.style.display = '';
+    refreshPreview();
+  }
+}`
+      },
+      'togglePreviewMin': {
+        name: 'togglePreviewMin',
+        description: 'Minimiza/restaura preview',
+        critical: false,
+        code: `function togglePreviewMin(){
+  if(prevMode === 'off') return;
+  const ps  = qs('#preview-section');
+  const btn = qs('#preview-bar .prev-btn');
+  const pf  = qs('#preview-frame');
+  if(prevMinimized){
+    ps.style.height = '240px';
+    pf.style.display = '';
+    btn.textContent = '⬆ Preview';
+    prevMinimized = false;
+  } else {
+    ps.style.height = '30px';
+    pf.style.display = 'none';
+    btn.textContent = '⬇ Preview';
+    prevMinimized = true;
+  }
+}`
+      },
+      'startVDrag': {
+        name: 'startVDrag',
+        description: 'Inicia arrasto vertical',
+        critical: false,
+        code: `function startVDrag(e){
+  if(prevMode === 'off' || prevMinimized) return;
+  vDragging   = true;
+  vDragStartY = e.clientY;
+  vDragStartH = qs('#preview-section').getBoundingClientRect().height;
+  document.addEventListener('mousemove', onVDrag);
+  document.addEventListener('mouseup',   stopVDrag);
+}`
+      },
+      'onVDrag': {
+        name: 'onVDrag',
+        description: 'Move durante arrasto',
+        critical: false,
+        code: `function onVDrag(e){
+  if(!vDragging) return;
+  const col   = qs('#code-col').getBoundingClientRect().height;
+  const delta = vDragStartY - e.clientY;
+  const newH  = Math.max(60, Math.min(col - 60, vDragStartH + delta));
+  qs('#preview-section').style.height = newH + 'px';
+}`
+      },
+      'stopVDrag': {
+        name: 'stopVDrag',
+        description: 'Para arrasto',
+        critical: false,
+        code: `function stopVDrag(){
+  vDragging = false;
+  document.removeEventListener('mousemove', onVDrag);
+  document.removeEventListener('mouseup',   stopVDrag);
+}`
+      },
+      'mTab': {
+        name: 'mTab',
+        description: 'Troca de abas',
+        critical: false,
+        code: `function mTab(name, btn){
+  qsa('.ext-tab').forEach(b => b.classList.remove('active'));
+  qsa('.ext-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  const el = qs('#mc-'+name);
+  if(el) el.classList.add('active');
+}`
+      },
+      'initTabs': {
+        name: 'initTabs',
+        description: 'Inicializa abas',
+        critical: false,
+        code: `function initTabs(){
+  qsa('.tab-btn[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      qsa('.tab-btn').forEach(x => x.classList.remove('active'));
+      qsa('.panel').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      const panel = qs('#'+btn.dataset.tab+'-panel');
+      if(panel) panel.classList.add('active');
+    });
+  });
+}`
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // ANALYSIS
+    // ═══════════════════════════════════════════════════════════════
+
+    function analyzeCode() {
+      const code = document.getElementById('inputCode').value;
+      if (!code.trim()) {
+        alert('Cole algum código!');
+        return;
+      }
+
+      const analysis = {
+        foundFunctions: [],
+        missingFunctions: [],
+        issues: [],
+        warnings: [],
+        stats: {
+          lines: code.split('\n').length,
+          chars: code.length,
+          functions: 0
+        }
+      };
+
+      // Verificar funções
+      Object.keys(REQUIRED_FUNCTIONS).forEach(funcName => {
+        const regex = new RegExp(`function\\s+${funcName}\\s*\\(`, 'g');
+        if (regex.test(code)) {
+          analysis.foundFunctions.push(funcName);
+          analysis.stats.functions++;
+        } else {
+          analysis.missingFunctions.push(funcName);
+          if (REQUIRED_FUNCTIONS[funcName].critical) {
+            analysis.issues.push({
+              type: 'critical',
+              func: funcName,
+              message: `Função CRÍTICA faltando: ${funcName}`
+            });
+          } else {
+            analysis.warnings.push({
+              type: 'warning',
+              func: funcName,
+              message: `Função faltando: ${funcName}`
+            });
+          }
+        }
+      });
+
+      // Verificar APIs
+      const hasOpenRouter = code.includes('openrouter') || code.includes('OpenRouter');
+      const hasGroq = code.includes('groq') || code.includes('Groq');
+      const hasFetch = code.includes('fetch');
+      const hasPreview = code.includes('preview') || code.includes('Preview');
+
+      if (!hasFetch && (hasOpenRouter || hasGroq)) {
+        analysis.issues.push({
+          type: 'critical',
+          func: 'fetch',
+          message: 'Usando OpenRouter/Groq mas não tem fetch()'
+        });
+      }
+
+      if (!hasPreview && analysis.foundFunctions.length < 3) {
+        analysis.warnings.push({
+          type: 'warning',
+          func: 'preview',
+          message: 'Sem funções de preview - editor pode não funcionar'
+        });
+      }
+
+      renderAnalysis(analysis);
+    }
+
+    function renderAnalysis(analysis) {
+      let html = `
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-num">${analysis.stats.lines}</div>
+            <div class="stat-label">Linhas</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">${analysis.stats.functions}</div>
+            <div class="stat-label">Funções</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">${analysis.foundFunctions.length}/${Object.keys(REQUIRED_FUNCTIONS).length}</div>
+            <div class="stat-label">Encontradas</div>
+          </div>
+        </div>
+
+        <div class="output-content">
+      `;
+
+      if (analysis.foundFunctions.length > 0) {
+        html += `<div class="success">✅ Funções Encontradas (${analysis.foundFunctions.length}):\n${analysis.foundFunctions.join(', ')}</div>`;
+      }
+
+      if (analysis.missingFunctions.length > 0) {
+        html += `<div class="warning">⚠️ Funções Faltando (${analysis.missingFunctions.length}):\n${analysis.missingFunctions.join(', ')}</div>`;
+      }
+
+      if (analysis.issues.length === 0 && analysis.warnings.length === 0) {
+        html += `<div class="success">✅ Código parece OK!</div>`;
+      }
+
+      html += `</div>`;
+
+      document.getElementById('analysis').innerHTML = html;
+
+      // Render issues
+      renderIssues(analysis);
+
+      // Render fixes
+      renderFixes(analysis);
+
+      // Render functions
+      renderFunctions(analysis);
+    }
+
+    function renderIssues(analysis) {
+      let html = '<div class="output-content">';
+
+      if (analysis.issues.length === 0) {
+        html += '<div class="success">✅ Nenhum problema crítico encontrado!</div>';
+      } else {
+        analysis.issues.forEach(issue => {
+          html += `
+            <div class="issue">
+              <div class="issue-title">❌ ${issue.message}</div>
+              <div class="issue-desc">Função: <strong>${issue.func}</strong></div>
+            </div>
+          `;
+        });
+      }
+
+      if (analysis.warnings.length > 0) {
+        html += '<div style="margin-top: 12px;"><strong>⚠️ Avisos:</strong></div>';
+        analysis.warnings.forEach(warning => {
+          html += `
+            <div class="warning" style="margin: 8px 0;">
+              ${warning.message}
+            </div>
+          `;
+        });
+      }
+
+      html += '</div>';
+      document.getElementById('issues').innerHTML = html;
+    }
+
+    function renderFixes(analysis) {
+      let html = '<div class="output-content">';
+
+      if (analysis.missingFunctions.length === 0) {
+        html += '<div class="success">✅ Todas as funções estão presentes!</div>';
+      } else {
+        html += '<div style="margin-bottom: 12px;"><strong>🔧 Adicione as funções faltando:</strong></div>';
+        
+        analysis.missingFunctions.forEach(funcName => {
+          const func = REQUIRED_FUNCTIONS[funcName];
+          html += `
+            <div style="margin-bottom: 16px;">
+              <div style="background: #333; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+                <strong>${func.name}</strong> - ${func.description}
+              </div>
+              <div class="issue-code">${escapeHtml(func.code)}</div>
+            </div>
+          `;
+        });
+      }
+
+      html += '</div>';
+      document.getElementById('fixes').innerHTML = html;
+    }
+
+    function renderFunctions(analysis) {
+      let html = '<div class="output-content">';
+
+      html += '<div style="margin-bottom: 12px;"><strong>📋 Referência de Funções:</strong></div>';
+
+      Object.keys(REQUIRED_FUNCTIONS).forEach(funcName => {
+        const func = REQUIRED_FUNCTIONS[funcName];
+        const found = analysis.foundFunctions.includes(funcName);
+        const status = found ? '✅' : '❌';
+
+        html += `
+          <div style="background: #333; padding: 12px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid ${found ? '#6bff6b' : '#ff6b6b'};">
+            <div style="margin-bottom: 6px;"><strong>${status} ${func.name}</strong></div>
+            <div style="font-size: 11px; color: #999; margin-bottom: 6px;">${func.description}</div>
+            <div class="issue-code">${escapeHtml(func.code.split('\n').slice(0, 3).join('\n'))}...</div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      document.getElementById('functions').innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // UI FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('inputCode').value = e.target.result;
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function pasteCode() {
+      const text = prompt('Cole seu código:');
+      if (text) {
+        document.getElementById('inputCode').value = text;
+      }
+    }
+
+    function clearInput() {
+      if (confirm('Limpar tudo?')) {
+        document.getElementById('inputCode').value = '';
+        document.querySelectorAll('.tab-content').forEach(tab => tab.innerHTML = '');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Adicionar botão de análise
+      const header = document.querySelector('.panel-buttons');
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = '🔍 Analisar';
+      btn.onclick = analyzeCode;
+      header.insertBefore(btn, header.firstChild);
+    });
+  </script>
+</body>
+</html>

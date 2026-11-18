@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corretor Automático Inteligente</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', monospace;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container { max-width: 1800px; margin: 0 auto; }
+h1 { color: #a3a082; margin-bottom: 10px; text-align: center; font-size: 24px; }
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 13px; }
+h2 { color: #4ade80; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #334155; padding-bottom: 8px; }
+h3 { color: #60a5fa; margin: 12px 0 8px 0; font-size: 13px; }
+
+.upload-area {
+  background: #1e293b;
+  border: 2px dashed #334155;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover { border-color: #a3a082; background: #334155; }
+.upload-area.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+
+input[type="file"] { display: none; }
+
+.btn {
+  background: #a3a082;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+.btn:hover { background: #d4d0a8; transform: translateY(-2px); }
+.btn-secondary { background: #3b82f6; color: #fff; }
+.btn-secondary:hover { background: #2563eb; }
+.btn-danger { background: #f87171; color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-success { background: #4ade80; color: #000; }
+.btn-success:hover { background: #22c55e; }
+.btn-warning { background: #fbbf24; color: #000; }
+.btn-warning:hover { background: #eab308; }
+.btn-small { padding: 6px 12px; font-size: 11px; }
+
+.loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px;
+  font-size: 14px;
+}
+.spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #334155;
+  border-top-color: #a3a082;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.tab:hover { color: #e2e8f0; }
+.tab.active { color: #a3a082; border-bottom-color: #a3a082; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.results {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #0f172a;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.card-error { border-left-color: #f87171; }
+.card-warning { border-left-color: #fbbf24; }
+.card-success { border-left-color: #4ade80; }
+.card-info { border-left-color: #60a5fa; }
+.card-critical { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+
+.card-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.card-content {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.stat-box {
+  background: #334155;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-box strong {
+  display: block;
+  color: #a3a082;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.stat-box span {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.fix-item {
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #1e293b;
+}
+
+.fix-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.fix-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.fix-severity {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.fix-severity.critical { background: #ef4444; color: #fff; }
+.fix-severity.error { background: #f87171; color: #fff; }
+.fix-severity.warning { background: #fbbf24; color: #000; }
+.fix-severity.info { background: #60a5fa; color: #fff; }
+
+.fix-detail {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 8px 0;
+}
+
+.code-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.code-block {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  max-height: 150px;
+  overflow: auto;
+}
+
+.code-before {
+  border-left: 4px solid #f87171;
+}
+
+.code-after {
+  border-left: 4px solid #4ade80;
+}
+
+.code-label {
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #94a3b8;
+}
+
+.fix-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.fix-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.fix-checkbox input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.progress-bar {
+  background: #334155;
+  border-radius: 4px;
+  height: 24px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #4ade80, #60a5fa);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.summary-box {
+  background: #334155;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 4px;
+}
+
+.file-list {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.file-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  background: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-item:hover {
+  background: #334155;
+  border-color: #a3a082;
+}
+
+.file-name {
+  flex: 1;
+  color: #e2e8f0;
+  font-size: 12px;
+}
+
+.file-status {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fbbf24;
+  color: #000;
+}
+
+.file-status.fixed {
+  background: #4ade80;
+  color: #000;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-content {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+  width: 900px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #334155;
+}
+
+.modal-close {
+  background: #f87171;
+  color: #fff;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+@media (max-width: 1200px) {
+  .code-comparison { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔧 Corretor Automático Inteligente</h1>
+  <p class="subtitle">Detecta problemas e sugere correções automáticas - Você escolhe o que aplicar</p>
+
+  <div class="upload-area" id="dropZone">
+    <p style="font-size: 18px; margin-bottom: 10px;">📦 Arraste seu ZIP da Replit aqui</p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Será analisado e sugerirá correções automáticas</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecionar ZIP</button>
+    <input type="file" id="fileInput" accept=".zip" />
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Analisando e gerando sugestões de correção...</p>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+
+let projectData = {
+  files: {},
+  fixes: [],
+  applied: new Set(),
+  correctedFiles: {}
+};
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+async function handleFile(file) {
+  if (!file) return;
+  
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  projectData = {
+    files: {},
+    fixes: [],
+    applied: new Set(),
+    correctedFiles: {}
+  };
+  
+  try {
+    const zip = new JSZip();
+    const content = await zip.loadAsync(file);
+    
+    // Extrai arquivos
+    for (let [path, zipEntry] of Object.entries(content.files)) {
+      if (!zipEntry.dir && /\.(js|ts|jsx|tsx|json|html|css)$/.test(path)) {
+        try {
+          const fileContent = await zipEntry.async('text');
+          projectData.files[path] = fileContent;
+        } catch (e) {}
+      }
+    }
+    
+    // Gera sugestões de correção
+    generateFixes();
+    
+    loadingDiv.style.display = 'none';
+    displayResults();
+    
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultsDiv.innerHTML = `<div class="card card-error">
+      <div class="card-title">❌ Erro ao processar</div>
+      <div class="card-content">${err.message}</div>
+    </div>`;
+  }
+}
+
+function generateFixes() {
+  for (let [filePath, content] of Object.entries(projectData.files)) {
+    const ext = filePath.split('.').pop().toLowerCase();
+    
+    if (ext === 'js' || ext === 'ts' || ext === 'jsx' || ext === 'tsx') {
+      generateJSFixes(filePath, content);
+    } else if (ext === 'json') {
+      generateJSONFixes(filePath, content);
+    } else if (ext === 'html') {
+      generateHTMLFixes(filePath, content);
+    }
+  }
+}
+
+function generateJSFixes(filePath, content) {
+  const lines = content.split('\n');
+  
+  // 1. Adicionar try-catch em promises
+  const promisePattern = /\.then\s*\(/g;
+  if (promisePattern.test(content)) {
+    const thenCount = (content.match(/\.then\s*\(/g) || []).length;
+    const catchCount = (content.match(/\.catch\s*\(/g) || []).length;
+    
+    if (thenCount > catchCount) {
+      projectData.fixes.push({
+        id: `fix-${projectData.fixes.length}`,
+        severity: 'warning',
+        file: filePath,
+        title: 'Adicionar .catch() em promises',
+        detail: `Detectado ${thenCount} .then() mas apenas ${catchCount} .catch()`,
+        before: `.then(response => {\n  // seu código\n})`,
+        after: `.then(response => {\n  // seu código\n})\n.catch(error => {\n  console.error('Erro:', error);\n})`,
+        type: 'promise_catch',
+        autoFix: true,
+        code: `
+// Encontrar todas as promises sem catch
+const promiseRegex = /\.then\\s*\\(([^)]+)\\)(?!\\s*\\.catch)/g;
+content = content.replace(promiseRegex, '.then($1).catch(error => console.error(error))');
+        `
+      });
+    }
+  }
+  
+  // 2. Remover console.log em produção
+  const consolePattern = /console\.(log|error|warn|info|debug)\s*\(/g;
+  const consoleMatches = content.match(consolePattern) || [];
+  
+  if (consoleMatches.length > 0) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'warning',
+      file: filePath,
+      title: 'Remover console.log em produção',
+      detail: `Detectado ${consoleMatches.length} console statement(s)`,
+      before: `console.log('Debug:', data);`,
+      after: `// console.log('Debug:', data); // Removido em produção`,
+      type: 'console_removal',
+      autoFix: true,
+      code: `
+// Comentar console statements
+content = content.replace(/console\\.(log|error|warn|info|debug)\\s*\\(/g, '// console.$1(');
+      `
+    });
+  }
+  
+  // 3. Adicionar async/await em funções
+  const asyncPattern = /async\s+function\s+(\w+)/g;
+  const asyncFuncs = (content.match(asyncPattern) || []).length;
+  const awaitCount = (content.match(/await\s+/g) || []).length;
+  
+  if (asyncFuncs > 0 && awaitCount === 0) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'info',
+      file: filePath,
+      title: 'Função async sem await',
+      detail: `${asyncFuncs} função(ões) async sem usar await`,
+      before: `async function getData() {\n  return fetch('/api/data');\n}`,
+      after: `async function getData() {\n  return await fetch('/api/data');\n}`,
+      type: 'async_await',
+      autoFix: false
+    });
+  }
+  
+  // 4. Adicionar validação de entrada
+  const fetchPattern = /fetch\s*\(\s*['"`]([^'"`]+)['"`]/g;
+  const fetchMatches = content.match(fetchPattern) || [];
+  
+  if (fetchMatches.length > 0) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'warning',
+      file: filePath,
+      title: 'Adicionar validação em fetch',
+      detail: `${fetchMatches.length} chamada(s) fetch sem validação de resposta`,
+      before: `const response = await fetch(url);\nconst data = await response.json();`,
+      after: `const response = await fetch(url);\nif (!response.ok) throw new Error('API error');\nconst data = await response.json();`,
+      type: 'fetch_validation',
+      autoFix: false
+    });
+  }
+  
+  // 5. Adicionar try-catch em JSON.parse
+  const jsonParsePattern = /JSON\.parse\s*\(/g;
+  if (jsonParsePattern.test(content)) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'warning',
+      file: filePath,
+      title: 'Adicionar try-catch em JSON.parse',
+      detail: 'JSON.parse sem tratamento de erro',
+      before: `const data = JSON.parse(jsonString);`,
+      after: `let data;\ntry {\n  data = JSON.parse(jsonString);\n} catch (e) {\n  console.error('JSON inválido:', e);\n}`,
+      type: 'json_parse_try',
+      autoFix: false
+    });
+  }
+  
+  // 6. Remover variáveis não usadas
+  const varPattern = /(?:const|let|var)\s+(\w+)\s*=/g;
+  const usedVars = new Set();
+  const declaredVars = new Set();
+  
+  let match;
+  while ((match = varPattern.exec(content)) !== null) {
+    declaredVars.add(match[1]);
+  }
+  
+  declaredVars.forEach(varName => {
+    const regex = new RegExp(`\\b${varName}\\b`, 'g');
+    const occurrences = (content.match(regex) || []).length;
+    if (occurrences === 1) {
+      projectData.fixes.push({
+        id: `fix-${projectData.fixes.length}`,
+        severity: 'info',
+        file: filePath,
+        title: `Variável não usada: ${varName}`,
+        detail: `Variável "${varName}" é declarada mas nunca usada`,
+        before: `const ${varName} = value;`,
+        after: `// const ${varName} = value; // Não utilizada`,
+        type: 'unused_var',
+        autoFix: false
+      });
+    }
+  });
+  
+  // 7. Adicionar null checks
+  if (content.includes('.') && !content.includes('?.')) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'info',
+      file: filePath,
+      title: 'Considerar usar optional chaining (?.)',
+      detail: 'Código pode se beneficiar de optional chaining',
+      before: `if (user && user.profile && user.profile.name) { ... }`,
+      after: `if (user?.profile?.name) { ... }`,
+      type: 'optional_chaining',
+      autoFix: false
+    });
+  }
+}
+
+function generateJSONFixes(filePath, content) {
+  try {
+    JSON.parse(content);
+  } catch (e) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'error',
+      file: filePath,
+      title: 'JSON inválido',
+      detail: `Erro de sintaxe: ${e.message}`,
+      before: content.substring(0, 100),
+      after: 'JSON válido',
+      type: 'json_syntax',
+      autoFix: false
+    });
+  }
+  
+  // Verifica package.json
+  if (filePath.includes('package.json')) {
+    try {
+      const pkg = JSON.parse(content);
+      
+      if (!pkg.name) {
+        projectData.fixes.push({
+          id: `fix-${projectData.fixes.length}`,
+          severity: 'warning',
+          file: filePath,
+          title: 'package.json sem nome',
+          detail: 'Campo "name" é obrigatório',
+          before: `{\n  "version": "1.0.0"\n}`,
+          after: `{\n  "name": "meu-projeto",\n  "version": "1.0.0"\n}`,
+          type: 'pkg_name',
+          autoFix: true
+        });
+      }
+      
+      if (!pkg.scripts || !pkg.scripts.start) {
+        projectData.fixes.push({
+          id: `fix-${projectData.fixes.length}`,
+          severity: 'warning',
+          file: filePath,
+          title: 'Script "start" não definido',
+          detail: 'Adicione um script de inicialização',
+          before: `"scripts": {}`,
+          after: `"scripts": { "start": "node index.js" }`,
+          type: 'pkg_start',
+          autoFix: false
+        });
+      }
+    } catch (e) {}
+  }
+}
+
+function generateHTMLFixes(filePath, content) {
+  // Verifica meta tags
+  if (!content.includes('charset')) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'warning',
+      file: filePath,
+      title: 'Meta charset ausente',
+      detail: 'Adicione charset UTF-8',
+      before: `<head>\n  <title>Meu Site</title>\n</head>`,
+      after: `<head>\n  <meta charset="UTF-8">\n  <title>Meu Site</title>\n</head>`,
+      type: 'html_charset',
+      autoFix: true
+    });
+  }
+  
+  // Verifica viewport
+  if (!content.includes('viewport')) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'warning',
+      file: filePath,
+      title: 'Meta viewport ausente',
+      detail: 'Adicione viewport para responsividade',
+      before: `<head>\n  <meta charset="UTF-8">\n</head>`,
+      after: `<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>`,
+      type: 'html_viewport',
+      autoFix: true
+    });
+  }
+  
+  // Verifica alt em imagens
+  const imgPattern = /<img[^>]*>/g;
+  const imgs = content.match(imgPattern) || [];
+  const imgsWithoutAlt = imgs.filter(img => !img.includes('alt='));
+  
+  if (imgsWithoutAlt.length > 0) {
+    projectData.fixes.push({
+      id: `fix-${projectData.fixes.length}`,
+      severity: 'warning',
+      file: filePath,
+      title: `${imgsWithoutAlt.length} imagem(ns) sem alt`,
+      detail: 'Adicione atributo alt para acessibilidade',
+      before: `<img src="imagem.jpg">`,
+      after: `<img src="imagem.jpg" alt="Descrição da imagem">`,
+      type: 'html_img_alt',
+      autoFix: false
+    });
+  }
+}
+
+function displayResults() {
+  const critical = projectData.fixes.filter(f => f.severity === 'critical').length;
+  const error = projectData.fixes.filter(f => f.severity === 'error').length;
+  const warning = projectData.fixes.filter(f => f.severity === 'warning').length;
+  const info = projectData.fixes.filter(f => f.severity === 'info').length;
+  
+  let html = `
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">📊 Visão Geral</button>
+      <button class="tab" onclick="switchTab('fixes')">🔧 Correções</button>
+      <button class="tab" onclick="switchTab('apply')">✅ Aplicar Fixes</button>
+      <button class="tab" onclick="switchTab('preview')">👁️ Pré-visualização</button>
+    </div>
+    
+    <!-- TAB: VISÃO GERAL -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="results">
+        <h2>📊 Resumo de Correções</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <strong>${projectData.fixes.length}</strong>
+            <span>Total de Fixes</span>
+          </div>
+          <div class="stat-box">
+            <strong style="color: #ef4444;">${critical}</strong>
+            <span>Críticos</span>
+          </div>
+          <div class="stat-box">
+            <strong style="color: #f87171;">${error}</strong>
+            <span>Erros</span>
+          </div>
+          <div class="stat-box">
+            <strong style="color: #fbbf24;">${warning}</strong>
+            <span>Avisos</span>
+          </div>
+          <div class="stat-box">
+            <strong style="color: #60a5fa;">${info}</strong>
+            <span>Informações</span>
+          </div>
+          <div class="stat-box">
+            <strong>${projectData.fixes.filter(f => f.autoFix).length}</strong>
+            <span>Auto-fix</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="results">
+        <h2>🎯 Prioridade de Correção</h2>
+        <div class="summary-box">
+          <strong>1️⃣ Críticos (${critical})</strong> - Devem ser corrigidos imediatamente
+        </div>
+        <div class="summary-box">
+          <strong>2️⃣ Erros (${error})</strong> - Podem quebrar o código
+        </div>
+        <div class="summary-box">
+          <strong>3️⃣ Avisos (${warning})</strong> - Melhoram qualidade e segurança
+        </div>
+        <div class="summary-box">
+          <strong>4️⃣ Informações (${info})</strong> - Sugestões de melhoria
+        </div>
+      </div>
+    </div>
+    
+    <!-- TAB: CORREÇÕES -->
+    <div id="tab-fixes" class="tab-content">
+      <div class="results">
+        <h2>🔧 Todas as Correções Sugeridas</h2>
+        <div id="fixesList">
+          ${projectData.fixes.length > 0 ? projectData.fixes.map(fix => `
+            <div class="fix-item">
+              <div class="fix-header">
+                <div>
+                  <div class="fix-title">${fix.title}</div>
+                  <div class="fix-detail">${fix.detail}</div>
+                  <div class="fix-detail">📄 ${fix.file}</div>
+                </div>
+                <span class="fix-severity ${fix.severity}">${fix.severity.toUpperCase()}</span>
+              </div>
+              
+              <div class="code-comparison">
+                <div>
+                  <div class="code-label">❌ Antes</div>
+                  <div class="code-block code-before">${escapeHtml(fix.before)}</div>
+                </div>
+                <div>
+                  <div class="code-label">✅ Depois</div>
+                  <div class="code-block code-after">${escapeHtml(fix.after)}</div>
+                </div>
+              </div>
+              
+              <div class="fix-actions">
+                <div class="fix-checkbox">
+                  <input type="checkbox" id="fix-${fix.id}" onchange="toggleFix('${fix.id}')">
+                  <label for="fix-${fix.id}">Selecionar para aplicar</label>
+                </div>
+                ${fix.autoFix ? '<span style="color: #4ade80; font-size: 11px;">🤖 Auto-fix disponível</span>' : ''}
+              </div>
+            </div>
+          `).join('') : '<p style="color: #4ade80;">✅ Nenhuma correção necessária!</p>'}
+        </div>
+      </div>
+    </div>
+    
+    <!-- TAB: APLICAR FIXES -->
+    <div id="tab-apply" class="tab-content">
+      <div class="results">
+        <h2>✅ Aplicar Correções</h2>
+        
+        <div class="summary-box">
+          <strong>Correções Selecionadas:</strong> <span id="selectedCount">0</span>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+          <button class="btn btn-success" onclick="selectAllFixes()">✅ Selecionar Tudo</button>
+          <button class="btn btn-danger" onclick="deselectAllFixes()">❌ Desselecionar Tudo</button>
+          <button class="btn btn-warning" onclick="selectAutoFixes()">🤖 Apenas Auto-fix</button>
+          <button class="btn btn-secondary" onclick="applySelectedFixes()">🚀 Aplicar Selecionadas</button>
+        </div>
+        
+        <div id="applyResults"></div>
+      </div>
+    </div>
+    
+    <!-- TAB: PRÉ-VISUALIZAÇÃO -->
+    <div id="tab-preview" class="tab-content">
+      <div class="results">
+        <h2>👁️ Pré-visualização de Arquivos Corrigidos</h2>
+        
+        <div class="file-list" id="filePreviewList">
+          ${Object.keys(projectData.files).map(file => `
+            <div class="file-item" onclick="previewFile('${escapeHtml(file)}')">
+              <div class="file-name">${file}</div>
+              <div class="file-status">Visualizar</div>
+            </div>
+          `).join('')}
+        </div>
+        
+        <div id="filePreview" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+  `;
+  
+  resultsDiv.innerHTML = html;
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
+function toggleFix(fixId) {
+  const checkbox = document.getElementById(`fix-${fixId}`);
+  if (checkbox.checked) {
+    projectData.applied.add(fixId);
+  } else {
+    projectData.applied.delete(fixId);
+  }
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  document.getElementById('selectedCount').textContent = projectData.applied.size;
+}
+
+function selectAllFixes() {
+  projectData.fixes.forEach(fix => {
+    projectData.applied.add(fix.id);
+    const checkbox = document.getElementById(`fix-${fix.id}`);
+    if (checkbox) checkbox.checked = true;
+  });
+  updateSelectedCount();
+}
+
+function deselectAllFixes() {
+  projectData.applied.clear();
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  updateSelectedCount();
+}
+
+function selectAutoFixes() {
+  projectData.applied.clear();
+  projectData.fixes.forEach(fix => {
+    if (fix.autoFix) {
+      projectData.applied.add(fix.id);
+      const checkbox = document.getElementById(`fix-${fix.id}`);
+      if (checkbox) checkbox.checked = true;
+    }
+  });
+  updateSelectedCount();
+}
+
+function applySelectedFixes() {
+  const selectedFixes = projectData.fixes.filter(f => projectData.applied.has(f.id));
+  
+  if (selectedFixes.length === 0) {
+    alert('❌ Selecione pelo menos uma correção!');
+    return;
+  }
+  
+  projectData.correctedFiles = JSON.parse(JSON.stringify(projectData.files));
+  
+  selectedFixes.forEach(fix => {
+    if (fix.file in projectData.correctedFiles) {
+      let content = projectData.correctedFiles[fix.file];
+      
+      // Aplica a correção baseada no tipo
+      switch (fix.type) {
+        case 'promise_catch':
+          content = content.replace(/\.then\s*\(([^)]+)\)(?!\s*\.catch)/g, '.then($1).catch(error => console.error(error))');
+          break;
+        case 'console_removal':
+          content = content.replace(/console\.(log|error|warn|info|debug)\s*\(/g, '// console.$1(');
+          break;
+        case 'html_charset':
+          content = content.replace(/<head>/i, '<head>\n  <meta charset="UTF-8">');
+          break;
+        case 'html_viewport':
+          content = content.replace(/<head>/i, '<head>\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">');
+          break;
+      }
+      
+      projectData.correctedFiles[fix.file] = content;
+    }
+  });
+  
+  displayApplyResults(selectedFixes);
+}
+
+function displayApplyResults(applied) {
+  let html = `
+    <div class="card card-success">
+      <div class="card-title">✅ Correções Aplicadas!</div>
+      <div class="card-content">
+        <strong>${applied.length} correção(ões) aplicada(s)</strong><br>
+        <br>
+        Arquivos afetados:
+        <ul style="margin-left: 20px; margin-top: 8px;">
+  `;
+  
+  const affectedFiles = new Set(applied.map(f => f.file));
+  affectedFiles.forEach(file => {
+    html += `<li>${file}</li>`;
+  });
+  
+  html += `
+        </ul>
+      </div>
+    </div>
+    
+    <div class="results" style="margin-top: 20px;">
+      <h3>📥 Baixar Arquivos Corrigidos</h3>
+      <button class="btn btn-success" onclick="downloadCorrectedFiles()">
+        ⬇️ Baixar ZIP com Correções
+      </button>
+      <button class="btn btn-secondary" onclick="downloadCorrectionReport()">
+        📋 Relatório de Correções
+      </button>
+    </div>
+  `;
+  
+  document.getElementById('applyResults').innerHTML = html;
+}
+
+function downloadCorrectedFiles() {
+  const zip = new JSZip();
+  
+  Object.entries(projectData.correctedFiles).forEach(([path, content]) => {
+    zip.file(path, content);
+  });
+  
+  zip.generateAsync({ type: 'blob' }).then(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `projeto-corrigido-${new Date().toISOString().split('T')[0]}.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function downloadCorrectionReport() {
+  const applied = projectData.fixes.filter(f => projectData.applied.has(f.id));
+  
+  let md = `# Relatório de Correções Aplicadas\n\n`;
+  md += `**Data:** ${new Date().toLocaleString('pt-BR')}\n\n`;
+  md += `**Total de Correções:** ${applied.length}\n\n`;
+  
+  md += `## Correções Aplicadas\n\n`;
+  applied.forEach((fix, idx) => {
+    md += `### ${idx + 1}. ${fix.title}\n`;
+    md += `- **Arquivo:** ${fix.file}\n`;
+    md += `- **Severidade:** ${fix.severity}\n`;
+    md += `- **Detalhe:** ${fix.detail}\n\n`;
+  });
+  
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `relatorio-correcoes-${new Date().toISOString().split('T')[0]}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function previewFile(filePath) {
+  const original = projectData.files[filePath];
+  const corrected = projectData.correctedFiles[filePath] || original;
+  
+  let html = `
+    <div class="results">
+      <h3>📄 ${filePath}</h3>
+      
+      <div class="code-comparison">
+        <div>
+          <div class="code-label">Original</div>
+          <div class="code-block code-before" style="max-height: 400px;">
+            ${escapeHtml(original).substring(0, 1000)}
+          </div>
+        </div>
+        <div>
+          <div class="code-label">Corrigido</div>
+          <div class="code-block code-after" style="max-height: 400px;">
+            ${escapeHtml(corrected).substring(0, 1000)}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('filePreview').innerHTML = html;
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+</script>
+
+</body>
+</html>

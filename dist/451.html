@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nova_ferramenta</title>
+<style>
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playground Pro - Maikon Caldeira</title>
+    <style>
+        /* PALETA DE CORES EXCLUSIVA: OLIVA, BRONZE E PRETO */
+        :root {
+            --oliva: #5d5e53;
+            --bronze: #a3a082;
+            --fundo: #0a0a0a;
+            --painel: #161614;
+            --texto: #e5e7eb;
+            --perigo: #991b1b;
+            --borda: #2d2d2a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--fundo);
+            color: var(--texto);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* CABEÇALHO PROFISSIONAL */
+        header {
+            background: linear-gradient(135deg, var(--oliva), #3d3e37);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--bronze);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .logo-m { 
+            width: 35px; height: 35px; background: var(--bronze); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: var(--fundo); border: 2px solid white;
+        }
+
+        .controls { display: flex; align-items: center; gap: 10px; }
+
+        .filename-input {
+            background: rgba(0,0,0,0.5); border: 1px solid var(--bronze);
+            color: white; padding: 8px 12px; border-radius: 6px; font-weight: bold;
+            outline: none; width: 220px; font-size: 13px;
+        }
+
+        button {
+            padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold;
+            cursor: pointer; font-size: 11px; text-transform: uppercase; transition: 0.3s;
+        }
+
+        .btn-export { background: var(--bronze); color: var(--fundo); }
+        .btn-export:hover { filter: brightness(1.2); transform: translateY(-1px); }
+        
+        .btn-clear { background: var(--perigo); color: white; }
+        .btn-clear:hover { filter: brightness(1.3); }
+
+        .btn-back { background: transparent; color: var(--texto); border: 1px solid var(--oliva); margin-left: 10px; }
+
+        /* ÁREA DE TRABALHO */
+        .workspace { display: flex; flex: 1; height: calc(100vh - 60px); }
+
+        .editors { width: 40%; display: flex; flex-direction: column; background: var(--painel); border-right: 1px solid var(--borda); }
+        .edit-box { flex: 1; display: flex; flex-direction: column; border-bottom: 1px solid var(--borda); }
+        .label { background: rgba(0,0,0,0.4); padding: 4px 15px; font-size: 10px; color: var(--bronze); font-weight: bold; letter-spacing: 1px; }
+        
+        textarea {
+            flex: 1; width: 100%; border: none; padding: 15px;
+            font-family: 'JetBrains Mono', 'Consolas', monospace; font-size: 13px;
+            background: transparent; color: #ced4da; outline: none; resize: none;
+            line-height: 1.5;
+        }
+        textarea:focus { color: #fff; }
+
+        .preview { width: 60%; background: white; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; background: white; }
+
+        /* Responsividade Mobile */
+        @media (max-width: 768px) {
+            .workspace { flex-direction: column; }
+            .editors, .preview { width: 100%; height: 50%; }
+            .filename-input { width: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="logo-m">M</div>
+            <div style="font-size: 14px; font-weight: bold; letter-spacing: 1px;">MAIKON CALDEIRA <span style="font-weight: 300; opacity: 0.6;">| FÁBRICA</span></div>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="fname" class="filename-input" value="minha_ferramenta" placeholder="nome_do_arquivo">
+            <button class="btn-export" onclick="baixar()" title="Exportar como .HTML">Exportar</button>
+            <button class="btn-clear" onclick="limparTudo()" title="Apagar tudo e resetar">Limpar</button>
+            <a href="index.html" style="text-decoration: none;"><button class="btn-back">Sair</button></a>
+        </div>
+    </header>
+
+    <div class="workspace">
+        <div class="editors">
+            <div class="edit-box"><div class="label">ESTRUTURA (HTML)</div><textarea id="h" onkeyup="update()"></textarea></div>
+            <div class="edit-box"><div class="label">ESTILO (CSS)</div><textarea id="c" onkeyup="update()"></textarea></div>
+            <div class="edit-box"><div class="label">LÓGICA (JS)</div><textarea id="j" onkeyup="update()"></textarea></div>
+        </div>
+        <div class="preview">
+            <iframe id="screen"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Chaves para o salvamento automático
+        const keys = { h: 'mk_h', c: 'mk_c', j: 'mk_j', n: 'mk_n' };
+
+        // Atualiza o Preview e Salva no Navegador
+        function update() {
+            const h = document.getElementById('h').value;
+            const c = document.getElementById('c').value;
+            const j = document.getElementById('j').value;
+            const frame = document.getElementById('screen');
+
+            const fullCode = `
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; color: #333; }
+                        ${c}
+                    </style>
+                </head>
+                <body>
+                    ${h}
+                    <script>${j}<\/script>
+                </body>
+                </html>
+            `;
+
+            const doc = frame.contentDocument || frame.contentWindow.document;
+            doc.open();
+            doc.write(fullCode);
+            doc.close();
+
+            // Autosave para não perder o trabalho se fechar a aba
+            localStorage.setItem(keys.h, h);
+            localStorage.setItem(keys.c, c);
+            localStorage.setItem(keys.j, j);
+            localStorage.setItem(keys.n, document.getElementById('fname').value);
+        }
+
+        // Gera o arquivo .HTML pronto para uso
+        function baixar() {
+            const nome = document.getElementById('fname').value || 'projeto_mike';
+            const h = document.getElementById('h').value;
+            const c = document.getElementById('c').value;
+            const j = document.getElementById('j').value;
+
+            const final = `<!DOCTYPE html>\n<html lang="pt-BR">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>${nome}</title>\n<style>\n${c}\n</style>\n</head>\n<body>\n${h}\n<script>\n${j}\n<\/script>\n</body>\n</html>`;
+
+            const blob = new Blob([final], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = nome + ".html";
+            link.click();
+        }
+
+        // FUNÇÃO DE LIMPEZA (RESETA TUDO)
+        function limparTudo() {
+            const confirmar = confirm("Atenção Mike: Isso vai APAGAR todo o código atual e limpar a memória. Deseja continuar?");
+            
+            if (confirmar) {
+                // Limpa as áreas de texto
+                document.getElementById('h').value = '';
+                document.getElementById('c').value = '';
+                document.getElementById('j').value = '';
+                document.getElementById('fname').value = 'nova_ferramenta';
+                
+                // Limpa o banco de dados local
+                localStorage.removeItem(keys.h);
+                localStorage.removeItem(keys.c);
+                localStorage.removeItem(keys.j);
+                localStorage.removeItem(keys.n);
+                
+                // Atualiza o preview (fica em branco)
+                update();
+            }
+        }
+
+        // Carrega os dados salvos ao abrir a página
+        window.onload = () => {
+            document.getElementById('h').value = localStorage.getItem(keys.h) || '';
+            document.getElementById('c').value = localStorage.getItem(keys.c) || '';
+            document.getElementById('j').value = localStorage.getItem(keys.j) || '';
+            document.getElementById('fname').value = localStorage.getItem(keys.n) || 'nova_ferramenta';
+            update();
+        };
+    </script>
+</body>
+</html>
+
+
+<script>
+
+</script>
+</body>
+</html>

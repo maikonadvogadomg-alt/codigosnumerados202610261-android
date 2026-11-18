@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Pericial: Sentença vs Contrato (Cartão/Taxa Média)</title>
+    <style>
+        :root { --primary: #2563eb; --sec: #475569; --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding: 20px; font-size: 14px; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        
+        /* Painéis */
+        .panel { background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { margin-top: 0; font-size: 16px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        h3 { font-size: 14px; margin: 10px 0 5px; color: var(--sec); }
+        
+        /* Inputs */
+        label { display: block; margin-top: 10px; font-weight: 600; font-size: 12px; color: var(--sec); }
+        input, select { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        input[type="file"] { border: none; padding: 0; font-size: 12px; }
+        
+        /* Botões */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        button { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        
+        /* Tabela */
+        .table-wrap { overflow-x: auto; max-height: 600px; border: 1px solid var(--border); border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        th { background: #f8fafc; position: sticky; top: 0; text-align: center; font-weight: 700; color: var(--sec); }
+        td:first-child { text-align: left; font-family: monospace; }
+        tr:hover { background: #f1f5f9; }
+        
+        /* Destaques */
+        .diff-positive { color: #16a34a; font-weight: bold; } /* Ganho para o cliente */
+        .diff-negative { color: #dc2626; font-weight: bold; }
+        .summary-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .kpi { background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
+        .kpi small { display: block; color: var(--sec); font-size: 11px; text-transform: uppercase; }
+        .kpi strong { display: block; font-size: 18px; color: #0f172a; margin-top: 5px; }
+        
+        .help-text { font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.4; background: #fffbeb; padding: 8px; border-radius: 4px; border-left: 3px solid #f59e0b; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Coluna da Esquerda: Configuração -->
+    <div class="sidebar">
+        <div class="panel">
+            <h2>1. Dados do Processo</h2>
+            <label>Valor Original da Dívida (R$)</label>
+            <input type="number" id="principal" value="10000.00" step="0.01">
+            
+            <label>Data de Início (Inadimplemento/Citação)</label>
+            <input type="date" id="startDate" value="2020-01-15">
+            <div class="help-text">O cálculo começará na competência desta data.</div>
+
+            <label>Honorários Sucumbenciais (%)</label>
+            <input type="number" id="honorariosPct" value="10">
+        </div>
+
+        <div class="panel">
+            <h2>2. Importar Índices (CSV)</h2>
+            <div class="help-text">
+                Crie um Excel e salve como CSV com as colunas:<br>
+                <b>competencia</b> (AAAA-MM)<br>
+                <b>correcao</b> (Fator ex: 1.005 ou %)<br>
+                <b>juros_sentenca</b> (Taxa Média Bacen %)<br>
+                <b>juros_contrato</b> (Taxa do Banco %)
+            </div>
+            <input type="file" id="csvFile" accept=".csv">
+            <button class="btn-outline" style="margin-top:10px; width:100%" onclick="processCSV()">Carregar Arquivo</button>
+            <div id="fileStatus" style="margin-top:5px; font-size:11px; color:green;"></div>
+        </div>
+
+        <div class="panel">
+            <h2>3. Configurar Cálculo</h2>
+            
+            <h3>Cenário A: Sentença (O que o Juiz mandou)</h3>
+            <label>Correção Monetária</label>
+            <select id="colCorrSentenca"><option>Carregue o CSV...</option></select>
+            
+            <label>Juros Remuneratórios (Taxa Média)</label>
+            <select id="colJurosSentenca"><option>Carregue o CSV...</option></select>
+            
+            <label>Regra de Juros</label>
+            <select id="regraSentenca">
+                <option value="simples">Juros Simples (Sem Capitalização)</option>
+                <option value="composto">Juros Compostos (Capitalizado)</option>
+            </select>
+
+            <hr style="border:0; border-top:1px dashed #ccc; margin:15px 0;">
+
+            <h3>Cenário B: Contrato (Banco/Original)</h3>
+            <label>Correção Monetária</label>
+            <select id="colCorrContrato"><option>Carregue o CSV...</option></select>
+            
+            <label>Juros Remuneratórios (Contrato)</label>
+            <select id="colJurosContrato"><option>Carregue o CSV...</option></select>
+            
+            <label>Regra de Juros</label>
+            <select id="regraContrato">
+                <option value="composto" selected>Juros Compostos (Tabela Price/Banco)</option>
+                <option value="simples">Juros Simples</option>
+            </select>
+
+            <div class="btn-group">
+                <button class="btn-primary" onclick="calculate()">CALCULAR E COMPARAR</button>
+            </div>
+        </div>
+        
+        <button class="btn-outline" onclick="exportResults()">Exportar Resultado (CSV)</button>
+    </div>
+
+    <!-- Coluna da Direita: Resultados -->
+    <div class="main">
+        <div class="summary-box">
+            <div class="kpi">
+                <small>Total Sentença (A)</small>
+                <strong id="totalA">R$ 0,00</strong>
+            </div>
+            <div class="kpi">
+                <small>Total Banco/Contrato (B)</small>
+                <strong id="totalB">R$ 0,00</strong>
+            </div>
+            <div class="kpi" style="background:#ecfdf5; border-color:#86efac;">
+                <small>Proveito Econômico (B - A)</small>
+                <strong id="diffAB" class="diff-positive">R$ 0,00</strong>
+            </div>
+        </div>
+        
+        <div class="panel" style="background: #fffbeb; border-color: #fcd34d;">
+            <h3 style="color:#b45309; margin-top:0;">Honorários de Sucumbência (Estimativa)</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Base de cálculo (Diferença): <b id="baseHonorarios">R$ 0,00</b></span>
+                <span style="font-size:16px;">Valor Honorários: <strong id="valHonorarios">R$ 0,00</strong></span>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>Competência</th>
+                        <th>Índices (%)<br><small>Corr | J.Sent | J.Cont</small></th>
+                        <th>Sentença (A)<br><small>Principal Corr.</small></th>
+                        <th>Sentença (A)<br><small>Juros Acum.</small></th>
+                        <th>Total (A)</th>
+                        <th>Contrato (B)<br><small>Total Capitalizado</small></th>
+                        <th>Diferença<br><small>(B - A)</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="7" style="text-align:center; padding:20px;">Aguardando importação e cálculo...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let csvData = [];
+    let headers = [];
+
+    // Função para ler CSV
+    function processCSV() {
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
+        if (!file) { alert("Selecione um arquivo CSV."); return; }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+            
+            // Detectar separador (vírgula ou ponto e vírgula)
+            const separator = lines[0].includes(';') ? ';' : ',';
+            
+            headers = lines[0].split(separator).map(h => h.trim());
+            csvData = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(separator);
+                let row = {};
+                headers.forEach((h, index) => {
+                    // Tenta limpar caracteres estranhos e converter números
+                    let val = cols[index] ? cols[index].replace(',', '.') : "0";
+                    // Se for data (YYYY-MM), mantem string, senão tenta numero
+                    if(h.toLowerCase().includes('comp') || h.toLowerCase().includes('data')) {
+                        row[h] = cols[index]; 
+                    } else {
+                        row[h] = parseFloat(val) || 0;
+                    }
+                });
+                csvData.push(row);
+            }
+
+            populateSelects();
+            document.getElementById('fileStatus').innerText = `${csvData.length} linhas importadas com sucesso!`;
+        };
+        reader.readAsText(file);
+    }
+
+    function populateSelects() {
+        const selects = ['colCorrSentenca', 'colJurosSentenca', 'colCorrContrato', 'colJurosContrato'];
+        selects.forEach(id => {
+            const sel = document.getElementById(id);
+            sel.innerHTML = '';
+            headers.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h;
+                opt.innerText = h;
+                sel.appendChild(opt);
+            });
+            // Tenta auto-selecionar baseado em nomes comuns
+            if(id.includes('Corr')) selectOptionContains(sel, ['corr', 'inpc', 'igpm', 'tj']);
+            if(id.includes('JurosSentenca')) selectOptionContains(sel, ['media', 'bacen', 'sentenca']);
+            if(id.includes('JurosContrato')) selectOptionContains(sel, ['contrato', 'banco', 'price']);
+        });
+    }
+
+    function selectOptionContains(select, keywords) {
+        for(let i=0; i<select.options.length; i++) {
+            const txt = select.options[i].text.toLowerCase();
+            if(keywords.some(k => txt.includes(k))) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+    }
+
+    function calculate() {
+        if(csvData.length === 0) { alert("Importe o CSV primeiro."); return; }
+
+        const principalOriginal = parseFloat(document.getElementById('principal').value);
+        const startDate = new Date(document.getElementById('startDate').value);
+        const honorariosPct = parseFloat(document.getElementById('honorariosPct').value) / 100;
+
+        // Configurações
+        const cfg = {
+            colCorrA: document.getElementById('colCorrSentenca').value,
+            colJurosA: document.getElementById('colJurosSentenca').value,
+            modeA: document.getElementById('regraSentenca').value,
+            
+            colCorrB: document.getElementById('colCorrContrato').value,
+            colJurosB: document.getElementById('colJurosContrato').value,
+            modeB: document.getElementById('regraContrato').value
+        };
+
+        let saldoA_Principal = principalOriginal;
+        let saldoA_JurosAcum = 0; // Para juros simples
+        let saldoA_Total = principalOriginal; // Para juros compostos
+
+        let saldoB_Total = principalOriginal; // Geralmente composto
+
+        let tbody = document.getElementById('resultTable').querySelector('tbody');
+        tbody.innerHTML = '';
+
+        // Ordenar dados por competência (assumindo formato YYYY-MM)
+        // Se o CSV não estiver ordenado, isso é importante
+        csvData.sort((a, b) => {
+            // Tenta achar a coluna de competencia
+            let col = headers.find(h => h.toLowerCase().includes('comp')) || headers[0];
+            return a[col] > b[col] ? 1 : -1;
+        });
+
+        // Filtrar dados anteriores à data inicial
+        const startYM = startDate.toISOString().slice(0, 7); // YYYY-MM
+
+        csvData.forEach(row => {
+            // Identificar coluna de competência
+            let colComp = headers.find(h => h.toLowerCase().includes('comp')) || headers[0];
+            let comp = row[colComp];
+
+            if (comp < startYM) return; // Pula meses anteriores
+
+            // --- CENÁRIO A (SENTENÇA) ---
+            // 1. Correção Monetária
+            let idxCorrA = row[cfg.colCorrA]; 
+            // Normalizar índice: se vier > 2, assume que é indice acumulado ou divisor? 
+            // Assumindo aqui que o usuário traz o FATOR MENSAL (ex: 1.005) ou PERCENTUAL (0.5)
+            // Vamos assumir PERCENTUAL para facilitar a edição manual do usuário
+            let fatorCorrA = 1 + (idxCorrA / 100);
+            
+            // Se o índice for muito pequeno (ex: 0.005), assume que já é fator - 1. 
+            // Ajuste conforme seu CSV. Aqui assumo que entrada é % (ex: 0.5 para 0,5%)
+            
+            // Aplica correção no Principal
+            saldoA_Principal = saldoA_Principal * fatorCorrA;
+
+            // 2. Juros
+            let taxaJurosA = row[cfg.colJurosA] / 100; // % para decimal
+
+            if (cfg.modeA === 'simples') {
+                // Juros sobre o principal corrigido, guardado em pote separado
+                let jurosMes = saldoA_Principal * taxaJurosA;
+                saldoA_JurosAcum += jurosMes;
+            } else {
+                // Composto: Juros entra no bolo
+                saldoA_Principal = saldoA_Principal * (1 + taxaJurosA);
+            }
+            
+            let totalA = saldoA_Principal + saldoA_JurosAcum;
+
+
+            // --- CENÁRIO B (CONTRATO) ---
+            let idxCorrB = row[cfg.colCorrB];
+            let fatorCorrB = 1 + (idxCorrB / 100);
+            let taxaJurosB = row[cfg.colJurosB] / 100;
+
+            // Aplica correção
+            saldoB_Total = saldoB_Total * fatorCorrB;
+
+            if (cfg.modeB === 'composto') {
+                saldoB_Total = saldoB_Total * (1 + taxaJurosB);
+            } else {
+                // Se por acaso o contrato fosse simples (raro)
+                // Implementação simplificada aqui focando no composto
+                saldoB_Total += (saldoB_Total * taxaJurosB); 
+            }
+
+            // --- Renderizar Linha ---
+            let diff = saldoB_Total - totalA;
+            let tr = `
+                <tr>
+                    <td>${comp}</td>
+                    <td>
+                        <small>C:${idxCorrA.toFixed(2)}% | JS:${(taxaJurosA*100).toFixed(2)}% | JC:${(taxaJurosB*100).toFixed(2)}%</small>
+                    </td>
+                    <td>${saldoA_Principal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+                    <td>${saldoA_JurosAcum.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+                    <td style="font-weight:bold; color:var(--primary)">${totalA.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+                    <td style="font-weight:bold;">${saldoB_Total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+                    <td class="${diff > 0 ? 'diff-positive' : 'diff-negative'}">${diff.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+                </tr>
+            `;
+            tbody.innerHTML += tr;
+
+            // Atualizar Totais Globais
+            document.getElementById('totalA').innerText = totalA.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('totalB').innerText = saldoB_Total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('diffAB').innerText = diff.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            
+            // Honorários
+            document.getElementById('baseHonorarios').innerText = diff.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('valHonorarios').innerText = (diff * honorariosPct).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        });
+    }
+
+    function exportResults() {
+        // Função básica de exportação da tabela HTML para CSV
+        let csv = [];
+        let rows = document.querySelectorAll("table tr");
+        
+        for (let i = 0; i < rows.length; i++) {
+            let row = [], cols = rows[i].querySelectorAll("td, th");
+            for (let j = 0; j < cols.length; j++) 
+                row.push(cols[j].innerText.replace(/\n/g, ' ').replace(/;/g, ','));
+            csv.push(row.join(";"));        
+        }
+
+        let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+        let downloadLink = document.createElement("a");
+        downloadLink.download = "calculo_juridico.csv";
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+    }
+</script>
+
+</body>
+</html>

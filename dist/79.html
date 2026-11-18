@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐝 Editor Visual - Responsivo</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ===== TOPBAR ===== */
+    .topbar {
+      height: 50px;
+      background: #161b22;
+      border-bottom: 2px solid #1f6feb;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h1 {
+      font-size: 16px;
+      color: #1f6feb;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .btn-menu {
+      display: none;
+      background: #1f6feb;
+      border: 0;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .btn-menu:hover {
+      background: #388bfd;
+    }
+
+    .topbar button {
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: bold;
+      background: #1f6feb;
+      color: white;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .topbar button:hover {
+      background: #388bfd;
+    }
+
+    .topbar button.red {
+      background: #da3633;
+    }
+
+    .topbar button.red:hover {
+      background: #f85149;
+    }
+
+    .topbar button.green {
+      background: #238636;
+    }
+
+    .topbar button.green:hover {
+      background: #2ea043;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* ===== CONTAINER PRINCIPAL ===== */
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 1fr;
+      height: calc(100vh - 50px);
+      gap: 0;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #30363d;
+      min-height: 0;
+    }
+
+    .panel-title {
+      height: 40px;
+      background: #0d1117;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #8b949e;
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow: auto;
+      background: #0d1117;
+    }
+
+    /* ===== TEXTAREA ===== */
+    textarea {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      padding: 12px;
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      resize: none;
+    }
+
+    /* ===== PREVIEW ===== */
+    .preview-wrap {
+      flex: 1;
+      background: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: white;
+    }
+
+    /* ===== PROPRIEDADES ===== */
+    .props {
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .empty {
+      color: #8b949e;
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 12px;
+    }
+
+    .group {
+      border-bottom: 1px solid #30363d;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+    }
+
+    .group:last-child {
+      border-bottom: 0;
+    }
+
+    .group h3 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #1f6feb;
+      text-transform: uppercase;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: #8b949e;
+      margin: 8px 0 4px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      background: #161b22;
+      color: #c9d1d9;
+      outline: none;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #1f6feb;
+      background: #0d1117;
+    }
+
+    input[type="color"] {
+      height: 40px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .selected-info {
+      background: #161b22;
+      border-left: 3px solid #1f6feb;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      word-break: break-word;
+    }
+
+    .small-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .small-buttons button {
+      flex: 1;
+      padding: 8px;
+      font-size: 11px;
+      border: 0;
+      border-radius: 6px;
+      background: #1f6feb;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .small-buttons button:hover {
+      background: #388bfd;
+    }
+
+    .small-buttons button.red {
+      background: #da3633;
+    }
+
+    .small-buttons button.red:hover {
+      background: #f85149;
+    }
+
+    /* ===== STATUS ===== */
+    .status {
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(13, 17, 23, 0.95);
+      color: #c9d1d9;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      border: 1px solid #30363d;
+      pointer-events: none;
+      max-width: 90vw;
+      z-index: 999;
+    }
+
+    /* ===== SCROLL ===== */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #484f58;
+    }
+
+    /* ===== RESPONSIVO ===== */
+    @media (max-width: 1200px) {
+      .container {
+        grid-template-columns: 1fr 1.2fr;
+      }
+
+      .panel:last-child {
+        display: none;
+      }
+
+      .btn-menu {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .panel:last-child.show {
+        display: flex;
+        position: fixed;
+        right: 0;
+        top: 50px;
+        width: 100%;
+        max-width: 350px;
+        height: calc(100vh - 50px);
+        z-index: 100;
+        border-left: 1px solid #30363d;
+        border-right: 0;
+        background: #0d1117;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .topbar {
+        height: auto;
+        gap: 8px;
+      }
+
+      .topbar h1 {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .topbar button {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+
+      .container {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 80px);
+      }
+
+      .panel:first-child {
+        display: none;
+      }
+
+      .panel:first-child.show {
+        display: flex;
+        position: fixed;
+        left: 0;
+        top: 80px;
+        width: 100%;
+        height: calc(100vh - 80px);
+        z-index: 100;
+        border-right: 1px solid #30363d;
+        background: #0d1117;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .panel:last-child.show {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topbar {
+        gap: 4px;
+      }
+
+      .topbar button {
+        padding: 6px 8px;
+        font-size: 10px;
+      }
+
+      .topbar h1 {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== TOPBAR ===== -->
+  <div class="topbar">
+    <h1>🐝 Editor Visual</h1>
+
+    <button class="btn-menu" onclick="togglePainelCodigo()" title="Mostrar/ocultar código">📝</button>
+    <button onclick="colarDaAreaTransferencia()" title="Colar código da área de transferência">📋 Colar</button>
+    <button onclick="renderizarCodigo()" class="green" title="Transformar e visualizar">▶ Ver</button>
+    <button onclick="abrirImportador()" title="Importar arquivo HTML">📂 Importar</button>
+    <button onclick="copiarCodigo()" title="Copiar código final">📄 Copiar</button>
+    <button onclick="baixarHTML()" title="Baixar como arquivo HTML">💾 Baixar</button>
+    <button onclick="desfazer()" title="Desfazer última ação">↶ Desfazer</button>
+    <button onclick="limparTudo()" class="red" title="Limpar tudo">🗑 Limpar</button>
+    <button class="btn-menu" onclick="togglePainelProps()" title="Mostrar/ocultar propriedades">⚙️</button>
+
+    <input id="fileInput" type="file" accept=".html,.htm,.txt" onchange="importarArquivo(event)">
+  </div>
+
+  <!-- ===== CONTAINER PRINCIPAL ===== -->
+  <div class="container">
+    <!-- PAINEL 1: CÓDIGO -->
+    <div class="panel">
+      <div class="panel-title">📝 Código HTML</div>
+      <div class="panel-content">
+        <textarea id="codeInput" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <!-- PAINEL 2: PREVIEW -->
+    <div class="panel">
+      <div class="panel-title">👁️ Preview - Clique para editar</div>
+      <div class="preview-wrap">
+        <iframe id="previewFrame"></iframe>
+      </div>
+    </div>
+
+    <!-- PAINEL 3: PROPRIEDADES -->
+    <div class="panel">
+      <div class="panel-title">⚙️ Propriedades</div>
+      <div class="panel-content props" id="props">
+        <div class="empty">
+          Cole ou importe um HTML, clique em <b>Ver</b> e depois clique em um elemento visual.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div id="status" class="status">Pronto.</div>
+
+  <script>
+    const codeInput = document.getElementById('codeInput');
+    const frame = document.getElementById('previewFrame');
+    const props = document.getElementById('props');
+    const statusBox = document.getElementById('status');
+    const container = document.querySelector('.container');
+
+    let selectedElement = null;
+    let historico = [];
+
+    const exemploInicial = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exemplo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 28px;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      p {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Bem-vindo!</h1>
+    <p>Este é um exemplo responsivo. Clique nos elementos para editar.</p>
+    <button>Clique aqui</button>
+  </div>
+</body>
+</html>`;
+
+    codeInput.value = exemploInicial;
+
+    function setStatus(msg) {
+      statusBox.textContent = msg;
+      clearTimeout(window.__statusTimer);
+      window.__statusTimer = setTimeout(() => {
+        statusBox.textContent = 'Pronto.';
+      }, 3000);
+    }
+
+    function togglePainelCodigo() {
+      const painel = document.querySelector('.panel:first-child');
+      painel.classList.toggle('show');
+    }
+
+    function togglePainelProps() {
+      const painel = document.querySelector('.panel:last-child');
+      painel.classList.toggle('show');
+    }
+
+    function salvarEstado() {
+      historico.push(codeInput.value);
+      if (historico.length > 50) {
+        historico.shift();
+      }
+    }
+
+    async function colarDaAreaTransferencia() {
+      try {
+        const texto = await navigator.clipboard.readText();
+        if (!texto.trim()) {
+          alert('A área de transferência está vazia.');
+          return;
+        }
+        salvarEstado();
+        codeInput.value = texto;
+        renderizarCodigo();
+        setStatus('Código colado.');
+      } catch (e) {
+        alert('Colagem automática bloqueada. Use Ctrl+V na caixa de código.');
+        setStatus('Colagem bloqueada pelo navegador.');
+      }
+    }
+
+    function abrirImportador() {
+      document.getElementById('fileInput').value = '';
+      document.getElementById('fileInput').click();
+    }
+
+    function importarArquivo(event) {
+      const arquivo = event.target.files[0];
+      if (!arquivo) return;
+
+      const leitor = new FileReader();
+      leitor.onload = function(e) {
+        salvarEstado();
+        codeInput.value = e.target.result;
+        renderizarCodigo();
+        setStatus('Arquivo importado: ' + arquivo.name);
+      };
+      leitor.onerror = function() {
+        alert('Erro ao ler o arquivo.');
+      };
+      leitor.readAsText(arquivo);
+    }
+
+    function renderizarCodigo() {
+      salvarEstado();
+      selectedElement = null;
+      props.innerHTML = '<div class="empty">Clique em um elemento visual.</div>';
+
+      const codigo = codeInput.value;
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open();
+      doc.write(codigo);
+      doc.close();
+
+      setTimeout(() => {
+        prepararCliqueVisual();
+      }, 200);
+
+      setStatus('Preview atualizado.');
+    }
+
+    function prepararCliqueVisual() {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc || !doc.body) {
+        setStatus('Erro ao acessar o preview.');
+        return;
+      }
+
+      const style = doc.createElement('style');
+      style.setAttribute('data-editor-style', 'true');
+      style.textContent = `
+        .__editor_hover__ {
+          outline: 2px dashed #ff9800 !important;
+          outline-offset: 2px !important;
+          cursor: crosshair !important;
+        }
+
+        .__editor_selected__ {
+          outline: 3px solid #1f6feb !important;
+          outline-offset: 3px !important;
+        }
+      `;
+      doc.head.appendChild(style);
+
+      doc.addEventListener('mouseover', function(e) {
+        const el = e.target;
+        if (!podeSelecionar(el)) return;
+        if (el !== selectedElement) {
+          el.classList.add('__editor_hover__');
+        }
+      }, true);
+
+      doc.addEventListener('mouseout', function(e) {
+        const el = e.target;
+        if (!podeSelecionar(el)) return;
+        el.classList.remove('__editor_hover__');
+      }, true);
+
+      doc.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const el = e.target;
+        if (!podeSelecionar(el)) return;
+        selecionarElemento(el);
+      }, true);
+    }
+
+    function podeSelecionar(el) {
+      if (!el || !el.tagName) return false;
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'html' || tag === 'head' || tag === 'body') return false;
+      if (el.hasAttribute('data-editor-style')) return false;
+      return true;
+    }
+
+    function selecionarElemento(el) {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+
+      if (selectedElement) {
+        selectedElement.classList.remove('__editor_selected__');
+        selectedElement.classList.remove('__editor_hover__');
+      }
+
+      selectedElement = el;
+      selectedElement.classList.add('__editor_selected__');
+      selectedElement.classList.remove('__editor_hover__');
+
+      montarPainel(el);
+      setStatus('Selecionado: <' + el.tagName.toLowerCase() + '>');
+
+      if (window.innerWidth <= 768) {
+        document.querySelector('.panel:last-child').classList.add('show');
+      }
+    }
+
+    function montarPainel(el) {
+      const cs = frame.contentWindow.getComputedStyle(el);
+
+      props.innerHTML = `
+        <div class="selected-info">
+          <b>&lt;${el.tagName.toLowerCase()}&gt;</b><br>
+          ID: ${el.id || '(sem id)'}<br>
+          Classe: ${el.className || '(sem classe)'}
+        </div>
+
+        <div class="group">
+          <h3>Texto</h3>
+          <label>Conteúdo</label>
+          <textarea style="height: 60px;" oninput="editarTexto(this.value)">${esc(el.innerText || '')}</textarea>
+        </div>
+
+        <div class="group">
+          <h3>Identificação</h3>
+          <label>ID</label>
+          <input value="${esc(el.id || '')}" oninput="editarAtributo('id', this.value)">
+          <label>Classe</label>
+          <input value="${esc(el.className || '')}" oninput="editarClasse(this.value)">
+        </div>
+
+        <div class="group">
+          <h3>Cores</h3>
+          <label>Texto</label>
+          <input type="color" value="${rgbParaHex(cs.color)}" oninput="editarEstilo('color', this.value)">
+          <label>Fundo</label>
+          <input type="color" value="${rgbParaHex(cs.backgroundColor)}" oninput="editarEstilo('backgroundColor', this.value)">
+          <label>Borda</label>
+          <input type="color" value="${rgbParaHex(cs.borderColor)}" oninput="editarEstilo('borderColor', this.value)">
+        </div>
+
+        <div class="group">
+          <h3>Tamanho</h3>
+          <div class="row2">
+            <div>
+              <label>Largura</label>
+              <input value="${cs.width}" oninput="editarEstilo('width', this.value)">
+            </div>
+            <div>
+              <label>Altura</label>
+              <input value="${cs.height}" oninput="editarEstilo('height', this.value)">
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <label>Fonte (px)</label>
+              <input value="${cs.fontSize}" oninput="editarEstilo('fontSize', this.value)">
+            </div>
+            <div>
+              <label>Peso</label>
+              <select onchange="editarEstilo('fontWeight', this.value)">
+                <option value="">manter</option>
+                <option value="normal">normal</option>
+                <option value="bold">bold</option>
+                <option value="700">700</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Espaçamento</h3>
+          <label>Margem</label>
+          <input value="${cs.margin}" oninput="editarEstilo('margin', this.value)">
+          <label>Padding</label>
+          <input value="${cs.padding}" oninput="editarEstilo('padding', this.value)">
+          <label>Borda</label>
+          <input value="${cs.border}" oninput="editarEstilo('border', this.value)">
+          <label>Arredondamento</label>
+          <input value="${cs.borderRadius}" oninput="editarEstilo('borderRadius', this.value)">
+        </div>
+
+        <div class="group">
+          <h3>Posição</h3>
+          <label>Display</label>
+          <select onchange="editarEstilo('display', this.value)">
+            <option value="">manter</option>
+            <option value="block">block</option>
+            <option value="inline-block">inline-block</option>
+            <option value="flex">flex</option>
+            <option value="grid">grid</option>
+          </select>
+          <label>Alinhamento</label>
+          <select onchange="editarEstilo('textAlign', this.value)">
+            <option value="">manter</option>
+            <option value="left">esquerda</option>
+            <option value="center">centro</option>
+            <option value="right">direita</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <h3>Ações</h3>
+          <div class="small-buttons">
+            <button onclick="duplicarElemento()">Duplicar</button>
+            <button class="red" onclick="removerElemento()">Remover</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function editarTexto(valor) {
+      if (!selectedElement) return;
+      selectedElement.innerText = valor;
+      sincronizarCodigoDoIframe();
+    }
+
+    function editarAtributo(nome, valor) {
+      if (!selectedElement) return;
+      if (valor.trim() === '') {
+        selectedElement.removeAttribute(nome);
+      } else {
+        selectedElement.setAttribute(nome, valor);
+      }
+      sincronizarCodigoDoIframe();
+    }
+
+    function editarClasse(valor) {
+      if (!selectedElement) return;
+      selectedElement.className = valor;
+      sincronizarCodigoDoIframe();
+    }
+
+    function editarEstilo(prop, valor) {
+      if (!selectedElement) return;
+      selectedElement.style[prop] = valor;
+      sincronizarCodigoDoIframe();
+    }
+
+    function duplicarElemento() {
+      if (!selectedElement) return;
+      const clone = selectedElement.cloneNode(true);
+      selectedElement.insertAdjacentElement('afterend', clone);
+      sincronizarCodigoDoIframe();
+      prepararCliqueVisual();
+      setStatus('Elemento duplicado.');
+    }
+
+    function removerElemento() {
+      if (!selectedElement) return;
+      if (!confirm('Remover este elemento?')) return;
+      selectedElement.remove();
+      selectedElement = null;
+      props.innerHTML = '<div class="empty">Elemento removido.</div>';
+      sincronizarCodigoDoIframe();
+      setStatus('Elemento removido.');
+    }
+
+    function sincronizarCodigoDoIframe() {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.querySelectorAll('[data-editor-style]').forEach(el => el.remove());
+      doc.querySelectorAll('.__editor_selected__').forEach(el => el.classList.remove('__editor_selected__'));
+      doc.querySelectorAll('.__editor_hover__').forEach(el => el.classList.remove('__editor_hover__'));
+
+      const html = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+      codeInput.value = html;
+      prepararCliqueVisual();
+
+      if (selectedElement) {
+        selectedElement.classList.add('__editor_selected__');
+      }
+    }
+
+    function copiarCodigo() {
+      const codigo = codeInput.value;
+      navigator.clipboard.writeText(codigo).then(() => {
+        setStatus('Código copiado.');
+      }).catch(() => {
+        codeInput.focus();
+        codeInput.select();
+        alert('Use Ctrl+C para copiar.');
+      });
+    }
+
+    function baixarHTML() {
+      const codigo = codeInput.value;
+      const blob = new Blob([codigo], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'codigo-editado.html';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus('Arquivo baixado.');
+    }
+
+    function desfazer() {
+      if (historico.length === 0) {
+        setStatus('Nada para desfazer.');
+        return;
+      }
+      codeInput.value = historico.pop();
+      renderizarCodigo();
+      setStatus('Desfeito.');
+    }
+
+    function limparTudo() {
+      if (!confirm('Limpar tudo?')) return;
+      salvarEstado();
+      codeInput.value = '';
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open();
+      doc.write('');
+      doc.close();
+      selectedElement = null;
+      props.innerHTML = '<div class="empty">Cole ou importe um código.</div>';
+      setStatus('Limpo.');
+    }
+
+    function rgbParaHex(rgb) {
+      if (!rgb) return '#ffffff';
+      const nums = rgb.match(/\d+/g);
+      if (!nums || nums.length < 3) return '#ffffff';
+      const r = parseInt(nums[0]).toString(16).padStart(2, '0');
+      const g = parseInt(nums[1]).toString(16).padStart(2, '0');
+      const b = parseInt(nums[2]).toString(16).padStart(2, '0');
+      return '#' + r + g + b;
+    }
+
+    function esc(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('"', '&quot;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+
+    renderizarCodigo();
+  </script>
+</body>
+</html>

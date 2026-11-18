@@ -1,0 +1,440 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PLANO</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:860px;margin:0 auto;padding:12px 16px 40px;color:#1f2230;background:#fffdf8}h1,h2,h3{line-height:1.25}h2{border-bottom:1px solid #e3ddc8;padding-bottom:4px}code{background:#f1ede0;padding:1px 5px;border-radius:4px;font:14px ui-monospace,Consolas,monospace}.bloco{border:1px solid #d9d2bb;border-radius:8px;margin:10px 0;overflow:hidden}.bloco-bar{display:flex;gap:6px;align-items:center;background:#efe9d6;padding:5px 8px;font:600 12px ui-monospace,monospace;color:#6b6450}.bloco-bar span{flex:1}.bloco-bar button,.topo button{font:600 13px system-ui,sans-serif;border:1px solid #8a7b45;background:#fff;color:#4a4020;border-radius:6px;padding:5px 9px;cursor:pointer}.bloco pre{margin:0;padding:10px;overflow-x:auto;background:#fbf9f2}.bloco pre code{background:none;padding:0;white-space:pre}.tab{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}th,td{border-bottom:1px solid #e3ddc8;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f6f2e4}blockquote{margin:8px 0;padding:6px 12px;border-left:4px solid #c9b77a;background:#faf6e8}.topo{position:sticky;top:0;background:#fffdf8;padding:8px 0;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #eee;margin-bottom:8px;z-index:2}a{color:#7a6526}</style></head><body><div class="topo"><button id="md-todos">📋 Copiar todos os blocos (1)</button></div><h1>📋 Plano do projeto: artifacts teste</h1>
+<p>_Gerado em 23/10/2026, 12:38:54 — sem IA, lendo os arquivos._</p>
+<h2>📊 Visão geral</h2>
+<div class="tab"><table><thead><tr><th>Item</th><th>Valor</th></tr></thead><tbody><tr><td>Arquivos</td><td>472</td></tr><tr><td>Linhas</td><td>98.781</td></tr><tr><td>Telas/páginas</td><td>59</td></tr><tr><td>Rotas do backend</td><td>23</td></tr><tr><td>Chamadas do app</td><td>116</td></tr><tr><td>Tabelas do banco</td><td>2</td></tr><tr><td>Variáveis de ambiente</td><td>27</td></tr></tbody></table></div>
+<p><b>Linguagens:</b> TypeScript (React) (294), TypeScript (63), Markdown (29), JSON (26), Outros (20), JavaScript (13), Imagem (10), HTML (7), Imagem SVG (4), CSS (4), YAML (1), Batch (Windows) (1)</p>
+<h2>🧩 Apps dentro deste projeto</h2>
+<ul><li>1/api-server (@workspace/api-server)</li><li>api-server (@workspace/api-server)</li><li>apk-builder (@workspace/apk-builder)</li><li>assistente-juridico (@workspace/assistente-juridico)</li><li>code-editor (@workspace/code-editor)</li><li>habit-tracker (@workspace/habit-tracker)</li><li>mockup-sandbox (@workspace/mockup-sandbox)</li></ul>
+<h2>💡 O que fazer (em ordem)</h2>
+<ol><li>🧹 Tirar a Replit de 17 arquivo(s) (🏗️ Preparar → Fazer tudo)</li><li>🖥️ O projeto tem backend próprio: para funcionar fora da Replit ele precisa ficar ligado num servidor (Render, Railway, Vercel) ou virar funções</li><li>🔐 Criar um .env.example com: ALLOWED_ORIGINS, BASE_PATH, BASE_URL, DATABASE_URL, DEV, EXPO_PUBLIC_DOMAIN, EXPO_PUBLIC_REPL_ID, JWT_EXPIRES_IN, JWT_SECRET, LOG_LEVEL, MONGODB_URI, NODE_ENV… (os valores você coloca no servidor, nunca no código)</li><li>🗄️ Precisa de banco de dados (2 tabela(s)) — Neon ou Supabase servem, grátis</li><li>📝 Criar um README.md explicando como rodar</li></ol>
+<h2>🚀 Por onde começa</h2>
+<ul><li><code>1/api-server/src/app.ts</code></li><li><code>1/api-server/src/index.ts</code></li><li><code>api-server/src/app.ts</code></li><li><code>api-server/src/index.ts</code></li><li><code>api-server/src/routes/index.ts</code></li><li><code>apk-builder/index.html</code></li><li><code>apk-builder/src/App.tsx</code></li><li><code>apk-builder/src/main.tsx</code></li><li><code>assistente-juridico/index.html</code></li><li><code>assistente-juridico/replit_integrations/audio/index.ts</code></li><li><code>assistente-juridico/src/App.tsx</code></li><li><code>assistente-juridico/src/main.tsx</code></li><li><code>code-editor/index.html</code></li><li><code>code-editor/src/App.tsx</code></li><li><code>code-editor/src/main.tsx</code></li><li><code>habit-tracker/app/(tabs)/index.tsx</code></li><li><code>mockup-sandbox/index.html</code></li><li><code>mockup-sandbox/src/App.tsx</code></li><li><code>mockup-sandbox/src/main.tsx</code></li></ul>
+<h2>⌨️ Comandos (package.json)</h2>
+<div class="tab"><table><thead><tr><th>Pasta</th><th>Comando</th><th>O que roda</th></tr></thead><tbody><tr><td>1/api-server</td><td><code>npm run dev</code></td><td><code>export NODE_ENV=development &amp;&amp; pnpm run build &amp;&amp; pnpm run start</code></td></tr><tr><td>1/api-server</td><td><code>npm run build</code></td><td><code>node ./build.mjs</code></td></tr><tr><td>1/api-server</td><td><code>npm run start</code></td><td><code>node --enable-source-maps ./dist/index.mjs</code></td></tr><tr><td>1/api-server</td><td><code>npm run typecheck</code></td><td><code>tsc -p tsconfig.json --noEmit</code></td></tr><tr><td>api-server</td><td><code>npm run dev</code></td><td><code>export NODE_ENV=development &amp;&amp; pnpm run build &amp;&amp; pnpm run start</code></td></tr><tr><td>api-server</td><td><code>npm run build</code></td><td><code>node ./build.mjs</code></td></tr><tr><td>api-server</td><td><code>npm run start</code></td><td><code>node --enable-source-maps ./dist/index.mjs</code></td></tr><tr><td>api-server</td><td><code>npm run typecheck</code></td><td><code>tsc -p tsconfig.json --noEmit</code></td></tr><tr><td>apk-builder</td><td><code>npm run dev</code></td><td><code>vite --config vite.config.ts --host 0.0.0.0</code></td></tr><tr><td>apk-builder</td><td><code>npm run build</code></td><td><code>vite build --config vite.config.ts</code></td></tr><tr><td>apk-builder</td><td><code>npm run serve</code></td><td><code>vite preview --config vite.config.ts --host 0.0.0.0</code></td></tr><tr><td>apk-builder</td><td><code>npm run typecheck</code></td><td><code>tsc -p tsconfig.json --noEmit</code></td></tr><tr><td>assistente-juridico</td><td><code>npm run dev</code></td><td><code>vite --config vite.config.ts --host 0.0.0.0</code></td></tr><tr><td>assistente-juridico</td><td><code>npm run build</code></td><td><code>vite build --config vite.config.ts</code></td></tr><tr><td>assistente-juridico</td><td><code>npm run build:apk</code></td><td><code>vite build --config vite.config.apk.ts</code></td></tr><tr><td>assistente-juridico</td><td><code>npm run cap:add:android</code></td><td><code>npx cap add android</code></td></tr><tr><td>assistente-juridico</td><td><code>npm run cap:sync</code></td><td><code>npx cap sync android</code></td></tr><tr><td>assistente-juridico</td><td><code>npm run cap:open</code></td><td><code>npx cap open android</code></td></tr><tr><td>code-editor</td><td><code>npm run dev</code></td><td><code>vite --config vite.config.ts --host 0.0.0.0</code></td></tr><tr><td>code-editor</td><td><code>npm run build</code></td><td><code>vite build --config vite.config.ts</code></td></tr><tr><td>code-editor</td><td><code>npm run serve</code></td><td><code>vite preview --config vite.config.ts --host 0.0.0.0</code></td></tr><tr><td>code-editor</td><td><code>npm run typecheck</code></td><td><code>tsc -p tsconfig.json --noEmit</code></td></tr><tr><td>code-editor</td><td><code>npm run build:web</code></td><td><code>vite build --config vite.config.apk.ts</code></td></tr><tr><td>code-editor</td><td><code>npm run cap:init</code></td><td><code>npx cap init &quot;SK Code Editor&quot; com.skcodeeditor.app --web-dir dist</code></td></tr><tr><td>code-editor</td><td><code>npm run cap:add:android</code></td><td><code>npx cap add android</code></td></tr><tr><td>code-editor</td><td><code>npm run cap:sync</code></td><td><code>npx cap sync android</code></td></tr><tr><td>code-editor</td><td><code>npm run cap:open</code></td><td><code>npx cap open android</code></td></tr><tr><td>code-editor</td><td><code>npm run build:apk</code></td><td><code>npm run build:web &amp;&amp; npx cap sync android</code></td></tr><tr><td>habit-tracker</td><td><code>npm run dev</code></td><td><code>EXPO_PACKAGER_PROXY_URL=https://$REPLIT_EXPO_DEV_DOMAIN EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOM</code></td></tr><tr><td>habit-tracker</td><td><code>npm run build</code></td><td><code>node scripts/build.js</code></td></tr><tr><td>habit-tracker</td><td><code>npm run serve</code></td><td><code>node server/serve.js</code></td></tr><tr><td>habit-tracker</td><td><code>npm run typecheck</code></td><td><code>tsc -p tsconfig.json --noEmit</code></td></tr><tr><td>mockup-sandbox</td><td><code>npm run dev</code></td><td><code>vite dev</code></td></tr><tr><td>mockup-sandbox</td><td><code>npm run build</code></td><td><code>vite build</code></td></tr><tr><td>mockup-sandbox</td><td><code>npm run preview</code></td><td><code>vite preview</code></td></tr><tr><td>mockup-sandbox</td><td><code>npm run typecheck</code></td><td><code>tsc -p tsconfig.json --noEmit</code></td></tr><tr><td>.</td><td><code>npm run desktop</code></td><td><code>electron .</code></td></tr><tr><td>.</td><td><code>npm run exe</code></td><td><code>electron-builder --win portable --publish never</code></td></tr></tbody></table></div>
+<h2>📱 Telas e páginas</h2>
+<div class="tab"><table><thead><tr><th>Endereço</th><th>Arquivo</th></tr></thead><tbody><tr><td><code>/</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/jurisprudencia</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/assistente</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/playground</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/token</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/comparador</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/auditoria</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/consulta</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/painel</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/corporativo</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/pdpj</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/tramitacao</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/filtrador</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/previdenciario</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/robo-djen</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/comunicacoes</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/codigo</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>/campo-livre</code></td><td>assistente-juridico/src/App.tsx</td></tr><tr><td><code>apk-builder/index.html</code></td><td>apk-builder/index.html</td></tr><tr><td><code>/not-found</code></td><td>apk-builder/src/pages/not-found.tsx</td></tr><tr><td><code>assistente-juridico/index.html</code></td><td>assistente-juridico/index.html</td></tr><tr><td><code>assistente-juridico/public/auditoria.html</code></td><td>assistente-juridico/public/auditoria.html</td></tr><tr><td><code>assistente-juridico/public/comparador.html</code></td><td>assistente-juridico/public/comparador.html</td></tr><tr><td><code>/auditoria-financeira</code></td><td>assistente-juridico/src/pages/auditoria-financeira.tsx</td></tr><tr><td><code>/campo-livre</code></td><td>assistente-juridico/src/pages/campo-livre.tsx</td></tr><tr><td><code>/code-assistant</code></td><td>assistente-juridico/src/pages/code-assistant.tsx</td></tr><tr><td><code>/comparador-juridico</code></td><td>assistente-juridico/src/pages/comparador-juridico.tsx</td></tr><tr><td><code>/comunicacoes-cnj</code></td><td>assistente-juridico/src/pages/comunicacoes-cnj.tsx</td></tr><tr><td><code>/consulta-corporativo</code></td><td>assistente-juridico/src/pages/consulta-corporativo.tsx</td></tr><tr><td><code>/consulta-pdpj</code></td><td>assistente-juridico/src/pages/consulta-pdpj.tsx</td></tr><tr><td><code>/consulta-processual</code></td><td>assistente-juridico/src/pages/consulta-processual.tsx</td></tr><tr><td><code>/filtrador</code></td><td>assistente-juridico/src/pages/filtrador.tsx</td></tr><tr><td><code>/jurisprudencia</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td><code>/legal-assistant</code></td><td>assistente-juridico/src/pages/legal-assistant.tsx</td></tr><tr><td><code>/login</code></td><td>assistente-juridico/src/pages/login.tsx</td></tr><tr><td><code>/not-found</code></td><td>assistente-juridico/src/pages/not-found.tsx</td></tr><tr><td><code>/painel-processos</code></td><td>assistente-juridico/src/pages/painel-processos.tsx</td></tr><tr><td><code>/playground</code></td><td>assistente-juridico/src/pages/playground.tsx</td></tr><tr><td><code>/previdenciario</code></td><td>assistente-juridico/src/pages/previdenciario.tsx</td></tr><tr><td><code>/robo-djen</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td><code>/token-generator</code></td><td>assistente-juridico/src/pages/token-generator.tsx</td></tr><tr><td><code>/tramitacao</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td><code>code-editor/index.html</code></td><td>code-editor/index.html</td></tr><tr><td><code>/not-found</code></td><td>code-editor/src/pages/not-found.tsx</td></tr><tr><td><code>/ai</code></td><td>habit-tracker/app/(tabs)/ai.tsx</td></tr><tr><td><code>/editor</code></td><td>habit-tracker/app/(tabs)/editor.tsx</td></tr><tr><td><code>/export</code></td><td>habit-tracker/app/(tabs)/export.tsx</td></tr><tr><td><code>/github</code></td><td>habit-tracker/app/(tabs)/github.tsx</td></tr><tr><td><code>/guide</code></td><td>habit-tracker/app/(tabs)/guide.tsx</td></tr><tr><td><code>/</code></td><td>habit-tracker/app/(tabs)/index.tsx</td></tr><tr><td><code>/juridico</code></td><td>habit-tracker/app/(tabs)/juridico.tsx</td></tr><tr><td><code>/keys</code></td><td>habit-tracker/app/(tabs)/keys.tsx</td></tr><tr><td><code>/playground</code></td><td>habit-tracker/app/(tabs)/playground.tsx</td></tr><tr><td><code>/progress</code></td><td>habit-tracker/app/(tabs)/progress.tsx</td></tr><tr><td><code>/settings</code></td><td>habit-tracker/app/(tabs)/settings.tsx</td></tr><tr><td><code>/sk-editor</code></td><td>habit-tracker/app/(tabs)/sk-editor.tsx</td></tr><tr><td><code>/habit/[id]</code></td><td>habit-tracker/app/habit/[id].tsx</td></tr><tr><td><code>habit-tracker/server/templates/landing-page.html</code></td><td>habit-tracker/server/templates/landing-page.html</td></tr><tr><td><code>mockup-sandbox/index.html</code></td><td>mockup-sandbox/index.html</td></tr></tbody></table></div>
+<h2>🖥️ Rotas do backend</h2>
+<div class="tab"><table><thead><tr><th>Método</th><th>Rota</th><th>Arquivo</th></tr></thead><tbody><tr><td>USE</td><td><code>/api</code></td><td>1/api-server/src/app.ts</td></tr><tr><td>POST</td><td><code>/ai/process</code></td><td>1/api-server/src/routes/aiProcess.ts</td></tr><tr><td>POST</td><td><code>/code-assistant</code></td><td>1/api-server/src/routes/aiProcess.ts</td></tr><tr><td>GET</td><td><code>/gh-proxy/zipball</code></td><td>1/api-server/src/routes/ghProxy.ts</td></tr><tr><td>GET</td><td><code>/gh-proxy/repo</code></td><td>1/api-server/src/routes/ghProxy.ts</td></tr><tr><td>GET</td><td><code>/healthz</code></td><td>1/api-server/src/routes/health.ts</td></tr><tr><td>GET</td><td><code>/config</code></td><td>1/api-server/src/routes/index.ts</td></tr><tr><td>USE</td><td><code>/api</code></td><td>api-server/src/app.ts</td></tr><tr><td>POST</td><td><code>/ai/process</code></td><td>api-server/src/routes/aiProcess.ts</td></tr><tr><td>POST</td><td><code>/code-assistant</code></td><td>api-server/src/routes/aiProcess.ts</td></tr><tr><td>GET</td><td><code>/gh-proxy/zipball</code></td><td>api-server/src/routes/ghProxy.ts</td></tr><tr><td>GET</td><td><code>/gh-proxy/repo</code></td><td>api-server/src/routes/ghProxy.ts</td></tr><tr><td>GET</td><td><code>/healthz</code></td><td>api-server/src/routes/health.ts</td></tr><tr><td>GET</td><td><code>/config</code></td><td>api-server/src/routes/index.ts</td></tr><tr><td>GET</td><td><code>/api/items</code></td><td>code-editor/src/lib/templates.ts</td></tr><tr><td>GET</td><td><code>/api/items/:id</code></td><td>code-editor/src/lib/templates.ts</td></tr><tr><td>POST</td><td><code>/api/items</code></td><td>code-editor/src/lib/templates.ts</td></tr><tr><td>GET</td><td><code>/api/health</code></td><td>code-editor/src/lib/templates.ts</td></tr><tr><td>USE</td><td><code>/api/auth</code></td><td>code-editor/src/lib/templates.ts</td></tr><tr><td>USE</td><td><code>/api/usuarios</code></td><td>code-editor/src/lib/templates.ts</td></tr><tr><td>POST</td><td><code>/register</code></td><td>code-editor/src/lib/templates.ts</td></tr><tr><td>POST</td><td><code>/login</code></td><td>code-editor/src/lib/templates.ts</td></tr><tr><td>GET</td><td><code>/perfil</code></td><td>code-editor/src/lib/templates.ts</td></tr></tbody></table></div>
+<h2>📡 O que o app pede ao servidor</h2>
+<div class="tab"><table><thead><tr><th>Método</th><th>Endereço</th><th>Onde</th></tr></thead><tbody><tr><td>POST</td><td><code>/chat/completions</code></td><td>1/api-server/src/routes/aiProcess.ts</td></tr><tr><td>GET</td><td><code>/repos/${owner}/${repo}</code></td><td>1/api-server/src/routes/ghProxy.ts</td></tr><tr><td>GET</td><td><code>/api/healthz</code></td><td>apk-builder/src/App.tsx</td></tr><tr><td>GET</td><td><code>/apk-builder/assistente-juridico-pwa.zip</code></td><td>apk-builder/src/App.tsx</td></tr><tr><td>GET</td><td><code>/user</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>GET</td><td><code>/user/repos?per_page=100&amp;sort=updated</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>POST</td><td><code>/user/repos</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>POST</td><td><code>/repos/${owner}/${repoName}/pages</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>GET</td><td><code>/repos/${owner}/${repo}/git/refs/heads/main</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>POST</td><td><code>/repos/${owner}/${repo}/git/blobs</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>POST</td><td><code>/repos/${owner}/${repo}/git/trees</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>POST</td><td><code>/repos/${owner}/${repo}/git/commits</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>PATCH</td><td><code>/repos/${owner}/${repo}/git/refs/heads/main</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>POST</td><td><code>/repos/${owner}/${repo}/git/refs</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>GET</td><td><code>/repos/${owner}/${repo}/actions/public-key</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>PUT</td><td><code>/repos/${owner}/${repo}/actions/secrets/${secretName}</code></td><td>apk-builder/src/lib/github.ts</td></tr><tr><td>POST</td><td><code>/api/tts</code></td><td>assistente-juridico/src/pages/code-assistant.tsx</td></tr><tr><td>POST</td><td><code>/api/code-assistant</code></td><td>assistente-juridico/src/pages/code-assistant.tsx</td></tr><tr><td>POST</td><td><code>/api/cnj/comunicacoes</code></td><td>assistente-juridico/src/pages/comunicacoes-cnj.tsx</td></tr><tr><td>GET</td><td><code>/api/corporativo/advogado/cpf/${cpfClean}</code></td><td>assistente-juridico/src/pages/consulta-corporativo.tsx</td></tr><tr><td>GET</td><td><code>/api/corporativo/advogado/oab/${oabUf}/${num}</code></td><td>assistente-juridico/src/pages/consulta-corporativo.tsx</td></tr><tr><td>GET</td><td><code>/api/corporativo/magistrados/${magTribunal}</code></td><td>assistente-juridico/src/pages/consulta-corporativo.tsx</td></tr><tr><td>GET</td><td><code>/api/pdpj/status</code></td><td>assistente-juridico/src/pages/consulta-pdpj.tsx</td></tr><tr><td>POST</td><td><code>/api/pdpj/test-connection</code></td><td>assistente-juridico/src/pages/consulta-pdpj.tsx</td></tr><tr><td>POST</td><td><code>/api/pdpj/comunicacoes</code></td><td>assistente-juridico/src/pages/consulta-pdpj.tsx</td></tr><tr><td>POST</td><td><code>/api/pdpj/representados</code></td><td>assistente-juridico/src/pages/consulta-pdpj.tsx</td></tr><tr><td>POST</td><td><code>/api/pdpj/habilitacao</code></td><td>assistente-juridico/src/pages/consulta-pdpj.tsx</td></tr><tr><td>POST</td><td><code>/api/pdpj/pessoa</code></td><td>assistente-juridico/src/pages/consulta-pdpj.tsx</td></tr><tr><td>POST</td><td><code>/api/pdpj/notificacoes/${endpoint}</code></td><td>assistente-juridico/src/pages/consulta-pdpj.tsx</td></tr><tr><td>POST</td><td><code>/api/datajud/consulta</code></td><td>assistente-juridico/src/pages/consulta-processual.tsx</td></tr><tr><td>POST</td><td><code>/api/datajud/consulta-oab</code></td><td>assistente-juridico/src/pages/consulta-processual.tsx</td></tr><tr><td>POST</td><td><code>/api/doc-templates/upload-docx</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/export/word-with-template</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/jurisprudencia/buscar</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/import/url</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/upload/extract-text</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/upload/transcribe</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/ai/process</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/ai/refine</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/prompt-templates</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>PATCH</td><td><code>/api/prompt-templates/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>DELETE</td><td><code>/api/prompt-templates/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/doc-templates</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>PATCH</td><td><code>/api/doc-templates/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>DELETE</td><td><code>/api/doc-templates/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>DELETE</td><td><code>/api/ai-history/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>DELETE</td><td><code>/api/ai-history</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/custom-actions</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>PATCH</td><td><code>/api/custom-actions/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>DELETE</td><td><code>/api/custom-actions/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/ementas</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>PATCH</td><td><code>/api/ementas/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>DELETE</td><td><code>/api/ementas/${id}</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/ai-history</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>GET</td><td><code>/api/custom-actions</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>GET</td><td><code>/api/ementas</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>GET</td><td><code>/api/ai-history</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>GET</td><td><code>/api/prompt-templates</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>GET</td><td><code>/api/doc-templates</code></td><td>assistente-juridico/src/pages/jurisprudencia.tsx</td></tr><tr><td>POST</td><td><code>/api/voice-chat</code></td><td>assistente-juridico/src/pages/legal-assistant.tsx</td></tr><tr><td>POST</td><td><code>/api/git-push</code></td><td>assistente-juridico/src/pages/legal-assistant.tsx</td></tr><tr><td>GET</td><td><code>/api/ai-usage-summary</code></td><td>assistente-juridico/src/pages/legal-assistant.tsx</td></tr><tr><td>POST</td><td><code>/api/ai-usage-credit</code></td><td>assistente-juridico/src/pages/legal-assistant.tsx</td></tr><tr><td>POST</td><td><code>/api/auth/login</code></td><td>assistente-juridico/src/pages/login.tsx</td></tr><tr><td>DELETE</td><td><code>/api/processos/${id}</code></td><td>assistente-juridico/src/pages/painel-processos.tsx</td></tr><tr><td>PATCH</td><td><code>/api/processos/${id}</code></td><td>assistente-juridico/src/pages/painel-processos.tsx</td></tr><tr><td>POST</td><td><code>/api/processos</code></td><td>assistente-juridico/src/pages/painel-processos.tsx</td></tr><tr><td>GET</td><td><code>/api/processos</code></td><td>assistente-juridico/src/pages/painel-processos.tsx</td></tr><tr><td>POST</td><td><code>/api/code/run</code></td><td>assistente-juridico/src/pages/playground.tsx</td></tr><tr><td>POST</td><td><code>/api/snippets</code></td><td>assistente-juridico/src/pages/playground.tsx</td></tr><tr><td>DELETE</td><td><code>/api/snippets/${id}</code></td><td>assistente-juridico/src/pages/playground.tsx</td></tr><tr><td>PATCH</td><td><code>/api/snippets/${id}</code></td><td>assistente-juridico/src/pages/playground.tsx</td></tr><tr><td>GET</td><td><code>/api/snippets</code></td><td>assistente-juridico/src/pages/playground.tsx</td></tr><tr><td>POST</td><td><code>/api/previdenciario/extrair</code></td><td>assistente-juridico/src/pages/previdenciario.tsx</td></tr><tr><td>GET</td><td><code>/api/djen/config</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>POST</td><td><code>/api/djen/gerar-token</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>GET</td><td><code>/api/pesquisa/oab?${params}</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>GET</td><td><code>/api/pesquisa/processo?${params}</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>PUT</td><td><code>/api/djen/config</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>POST</td><td><code>/api/djen/clientes</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>DELETE</td><td><code>/api/djen/clientes/${id}</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>POST</td><td><code>/api/djen/executar</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>GET</td><td><code>/api/djen/clientes</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>GET</td><td><code>/api/djen/publicacoes</code></td><td>assistente-juridico/src/pages/robo-djen.tsx</td></tr><tr><td>GET</td><td><code>/api/jwt/status</code></td><td>assistente-juridico/src/pages/token-generator.tsx</td></tr><tr><td>POST</td><td><code>/api/jwt/generate</code></td><td>assistente-juridico/src/pages/token-generator.tsx</td></tr><tr><td>GET</td><td><code>/api/tramitacao/test</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>GET</td><td><code>/api/tramitacao/clientes?page=${clientePage}&amp;per_page=20</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>GET</td><td><code>/api/tramitacao/clientes/${selectedCliente.id}</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>GET</td><td><code>/api/tramitacao/usuarios</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>PUT</td><td><code>/api/settings/tramitacao_token</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>POST</td><td><code>/api/tramitacao/notas</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>DELETE</td><td><code>/api/tramitacao/notas/${id}</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>POST</td><td><code>/api/tramitacao/sync-publicacoes</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>PATCH</td><td><code>/api/tramitacao/publicacoes/${id}/lida</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>GET</td><td><code>/api/settings/tramitacao_token</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>GET</td><td><code>/api/tramitacao/notas</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>GET</td><td><code>/api/tramitacao/publicacoes</code></td><td>assistente-juridico/src/pages/tramitacao.tsx</td></tr><tr><td>POST</td><td><code>/voice/speak</code></td><td>code-editor/src/components/AIChat.tsx</td></tr><tr><td>GET</td><td><code>/api/search?q=${encodeURIComponent(q)}</code></td><td>code-editor/src/components/AIChat.tsx</td></tr><tr><td>POST</td><td><code>/api/legal/process</code></td><td>code-editor/src/components/AssistenteJuridico.tsx</td></tr><tr><td>POST</td><td><code>/api/ai/chat</code></td><td>code-editor/src/components/CampoLivre.tsx</td></tr><tr><td>GET</td><td><code>/drive/list</code></td><td>code-editor/src/components/DriveBackupPanel.tsx</td></tr><tr><td>POST</td><td><code>/drive/upload</code></td><td>code-editor/src/components/DriveBackupPanel.tsx</td></tr><tr><td>DELETE</td><td><code>/drive/delete/${fileId}</code></td><td>code-editor/src/components/DriveBackupPanel.tsx</td></tr><tr><td>POST</td><td><code>/api/workspace/sync</code></td><td>code-editor/src/components/EditorLayout.tsx</td></tr><tr><td>POST</td><td><code>/api/db/query</code></td><td>code-editor/src/components/EditorLayout.tsx</td></tr><tr><td>GET</td><td><code>/api/twa-files?url=${encodeURIComponent(url)}</code></td><td>code-editor/src/components/manual.tsx</td></tr><tr><td>GET</td><td><code>/api/pwa-check?url=${encodeURIComponent(url)}</code></td><td>code-editor/src/components/manual.tsx</td></tr><tr><td>POST</td><td><code>/api/workspace/install</code></td><td>code-editor/src/components/PackageSearch.tsx</td></tr><tr><td>GET</td><td><code>/api/config</code></td><td>code-editor/src/components/RealTerminal.tsx</td></tr><tr><td>POST</td><td><code>/api/projects/default/exec-stream</code></td><td>code-editor/src/components/StreamTerminal.tsx</td></tr><tr><td>POST</td><td><code>/api/exec/npm-install</code></td><td>code-editor/src/components/Terminal.tsx</td></tr><tr><td>POST</td><td><code>/api/voice/speak</code></td><td>code-editor/src/components/VoiceMode.tsx</td></tr><tr><td>GET</td><td><code>/repos/${owner}/${repo}/zipball/${branch}</code></td><td>habit-tracker/lib/github.ts</td></tr><tr><td>GET</td><td><code>/repos/${owner}/${repo}/zipball/master</code></td><td>habit-tracker/lib/github.ts</td></tr></tbody></table></div>
+<h2>🔌 O que falta no backend</h2>
+<p>✅ Tudo que o app chama tem rota no projeto (ou o app não usa servidor).</p>
+<h2>💤 Rotas que o app não usa</h2>
+<ul><li>GET <code>/gh-proxy/zipball</code> — 1/api-server/src/routes/ghProxy.ts</li><li>GET <code>/gh-proxy/repo</code> — 1/api-server/src/routes/ghProxy.ts</li><li>GET <code>/gh-proxy/zipball</code> — api-server/src/routes/ghProxy.ts</li><li>GET <code>/gh-proxy/repo</code> — api-server/src/routes/ghProxy.ts</li><li>GET <code>/api/items</code> — code-editor/src/lib/templates.ts</li><li>GET <code>/api/items/:id</code> — code-editor/src/lib/templates.ts</li><li>POST <code>/api/items</code> — code-editor/src/lib/templates.ts</li><li>GET <code>/api/health</code> — code-editor/src/lib/templates.ts</li><li>POST <code>/register</code> — code-editor/src/lib/templates.ts</li><li>GET <code>/perfil</code> — code-editor/src/lib/templates.ts</li></ul>
+<h2>🗄️ Banco de dados</h2>
+<ul><li><b>User</b> — code-editor/src/components/Terminal.tsx</li><li><b>Post</b> — code-editor/src/components/Terminal.tsx</li></ul>
+<h2>🔐 Variáveis de ambiente (configurar no servidor)</h2>
+<ul><li><code>ALLOWED_ORIGINS</code></li><li><code>BASE_PATH</code></li><li><code>BASE_URL</code></li><li><code>DATABASE_URL</code></li><li><code>DEV</code></li><li><code>EXPO_PUBLIC_DOMAIN</code></li><li><code>EXPO_PUBLIC_REPL_ID</code></li><li><code>JWT_EXPIRES_IN</code></li><li><code>JWT_SECRET</code></li><li><code>LOG_LEVEL</code></li><li><code>MONGODB_URI</code></li><li><code>NODE_ENV</code></li><li><code>PORT</code></li><li><code>REPLIT_DEV_DOMAIN</code></li><li><code>REPLIT_INTERNAL_APP_DOMAIN</code></li><li><code>REPL_ID</code></li><li><code>SUPABASE_ANON_KEY</code></li><li><code>SUPABASE_URL</code></li><li><code>VITE_FIREBASE_API_KEY</code></li><li><code>VITE_FIREBASE_APP_ID</code></li><li><code>VITE_FIREBASE_AUTH_DOMAIN</code></li><li><code>VITE_FIREBASE_MESSAGING_SENDER_ID</code></li><li><code>VITE_FIREBASE_PROJECT_ID</code></li><li><code>VITE_FIREBASE_STORAGE_BUCKET</code></li><li><code>VITE_SUPABASE_ANON_KEY</code></li><li><code>VITE_SUPABASE_URL</code></li><li><code>YOUTUBE_URL</code></li></ul>
+<p>_Só os nomes. Os valores (chaves, senhas) nunca vão no código nem no GitHub._</p>
+<h2>🤖 IA usada</h2>
+<ul><li>api.openai.com</li><li>api.anthropic.com</li><li>openrouter.ai</li><li>api.groq.com</li><li>generativelanguage.googleapis.com</li><li>platform.openai.com</li><li>console.groq.com</li></ul>
+<h2>🌐 Serviços de fora que ele acessa</h2>
+<ul><li>adoptium.net</li><li>aistudio.google.com</li><li>api-inference.huggingface.co</li><li>api.allorigins.win</li><li>api.anthropic.com</li><li>api.codetabs.com</li><li>api.cohere.ai</li><li>api.deepseek.com</li><li>api.duckduckgo.com</li><li>api.exemplo.com</li><li>api.expo.dev</li><li>api.github.com</li><li>api.groq.com</li><li>api.mistral.ai</li><li>api.openai.com</li><li>api.perplexity.ai</li><li>api.replicate.com</li><li>api.together.xyz</li><li>api.x.ai</li><li>app.starbucks.com</li><li>capacitorjs.com</li><li>cdnjs.cloudflare.com</li><li>comunicaapi.pje.jus.br</li><li>console.groq.com</li><li>console.neon.tech</li><li>corsproxy.io</li><li>datajud-wiki.cnj.jus.br</li><li>developer.android.com</li><li>drive.google.com</li><li>elevenlabs.io</li><li>excalidraw.com</li><li>expo.dev</li><li>generativelanguage.googleapis.com</li><li>github.com</li><li>github.dev</li><li>httpbin.org</li><li>huggingface.co</li><li>instagram.com</li><li>meu-app.replit.app</li><li>meusite.com.br</li><li>neon.tech</li><li>netlify.com</li><li>nodejs.org</li><li>open.spotify.com</li><li>openrouter.ai</li><li>pages.cloudflare.com</li><li>perplexity.ai</li><li>planilha.tramitacaointeligente.com.br</li><li>platform.openai.com</li><li>play.google.com</li><li>pwabuilder.com</li><li>pypi.org</li><li>railway.app</li><li>react.dev</li><li>registry.npmjs.org</li><li>render.com</li><li>replit.com</li><li>services.gradle.org</li><li>seu-app.replit.app</li><li>sk-code-editor.app</li><li>squoosh.app</li><li>together.ai</li><li>unpkg.com</li><li>vercel.com</li><li>virtserver.swaggerhub.com</li><li>vscode.dev</li><li>wa.me</li><li>www.duolingo.com</li><li>www.googleapis.com</li><li>www.perplexity.ai</li><li>www.pinterest.com</li><li>www.youtube.com</li><li>xxxx.supabase.co</li><li>youtube.com</li></ul>
+<h2>📦 Peças principais (dependências)</h2>
+<p><code>@capacitor/core</code> · <code>@isomorphic-git/lightning-fs</code> · <code>@monaco-editor/react</code> · <code>@neondatabase/serverless</code> · <code>@radix-ui/react-accordion</code> · <code>@radix-ui/react-alert-dialog</code> · <code>@radix-ui/react-avatar</code> · <code>@radix-ui/react-checkbox</code> · <code>@radix-ui/react-dialog</code> · <code>@radix-ui/react-dropdown-menu</code> · <code>@radix-ui/react-label</code> · <code>@radix-ui/react-popover</code> · <code>@radix-ui/react-progress</code> · <code>@radix-ui/react-scroll-area</code> · <code>@radix-ui/react-select</code> · <code>@radix-ui/react-separator</code> · <code>@radix-ui/react-slider</code> · <code>@radix-ui/react-slot</code> · <code>@radix-ui/react-switch</code> · <code>@radix-ui/react-tabs</code> · <code>@radix-ui/react-toast</code> · <code>@radix-ui/react-tooltip</code> · <code>@tanstack/react-query</code> · <code>@tiptap/core</code> · <code>@tiptap/extension-character-count</code> · <code>@tiptap/extension-color</code> · <code>@tiptap/extension-font-family</code> · <code>@tiptap/extension-highlight</code> · <code>@tiptap/extension-image</code> · <code>@tiptap/extension-link</code> · <code>@tiptap/extension-placeholder</code> · <code>@tiptap/extension-table</code> · <code>@tiptap/extension-table-cell</code> · <code>@tiptap/extension-table-header</code> · <code>@tiptap/extension-table-row</code> · <code>@tiptap/extension-task-item</code> · <code>@tiptap/extension-task-list</code> · <code>@tiptap/extension-text-align</code> · <code>@tiptap/extension-text-style</code> · <code>@tiptap/extension-typography</code> · <code>@tiptap/extension-underline</code> · <code>@tiptap/pm</code> · <code>@tiptap/react</code> · <code>@tiptap/starter-kit</code> · <code>@workspace/api-zod</code> · <code>@workspace/db</code> · <code>@xterm/addon-fit</code> · <code>@xterm/addon-serialize</code> · <code>@xterm/addon-web-links</code> · <code>@xterm/headless</code> · <code>@xterm/xterm</code> · <code>chalk</code> · <code>chokidar</code> · <code>class-variance-authority</code> · <code>clsx</code> · <code>cmdk</code> · <code>cookie-parser</code> · <code>cors</code> · <code>date-fns</code> · <code>default-shell</code> · <code>drizzle-orm</code> · <code>expo-av</code> · <code>expo-speech</code> · <code>express</code> · <code>file-saver</code> · <code>fossil-delta</code> · <code>framer-motion</code> · <code>highlight.js</code> · <code>jsonwebtoken</code> · <code>jszip</code> · <code>libsodium-wrappers</code> · <code>lucide-react</code> · <code>mammoth</code> · <code>next-themes</code> · <code>node-fetch</code> · <code>node-pty</code> · <code>node-pty-prebuilt-multiarch</code> · <code>open</code> · <code>os-locale</code> · <code>pako</code> · <code>pdfjs-dist</code> · <code>pino</code> · <code>pino-http</code> · <code>qrcode-terminal</code> · <code>react</code> · <code>react-dom</code> · <code>react-hook-form</code> · <code>react-markdown</code> · <code>react-native-webview</code> · <code>rehype-highlight</code> · <code>remark-gfm</code> · <code>socket.io-client</code> · <code>tailwind-merge</code> · <code>wouter</code> · <code>write-file-atomic</code> · <code>ws</code> · <code>yargs</code> · <code>zod</code></p>
+<h2>🧹 Arquivos com coisa da Replit</h2>
+<ul><li>apk-builder/src/components/ui/badge.tsx</li><li>apk-builder/src/components/ui/button.tsx</li><li>apk-builder/vite.config.ts</li><li>assistente-juridico/replit_integrations/audio/index.ts</li><li>assistente-juridico/src/pages/code-assistant.tsx</li><li>code-editor/src/components/AIChat.tsx</li><li>code-editor/src/components/CampoLivre.tsx</li><li>code-editor/src/components/EditorLayout.tsx</li><li>code-editor/src/components/manual.tsx</li><li>code-editor/src/components/Terminal.tsx</li><li>code-editor/src/components/ui/badge.tsx</li><li>code-editor/src/components/ui/button.tsx</li><li>code-editor/vite.config.ts</li><li>habit-tracker/app/(tabs)/juridico.tsx</li><li>habit-tracker/app/(tabs)/sk-editor.tsx</li><li>habit-tracker/scripts/build.js</li><li>mockup-sandbox/vite.config.ts</li></ul>
+<h2>🔁 Roteiro para recriar fora da Replit</h2>
+<ol><li>Importar o projeto no Mini SK e tocar em 🏗️ Preparar → ✅ Fazer tudo (tira a Replit, cria os arquivos que faltam).</li><li>Backend: escolher onde ele vai ficar ligado (Render/Railway grátis) — ou pedir à IA para transformar as rotas em funções do Netlify/Vercel, usando a tabela &quot;O que falta no backend&quot;.</li><li>Banco: criar no Neon ou Supabase e colocar o endereço na variável de ambiente do servidor.</li><li>Variáveis: cadastrar 27 variável(is) no servidor (lista acima).</li><li>Testar a prévia; se der erro, 🤖 Mandar os erros para a IA.</li><li>App: 📲 Instalável (PWA), 📦 APK ou 🖥️ Desktop (.exe) pelo 🏗️ Preparar.</li></ol>
+<h2>🌳 Árvore de arquivos</h2>
+<div class="bloco"><div class="bloco-bar"><span>código</span><button data-copiar="0">📋 Copiar</button></div><pre><code>├─ 📁 .github/
+│  └─ 📁 workflows/
+│     └─ desktop-exe.yml
+├─ 📁 1/
+│  ├─ 📁 api-server/
+│  │  ├─ 📁 .replit-artifact/
+│  │  │  └─ artifact.toml
+│  │  ├─ 📁 src/
+│  │  │  ├─ 📁 lib/
+│  │  │  │  ├─ .gitkeep
+│  │  │  │  ├─ logger.ts
+│  │  │  │  └─ terminal.ts
+│  │  │  ├─ 📁 middlewares/
+│  │  │  │  └─ .gitkeep
+│  │  │  ├─ 📁 routes/
+│  │  │  │  ├─ aiProcess.ts
+│  │  │  │  ├─ ghProxy.ts
+│  │  │  │  ├─ health.ts
+│  │  │  │  └─ index.ts
+│  │  │  ├─ app.ts
+│  │  │  └─ index.ts
+│  │  ├─ build.mjs
+│  │  ├─ package.json
+│  │  └─ tsconfig.json
+│  ├─ COMO_BUILDAR.md
+│  ├─ guia-completo-apk (2).md
+│  ├─ guia-completo-apk.md
+│  ├─ instalar-apps-no-celular.md
+│  ├─ INSTALAR.md
+│  ├─ LEIA-ME-PARA-PROGRAMADOR.md
+│  ├─ MANUAL (1).md
+│  ├─ MANUAL (2).md
+│  ├─ MANUAL (3).md
+│  ├─ MANUAL_APK (1).md
+│  ├─ MANUAL_BUILD_APK (1).md
+│  ├─ MANUAL_BUILD_APK (2).md
+│  ├─ MANUAL_BUILD_APK.md
+│  ├─ MANUAL-APK (2).md
+│  ├─ MANUAL-APK (3).md
+│  ├─ MANUAL-APK.md
+│  ├─ MANUAL-COMPLETO-APK.md
+│  ├─ MANUAL-COMPLETO.md
+│  ├─ manual-dev (1).md
+│  ├─ manual-dev.md
+│  ├─ MANUAL-SK-CODE-EDITOR.md
+│  ├─ MANUAL.md
+│  ├─ pwa-para-app-instalado-celular.md
+│  ├─ replit.md
+│  ├─ SEUS-APPS-PRONTOS-PARA-INSTALAR.md
+│  └─ SYSTEM_DOCS.md
+├─ 📁 api-server/
+│  ├─ 📁 .replit-artifact/
+│  │  └─ artifact.toml
+│  ├─ 📁 src/
+│  │  ├─ 📁 lib/
+│  │  │  ├─ .gitkeep
+│  │  │  ├─ logger.ts
+│  │  │  └─ terminal.ts
+│  │  ├─ 📁 middlewares/
+│  │  │  └─ .gitkeep
+│  │  ├─ 📁 routes/
+│  │  │  ├─ aiProcess.ts
+│  │  │  ├─ ghProxy.ts
+│  │  │  ├─ health.ts
+│  │  │  └─ index.ts
+│  │  ├─ app.ts
+│  │  └─ index.ts
+│  ├─ build.mjs
+│  ├─ package.json
+│  └─ tsconfig.json
+├─ 📁 apk-builder/
+│  ├─ 📁 .replit-artifact/
+│  │  └─ artifact.toml
+│  ├─ 📁 public/
+│  │  ├─ apk-builder-source.zip
+│  │  ├─ assistente-juridico-pwa.zip
+│  │  ├─ favicon.svg
+│  │  ├─ icon-192.png
+│  │  ├─ icon-192.svg
+│  │  ├─ icon-512.png
+│  │  ├─ icon-512.svg
+│  │  ├─ manifest.json
+│  │  ├─ opengraph.jpg
+│  │  ├─ sk-apps-source.zip
+│  │  └─ sw.js
+│  ├─ 📁 src/
+│  │  ├─ 📁 components/
+│  │  │  └─ 📁 ui/
+│  │  │     ├─ accordion.tsx
+│  │  │     ├─ alert-dialog.tsx
+│  │  │     ├─ alert.tsx
+│  │  │     ├─ aspect-ratio.tsx
+│  │  │     ├─ avatar.tsx
+│  │  │     ├─ badge.tsx
+│  │  │     ├─ breadcrumb.tsx
+│  │  │     ├─ button-group.tsx
+│  │  │     ├─ button.tsx
+│  │  │     ├─ calendar.tsx
+│  │  │     ├─ card.tsx
+│  │  │     ├─ carousel.tsx
+│  │  │     ├─ chart.tsx
+│  │  │     ├─ checkbox.tsx
+│  │  │     ├─ collapsible.tsx
+│  │  │     ├─ command.tsx
+│  │  │     ├─ context-menu.tsx
+│  │  │     ├─ dialog.tsx
+│  │  │     ├─ drawer.tsx
+│  │  │     ├─ dropdown-menu.tsx
+│  │  │     ├─ empty.tsx
+│  │  │     ├─ field.tsx
+│  │  │     ├─ form.tsx
+│  │  │     ├─ hover-card.tsx
+│  │  │     ├─ input-group.tsx
+│  │  │     ├─ input-otp.tsx
+│  │  │     ├─ input.tsx
+│  │  │     ├─ item.tsx
+│  │  │     ├─ kbd.tsx
+│  │  │     ├─ label.tsx
+│  │  │     ├─ menubar.tsx
+│  │  │     ├─ navigation-menu.tsx
+│  │  │     ├─ pagination.tsx
+│  │  │     ├─ popover.tsx
+│  │  │     ├─ progress.tsx
+│  │  │     ├─ radio-group.tsx
+│  │  │     ├─ resizable.tsx
+│  │  │     ├─ scroll-area.tsx
+│  │  │     ├─ select.tsx
+│  │  │     ├─ separator.tsx
+│  │  │     ├─ sheet.tsx
+│  │  │     ├─ sidebar.tsx
+│  │  │     ├─ skeleton.tsx
+│  │  │     ├─ slider.tsx
+│  │  │     ├─ sonner.tsx
+│  │  │     ├─ spinner.tsx
+│  │  │     ├─ switch.tsx
+│  │  │     ├─ table.tsx
+│  │  │     ├─ tabs.tsx
+│  │  │     ├─ textarea.tsx
+│  │  │     ├─ toast.tsx
+│  │  │     ├─ toaster.tsx
+│  │  │     ├─ toggle-group.tsx
+│  │  │     ├─ toggle.tsx
+│  │  │     └─ tooltip.tsx
+│  │  ├─ 📁 hooks/
+│  │  │  ├─ use-mobile.tsx
+│  │  │  └─ use-toast.ts
+│  │  ├─ 📁 lib/
+│  │  │  ├─ android.ts
+│  │  │  ├─ archive.ts
+│  │  │  ├─ github.ts
+│  │  │  ├─ storage.ts
+│  │  │  └─ utils.ts
+│  │  ├─ 📁 pages/
+│  │  │  └─ not-found.tsx
+│  │  ├─ App.tsx
+│  │  ├─ index.css
+│  │  └─ main.tsx
+│  ├─ components.json
+│  ├─ index.html
+│  ├─ package.json
+│  ├─ tsconfig.json
+│  └─ vite.config.ts
+├─ 📁 assistente-juridico/
+│  ├─ 📁 public/
+│  │  ├─ assistente-juridico-source.zip
+│  │  ├─ auditoria.html
+│  │  ├─ codigo-formatacao.txt
+│  │  ├─ comparador.html
+│  │  ├─ favicon.png
+│  │  ├─ icon-192.png
+│  │  ├─ icon-512.png
+│  │  ├─ manifest.json
+│  │  └─ sw.js
+│  ├─ 📁 replit_integrations/
+│  │  └─ 📁 audio/
+│  │     ├─ audio-playback-worklet.js
+│  │     ├─ audio-utils.ts
+│  │     ├─ index.ts
+│  │     ├─ useAudioPlayback.ts
+│  │     ├─ useVoiceRecorder.ts
+│  │     └─ useVoiceStream.ts
+│  ├─ 📁 src/
+│  │  ├─ 📁 components/
+│  │  │  ├─ 📁 ui/
+│  │  │  │  ├─ accordion.tsx
+│  │  │  │  ├─ alert-dialog.tsx
+│  │  │  │  ├─ alert.tsx
+│  │  │  │  ├─ aspect-ratio.tsx
+│  │  │  │  ├─ avatar.tsx
+│  │  │  │  ├─ badge.tsx
+│  │  │  │  ├─ breadcrumb.tsx
+│  │  │  │  ├─ button.tsx
+│  │  │  │  ├─ calendar.tsx
+│  │  │  │  ├─ card.tsx
+│  │  │  │  ├─ carousel.tsx
+│  │  │  │  ├─ chart.tsx
+│  │  │  │  ├─ checkbox.tsx
+│  │  │  │  ├─ collapsible.tsx
+│  │  │  │  ├─ command.tsx
+│  │  │  │  ├─ context-menu.tsx
+│  │  │  │  ├─ dialog.tsx
+│  │  │  │  ├─ drawer.tsx
+│  │  │  │  ├─ dropdown-menu.tsx
+│  │  │  │  ├─ form.tsx
+│  │  │  │  ├─ hover-card.tsx
+│  │  │  │  ├─ input-otp.tsx
+│  │  │  │  ├─ input.tsx
+│  │  │  │  ├─ label.tsx
+│  │  │  │  ├─ menubar.tsx
+│  │  │  │  ├─ navigation-menu.tsx
+│  │  │  │  ├─ pagination.tsx
+│  │  │  │  ├─ popover.tsx
+│  │  │  │  ├─ progress.tsx
+│  │  │  │  ├─ radio-group.tsx
+│  │  │  │  ├─ resizable.tsx
+│  │  │  │  ├─ scroll-area.tsx
+│  │  │  │  ├─ select.tsx
+│  │  │  │  ├─ separator.tsx
+│  │  │  │  ├─ sheet.tsx
+│  │  │  │  ├─ sidebar.tsx
+│  │  │  │  ├─ skeleton.tsx
+│  │  │  │  ├─ slider.tsx
+│  │  │  │  ├─ switch.tsx
+│  │  │  │  ├─ table.tsx
+│  │  │  │  ├─ tabs.tsx
+│  │  │  │  ├─ textarea.tsx
+│  │  │  │  ├─ toast.tsx
+│  │  │  │  ├─ toaster.tsx
+│  │  │  │  ├─ toggle-group.tsx
+│  │  │  │  ├─ toggle.tsx
+│  │  │  │  └─ tooltip.tsx
+│  │  │  ├─ pwa-install.tsx
+│  │  │  ├─ settings-panel.tsx
+│  │  │  ├─ theme-provider.tsx
+│  │  │  ├─ theme-toggle.tsx
+│  │  │  └─ tiptap-editor.tsx
+│  │  ├─ 📁 hooks/
+│  │  │  ├─ use-mobile.tsx
+│  │  │  └─ use-toast.ts
+│  │  ├─ 📁 lib/
+│  │  │  ├─ ai-service.ts
+│  │  │  ├─ queryClient.ts
+│  │  │  ├─ settings.ts
+│  │  │  └─ utils.ts
+│  │  ├─ 📁 pages/
+│  │  │  ├─ auditoria-financeira.tsx
+│  │  │  ├─ campo-livre.tsx
+│  │  │  ├─ code-assistant.tsx
+│  │  │  ├─ comparador-juridico.tsx
+│  │  │  ├─ comunicacoes-cnj.tsx
+│  │  │  ├─ consulta-corporativo.tsx
+│  │  │  ├─ consulta-pdpj.tsx
+│  │  │  ├─ consulta-processual.tsx
+│  │  │  ├─ filtrador.tsx
+│  │  │  ├─ jurisprudencia.tsx
+│  │  │  ├─ legal-assistant.tsx
+│  │  │  ├─ legal-assistant.tsx.recovered
+│  │  │  ├─ login.tsx
+│  │  │  ├─ not-found.tsx
+│  │  │  ├─ painel-processos.tsx
+│  │  │  ├─ playground.tsx
+│  │  │  ├─ previdenciario.tsx
+│  │  │  ├─ robo-djen.tsx
+│  │  │  ├─ token-generator.tsx
+│  │  │  └─ tramitacao.tsx
+│  │  ├─ App.tsx
+│  │  ├─ index.css
+│  │  └─ main.tsx
+│  ├─ capacitor.config.ts
+│  ├─ index.html
+│  ├─ package.json
+│  ├─ tsconfig.json
+│  ├─ vite.config.apk.ts
+│  └─ vite.config.ts
+├─ 📁 code-editor/
+│  ├─ 📁 .replit-artifact/
+│  │  └─ artifact.toml
+│  ├─ 📁 public/
+│  │  ├─ favicon.svg
+│  │  ├─ icon-192.png
+│  │  ├─ icon-512.png
+│  │  ├─ manifest.json
+│  │  ├─ opengraph.jpg
+│  │  └─ sw.js
+│  ├─ 📁 src/
+│  │  ├─ 📁 components/
+│  │  │  ├─ 📁 ui/
+│  │  │  │  ├─ accordion.tsx
+│  │  │  │  ├─ alert-dialog.tsx
+│  │  │  │  ├─ alert.tsx
+│  │  │  │  ├─ aspect-ratio.tsx
+│  │  │  │  ├─ avatar.tsx
+│  │  │  │  ├─ badge.tsx
+│  │  │  │  ├─ breadcrumb.tsx
+│  │  │  │  ├─ button-group.tsx
+│  │  │  │  ├─ button.tsx
+│  │  │  │  ├─ calendar.tsx
+│  │  │  │  ├─ card.tsx
+│  │  │  │  ├─ carousel.tsx
+│  │  │  │  ├─ chart.tsx
+│  │  │  │  ├─ checkbox.tsx
+│  │  │  │  ├─ collapsible.tsx
+│  │  │  │  ├─ command.tsx
+│  │  │  │  ├─ context-menu.tsx
+│  │  │  │  ├─ dialog.tsx
+│  │  │  │  ├─ drawer.tsx
+│  │  │  │  ├─ dropdown-menu.tsx
+│  │  │  │  ├─ empty.tsx
+│  │  │  │  ├─ field.tsx
+│  │  │  │  ├─ form.tsx
+│  │  │  │  ├─ hover-card.tsx
+│  │  │  │  ├─ input-group.tsx
+│  │  │  │  ├─ input-otp.tsx
+│  │  │  │  ├─ input.tsx
+│  │  │  │  ├─ item.tsx
+│  │  │  │  ├─ kbd.tsx
+│  │  │  │  ├─ label.tsx
+│  │  │  │  ├─ menubar.tsx
+│  │  │  │  ├─ navigation-menu.tsx
+│  │  │  │  ├─ pagination.tsx
+│  │  │  │  ├─ popover.tsx
+│  │  │  │  ├─ progress.tsx
+│  │  │  │  ├─ radio-group.tsx
+│  │  │  │  ├─ resizable.tsx
+│  │  │  │  ├─ scroll-area.tsx
+│  │  │  │  ├─ select.tsx
+│  │  │  │  ├─ separator.tsx
+│  │  │  │  ├─ sheet.tsx
+│  │  │  │  ├─ sidebar.tsx
+│  │  │  │  ├─ skeleton.tsx
+│  │  │  │  ├─ slider.tsx
+│  │  │  │  ├─ sonner.tsx
+│  │  │  │  ├─ spinner.tsx
+│  │  │  │  ├─ switch.tsx
+│  │  │  │  ├─ table.tsx
+│  │  │  │  ├─ tabs.tsx
+│  │  │  │  ├─ textarea.tsx
+│  │  │  │  ├─ toast.tsx
+│  │  │  │  ├─ toaster.tsx
+│  │  │  │  ├─ toggle-group.tsx
+│  │  │  │  ├─ toggle.tsx
+│  │  │  │  └─ tooltip.tsx
+│  │  │  ├─ AIChat.tsx
+│  │  │  ├─ AssistenteJuridico.tsx
+│  │  │  ├─ CampoLivre.tsx
+│  │  │  ├─ CodeEditor.tsx
+│  │  │  ├─ DriveBackupPanel.tsx
+│  │  │  ├─ EditorLayout.tsx
+│  │  │  ├─ FileTree.tsx
+│  │  │  ├─ GitHubPanel.tsx
+│  │  │  ├─ manual.tsx
+│  │  │  ├─ PackageSearch.tsx
+│  │  │  ├─ Preview.tsx
+│  │  │  ├─ QuickPrompt.tsx
+│  │  │  ├─ RealTerminal.tsx
+│  │  │  ├─ StreamTerminal.tsx
+│  │  │  ├─ TemplateSelector.tsx
+│  │  │  ├─ Terminal.tsx
+│  │  │  ├─ VoiceCard.tsx
+│  │  │  └─ VoiceMode.tsx
+│  │  ├─ 📁 hooks/
+│  │  │  ├─ use-mobile.tsx
+│  │  │  └─ use-toast.ts
+│  │  ├─ 📁 lib/
+│  │  │  ├─ ai-service.ts
+│  │  │  ├─ github-service.ts
+│  │  │  ├─ projects.ts
+│  │  │  ├─ store.ts
+│  │  │  ├─ templates.ts
+│  │  │  ├─ tts-service.ts
+│  │  │  ├─ utils.ts
+│  │  │  ├─ virtual-fs.ts
+│  │  │  └─ zip-service.ts
+│  │  ├─ 📁 pages/
+│  │  │  └─ not-found.tsx
+│  │  ├─ App.tsx
+│  │  ├─ index.css
+│  │  └─ main.tsx
+│  ├─ capacitor.config.ts
+│  ├─ components.json
+│  ├─ index.html
+│  ├─ MANUAL-APK.md
+│  ├─ package.json
+│  ├─ tsconfig.json
+│  ├─ vite.config.apk.ts
+│  └─ vite.config.ts
+├─ 📁 electron/
+│  ├─ main.cjs
+│  └─ preload.cjs
+├─ 📁 habit-tracker/
+│  ├─ 📁 .replit-artifact/
+│  │  ├─ artifact.edit.toml
+│  │  └─ artifact.toml
+│  ├─ 📁 app/
+│  │  ├─ 📁 (tabs)/
+│  │  │  ├─ _layout.tsx
+│  │  │  ├─ ai.tsx
+│  │  │  ├─ editor.tsx
+│  │  │  ├─ export.tsx
+│  │  │  ├─ github.tsx
+… (139 linhas a mais)</code></pre></div><script>var B=["├─ 📁 .github/\n│  └─ 📁 workflows/\n│     └─ desktop-exe.yml\n├─ 📁 1/\n│  ├─ 📁 api-server/\n│  │  ├─ 📁 .replit-artifact/\n│  │  │  └─ artifact.toml\n│  │  ├─ 📁 src/\n│  │  │  ├─ 📁 lib/\n│  │  │  │  ├─ .gitkeep\n│  │  │  │  ├─ logger.ts\n│  │  │  │  └─ terminal.ts\n│  │  │  ├─ 📁 middlewares/\n│  │  │  │  └─ .gitkeep\n│  │  │  ├─ 📁 routes/\n│  │  │  │  ├─ aiProcess.ts\n│  │  │  │  ├─ ghProxy.ts\n│  │  │  │  ├─ health.ts\n│  │  │  │  └─ index.ts\n│  │  │  ├─ app.ts\n│  │  │  └─ index.ts\n│  │  ├─ build.mjs\n│  │  ├─ package.json\n│  │  └─ tsconfig.json\n│  ├─ COMO_BUILDAR.md\n│  ├─ guia-completo-apk (2).md\n│  ├─ guia-completo-apk.md\n│  ├─ instalar-apps-no-celular.md\n│  ├─ INSTALAR.md\n│  ├─ LEIA-ME-PARA-PROGRAMADOR.md\n│  ├─ MANUAL (1).md\n│  ├─ MANUAL (2).md\n│  ├─ MANUAL (3).md\n│  ├─ MANUAL_APK (1).md\n│  ├─ MANUAL_BUILD_APK (1).md\n│  ├─ MANUAL_BUILD_APK (2).md\n│  ├─ MANUAL_BUILD_APK.md\n│  ├─ MANUAL-APK (2).md\n│  ├─ MANUAL-APK (3).md\n│  ├─ MANUAL-APK.md\n│  ├─ MANUAL-COMPLETO-APK.md\n│  ├─ MANUAL-COMPLETO.md\n│  ├─ manual-dev (1).md\n│  ├─ manual-dev.md\n│  ├─ MANUAL-SK-CODE-EDITOR.md\n│  ├─ MANUAL.md\n│  ├─ pwa-para-app-instalado-celular.md\n│  ├─ replit.md\n│  ├─ SEUS-APPS-PRONTOS-PARA-INSTALAR.md\n│  └─ SYSTEM_DOCS.md\n├─ 📁 api-server/\n│  ├─ 📁 .replit-artifact/\n│  │  └─ artifact.toml\n│  ├─ 📁 src/\n│  │  ├─ 📁 lib/\n│  │  │  ├─ .gitkeep\n│  │  │  ├─ logger.ts\n│  │  │  └─ terminal.ts\n│  │  ├─ 📁 middlewares/\n│  │  │  └─ .gitkeep\n│  │  ├─ 📁 routes/\n│  │  │  ├─ aiProcess.ts\n│  │  │  ├─ ghProxy.ts\n│  │  │  ├─ health.ts\n│  │  │  └─ index.ts\n│  │  ├─ app.ts\n│  │  └─ index.ts\n│  ├─ build.mjs\n│  ├─ package.json\n│  └─ tsconfig.json\n├─ 📁 apk-builder/\n│  ├─ 📁 .replit-artifact/\n│  │  └─ artifact.toml\n│  ├─ 📁 public/\n│  │  ├─ apk-builder-source.zip\n│  │  ├─ assistente-juridico-pwa.zip\n│  │  ├─ favicon.svg\n│  │  ├─ icon-192.png\n│  │  ├─ icon-192.svg\n│  │  ├─ icon-512.png\n│  │  ├─ icon-512.svg\n│  │  ├─ manifest.json\n│  │  ├─ opengraph.jpg\n│  │  ├─ sk-apps-source.zip\n│  │  └─ sw.js\n│  ├─ 📁 src/\n│  │  ├─ 📁 components/\n│  │  │  └─ 📁 ui/\n│  │  │     ├─ accordion.tsx\n│  │  │     ├─ alert-dialog.tsx\n│  │  │     ├─ alert.tsx\n│  │  │     ├─ aspect-ratio.tsx\n│  │  │     ├─ avatar.tsx\n│  │  │     ├─ badge.tsx\n│  │  │     ├─ breadcrumb.tsx\n│  │  │     ├─ button-group.tsx\n│  │  │     ├─ button.tsx\n│  │  │     ├─ calendar.tsx\n│  │  │     ├─ card.tsx\n│  │  │     ├─ carousel.tsx\n│  │  │     ├─ chart.tsx\n│  │  │     ├─ checkbox.tsx\n│  │  │     ├─ collapsible.tsx\n│  │  │     ├─ command.tsx\n│  │  │     ├─ context-menu.tsx\n│  │  │     ├─ dialog.tsx\n│  │  │     ├─ drawer.tsx\n│  │  │     ├─ dropdown-menu.tsx\n│  │  │     ├─ empty.tsx\n│  │  │     ├─ field.tsx\n│  │  │     ├─ form.tsx\n│  │  │     ├─ hover-card.tsx\n│  │  │     ├─ input-group.tsx\n│  │  │     ├─ input-otp.tsx\n│  │  │     ├─ input.tsx\n│  │  │     ├─ item.tsx\n│  │  │     ├─ kbd.tsx\n│  │  │     ├─ label.tsx\n│  │  │     ├─ menubar.tsx\n│  │  │     ├─ navigation-menu.tsx\n│  │  │     ├─ pagination.tsx\n│  │  │     ├─ popover.tsx\n│  │  │     ├─ progress.tsx\n│  │  │     ├─ radio-group.tsx\n│  │  │     ├─ resizable.tsx\n│  │  │     ├─ scroll-area.tsx\n│  │  │     ├─ select.tsx\n│  │  │     ├─ separator.tsx\n│  │  │     ├─ sheet.tsx\n│  │  │     ├─ sidebar.tsx\n│  │  │     ├─ skeleton.tsx\n│  │  │     ├─ slider.tsx\n│  │  │     ├─ sonner.tsx\n│  │  │     ├─ spinner.tsx\n│  │  │     ├─ switch.tsx\n│  │  │     ├─ table.tsx\n│  │  │     ├─ tabs.tsx\n│  │  │     ├─ textarea.tsx\n│  │  │     ├─ toast.tsx\n│  │  │     ├─ toaster.tsx\n│  │  │     ├─ toggle-group.tsx\n│  │  │     ├─ toggle.tsx\n│  │  │     └─ tooltip.tsx\n│  │  ├─ 📁 hooks/\n│  │  │  ├─ use-mobile.tsx\n│  │  │  └─ use-toast.ts\n│  │  ├─ 📁 lib/\n│  │  │  ├─ android.ts\n│  │  │  ├─ archive.ts\n│  │  │  ├─ github.ts\n│  │  │  ├─ storage.ts\n│  │  │  └─ utils.ts\n│  │  ├─ 📁 pages/\n│  │  │  └─ not-found.tsx\n│  │  ├─ App.tsx\n│  │  ├─ index.css\n│  │  └─ main.tsx\n│  ├─ components.json\n│  ├─ index.html\n│  ├─ package.json\n│  ├─ tsconfig.json\n│  └─ vite.config.ts\n├─ 📁 assistente-juridico/\n│  ├─ 📁 public/\n│  │  ├─ assistente-juridico-source.zip\n│  │  ├─ auditoria.html\n│  │  ├─ codigo-formatacao.txt\n│  │  ├─ comparador.html\n│  │  ├─ favicon.png\n│  │  ├─ icon-192.png\n│  │  ├─ icon-512.png\n│  │  ├─ manifest.json\n│  │  └─ sw.js\n│  ├─ 📁 replit_integrations/\n│  │  └─ 📁 audio/\n│  │     ├─ audio-playback-worklet.js\n│  │     ├─ audio-utils.ts\n│  │     ├─ index.ts\n│  │     ├─ useAudioPlayback.ts\n│  │     ├─ useVoiceRecorder.ts\n│  │     └─ useVoiceStream.ts\n│  ├─ 📁 src/\n│  │  ├─ 📁 components/\n│  │  │  ├─ 📁 ui/\n│  │  │  │  ├─ accordion.tsx\n│  │  │  │  ├─ alert-dialog.tsx\n│  │  │  │  ├─ alert.tsx\n│  │  │  │  ├─ aspect-ratio.tsx\n│  │  │  │  ├─ avatar.tsx\n│  │  │  │  ├─ badge.tsx\n│  │  │  │  ├─ breadcrumb.tsx\n│  │  │  │  ├─ button.tsx\n│  │  │  │  ├─ calendar.tsx\n│  │  │  │  ├─ card.tsx\n│  │  │  │  ├─ carousel.tsx\n│  │  │  │  ├─ chart.tsx\n│  │  │  │  ├─ checkbox.tsx\n│  │  │  │  ├─ collapsible.tsx\n│  │  │  │  ├─ command.tsx\n│  │  │  │  ├─ context-menu.tsx\n│  │  │  │  ├─ dialog.tsx\n│  │  │  │  ├─ drawer.tsx\n│  │  │  │  ├─ dropdown-menu.tsx\n│  │  │  │  ├─ form.tsx\n│  │  │  │  ├─ hover-card.tsx\n│  │  │  │  ├─ input-otp.tsx\n│  │  │  │  ├─ input.tsx\n│  │  │  │  ├─ label.tsx\n│  │  │  │  ├─ menubar.tsx\n│  │  │  │  ├─ navigation-menu.tsx\n│  │  │  │  ├─ pagination.tsx\n│  │  │  │  ├─ popover.tsx\n│  │  │  │  ├─ progress.tsx\n│  │  │  │  ├─ radio-group.tsx\n│  │  │  │  ├─ resizable.tsx\n│  │  │  │  ├─ scroll-area.tsx\n│  │  │  │  ├─ select.tsx\n│  │  │  │  ├─ separator.tsx\n│  │  │  │  ├─ sheet.tsx\n│  │  │  │  ├─ sidebar.tsx\n│  │  │  │  ├─ skeleton.tsx\n│  │  │  │  ├─ slider.tsx\n│  │  │  │  ├─ switch.tsx\n│  │  │  │  ├─ table.tsx\n│  │  │  │  ├─ tabs.tsx\n│  │  │  │  ├─ textarea.tsx\n│  │  │  │  ├─ toast.tsx\n│  │  │  │  ├─ toaster.tsx\n│  │  │  │  ├─ toggle-group.tsx\n│  │  │  │  ├─ toggle.tsx\n│  │  │  │  └─ tooltip.tsx\n│  │  │  ├─ pwa-install.tsx\n│  │  │  ├─ settings-panel.tsx\n│  │  │  ├─ theme-provider.tsx\n│  │  │  ├─ theme-toggle.tsx\n│  │  │  └─ tiptap-editor.tsx\n│  │  ├─ 📁 hooks/\n│  │  │  ├─ use-mobile.tsx\n│  │  │  └─ use-toast.ts\n│  │  ├─ 📁 lib/\n│  │  │  ├─ ai-service.ts\n│  │  │  ├─ queryClient.ts\n│  │  │  ├─ settings.ts\n│  │  │  └─ utils.ts\n│  │  ├─ 📁 pages/\n│  │  │  ├─ auditoria-financeira.tsx\n│  │  │  ├─ campo-livre.tsx\n│  │  │  ├─ code-assistant.tsx\n│  │  │  ├─ comparador-juridico.tsx\n│  │  │  ├─ comunicacoes-cnj.tsx\n│  │  │  ├─ consulta-corporativo.tsx\n│  │  │  ├─ consulta-pdpj.tsx\n│  │  │  ├─ consulta-processual.tsx\n│  │  │  ├─ filtrador.tsx\n│  │  │  ├─ jurisprudencia.tsx\n│  │  │  ├─ legal-assistant.tsx\n│  │  │  ├─ legal-assistant.tsx.recovered\n│  │  │  ├─ login.tsx\n│  │  │  ├─ not-found.tsx\n│  │  │  ├─ painel-processos.tsx\n│  │  │  ├─ playground.tsx\n│  │  │  ├─ previdenciario.tsx\n│  │  │  ├─ robo-djen.tsx\n│  │  │  ├─ token-generator.tsx\n│  │  │  └─ tramitacao.tsx\n│  │  ├─ App.tsx\n│  │  ├─ index.css\n│  │  └─ main.tsx\n│  ├─ capacitor.config.ts\n│  ├─ index.html\n│  ├─ package.json\n│  ├─ tsconfig.json\n│  ├─ vite.config.apk.ts\n│  └─ vite.config.ts\n├─ 📁 code-editor/\n│  ├─ 📁 .replit-artifact/\n│  │  └─ artifact.toml\n│  ├─ 📁 public/\n│  │  ├─ favicon.svg\n│  │  ├─ icon-192.png\n│  │  ├─ icon-512.png\n│  │  ├─ manifest.json\n│  │  ├─ opengraph.jpg\n│  │  └─ sw.js\n│  ├─ 📁 src/\n│  │  ├─ 📁 components/\n│  │  │  ├─ 📁 ui/\n│  │  │  │  ├─ accordion.tsx\n│  │  │  │  ├─ alert-dialog.tsx\n│  │  │  │  ├─ alert.tsx\n│  │  │  │  ├─ aspect-ratio.tsx\n│  │  │  │  ├─ avatar.tsx\n│  │  │  │  ├─ badge.tsx\n│  │  │  │  ├─ breadcrumb.tsx\n│  │  │  │  ├─ button-group.tsx\n│  │  │  │  ├─ button.tsx\n│  │  │  │  ├─ calendar.tsx\n│  │  │  │  ├─ card.tsx\n│  │  │  │  ├─ carousel.tsx\n│  │  │  │  ├─ chart.tsx\n│  │  │  │  ├─ checkbox.tsx\n│  │  │  │  ├─ collapsible.tsx\n│  │  │  │  ├─ command.tsx\n│  │  │  │  ├─ context-menu.tsx\n│  │  │  │  ├─ dialog.tsx\n│  │  │  │  ├─ drawer.tsx\n│  │  │  │  ├─ dropdown-menu.tsx\n│  │  │  │  ├─ empty.tsx\n│  │  │  │  ├─ field.tsx\n│  │  │  │  ├─ form.tsx\n│  │  │  │  ├─ hover-card.tsx\n│  │  │  │  ├─ input-group.tsx\n│  │  │  │  ├─ input-otp.tsx\n│  │  │  │  ├─ input.tsx\n│  │  │  │  ├─ item.tsx\n│  │  │  │  ├─ kbd.tsx\n│  │  │  │  ├─ label.tsx\n│  │  │  │  ├─ menubar.tsx\n│  │  │  │  ├─ navigation-menu.tsx\n│  │  │  │  ├─ pagination.tsx\n│  │  │  │  ├─ popover.tsx\n│  │  │  │  ├─ progress.tsx\n│  │  │  │  ├─ radio-group.tsx\n│  │  │  │  ├─ resizable.tsx\n│  │  │  │  ├─ scroll-area.tsx\n│  │  │  │  ├─ select.tsx\n│  │  │  │  ├─ separator.tsx\n│  │  │  │  ├─ sheet.tsx\n│  │  │  │  ├─ sidebar.tsx\n│  │  │  │  ├─ skeleton.tsx\n│  │  │  │  ├─ slider.tsx\n│  │  │  │  ├─ sonner.tsx\n│  │  │  │  ├─ spinner.tsx\n│  │  │  │  ├─ switch.tsx\n│  │  │  │  ├─ table.tsx\n│  │  │  │  ├─ tabs.tsx\n│  │  │  │  ├─ textarea.tsx\n│  │  │  │  ├─ toast.tsx\n│  │  │  │  ├─ toaster.tsx\n│  │  │  │  ├─ toggle-group.tsx\n│  │  │  │  ├─ toggle.tsx\n│  │  │  │  └─ tooltip.tsx\n│  │  │  ├─ AIChat.tsx\n│  │  │  ├─ AssistenteJuridico.tsx\n│  │  │  ├─ CampoLivre.tsx\n│  │  │  ├─ CodeEditor.tsx\n│  │  │  ├─ DriveBackupPanel.tsx\n│  │  │  ├─ EditorLayout.tsx\n│  │  │  ├─ FileTree.tsx\n│  │  │  ├─ GitHubPanel.tsx\n│  │  │  ├─ manual.tsx\n│  │  │  ├─ PackageSearch.tsx\n│  │  │  ├─ Preview.tsx\n│  │  │  ├─ QuickPrompt.tsx\n│  │  │  ├─ RealTerminal.tsx\n│  │  │  ├─ StreamTerminal.tsx\n│  │  │  ├─ TemplateSelector.tsx\n│  │  │  ├─ Terminal.tsx\n│  │  │  ├─ VoiceCard.tsx\n│  │  │  └─ VoiceMode.tsx\n│  │  ├─ 📁 hooks/\n│  │  │  ├─ use-mobile.tsx\n│  │  │  └─ use-toast.ts\n│  │  ├─ 📁 lib/\n│  │  │  ├─ ai-service.ts\n│  │  │  ├─ github-service.ts\n│  │  │  ├─ projects.ts\n│  │  │  ├─ store.ts\n│  │  │  ├─ templates.ts\n│  │  │  ├─ tts-service.ts\n│  │  │  ├─ utils.ts\n│  │  │  ├─ virtual-fs.ts\n│  │  │  └─ zip-service.ts\n│  │  ├─ 📁 pages/\n│  │  │  └─ not-found.tsx\n│  │  ├─ App.tsx\n│  │  ├─ index.css\n│  │  └─ main.tsx\n│  ├─ capacitor.config.ts\n│  ├─ components.json\n│  ├─ index.html\n│  ├─ MANUAL-APK.md\n│  ├─ package.json\n│  ├─ tsconfig.json\n│  ├─ vite.config.apk.ts\n│  └─ vite.config.ts\n├─ 📁 electron/\n│  ├─ main.cjs\n│  └─ preload.cjs\n├─ 📁 habit-tracker/\n│  ├─ 📁 .replit-artifact/\n│  │  ├─ artifact.edit.toml\n│  │  └─ artifact.toml\n│  ├─ 📁 app/\n│  │  ├─ 📁 (tabs)/\n│  │  │  ├─ _layout.tsx\n│  │  │  ├─ ai.tsx\n│  │  │  ├─ editor.tsx\n│  │  │  ├─ export.tsx\n│  │  │  ├─ github.tsx\n… (139 linhas a mais)"];var EMB=window.parent!==window;if(!EMB)document.querySelectorAll(".so-app").forEach(function(b){b.remove()});function marca(b,t){var a=b.textContent;b.textContent=t;setTimeout(function(){b.textContent=a},1400)}function copiar(t,b){if(EMB){parent.postMessage({sk:"md",acao:"copiar",texto:t},"*");marca(b,"✔ Copiado");return}navigator.clipboard.writeText(t).then(function(){marca(b,"✔ Copiado")},function(){var r=document.createRange();r.selectNodeContents(b.closest(".bloco").querySelector("pre"));var s=getSelection();s.removeAllRanges();s.addRange(r);marca(b,"Selecionado")})}document.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;if(b.dataset.copiar!=null)copiar(B[+b.dataset.copiar],b);if(b.dataset.rodar!=null){parent.postMessage({sk:"md",acao:"rodar",texto:B[+b.dataset.rodar]},"*");marca(b,"✔ Mandado")}if(b.id==="md-baixar")parent.postMessage({sk:"md",acao:"baixar"},"*");if(b.id==="md-todos"){var t=B.join("\n\n");copiar(t,b)}});</script></body></html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>SK Scanner v2</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+  body { background: #0f1a0a; color: #a8d5a2; }
+  .panel { background: #0d1309; border: 1px solid #2d4a1e; }
+  .file-item { transition: all 0.1s; }
+  .file-item:hover { background: #1a2a12; }
+</style>
+</head>
+<body class="min-h-screen p-6">
+
+<div class="max-w-5xl mx-auto">
+  <h1 class="text-3xl font-bold text-[#7ec87a] mb-1">SK Scanner v2</h1>
+  <p class="text-[#6b8f68] mb-6">Escaneia projetos e detecta referências do Replit</p>
+
+  <!-- Importação -->
+  <div class="panel rounded-2xl p-6 mb-6">
+    <div class="flex gap-4 flex-wrap">
+      <!-- ZIP / APK -->
+      <div class="flex-1">
+        <label class="block text-sm font-semibold mb-2 text-[#7ec87a]">Importar ZIP / APK</label>
+        <input type="file" id="fileInput" accept=".zip,.apk,.jar,.aab" class="w-full bg-[#0f1a0a] border border-[#2d4a1e] rounded-xl p-3 text-sm">
+      </div>
+
+      <!-- GitHub -->
+      <div class="flex-1">
+        <label class="block text-sm font-semibold mb-2 text-[#7ec87a]">Repositório GitHub</label>
+        <div class="flex gap-2">
+          <input id="githubUrl" type="text" placeholder="https://github.com/usuario/projeto" 
+                 class="flex-1 bg-[#0f1a0a] border border-[#2d4a1e] rounded-xl px-4 text-sm">
+          <button onclick="scanGitHub()" class="bg-[#2d4a1e] hover:bg-[#3d5f2e] px-5 rounded-xl text-sm font-bold">Escanear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <label class="block text-sm font-semibold mb-1 text-[#7ec87a]">Nome do Projeto (opcional)</label>
+      <input id="projectName" type="text" placeholder="Ex: PWA Jurídico v2" 
+             class="w-full bg-[#0f1a0a] border border-[#2d4a1e] rounded-xl px-4 py-2 text-sm">
+    </div>
+  </div>
+
+  <!-- Resultados -->
+  <div id="results" class="hidden panel rounded-2xl p-6">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <span id="sourceName" class="font-bold text-[#7ec87a]"></span>
+        <span id="stats" class="ml-3 text-sm text-[#6b8f68]"></span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="downloadReport()" class="bg-[#2d4a1e] px-4 py-2 rounded-xl text-sm font-bold">Baixar Relatório</button>
+        <button onclick="clearResults()" class="bg-red-900/60 px-4 py-2 rounded-xl text-sm">Limpar</button>
+      </div>
+    </div>
+
+    <div id="fileList" class="space-y-1 max-h-[500px] overflow-auto"></div>
+  </div>
+</div>
+
+<script>
+// ==================== Padrões do Scanner ====================
+const _p = String.fromCharCode(114,101,112,108,105,116);
+const PATS = [
+  { re: new RegExp(_p + "\\.com", "gi"), lb: "url-plataforma" },
+  { re: /repl\.it/gi, lb: "url-plataforma-antiga" },
+  { re: new RegExp(_p.toUpperCase() + "_", "g"), lb: "var-plataforma" },
+  { re: /REPL_ID/g, lb: "var-id-plataforma" },
+  { re: /REPL_SLUG/g, lb: "var-slug-plataforma" },
+  { re: /REPL_OWNER/g, lb: "var-owner-plataforma" },
+  { re: new RegExp("@" + _p + "/", "gi"), lb: "pacote-externo" },
+  { re: /vite-plugin-runtime-error-modal/gi, lb: "plugin-error-externo" },
+  { re: /vite-plugin-cartographer/gi, lb: "plugin-cartographer-externo" },
+  { re: /vite-plugin-dev-banner/gi, lb: "plugin-banner-externo" },
+  { re: new RegExp("\\." + _p + "\\b", "gi"), lb: "config-plataforma" },
+  { re: new RegExp(_p + "\\.app", "gi"), lb: "dominio-hospedagem" },
+  { re: new RegExp(_p + "-dev\\.com", "gi"), lb: "dominio-dev-externo" },
+  { re: new RegExp("pid1\\." + _p, "gi"), lb: "processo-plataforma" },
+];
+
+const SKIP_EXT = new Set(["png","jpg","jpeg","gif","webp","ico","woff","woff2","ttf","eot","otf","mp3","mp4","webm","ogg","bin","class","dex"]);
+
+let currentResults = [];
+let currentSource = "";
+
+// ==================== Função de Escaneamento ====================
+function scanText(text) {
+  const hits = [];
+  const lines = text.split("\n");
+  lines.forEach((line, i) => {
+    const found = [];
+    PATS.forEach(p => {
+      p.re.lastIndex = 0;
+      if (p.re.test(line)) {
+        found.push(p.lb);
+        p.re.lastIndex = 0;
+      }
+    });
+    if (found.length) {
+      hits.push({ ln: i + 1, txt: line.trim().slice(0, 300), labels: found });
+    }
+  });
+  return hits;
+}
+
+async function processFiles(files) {
+  const results = [];
+  for (const file of files) {
+    const ext = file.nome.split(".").pop()?.toLowerCase() || "";
+    if (SKIP_EXT.has(ext)) {
+      results.push({ nome: file.nome, status: "skip", hits: [] });
+      continue;
+    }
+    try {
+      let text = "";
+      if (file.conteudo instanceof ArrayBuffer) {
+        text = new TextDecoder("utf-8", { fatal: false }).decode(file.conteudo);
+      } else {
+        text = file.conteudo;
+      }
+      const hits = scanText(text);
+      results.push({
+        nome: file.nome,
+        status: hits.length > 0 ? "sujo" : "limpo",
+        hits
+      });
+    } catch {
+      results.push({ nome: file.nome, status: "err", hits: [] });
+    }
+  }
+  return results;
+}
+
+// ==================== Processar ZIP ====================
+document.getElementById("fileInput").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const name = document.getElementById("projectName").value || file.name;
+  currentSource = name;
+
+  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+  const files = [];
+
+  for (const path of Object.keys(zip.files)) {
+    if (!zip.files[path].dir) {
+      const data = await zip.files[path].async("arraybuffer");
+      files.push({ nome: path, conteudo: data });
+    }
+  }
+
+  currentResults = await processFiles(files);
+  showResults();
+});
+
+// ==================== GitHub ====================
+async function scanGitHub() {
+  const url = document.getElementById("githubUrl").value.trim();
+  if (!url) return alert("Cole a URL do repositório");
+
+  const name = document.getElementById("projectName").value || url.split("/").pop();
+  currentSource = name;
+
+  const match = url.match(/github\.com\/([^/]+)\/([^/]+)/);
+  if (!match) return alert("URL inválida");
+
+  const [, owner, repo] = match;
+  const zipUrl = `https://codeload.github.com/${owner}/${repo}/zip/refs/heads/main`;
+
+  try {
+    const resp = await fetch(zipUrl);
+    const buf = await resp.arrayBuffer();
+    const zip = await JSZip.loadAsync(buf);
+
+    const files = [];
+    for (const path of Object.keys(zip.files)) {
+      if (!zip.files[path].dir) {
+        const data = await zip.files[path].async("arraybuffer");
+        files.push({ nome: path, conteudo: data });
+      }
+    }
+
+    currentResults = await processFiles(files);
+    showResults();
+  } catch (e) {
+    alert("Erro ao baixar repositório: " + e.message);
+  }
+}
+
+// ==================== Mostrar Resultados ====================
+function showResults() {
+  const container = document.getElementById("results");
+  const list = document.getElementById("fileList");
+  const stats = document.getElementById("stats");
+
+  container.classList.remove("hidden");
+  document.getElementById("sourceName").innerText = currentSource;
+
+  const sujos = currentResults.filter(r => r.status === "sujo").length;
+  const limpos = currentResults.filter(r => r.status === "limpo").length;
+  stats.innerHTML = `🔴 ${sujos} com referências &nbsp;&nbsp; 🟢 ${limpos} limpos`;
+
+  list.innerHTML = currentResults.map((r, i) => {
+    const cor = r.status === "sujo" ? "text-red-400" : r.status === "limpo" ? "text-green-400" : "text-gray-500";
+    return `
+      <div class="file-item p-3 rounded-xl border border-[#2d4a1e] mb-1">
+        <div class="flex justify-between items-center">
+          <span class="${cor} font-mono text-sm">${r.nome}</span>
+          <span class="text-xs px-2 py-0.5 rounded ${r.status === "sujo" ? "bg-red-900" : "bg-green-900"}">
+            ${r.status === "sujo" ? r.hits.length + " refs" : r.status}
+          </span>
+        </div>
+        ${r.hits.length > 0 ? `
+          <div class="mt-2 text-xs text-red-300 font-mono">
+            ${r.hits.slice(0,3).map(h => `L${h.ln}: ${h.txt}`).join("<br>")}
+            ${r.hits.length > 3 ? `... +${r.hits.length - 3} mais` : ""}
+          </div>` : ""}
+      </div>`;
+  }).join("");
+}
+
+// ==================== Baixar Relatório ====================
+function downloadReport() {
+  let txt = `=== RELATÓRIO SK SCANNER v2 ===\n`;
+  txt += `Projeto: ${currentSource}\n`;
+  txt += `Data: ${new Date().toLocaleString("pt-BR")}\n\n`;
+
+  const sujos = currentResults.filter(r => r.status === "sujo");
+  const limpos = currentResults.filter(r => r.status === "limpo");
+
+  txt += `Total: ${currentResults.length} | Com referências: ${sujos.length} | Limpos: ${limpos.length}\n\n`;
+
+  if (sujos.length) {
+    txt += "=== ARQUIVOS COM REFERÊNCIAS ===\n";
+    sujos.forEach(r => {
+      txt += `\n► ${r.nome}\n`;
+      r.hits.forEach(h => txt += `  L${h.ln}: ${h.txt}\n`);
+    });
+  }
+
+  txt += "\n=== ARQUIVOS LIMPOS ===\n";
+  limpos.forEach(r => txt += `  ✓ ${r.nome}\n`);
+
+  const blob = new Blob([txt], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${currentSource.replace(/\s+/g, "_")}_scanner.txt`;
+  a.click();
+}
+
+function clearResults() {
+  document.getElementById("results").classList.add("hidden");
+  currentResults = [];
+  currentSource = "";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+    <title>Gerador de Ícone</title>
+</head>
+<body>
+    <canvas id="canvas" width="512" height="512"></canvas>
+    <button onclick="baixar()">Baixar Ícone</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Fundo
+        ctx.fillStyle = '#a3a082';
+        ctx.fillRect(0, 0, 512, 512);
+
+        // Borda
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(5, 5, 502, 502);
+
+        // Letra M
+        ctx.fillStyle = '#0a0a0a';
+        ctx.font = 'bold 300px Georgia';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('M', 256, 256);
+
+        function baixar() {
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'icon-512.png';
+                a.click();
+            });
+        }
+    </script>
+</body>
+</html>

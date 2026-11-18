@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Cotejo Analítico - Exportável para Word</title>
+    <style>
+        /* ESTILO DA INTERFACE (NÃO VAI PARA O WORD) */
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+        
+        .painel-controle {
+            background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 1000px; margin: 0 auto 30px auto; border-top: 5px solid #2980b9;
+        }
+        
+        .painel-controle h2 { margin-top: 0; color: #2980b9; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; align-items: end; background: #f8f9fa; padding: 15px; border-radius: 6px; }
+        
+        label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 12px; color: #555; }
+        input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+        textarea { resize: vertical; height: 70px; }
+
+        /* Cores dos Inputs */
+        .input-theo { border-left: 4px solid #c0392b; background-color: #fffbfb; }
+        .input-miguel { border-left: 4px solid #27ae60; background-color: #fafffb; }
+        .input-extra { border-left: 4px solid #2980b9; background-color: #fbfdff; }
+        
+        /* BOTÕES */
+        .btn-row { margin-top: 15px; display: flex; gap: 10px; }
+        button { padding: 10px 15px; border: none; cursor: pointer; font-size: 14px; border-radius: 4px; font-weight: bold; color: white; transition: 0.2s; flex: 1; }
+        .btn-add { background-color: #2c3e50; }
+        .btn-word { background-color: #2980b9; } /* Azul Word */
+        .btn-clear { background-color: #c0392b; flex: 0.3; }
+
+        /* VISUALIZAÇÃO DA FOLHA (PREVIEW) */
+        .folha-preview {
+            background: white; width: 210mm; min-height: 100mm; padding: 20mm; margin: 0 auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="painel-controle">
+    <h2>1. Configurar Dados</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+        <input type="text" id="procTheo" placeholder="Nº Processo Theo (Recorrido)">
+        <input type="text" id="procMiguel" placeholder="Nº Processo Miguel (Paradigma)">
+        <input type="text" id="procExtra" placeholder="Nº Processo Extra (Opcional)">
+    </div>
+
+    <h2>2. Preencher Linha da Tabela</h2>
+    <div class="grid-inputs">
+        <div>
+            <label>CRITÉRIO (Fato/Direito):</label>
+            <textarea id="txtCriterio" placeholder="Ex: Fixação da DIB e Fato Superveniente..."></textarea>
+        </div>
+        <div>
+            <label style="color:#c0392b">CASO THEO (Errado):</label>
+            <textarea id="txtTheo" class="input-theo" placeholder="Decisão recorrida..."></textarea>
+            <input type="text" id="locTheo" placeholder="Local: Evento X, Fls Y">
+        </div>
+        <div>
+            <label style="color:#27ae60">CASO MIGUEL (Certo):</label>
+            <textarea id="txtMiguel" class="input-miguel" placeholder="Decisão paradigma..."></textarea>
+            <input type="text" id="locMiguel" placeholder="Local: Evento X, Fls Y">
+        </div>
+        <div>
+            <label style="color:#2980b9">VIOLAÇÃO / SÚMULA:</label>
+            <textarea id="txtLei" class="input-extra" placeholder="Súmula 22 TNU, Tema 1124 STJ..."></textarea>
+        </div>
+    </div>
+    
+    <div class="btn-row">
+        <button class="btn-add" onclick="adicionarLinha()">➕ Adicionar Linha</button>
+        <button class="btn-word" onclick="baixarWord()">📥 Baixar em Word (.doc)</button>
+        <button class="btn-clear" onclick="limpar()">🗑️ Limpar</button>
+    </div>
+</div>
+
+<div id="areaExportacao" class="folha-preview">
+    
+    <div xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        
+        <p align="center" style="font-family: Arial; font-weight: bold; font-size: 14pt; margin-bottom: 20px;">
+            COTEJO ANALÍTICO DE DIVERGÊNCIA JURISPRUDENCIAL
+        </p>
+        
+        <p style="font-family: Arial; font-size: 11pt; text-align: justify;">
+            <b>Processo Recorrido (Theo):</b> <span id="lblTheo">[Nº PROC THEO]</span><br>
+            <b>Processo Paradigma (Miguel):</b> <span id="lblMiguel">[Nº PROC MIGUEL]</span><br>
+            <span id="linhaExtra" style="display:none;"><b>Processo Reforço:</b> <span id="lblExtra"></span></span>
+        </p>
+
+        <p style="font-family: Arial; font-size: 11pt; text-align: justify;">
+            Abaixo, demonstra-se a similitude fática e a divergência jurídica, em cumprimento à Resolução PRESI 42/2024 (TRF6):
+        </p>
+
+        <table border="1" cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; font-family: Arial; font-size: 10pt; border: 1px solid #000;">
+            <thead>
+                <tr style="background-color: #e9ecef;">
+                    <th style="width: 15%; background-color: #34495e; color: white; border: 1px solid #000;">CRITÉRIO / FATO</th>
+                    <th style="width: 28%; background-color: #c0392b; color: white; border: 1px solid #000;">DECISÃO RECORRIDA<br>(CASO THEO)</th>
+                    <th style="width: 28%; background-color: #27ae60; color: white; border: 1px solid #000;">DECISÃO PARADIGMA<br>(CASO MIGUEL)</th>
+                    <th style="width: 29%; background-color: #2980b9; color: white; border: 1px solid #000;">VIOLAÇÃO / DISPOSITIVO</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabela">
+                </tbody>
+        </table>
+
+        <p style="font-family: Arial; font-size: 10pt; text-align: center; margin-top: 30px;">
+            __________________________________<br>
+            <b>MAIKON DA ROCHA CALDEIRA</b><br>
+            OAB/MG 183.712
+        </p>
+    </div>
+
+</div>
+
+<script>
+    function adicionarLinha() {
+        // Atualiza cabeçalhos
+        document.getElementById('lblTheo').innerText = document.getElementById('procTheo').value || "[Nº PROC THEO]";
+        document.getElementById('lblMiguel').innerText = document.getElementById('procMiguel').value || "[Nº PROC MIGUEL]";
+        if(document.getElementById('procExtra').value) {
+            document.getElementById('linhaExtra').style.display = 'inline';
+            document.getElementById('lblExtra').innerText = document.getElementById('procExtra').value;
+        }
+
+        // Pega valores
+        var crit = document.getElementById('txtCriterio').value;
+        var theo = document.getElementById('txtTheo').value;
+        var locTheo = document.getElementById('locTheo').value;
+        var mig = document.getElementById('txtMiguel').value;
+        var locMig = document.getElementById('locMiguel').value;
+        var lei = document.getElementById('txtLei').value;
+
+        if(!crit) { alert("Preencha o critério!"); return; }
+
+        var tbody = document.getElementById('corpoTabela');
+        var tr = document.createElement('tr');
+
+        tr.innerHTML = `
+            <td style="border: 1px solid #000; font-weight: bold; background-color: #f4f6f7;">${crit}</td>
+            <td style="border: 1px solid #000; vertical-align: top;">
+                ${theo}
+                ${locTheo ? `<br><br><i>(Doc: ${locTheo})</i>` : ''}
+            </td>
+            <td style="border: 1px solid #000; vertical-align: top;">
+                ${mig}
+                ${locMig ? `<br><br><i>(Doc: ${locMig})</i>` : ''}
+            </td>
+            <td style="border: 1px solid #000; vertical-align: top; background-color: #f0f8ff;">
+                <b>${lei}</b>
+            </td>
+        `;
+        tbody.appendChild(tr);
+
+        // Limpa campos
+        document.getElementById('txtCriterio').value = '';
+        document.getElementById('txtTheo').value = '';
+        document.getElementById('locTheo').value = '';
+        document.getElementById('txtMiguel').value = '';
+        document.getElementById('locMiguel').value = '';
+        document.getElementById('txtLei').value = '';
+    }
+
+    function limpar() {
+        document.getElementById('corpoTabela').innerHTML = '';
+    }
+
+    function baixarWord() {
+        var preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Cotejo Word</title></head><body>";
+        var postHtml = "</body></html>";
+        
+        // Pega o HTML apenas da área de exportação
+        var html = preHtml + document.getElementById('areaExportacao').innerHTML + postHtml;
+
+        var blob = new Blob(['\ufeff', html], {
+            type: 'application/msword'
+        });
+        
+        // Cria link de download
+        var url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+        
+        // Estratégia de download segura
+        var downloadLink = document.createElement("a");
+        document.body.appendChild(downloadLink);
+        
+        if(navigator.msSaveOrOpenBlob ){
+            navigator.msSaveOrOpenBlob(blob, 'Cotejo_Analitico.doc');
+        } else {
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'Cotejo_Analitico.doc';
+            downloadLink.click();
+        }
+        
+        document.body.removeChild(downloadLink);
+    }
+</script>
+
+</body>
+</html>

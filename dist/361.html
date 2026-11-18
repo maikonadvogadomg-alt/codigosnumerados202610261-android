@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extrator Jurídico BPC/LOAS com OCR e Exportação</title>
+
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Bibliotecas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://unpkg.com/docx"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body class="p-6 bg-gray-100">
+  <h1 class="text-2xl font-bold mb-4">Extrator Jurídico BPC/LOAS com OCR e Exportação</h1>
+
+  <input type="file" id="fileInput" class="mb-4" />
+
+  <!-- Barra de progresso -->
+  <div class="w-full bg-gray-300 rounded mb-2">
+    <div id="progressBar" class="bg-blue-500 text-xs leading-none py-1 text-center text-white rounded" style="width:0%">0%</div>
+  </div>
+  <!-- Contador de páginas -->
+  <p id="pageCounter" class="text-sm text-gray-700 mb-4">Nenhuma página processada ainda</p>
+
+  <div class="space-x-2 mb-4">
+    <button onclick="exportToWord(output.textContent)" class="bg-blue-500 text-white p-2 rounded">Exportar Word</button>
+    <button onclick="exportToExcel(output.textContent)" class="bg-green-500 text-white p-2 rounded">Exportar Excel</button>
+    <button onclick="exportToPDF(output.textContent)" class="bg-red-500 text-white p-2 rounded">Exportar PDF</button>
+  </div>
+
+  <pre id="output" class="bg-white p-4 border rounded h-96 overflow-y-scroll"></pre>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const output = document.getElementById("output");
+    const progressBar = document.getElementById("progressBar");
+    const pageCounter = document.getElementById("pageCounter");
+
+    fileInput.addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const arrayBuffer = e.target.result;
+
+        if (file.type === "application/pdf") {
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let fullText = "";
+
+          for (let i = 1; i <= pdf.numPages; i++) {
+            pageCounter.textContent = `Processando página ${i} de ${pdf.numPages}...`;
+
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+            const imageData = canvas.toDataURL("image/png");
+
+            const result = await Tesseract.recognize(imageData, "por", {
+              logger: m => {
+                if (m.status === "recognizing text") {
+                  const percent = Math.round(m.progress * 100);
+                  progressBar.style.width = percent + "%";
+                  progressBar.textContent = percent + "%";
+                }
+              }
+            });
+
+            fullText += `\n--- Página ${i} ---\n` + result.data.text + "\n";
+          }
+
+          progressBar.style.width = "100%";
+          progressBar.textContent = "Concluído!";
+          pageCounter.textContent = `Todas as ${pdf.numPages} páginas foram processadas.`;
+          output.textContent = fullText;
+
+        } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+          mammoth.extractRawText({ arrayBuffer })
+            .then(function(result) {
+              output.textContent = result.value;
+              progressBar.style.width = "100%";
+              progressBar.textContent = "Concluído!";
+              pageCounter.textContent = "Documento Word processado.";
+            });
+        } else {
+          output.textContent = "Formato não suportado.";
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    // Exportar para Word
+    function exportToWord(text) {
+      const { Document, Packer, Paragraph } = window.docx;
+      const doc = new Document({
+        sections: [{ children: [ new Paragraph(text) ] }],
+      });
+      Packer.toBlob(doc).then(blob => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "resultado.docx";
+        link.click();
+      });
+    }
+
+    // Exportar para Excel
+    function exportToExcel(text) {
+      const linhas = text.split("\n").map(l => [l]);
+      const ws = XLSX.utils.aoa_to_sheet(linhas);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "OCR");
+      XLSX.writeFile(wb, "resultado.xlsx");
+    }
+
+    // Exportar para PDF
+    function exportToPDF(text) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text(text, 10, 10);
+      doc.save("resultado.pdf");
+    }
+  </script>
+</body>
+</html>

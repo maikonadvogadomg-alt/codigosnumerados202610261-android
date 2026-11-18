@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK Oficina Jurídica v6 - Analyzer + Injector</title>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkBg: '#0d1208',
+            panelBg: '#141c0d',
+            borderGreen: '#223018',
+            textGreen: '#c8dda8',
+            brandGreen: '#5fad3c',
+            focusGreen: '#7dcf55',
+            matrixGreen: '#22c55e',
+            accentGold: '#d4aa4e',
+            accentBlue: '#56b6c2'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1208; }
+    ::-webkit-scrollbar-thumb { background: #223018; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5fad3c; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+  </style>
+</head>
+<body class="bg-darkBg text-textGreen font-sans min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-panelBg border-b border-borderGreen p-4 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">⚖️</span>
+      <div>
+        <h1 class="text-brandGreen font-bold text-lg flex items-center gap-2">
+          SK Oficina Jurídica <span class="text-xs bg-brandGreen/20 text-brandGreen px-2 py-0.5 rounded">v6</span>
+        </h1>
+        <p class="text-[11px] text-focusGreen font-mono">Analyzer + Extrator + Injetor de Essenciais</p>
+      </div>
+    </div>
+    
+    <div class="flex flex-wrap gap-1">
+      <button onclick="showSection('importar')" class="tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all">📥 Importar</button>
+      <button onclick="showSection('apk-info')" class="tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all">📱 Dados APK</button>
+      <button onclick="showSection('editor')" class="tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all">📂 Editor</button>
+      <button onclick="showSection('scanner')" class="tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all">🛡️ Limpar & Injetar</button>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-hidden relative flex flex-col">
+
+    <!-- ABA 1: IMPORTAR -->
+    <section id="section-importar" class="section-panel p-6 space-y-6 overflow-y-auto max-w-4xl mx-auto w-full">
+      <div class="bg-panelBg border border-borderGreen rounded-xl p-6 text-center space-y-4">
+        <div class="text-4xl">📦</div>
+        <h2 class="text-white font-bold text-lg">Carregar APK ou ZIP (Sem Limites)</h2>
+        <p class="text-xs text-textGreen">Arraste ou selecione o arquivo. Processamento 100% no navegador.</p>
+        
+        <div class="border-2 border-dashed border-borderGreen p-8 rounded-lg bg-darkBg/50 hover:border-brandGreen cursor-pointer transition-all" onclick="document.getElementById('zipInput').click()">
+          <p class="text-xs text-brandGreen font-bold">Clique para procurar arquivo (.zip, .apk)</p>
+          <span id="zipName" class="block text-[10px] mt-2 text-textGreen">Nenhum arquivo carregado</span>
+        </div>
+        <input type="file" id="zipInput" accept=".zip,.apk" class="hidden">
+      </div>
+    </section>
+
+    <!-- ABA 2: DADOS DO APK -->
+    <section id="section-apk-info" class="section-panel hidden p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-6">
+      <div class="bg-panelBg border border-borderGreen rounded-xl p-6 space-y-4">
+        <h2 class="text-brandGreen font-bold text-lg">📱 Informações do AndroidManifest</h2>
+        <div id="apkDataContainer" class="space-y-4">
+          <p class="text-xs text-gray-500 italic text-center py-8">Nenhum APK carregado.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 3: EDITOR -->
+    <section id="section-editor" class="section-panel hidden flex-1 flex flex-col md:flex-row overflow-hidden h-full">
+      <div class="w-full md:w-80 bg-panelBg border-r border-borderGreen p-3 flex flex-col shrink-0">
+        <h3 class="text-xs font-bold text-brandGreen uppercase mb-2 flex justify-between">
+          <span>📁 Arquivos (<span id="filesCount">0</span>)</span>
+        </h3>
+        <input type="text" id="fileSearch" placeholder="Buscar arquivo..." onkeyup="filterFiles()" class="bg-darkBg border border-borderGreen rounded-lg px-3 py-1.5 text-xs text-white outline-none mb-2">
+        <div id="fileList" class="flex-1 overflow-y-auto space-y-1 text-xs"></div>
+      </div>
+      <div class="flex-1 bg-darkBg p-3 flex flex-col overflow-hidden">
+        <div class="flex justify-between items-center mb-2 bg-panelBg p-2 rounded-lg border border-borderGreen">
+          <span id="currentFileName" class="text-xs font-mono text-brandGreen font-bold">📝 Nenhum arquivo</span>
+          <button onclick="saveCurrentFileChanges()" class="text-[10px] bg-brandGreen text-darkBg px-3 py-1 rounded font-bold hover:bg-focusGreen">Salvar na Memória</button>
+        </div>
+        <textarea id="fileContent" class="flex-1 w-full bg-[#020617] border border-borderGreen rounded-lg p-4 text-xs font-mono text-matrixGreen outline-none resize-none"></textarea>
+      </div>
+    </section>
+
+    <!-- ABA 4: SCANNER & INJETOR -->
+    <section id="section-scanner" class="section-panel hidden p-6 overflow-y-auto max-w-5xl mx-auto w-full space-y-6">
+      <div class="bg-panelBg border border-borderGreen rounded-xl p-6 space-y-4">
+        <h2 class="text-brandGreen font-bold text-lg">🛡️ Limpeza Replit & Injeção de Essenciais</h2>
+        <p class="text-xs text-textGreen">Detecta sujeiras, limpa strings quebradas e <strong>recria arquivos essenciais</strong> (vite.config.js) para garantir que o projeto funcione fora do Replit.</p>
+
+        <div class="bg-darkBg p-4 rounded-lg border border-borderGreen">
+          <h3 class="text-xs font-bold text-white mb-2">Estatísticas do Projeto Atual:</h3>
+          <ul class="text-xs space-y-1 text-gray-400">
+            <li>Total de Arquivos: <strong id="scanTotalFiles" class="text-brandGreen">0</strong></li>
+            <li>Arquivos Infectados (Replit): <strong id="scanInfectedFiles" class="text-red-400">0</strong></li>
+          </ul>
+        </div>
+
+        <button onclick="executeCleanAndInject()" class="w-full bg-brandGreen text-darkBg py-3 rounded-lg text-sm font-bold hover:bg-focusGreen transition-all flex justify-center items-center gap-2">
+          <span>🧹 Limpar, Injetar Essenciais e Baixar Projeto</span>
+        </button>
+
+        <div id="cleanLogs" class="hidden bg-black border border-borderGreen p-3 rounded-lg text-[10px] font-mono text-gray-400 h-40 overflow-y-auto space-y-1"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="globalLoader" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center space-y-4">
+    <div class="w-12 h-12 border-4 border-brandGreen border-t-transparent rounded-full spinner"></div>
+    <p id="loaderMsg" class="text-brandGreen font-mono text-xs">Processando...</p>
+  </div>
+
+  <script>
+    // ================= ESTADO GLOBAL =================
+    let currentFiles = [];
+    let fileContents = {};
+    let activeFile = null;
+    let apkInfoData = null;
+    let originalFileName = "projeto";
+
+    // Padrões exatos do seu código React
+    const REPLIT_PATTERNS = [
+      /replit\.dev/gi, /repl\.co/gi, /repl\.it/gi,
+      /REPL_ID/g, /REPLIT_DEV_DOMAIN/g, /REPLIT_DOMAINS/g,
+      /replit\.com/gi, /cartographer/gi, /vite-plugin-dev-banner/gi,
+      /vite-plugin-runtime-error-modal/gi, /replitDomain/gi,
+      /__replit/gi,
+    ];
+
+    const SKIP_EXT = new Set(["png","jpg","jpeg","gif","webp","ico","woff","woff2","ttf","eot","otf","mp3","mp4","webm","ogg","bin","class","dex"]);
+
+    // ================= UTILITÁRIOS =================
+    function showSection(id) {
+      document.querySelectorAll('.section-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`section-${id}`).classList.remove('hidden');
+      if(id === 'scanner') updateScannerStats();
+    }
+
+    function showLoader(msg) {
+      document.getElementById('loaderMsg').innerText = msg;
+      document.getElementById('globalLoader').classList.remove('hidden');
+    }
+    function hideLoader() {
+      document.getElementById('globalLoader').classList.add('hidden');
+    }
+
+    function logAction(msg, type="info") {
+      const logs = document.getElementById('cleanLogs');
+      logs.classList.remove('hidden');
+      const color = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-brandGreen' : 'text-gray-400';
+      logs.innerHTML += `<div class="${color}">> ${msg}</div>`;
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    // ================= PARSER AXML (Idêntico ao seu) =================
+    function parseAxml(buf) {
+      const data = new Uint8Array(buf);
+      const dv = new DataView(buf);
+      const strings = [];
+      try {
+        const off = 8;
+        const strCount  = dv.getUint32(off + 8, true);
+        const flags     = dv.getUint32(off + 16, true);
+        const strStart  = dv.getUint32(off + 20, true);
+        const poolHSize = dv.getUint16(off + 2, true);
+        const isUtf8    = !!(flags & (1 << 8));
+        const offsetsBase = off + poolHSize;
+        const stringsBase = off + strStart;
+        for (let i = 0; i < Math.min(strCount, 500); i++) {
+          const idxOff = offsetsBase + i * 4;
+          if (idxOff + 4 > data.byteLength) break;
+          const sOff = stringsBase + dv.getUint32(idxOff, true);
+          if (sOff >= data.byteLength) continue;
+          let s = "";
+          if (isUtf8) {
+            const clen = data[sOff + 1];
+            if (sOff + 2 + clen > data.byteLength) continue;
+            for (let j = 0; j < clen; j++) { const c = data[sOff + 2 + j]; if (c >= 0x20) s += String.fromCharCode(c); }
+          } else {
+            const clen = dv.getUint16(sOff, true);
+            if (sOff + 2 + clen * 2 > data.byteLength) continue;
+            for (let j = 0; j < clen; j++) { const c = dv.getUint16(sOff + 2 + j * 2, true); if (c >= 0x20) s += String.fromCharCode(c); }
+          }
+          if (s.length >= 2) strings.push(s);
+        }
+      } catch(e) {}
+      return strings;
+    }
+
+    function extractApkInfo(strings, fileName) {
+      const pkg = strings.find(s => /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,6}$/.test(s) && !s.startsWith("android") && !s.startsWith("androidx") && !s.startsWith("com.google")) ?? "Desconhecido";
+      const verName = strings.find(s => /^\d+(\.\d+){0,3}$/.test(s)) ?? "1.0";
+      return { fileName, packageName: pkg, versionName: verName };
+    }
+
+    // ================= IMPORTAÇÃO =================
+    document.getElementById('zipInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      originalFileName = file.name;
+      document.getElementById('zipName').innerText = file.name;
+      showLoader("Lendo arquivo na memória...");
+
+      try {
+        const buffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(buffer);
+        
+        if (file.name.endsWith('.apk')) {
+          const manifest = zip.files["AndroidManifest.xml"];
+          if (manifest) {
+            const mBuf = await manifest.async("arraybuffer");
+            const strings = parseAxml(mBuf);
+            apkInfoData = extractApkInfo(strings, file.name);
+            renderApkInfo();
+          }
+        }
+
+        currentFiles = [];
+        fileContents = {};
+
+        // SEM LIMITE DE 60 ARQUIVOS AQUI! Lê todos.
+        const promises = [];
+        zip.forEach((path, entry) => {
+          if (!entry.dir) {
+            currentFiles.push(path);
+            const ext = path.split('.').pop().toLowerCase();
+            if (!SKIP_EXT.has(ext)) {
+              promises.push(
+                entry.async('string').then(txt => fileContents[path] = txt).catch(() => fileContents[path] = "[Erro]")
+              );
+            } else {
+              promises.push(
+                entry.async('uint8array').then(bin => fileContents[path] = bin)
+              );
+            }
+          }
+        });
+
+        await Promise.all(promises);
+        currentFiles.sort();
+        renderFileList();
+        showSection('editor');
+      } catch(e) {
+        alert("Erro: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    });
+
+    function renderApkInfo() {
+      if (!apkInfoData) return;
+      document.getElementById('apkDataContainer').innerHTML = `
+        <div class="bg-darkBg p-4 rounded-lg border border-borderGreen">
+          <h3 class="text-brandGreen font-bold">${apkInfoData.fileName}</h3>
+          <p class="text-xs text-gray-400 mt-2">Package ID: <strong class="text-accentGold">${apkInfoData.packageName}</strong></p>
+          <p class="text-xs text-gray-400">Versão: <strong class="text-white">${apkInfoData.versionName}</strong></p>
+        </div>`;
+    }
+
+    // ================= EDITOR =================
+    function hasReplitRef(text) {
+      if (typeof text !== 'string') return false;
+      return REPLIT_PATTERNS.some(p => { p.lastIndex = 0; return p.test(text); });
+    }
+
+    function renderFileList() {
+      document.getElementById('filesCount').innerText = currentFiles.length;
+      const container = document.getElementById('fileList');
+      container.innerHTML = currentFiles.map(file => {
+        const isSujo = hasReplitRef(fileContents[file]);
+        const badge = isSujo ? '<span class="text-[9px] bg-red-950 text-red-400 px-1 rounded">Replit</span>' : '';
+        return `<div class="p-1.5 hover:bg-borderGreen rounded cursor-pointer flex justify-between items-center truncate border-b border-borderGreen/10" onclick="openFile('${file}')">
+          <span class="truncate">📄 ${file}</span>${badge}
+        </div>`;
+      }).join('');
+    }
+
+    function openFile(filename) {
+      activeFile = filename;
+      document.getElementById('currentFileName').innerText = `📝 ${filename}`;
+      const content = fileContents[filename];
+      document.getElementById('fileContent').value = typeof content === 'string' ? content : "[Arquivo Binário]";
+    }
+
+    function saveCurrentFileChanges() {
+      if (!activeFile) return;
+      fileContents[activeFile] = document.getElementById('fileContent').value;
+      alert("Salvo na memória!");
+      renderFileList();
+    }
+
+    // ================= LIMPEZA E INJEÇÃO (A MÁGICA) =================
+    function updateScannerStats() {
+      document.getElementById('scanTotalFiles').innerText = currentFiles.length;
+      let infected = 0;
+      currentFiles.forEach(f => { if(hasReplitRef(fileContents[f])) infected++; });
+      document.getElementById('scanInfectedFiles').innerText = infected;
+    }
+
+    // Lógica de limpeza de strings (igual a sua do React)
+    function cleanReplitStrings(text) {
+      let out = text;
+      out = out.replace(/https?:\/\/[a-z0-9-]+\.replit\.dev[^\s"'`)]*/gi, "");
+      out = out.replace(/https?:\/\/[a-z0-9-]+\.repl\.co[^\s"'`)]*/gi, "");
+      out = out.replace(/["']REPLIT_DEV_DOMAIN["']\s*:\s*["'][^"']*["']/gi, '"REPLIT_DEV_DOMAIN":""');
+      out = out.replace(/["']REPL_ID["']\s*:\s*["'][^"']*["']/gi, '"REPL_ID":""');
+      out = out.replace(/process\.env\.REPL_ID/g, '""');
+      out = out.replace(/process\.env\.REPLIT_DEV_DOMAIN/g, '""');
+      out = out.replace(/import\.meta\.env\.REPLIT[A-Z_]*/g, '""');
+      return out;
+    }
+
+    // Lógica nova: Injetar arquivos essenciais se for código fonte
+    function injectEssentialFiles() {
+      // Se tiver package.json, é um projeto Node/Vite (ZIP)
+      const isSourceCode = currentFiles.some(f => f.includes('package.json'));
+      
+      if (isSourceCode) {
+        logAction("Detectado código-fonte (ZIP). Injetando arquivos essenciais...", "info");
+        
+        // 1. Forçar um vite.config.js limpo
+        const cleanViteConfig = `import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig({\n  plugins: [react()],\n  server: { host: '0.0.0.0', port: 3000 }\n});`;
+        
+        // Procura onde está o vite config (pode estar na raiz ou numa pasta)
+        let vitePath = currentFiles.find(f => f.endsWith('vite.config.js') || f.endsWith('vite.config.ts'));
+        if (!vitePath) {
+          vitePath = "vite.config.js";
+          currentFiles.push(vitePath);
+        }
+        fileContents[vitePath] = cleanViteConfig;
+        logAction(`Substituído/Criado: ${vitePath}`, "success");
+
+        // 2. Limpar index.html de scripts injetados
+        let htmlPath = currentFiles.find(f => f.endsWith('index.html'));
+        if (htmlPath && typeof fileContents[htmlPath] === 'string') {
+          let html = fileContents[htmlPath];
+          // Remove scripts do replit
+          html = html.replace(/<script[^>]*src=["'][^"']*replit[^"']*["'][^>]*><\/script>/gi, "");
+          fileContents[htmlPath] = html;
+          logAction(`Limpado: ${htmlPath}`, "success");
+        }
+      } else {
+        logAction("Detectado APK compilado. Apenas limpando strings, sem injetar arquivos.", "info");
+      }
+    }
+
+    async function executeCleanAndInject() {
+      if (currentFiles.length === 0) return alert("Importe um projeto primeiro!");
+      showLoader("Limpando e Injetando...");
+      document.getElementById('cleanLogs').innerHTML = "";
+      
+      let cleanedCount = 0;
+
+      // 1. Limpar strings
+      currentFiles.forEach(f => {
+        if (typeof fileContents[f] === 'string' && hasReplitRef(fileContents[f])) {
+          fileContents[f] = cleanReplitStrings(fileContents[f]);
+          cleanedCount++;
+          logAction(`Strings limpas em: ${f}`);
+        }
+      });
+
+      // 2. Injetar Essenciais (A resposta para a sua dúvida)
+      injectEssentialFiles();
+
+      logAction(`Total de arquivos modificados: ${cleanedCount}`, "success");
+      logAction("Gerando novo arquivo para download...", "info");
+
+      // 3. Gerar ZIP/APK
+      const zip = new JSZip();
+      currentFiles.forEach(f => {
+        zip.file(f, fileContents[f]);
+      });
+
+      const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; 
+      
+      const isApk = originalFileName.endsWith('.apk');
+      a.download = originalFileName.replace(isApk ? ".apk" : ".zip", isApk ? "-limpo.apk" : "-limpo.zip");
+      
+      document.body.appendChild(a); 
+      a.click();
+      document.body.removeChild(a);
+      
+      hideLoader();
+      renderFileList(); // Atualiza a lista tirando as tags vermelhas
+      logAction("Download concluído com sucesso!", "success");
+    }
+  </script>
+</body>
+</html>

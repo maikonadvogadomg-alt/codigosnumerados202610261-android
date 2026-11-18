@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Relatório + Extrator de Arquivos</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', monospace;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container { max-width: 1600px; margin: 0 auto; }
+h1 { color: #a3a082; margin-bottom: 10px; text-align: center; font-size: 24px; }
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 13px; }
+h2 { color: #4ade80; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #334155; padding-bottom: 8px; }
+h3 { color: #60a5fa; margin: 12px 0 8px 0; font-size: 13px; }
+
+.upload-area {
+  background: #1e293b;
+  border: 2px dashed #334155;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover { border-color: #a3a082; background: #334155; }
+.upload-area.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+
+input[type="file"] { display: none; }
+
+.btn {
+  background: #a3a082;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+.btn:hover { background: #d4d0a8; transform: translateY(-2px); }
+.btn-secondary { background: #3b82f6; color: #fff; }
+.btn-secondary:hover { background: #2563eb; }
+.btn-danger { background: #f87171; color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-small { padding: 6px 12px; font-size: 11px; }
+
+.loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px;
+  font-size: 14px;
+}
+.spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #334155;
+  border-top-color: #a3a082;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.filters {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.filter-group input,
+.filter-group select {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #a3a082;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+}
+
+.results {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #0f172a;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.card-meta {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 5px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.stat-box {
+  background: #334155;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-box strong {
+  display: block;
+  color: #a3a082;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.stat-box span {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.file-list {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.file-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-item:hover {
+  background: #334155;
+  border-color: #a3a082;
+}
+
+.file-item.js { border-left: 4px solid #60a5fa; }
+.file-item.html { border-left: 4px solid #f87171; }
+.file-item.css { border-left: 4px solid #fbbf24; }
+.file-item.json { border-left: 4px solid #4ade80; }
+.file-item.other { border-left: 4px solid #94a3b8; }
+
+.file-name {
+  flex: 1;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.file-size {
+  color: #94a3b8;
+  font-size: 11px;
+  margin-right: 10px;
+}
+
+.file-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.code-preview {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 15px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  max-height: 300px;
+  overflow: auto;
+  color: #60a5fa;
+}
+
+.code-line {
+  padding: 2px 0;
+  display: flex;
+  gap: 10px;
+}
+
+.code-num {
+  color: #94a3b8;
+  min-width: 30px;
+  text-align: right;
+  user-select: none;
+}
+
+.code-content {
+  flex: 1;
+  word-break: break-all;
+}
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.tab:hover { color: #e2e8f0; }
+.tab.active { color: #a3a082; border-bottom-color: #a3a082; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-content {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+  width: 800px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #334155;
+}
+
+.modal-close {
+  background: #f87171;
+  color: #fff;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+@media (max-width: 1200px) {
+  .filters { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📋 Gerador de Relatório + Extrator de Arquivos</h1>
+  <p class="subtitle">Analisa, filtra e extrai arquivos individuais para edição segura</p>
+
+  <div class="upload-area" id="dropZone">
+    <p style="font-size: 18px; margin-bottom: 10px;">📦 Arraste seu ZIP da Replit aqui</p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Será analisado para gerar relatório completo</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecionar ZIP</button>
+    <input type="file" id="fileInput" accept=".zip" />
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Analisando e gerando relatório...</p>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<!-- MODAL DE VISUALIZAÇÃO -->
+<div class="modal" id="fileModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitle">Arquivo</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div style="margin-top: 20px; display: flex; gap: 10px;">
+      <button class="btn btn-secondary" onclick="downloadCurrentFile()">⬇️ Baixar Arquivo</button>
+      <button class="btn btn-secondary" onclick="copyCurrentFile()">📋 Copiar Código</button>
+      <button class="btn" onclick="closeModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+
+let allFiles = {};
+let fileMetadata = {};
+let currentFileContent = '';
+let currentFileName = '';
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+async function handleFile(file) {
+  if (!file) return;
+  
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  
+  try {
+    const zip = new JSZip();
+    const content = await zip.loadAsync(file);
+    
+    allFiles = {};
+    fileMetadata = {};
+    
+    // Extrai todos os arquivos
+    for (let [path, zipEntry] of Object.entries(content.files)) {
+      if (!zipEntry.dir) {
+        allFiles[path] = zipEntry;
+        
+        const ext = path.split('.').pop().toLowerCase();
+        const size = zipEntry._data.uncompressedSize;
+        
+        fileMetadata[path] = {
+          name: path.split('/').pop(),
+          path: path,
+          ext: ext,
+          size: size,
+          sizeKB: (size / 1024).toFixed(2),
+          type: getFileType(ext),
+          isHidden: path.includes('/.')
+        };
+      }
+    }
+    
+    loadingDiv.style.display = 'none';
+    displayReport();
+    
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultsDiv.innerHTML = `<div class="card" style="border-left-color: #f87171;">
+      <h3>❌ Erro ao processar</h3>
+      <p style="color: #f87171;">${err.message}</p>
+    </div>`;
+  }
+}
+
+function getFileType(ext) {
+  if (['js', 'jsx', 'ts', 'tsx'].includes(ext)) return 'js';
+  if (['html', 'htm'].includes(ext)) return 'html';
+  if (['css', 'scss', 'sass'].includes(ext)) return 'css';
+  if (['json'].includes(ext)) return 'json';
+  return 'other';
+}
+
+function displayReport() {
+  const files = Object.values(fileMetadata);
+  
+  let html = `
+    <div class="filters">
+      <div class="filter-group">
+        <label>🔍 Buscar Arquivo</label>
+        <input type="text" id="searchInput" placeholder="Digite o nome..." onkeyup="filterFiles()">
+      </div>
+      
+      <div class="filter-group">
+        <label>📝 Tipo de Arquivo</label>
+        <select id="typeFilter" onchange="filterFiles()">
+          <option value="">-- Todos --</option>
+          <option value="js">JavaScript</option>
+          <option value="html">HTML</option>
+          <option value="css">CSS</option>
+          <option value="json">JSON</option>
+          <option value="other">Outros</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>📊 Tamanho</label>
+        <select id="sizeFilter" onchange="filterFiles()">
+          <option value="">-- Qualquer tamanho --</option>
+          <option value="small">Pequeno (&lt;10KB)</option>
+          <option value="medium">Médio (10-100KB)</option>
+          <option value="large">Grande (&gt;100KB)</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>🏷️ Categoria</label>
+        <select id="categoryFilter" onchange="filterFiles()">
+          <option value="">-- Todas --</option>
+          <option value="historico">Histórico da IA</option>
+          <option value="minuta">Minuta</option>
+          <option value="resumo">Resumo</option>
+          <option value="backend">Backend/API</option>
+          <option value="database">Banco de Dados</option>
+          <option value="ui">Interface</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Mostrar</label>
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" id="showHidden" checked onchange="filterFiles()"> Ocultos
+          </label>
+          <label>
+            <input type="checkbox" id="showLarge" checked onchange="filterFiles()"> Grandes
+          </label>
+        </div>
+      </div>
+      
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button class="btn btn-secondary" onclick="exportReport()">📊 Exportar Relatório</button>
+      </div>
+    </div>
+  `;
+  
+  // Estatísticas gerais
+  html += `
+    <div class="results">
+      <h2>📊 Estatísticas Gerais</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <strong>${files.length}</strong>
+          <span>Total de Arquivos</span>
+        </div>
+        <div class="stat-box">
+          <strong>${files.filter(f => f.type === 'js').length}</strong>
+          <span>JavaScript</span>
+        </div>
+        <div class="stat-box">
+          <strong>${files.filter(f => f.type === 'html').length}</strong>
+          <span>HTML</span>
+        </div>
+        <div class="stat-box">
+          <strong>${files.filter(f => f.type === 'css').length}</strong>
+          <span>CSS</span>
+        </div>
+        <div class="stat-box">
+          <strong>${(files.reduce((sum, f) => sum + f.size, 0) / 1024 / 1024).toFixed(2)}MB</strong>
+          <span>Tamanho Total</span>
+        </div>
+        <div class="stat-box">
+          <strong>${files.filter(f => f.isHidden).length}</strong>
+          <span>Arquivos Ocultos</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Lista de arquivos
+  html += `
+    <div class="results">
+      <h2>📁 Arquivos</h2>
+      <div class="file-list" id="fileList">
+        ${files.map(f => `
+          <div class="file-item ${f.type}" data-file="${f.path}" data-type="${f.type}" data-size="${f.size}" data-hidden="${f.isHidden}">
+            <div>
+              <div class="file-name">${f.name}</div>
+              <div class="file-size">${f.sizeKB}KB ${f.isHidden ? '(oculto)' : ''}</div>
+            </div>
+            <div class="file-actions">
+              <button class="btn btn-small btn-secondary" onclick="viewFile('${f.path}')">👁️</button>
+              <button class="btn btn-small btn-secondary" onclick="downloadFile('${f.path}')">⬇️</button>
+              <button class="btn btn-small" onclick="analyzeFile('${f.path}')">🔍</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  resultsDiv.innerHTML = html;
+}
+
+function filterFiles() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const typeFilter = document.getElementById('typeFilter').value;
+  const sizeFilter = document.getElementById('sizeFilter').value;
+  const categoryFilter = document.getElementById('categoryFilter').value;
+  const showHidden = document.getElementById('showHidden').checked;
+  const showLarge = document.getElementById('showLarge').checked;
+  
+  const fileItems = document.querySelectorAll('.file-item');
+  
+  fileItems.forEach(item => {
+    const path = item.dataset.file;
+    const type = item.dataset.type;
+    const size = parseInt(item.dataset.size);
+    const isHidden = item.dataset.hidden === 'true';
+    
+    let show = true;
+    
+    // Filtro de busca
+    if (search && !path.toLowerCase().includes(search)) show = false;
+    
+    // Filtro de tipo
+    if (typeFilter && type !== typeFilter) show = false;
+    
+    // Filtro de tamanho
+    if (sizeFilter === 'small' && size >= 10240) show = false;
+    if (sizeFilter === 'medium' && (size < 10240 || size > 102400)) show = false;
+    if (sizeFilter === 'large' && size <= 102400) show = false;
+    
+    // Filtro de ocultos
+    if (isHidden && !showHidden) show = false;
+    
+    // Filtro de grandes
+    if (size > 1024 * 1024 && !showLarge) show = false;
+    
+    // Filtro de categoria
+    if (categoryFilter) {
+      const pathLower = path.toLowerCase();
+      const categoryMatch = {
+        'historico': pathLower.includes('historico') || pathLower.includes('history'),
+        'minuta': pathLower.includes('minuta') || pathLower.includes('minute'),
+        'resumo': pathLower.includes('resumo') || pathLower.includes('summary'),
+        'backend': pathLower.includes('backend') || pathLower.includes('server') || pathLower.includes('api'),
+        'database': pathLower.includes('database') || pathLower.includes('db'),
+        'ui': pathLower.includes('ui') || pathLower.includes('component') || pathLower.includes('page')
+      };
+      
+      if (!categoryMatch[categoryFilter]) show = false;
+    }
+    
+    item.style.display = show ? 'flex' : 'none';
+  });
+}
+
+async function viewFile(filePath) {
+  try {
+    const content = await allFiles[filePath].async('text');
+    const meta = fileMetadata[filePath];
+    
+    currentFileContent = content;
+    currentFileName = meta.name;
+    
+    const lines = content.split('\n');
+    const preview = lines.slice(0, 50).map((line, i) => `
+      <div class="code-line">
+        <span class="code-num">${i + 1}</span>
+        <span class="code-content">${escapeHtml(line)}</span>
+      </div>
+    `).join('');
+    
+    document.getElementById('modalTitle').textContent = `📄 ${meta.name} (${meta.sizeKB}KB)`;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="code-preview">
+        ${preview}
+        ${lines.length > 50 ? `<div style="color: #94a3b8; margin-top: 10px;">... ${lines.length - 50} linhas restantes</div>` : ''}
+      </div>
+    `;
+    
+    document.getElementById('fileModal').classList.add('open');
+  } catch (err) {
+    alert('Erro ao ler arquivo: ' + err.message);
+  }
+}
+
+async function analyzeFile(filePath) {
+  try {
+    const content = await allFiles[filePath].async('text');
+    const meta = fileMetadata[filePath];
+    
+    const analysis = {
+      linhas: content.split('\n').length,
+      caracteres: content.length,
+      funcoes: (content.match(/function\s+\w+|const\s+\w+\s*=/g) || []).length,
+      comentarios: (content.match(/\/\/|\/\*|\*\//g) || []).length,
+      imports: (content.match(/import\s+|require\s*\(/g) || []).length,
+      exports: (content.match(/export\s+|module\.exports/g) || []).length,
+      keywords: {
+        historico: content.toLowerCase().includes('historico') || content.toLowerCase().includes('history'),
+        minuta: content.toLowerCase().includes('minuta'),
+        resumo: content.toLowerCase().includes('resumo'),
+        api: content.toLowerCase().includes('fetch') || content.toLowerCase().includes('axios'),
+        database: content.toLowerCase().includes('database') || content.toLowerCase().includes('sql'),
+        auth: content.toLowerCase().includes('auth') || content.toLowerCase().includes('token')
+      }
+    };
+    
+    currentFileContent = content;
+    currentFileName = meta.name;
+    
+    let html = `
+      <div style="background: #0f172a; padding: 15px; border-radius: 6px;">
+        <h3>📊 Análise: ${meta.name}</h3>
+        <div class="stats-grid" style="margin-top: 15px;">
+          <div class="stat-box">
+            <strong>${analysis.linhas}</strong>
+            <span>Linhas</span>
+          </div>
+          <div class="stat-box">
+            <strong>${analysis.funcoes}</strong>
+            <span>Funções</span>
+          </div>
+          <div class="stat-box">
+            <strong>${analysis.imports}</strong>
+            <span>Imports</span>
+          </div>
+          <div class="stat-box">
+            <strong>${analysis.comentarios}</strong>
+            <span>Comentários</span>
+          </div>
+        </div>
+        
+        <h3 style="margin-top: 20px;">🏷️ Palavras-chave Detectadas</h3>
+        <div style="margin-top: 10px;">
+          ${Object.entries(analysis.keywords).map(([key, found]) => `
+            <span style="display: inline-block; margin: 5px; padding: 5px 10px; background: ${found ? '#4ade80' : '#f87171'}; color: #000; border-radius: 4px; font-size: 11px;">
+              ${key}: ${found ? '✓' : '✗'}
+            </span>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('modalTitle').textContent = `🔍 Análise: ${meta.name}`;
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('fileModal').classList.add('open');
+  } catch (err) {
+    alert('Erro ao analisar arquivo: ' + err.message);
+  }
+}
+
+async function downloadFile(filePath) {
+  try {
+    const content = await allFiles[filePath].async('text');
+    const meta = fileMetadata[filePath];
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = meta.name;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Erro ao baixar: ' + err.message);
+  }
+}
+
+function downloadCurrentFile() {
+  const blob = new Blob([currentFileContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = currentFileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copyCurrentFile() {
+  navigator.clipboard.writeText(currentFileContent).then(() => {
+    alert('✅ Código copiado para a área de transferência!');
+  });
+}
+
+function closeModal() {
+  document.getElementById('fileModal').classList.remove('open');
+}
+
+function exportReport() {
+  const files = Object.values(fileMetadata);
+  
+  let md = `# Relatório de Arquivos — PWA Jurídico\n\n`;
+  md += `**Gerado em:** ${new Date().toLocaleString('pt-BR')}\n\n`;
+  
+  md += `## 📊 Resumo\n`;
+  md += `- Total de arquivos: ${files.length}\n`;
+  md += `- JavaScript: ${files.filter(f => f.type === 'js').length}\n`;
+  md += `- HTML: ${files.filter(f => f.type === 'html').length}\n`;
+  md += `- CSS: ${files.filter(f => f.type === 'css').length}\n`;
+  md += `- Tamanho total: ${(files.reduce((sum, f) => sum + f.size, 0) / 1024 / 1024).toFixed(2)}MB\n\n`;
+  
+  md += `## 📁 Arquivos\n\n`;
+  
+  const byType = {};
+  files.forEach(f => {
+    if (!byType[f.type]) byType[f.type] = [];
+    byType[f.type].push(f);
+  });
+  
+  Object.entries(byType).forEach(([type, typeFiles]) => {
+    md += `### ${type.toUpperCase()}\n`;
+    typeFiles.forEach(f => {
+      md += `- **${f.name}** (${f.sizeKB}KB)\n`;
+    });
+    md += '\n';
+  });
+  
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `relatorio-arquivos-${new Date().toISOString().split('T')[0]}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+</script>
+
+</body>
+</html>

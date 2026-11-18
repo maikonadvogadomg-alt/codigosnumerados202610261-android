@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Editor Jurídico Visual Law - Versão Final</title>
+  <style>
+    :root{
+      --bg:#f3f4f6; --panel:#1e293b; --input-bg:#0f172a;
+      --txt:#f1f5f9; --muted:#94a3b8;
+      --accent:#38bdf8; /* Azul claro */
+      --paper:#ffffff; --ink:#000000;
+      /* Cores Visual Law */
+      --c-topico:#0ea5e9; --bg-topico:#e0f2fe;
+      --c-sub:#f59e0b;    --bg-sub:#fef3c7;
+      --c-para:#22c55e;   --bg-para:#f0fdf4;
+      --c-cit:#ef4444;    --bg-cit:#fef2f2;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:#334155;}
+    
+    /* Layout Principal */
+    .wrap{display:flex; gap:20px; padding:20px; max-width:1400px; margin:0 auto; min-height:100vh;}
+    .left{
+      width:400px; flex-shrink:0; 
+      background:var(--panel); color:var(--txt); 
+      border-radius:16px; padding:20px; 
+      display:flex; flex-direction:column; gap:20px;
+      box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);
+      height:fit-content; max-height:95vh; overflow-y:auto;
+    }
+    .right{flex:1; display:flex; justify-content:center; overflow-y:auto;}
+
+    /* Tipografia Painel */
+    h1{font-size:16px; margin:0; color:var(--accent); text-transform:uppercase; letter-spacing:1px;}
+    h2{font-size:13px; margin:10px 0 5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #334155; padding-bottom:5px;}
+    
+    /* Inputs e Botões */
+    label{font-size:11px; color:var(--muted); display:block; margin-bottom:4px;}
+    input, textarea, select{
+      width:100%; background:var(--input-bg); color:var(--txt); 
+      border:1px solid #334155; border-radius:6px; padding:8px; 
+      font-size:13px; outline:none; transition:0.2s;
+    }
+    input:focus, textarea:focus{border-color:var(--accent);}
+    textarea.big{min-height:60px;}
+
+    .btn-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+    button{
+      border:none; padding:10px; border-radius:6px; font-weight:600; 
+      font-size:12px; cursor:pointer; text-transform:uppercase; transition:0.2s;
+    }
+    button:hover{filter:brightness(1.1);}
+    .btn-add{background:var(--accent); color:#0f172a;}
+    .btn-exp{background:#10b981; color:#064e3b;} /* Verde */
+    .btn-clr{background:#ef4444; color:white;}
+    
+    /* Lista de Blocos */
+    .block-list{display:flex; flex-direction:column; gap:12px;}
+    .block-card{
+      background:#334155; border-left:4px solid transparent;
+      padding:10px; border-radius:6px;
+    }
+    .block-card.topico{border-color:var(--c-topico);}
+    .block-card.subtopico{border-color:var(--c-sub);}
+    .block-card.paragrafo{border-color:var(--c-para);}
+    .block-card.citacao{border-color:var(--c-cit);}
+
+    .card-header{display:flex; justify-content:space-between; margin-bottom:8px;}
+    .card-tag{font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; text-transform:uppercase; background:rgba(0,0,0,0.3);}
+    
+    .card-actions button{padding:4px 8px; font-size:10px; margin-left:4px; background:#475569; color:white;}
+    .card-actions button.del{background:#ef4444;}
+
+    /* Papel (Preview) */
+    .paper{
+      width:100%; max-width:21cm; min-height:29.7cm;
+      background:var(--paper); color:var(--ink);
+      padding:3cm 2cm 2cm 3cm; /* Margens ABNT */
+      box-shadow:0 0 20px rgba(0,0,0,0.1);
+      font-family:"Times New Roman", Times, serif;
+      font-size:12pt; line-height:1.5;
+    }
+    
+    /* Estilos do Documento (Visual Law no Word) */
+    .doc-header{text-align:justify; font-weight:bold; text-transform:uppercase; margin-bottom:20pt;}
+    .doc-title{text-align:center; font-weight:bold; text-transform:uppercase; margin:20pt 0;}
+    .doc-ident{text-align:center; font-weight:bold; margin-bottom:20pt;}
+    
+    .doc-block{margin-bottom:12pt; text-align:justify;}
+    
+    /* Visual Law Styles */
+    .vl-topico{
+      color: #000; font-weight:bold; text-transform:uppercase; 
+      border-left:4px solid var(--c-topico); padding-left:10px; background:var(--bg-topico);
+      padding-top:5px; padding-bottom:5px;
+    }
+    .vl-subtopico{
+      color: #000; font-weight:bold; 
+      border-left:4px solid var(--c-sub); padding-left:10px; background:var(--bg-sub);
+    }
+    .vl-paragrafo{
+      text-indent: 2cm; /* Recuo primeira linha */
+    }
+    .vl-citacao{
+      font-size:10pt; font-style:italic; margin-left:4cm; 
+      border-left:2px solid var(--c-cit); padding-left:10px; background:var(--bg-cit);
+      text-align: justify;
+    }
+
+    .doc-footer{margin-top:40pt; text-align:center;}
+    .doc-sign{margin-top:30pt; text-align:center; font-weight:bold;}
+
+    @media (max-width: 900px) {
+      .wrap{flex-direction:column; padding:10px;}
+      .left{width:100%; max-height:none;}
+      .paper{padding:1.5cm;} /* Menor no celular pra caber */
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- PAINEL DE CONTROLE -->
+  <div class="left">
+    <h1>Editor Jurídico <span style="font-size:10px; color:#94a3b8">Visual Law</span></h1>
+    
+    <!-- Seção 1: Cabeçalho -->
+    <h2>1. Cabeçalho & Identificação</h2>
+    <div>
+      <label>Endereçamento (Justificado)</label>
+      <textarea id="headerText" class="big">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DA ___ VARA CÍVEL DA COMARCA DE ___</textarea>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div>
+        <label>Título da Peça</label>
+        <input id="docTitle" type="text" value="CONTESTAÇÃO">
+      </div>
+      <div>
+        <label>Processo nº</label>
+        <input id="docProc" type="text" placeholder="0000000-00...">
+      </div>
+    </div>
+
+    <!-- Seção 2: Corpo -->
+    <h2>2. Estrutura da Peça</h2>
+    <div class="btn-grid">
+      <button class="btn-add" onclick="addBlock('topico')">+ Tópico</button>
+      <button class="btn-add" onclick="addBlock('subtopico')">+ Subtópico</button>
+      <button class="btn-add" onclick="addBlock('paragrafo')">+ Parágrafo</button>
+      <button class="btn-add" onclick="addBlock('citacao')">+ Citação</button>
+    </div>
+    
+    <div id="blockList" class="block-list">
+      <!-- Blocos entram aqui -->
+    </div>
+
+    <!-- Seção 3: Fechamento -->
+    <h2>3. Fechamento</h2>
+    <div>
+      <label>Texto de Encerramento</label>
+      <textarea id="closingText">Termos em que,\nPede deferimento.</textarea>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div>
+        <label>Local e Data</label>
+        <input id="docDate" type="text" placeholder="Cidade, data...">
+      </div>
+      <div>
+        <label>Advogado(a)</label>
+        <input id="docSign" type="text" placeholder="Nome - OAB/UF">
+      </div>
+    </div>
+
+    <!-- Ações Finais -->
+    <div style="margin-top:auto; padding-top:20px; border-top:1px solid #334155;">
+      <button class="btn-exp" style="width:100%; font-size:14px; padding:15px;" onclick="exportWord()">
+        📥 Baixar Word (Formatado)
+      </button>
+      <button class="btn-clr" style="width:100%; margin-top:10px;" onclick="clearAll()">Limpar Tudo</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW (PAPEL) -->
+  <div class="right">
+    <div id="paperPreview" class="paper">
+      <!-- O conteúdo renderizado aparece aqui -->
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Lógica do Editor ---
+  let blocks = [];
+
+  // Carregar do LocalStorage ao abrir
+  window.onload = function() {
+    const saved = localStorage.getItem('juridico_data');
+    if(saved) {
+      const data = JSON.parse(saved);
+      document.getElementById('headerText').value = data.header;
+      document.getElementById('docTitle').value = data.title;
+      document.getElementById('docProc').value = data.proc;
+      document.getElementById('closingText').value = data.closing;
+      document.getElementById('docDate').value = data.date;
+      document.getElementById('docSign').value = data.sign;
+      blocks = data.blocks || [];
+    }
+    render();
+  };
+
+  function saveData() {
+    const data = {
+      header: document.getElementById('headerText').value,
+      title: document.getElementById('docTitle').value,
+      proc: document.getElementById('docProc').value,
+      closing: document.getElementById('closingText').value,
+      date: document.getElementById('docDate').value,
+      sign: document.getElementById('docSign').value,
+      blocks: blocks
+    };
+    localStorage.setItem('juridico_data', JSON.stringify(data));
+    renderPreview(); // Atualiza o papel em tempo real
+  }
+
+  // Adicionar Bloco
+  function addBlock(type) {
+    blocks.push({ id: Date.now(), type: type, content: '' });
+    saveData();
+    render();
+  }
+
+  // Remover Bloco
+  function removeBlock(id) {
+    blocks = blocks.filter(b => b.id !== id);
+    saveData();
+    render();
+  }
+
+  // Atualizar Conteúdo do Bloco
+  function updateBlock(id, text) {
+    const b = blocks.find(b => b.id === id);
+    if(b) b.content = text;
+    saveData();
+  }
+
+  // Mover Bloco
+  function moveBlock(index, direction) {
+    if (direction === -1 && index > 0) {
+      [blocks[index], blocks[index - 1]] = [blocks[index - 1], blocks[index]];
+    } else if (direction === 1 && index < blocks.length - 1) {
+      [blocks[index], blocks[index + 1]] = [blocks[index + 1], blocks[index]];
+    }
+    saveData();
+    render();
+  }
+
+  // Renderizar Lista de Edição (Esquerda)
+  function render() {
+    const list = document.getElementById('blockList');
+    list.innerHTML = '';
+    
+    blocks.forEach((b, index) => {
+      const div = document.createElement('div');
+      div.className = `block-card ${b.type}`;
+      div.innerHTML = `
+        <div class="card-header">
+          <span class="card-tag">${b.type}</span>
+          <div class="card-actions">
+            <button onclick="moveBlock(${index}, -1)">↑</button>
+            <button onclick="moveBlock(${index}, 1)">↓</button>
+            <button class="del" onclick="removeBlock(${b.id})">X</button>
+          </div>
+        </div>
+        <textarea oninput="updateBlock(${b.id}, this.value)" placeholder="Digite o texto...">${b.content}</textarea>
+      `;
+      list.appendChild(div);
+    });
+    renderPreview();
+  }
+
+  // Renderizar Preview (Direita - Papel)
+  function renderPreview() {
+    const paper = document.getElementById('paperPreview');
+    const header = document.getElementById('headerText').value.replace(/\n/g, '<br>');
+    const title = document.getElementById('docTitle').value;
+    const proc = document.getElementById('docProc').value;
+    const closing = document.getElementById('closingText').value.replace(/\n/g, '<br>');
+    const date = document.getElementById('docDate').value;
+    const sign = document.getElementById('docSign').value;
+
+    let html = `<div class="doc-header">${header}</div>`;
+    
+    if(proc) html += `<div class="doc-ident">Processo nº ${proc}</div>`;
+    if(title) html += `<div class="doc-title">${title}</div>`;
+    html += `<hr style="border-top:1px solid #ccc; margin:20px 0;">`;
+
+    blocks.forEach(b => {
+      let content = b.content.replace(/\n/g, '<br>');
+      if(!content) content = '&nbsp;'; // Espaço vazio para manter formato
+      
+      if(b.type === 'topico') {
+        html += `<div class="doc-block vl-topico">${content}</div>`;
+      } else if(b.type === 'subtopico') {
+        html += `<div class="doc-block vl-subtopico">${content}</div>`;
+      } else if(b.type === 'paragrafo') {
+        html += `<div class="doc-block vl-paragrafo">${content}</div>`;
+      } else if(b.type === 'citacao') {
+        html += `<div class="doc-block vl-citacao">"${content}"</div>`;
+      }
+    });
+
+    html += `<div class="doc-footer">${closing}</div>`;
+    html += `<div class="doc-sign">${date}<br><br><br>__________________________<br>${sign}</div>`;
+
+    paper.innerHTML = html;
+  }
+
+  // --- EXPORTAÇÃO WORD (O Pulo do Gato) ---
+  function exportWord() {
+    const content = document.getElementById('paperPreview').innerHTML;
+    
+    // HTML especial para o Word entender que é um documento de impressão (A4)
+    // Inclui CSS inline para garantir que as cores do Visual Law funcionem
+    const preHtml = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><meta charset='utf-8'><title>Export HTML To Doc</title>
+      <style>
+        /* Configuração da Página A4 no Word */
+        @page Section1 {
+            size:595.35pt 841.99pt; /* A4 */
+            margin:3.0cm 2.0cm 2.0cm 3.0cm; /* Margens: Sup, Dir, Inf, Esq */
+            mso-header-margin:35.4pt; 
+            mso-footer-margin:35.4pt; 
+            mso-paper-source:0;
+        }
+        div.Section1 { page:Section1; }
+        
+        body { font-family: "Times New Roman", serif; font-size: 12pt; }
+        
+        /* Classes Visual Law para o Word */
+        .doc-header { text-align: justify; font-weight: bold; text-transform: uppercase; margin-bottom: 20pt; }
+        .doc-title { text-align: center; font-weight: bold; text-transform: uppercase; font-size: 14pt; margin: 20pt 0; }
+        .doc-ident { text-align: center; font-weight: bold; margin-bottom: 20pt; }
+        
+        .vl-topico { 
+            font-weight: bold; text-transform: uppercase; 
+            background: #e0f2fe; border-left: 4px solid #0ea5e9; 
+            padding: 5pt 10pt; margin-bottom: 12pt; display: block;
+        }
+        .vl-subtopico { 
+            font-weight: bold; 
+            background: #fef3c7; border-left: 4px solid #f59e0b; 
+            padding: 5pt 10pt; margin-bottom: 12pt; display: block;
+        }
+        .vl-paragrafo { 
+            text-align: justify; text-indent: 36pt; margin-bottom: 12pt; 
+        }
+        .vl-citacao { 
+            font-style: italic; margin-left: 4cm; text-align: justify;
+            background: #fef2f2; border-left: 2px solid #ef4444; 
+            padding: 5pt 10pt; margin-bottom: 12pt; display: block;
+        }
+        
+        .doc-footer { text-align: center; margin-top: 30pt; }
+        .doc-sign { text-align: center; margin-top: 30pt; font-weight: bold; }
+      </style>
+      </head><body><div class="Section1">`;
+      
+    const postHtml = "</div></body></html>";
+    const html = preHtml + content + postHtml;
+
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    // Nome do arquivo baseado no título
+    const filename = (document.getElementById('docTitle').value || 'peca_juridica') + '.doc';
+    
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function clearAll() {
+    if(confirm('Tem certeza? Isso apagará tudo.')) {
+      localStorage.removeItem('juridico_data');
+      location.reload();
+    }
+  }
+  
+  // Salvar ao digitar nos campos fixos
+  const inputs = document.querySelectorAll('input, textarea');
+  inputs.forEach(input => {
+    input.addEventListener('input', saveData);
+  });
+</script>
+
+</body>
+</html>

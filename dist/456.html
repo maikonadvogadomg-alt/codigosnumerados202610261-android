@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Comparador Jurídico — TJMG + BCB — Premium</title>
+<style>
+:root{
+  --bg:#0f172a;--panel:#111827;--txt:#e5e7eb;--muted:#9ca3af;--accent:#f59e0b;
+  --good:#10b981;--bad:#ef4444;--info:#3b82f6;--paper:#ffffff;--border:#243244;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#e5e7eb;color:#111827;overflow:hidden}
+header{background:var(--bg);color:var(--txt);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+header h1{font-size:14px;letter-spacing:.4px;text-transform:uppercase}
+header .clock{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.wrap{display:flex;height:calc(100vh - 48px)}
+.left{width:560px;background:var(--panel);color:var(--txt);overflow:auto;padding:14px;border-right:1px solid var(--border)}
+.right{flex:1;background:#cbd5e1;overflow:auto;padding:14px}
+
+h2{font-size:12px;margin:16px 0 8px;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.box{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
+input,select,textarea{
+  width:100%;background:rgba(0,0,0,.25);color:var(--txt);border:1px solid var(--border);
+  border-radius:10px;padding:10px;font-size:13px;outline:none
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:130px;font-family:ui-monospace,monospace;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+button{
+  border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer;
+  text-transform:uppercase;font-size:11px;letter-spacing:.35px;transition:opacity .15s;margin-top:5px
+}
+button:hover{opacity:.92}
+.b1{background:var(--accent);color:#111827}
+.b2{background:var(--bad);color:#fff}
+.b3{background:var(--good);color:#052e16}
+.b4{background:var(--info);color:#fff}
+.b5{background:#fff;color:#111827;border:1px solid #cbd5e1}
+
+.hint{font-size:12px;line-height:1.35;background:rgba(59,130,246,.12);border-left:3px solid var(--info);padding:10px;border-radius:10px;color:var(--txt)}
+.status{white-space:pre-wrap;font-size:12px;line-height:1.35;background:rgba(0,0,0,.25);border:1px solid var(--border);padding:10px;border-radius:10px;color:var(--txt);margin-top:10px}
+.paper{background:var(--paper);border-radius:14px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.15);min-height:100%}
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px}
+.card h3{font-size:12px;color:#475569;text-transform:uppercase;margin-bottom:6px}
+.card .val{font-size:18px;font-weight:900}
+.card .sub{font-size:12px;color:#64748b;margin-top:4px}
+
+table{border-collapse:collapse;width:100%;font-size:12px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-top:12px}
+th,td{border-bottom:1px solid #e2e8f0;padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f1f5f9;font-weight:800;position:sticky;top:0;z-index:2}
+.mono{font-family:ui-monospace,monospace}
+
+.scenarioBox{background:rgba(59,130,246,.10);border:1px solid rgba(59,130,246,.30);border-radius:12px;padding:10px;margin-top:10px}
+.scenarioBox h4{font-size:12px;color:#93c5fd;margin-bottom:6px}
+.rmBtn{float:right;background:var(--bad);color:#fff;font-size:10px;padding:5px 8px;border-radius:8px}
+.small{font-size:11px;color:var(--muted);margin-top:6px}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999}
+.ovbox{background:#fff;border-radius:14px;padding:18px;min-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.4);color:#0f172a}
+.spin{width:18px;height:18px;border:3px solid #cbd5e1;border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media print{
+  body{overflow:visible}
+  .left, header, .btns, .hint, .status, .overlay{display:none !important}
+  .right{padding:0}
+  .paper{box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Comparador Jurídico — TJMG + BCB — Multi-Cenário</h1>
+  <div class="clock" id="clock"></div>
+</header>
+
+<div class="overlay" id="ov">
+  <div class="ovbox">
+    <div><span class="spin"></span><b id="ovMsg">Processando…</b></div>
+    <div style="margin-top:6px;color:#64748b" id="ovSub">Aguarde.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="left">
+
+    <div class="hint">
+      Sistema de cálculo jurídico com memória local. Cole o texto do PDF do TJMG ou busque índices no BCB.
+    </div>
+
+    <h2>1) DADOS DO CASO</h2>
+    <div class="box">
+      <label>Número do processo</label>
+      <input id="numProcesso" placeholder="0000000-00.0000.0.00.0000"/>
+
+      <label>Valor principal (R$)</label>
+      <input id="principal" type="number" value="10000" step="0.01"/>
+
+      <div class="row">
+        <div>
+          <label>Data início (DD/MM/AAAA)</label>
+          <input id="dataInicio" placeholder="15/01/2021"/>
+        </div>
+        <div>
+          <label>Data fim (DD/MM/AAAA)</label>
+          <input id="dataFim" placeholder="15/12/2022"/>
+        </div>
+      </div>
+
+      <label>Mora a partir de (DD/MM/AAAA)</label>
+      <input id="moraInicio" placeholder="01/06/2021"/>
+
+      <div class="row">
+        <div>
+          <label>Mora fixa (% ao mês)</label>
+          <input id="moraFixaPct" type="number" step="0.01" value="0"/>
+        </div>
+        <div>
+          <label>Observação</label>
+          <input id="obs" placeholder="ex.: sentença TJMG"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="b5" id="btnPrint">Imprimir</button>
+        <button class="b4" id="btnExportJSON">Salvar Config (JSON)</button>
+      </div>
+      <div class="row">
+        <button class="b1" onclick="$('fileIn').click()">Importar Config (JSON)</button>
+        <button class="b2" id="btnClearAll">Limpar Tudo</button>
+        <input type="file" id="fileIn" style="display:none" accept=".json"/>
+      </div>
+    </div>
+
+    <h2>2) CORREÇÃO TJMG (PDF TEXTO)</h2>
+    <div class="box">
+      <label>Cole o texto bruto do PDF</label>
+      <textarea id="tjText" placeholder="Cole aqui as linhas com ANO + 12 fatores..."></textarea>
+
+      <label>Fórmula do % mensal</label>
+      <select id="tjFormula">
+        <option value="prevovercurr">correção% = (fator anterior / fator atual - 1) * 100</option>
+        <option value="curroverprev">correção% = (fator atual / fator anterior - 1) * 100</option>
+      </select>
+
+      <div class="row">
+        <button class="b1" id="btnConvertTJ">Converter e Carregar</button>
+        <button class="b2" id="btnClearTJ">Limpar Texto</button>
+      </div>
+    </div>
+
+    <h2>3) JUROS BCB (SGS)</h2>
+    <div class="box">
+      <div class="row3">
+        <div>
+          <label>Cód. SGS</label>
+          <input id="bcbCode" placeholder="ex: 4390"/>
+        </div>
+        <div>
+          <label>Coluna</label>
+          <input id="bcbCol" value="rembcbpct"/>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="b4" id="btnFetchBCB" style="width:100%">Buscar</button>
+        </div>
+      </div>
+    </div>
+
+    <h2>4) CENÁRIOS</h2>
+    <div class="box">
+      <div id="scenariosContainer"></div>
+      <div class="row">
+        <button class="b3" id="btnAddScenario">+ Cenário</button>
+        <button class="b2" id="btnResetScenarios">Reset Padrão</button>
+      </div>
+    </div>
+
+    <h2>5) HONORÁRIOS</h2>
+    <div class="box">
+      <div class="row">
+        <div>
+          <label>Percentual (%)</label>
+          <input id="honPct" type="number" value="10" step="0.1"/>
+        </div>
+        <div>
+          <label>Base de Cálculo</label>
+          <select id="honBase">
+            <option value="proveito">Proveito econômico</option>
+            <option value="diferenca">Diferença (A - B)</option>
+            <option value="principal">Principal</option>
+            <option value="maior">Maior resultado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="box">
+      <button class="b1" id="btnCalcular" style="width:100%; padding:15px; font-size:14px">CALCULAR E COMPARAR</button>
+      <button class="b5" id="btnExportCSV" style="width:100%">Exportar Evolução (CSV)</button>
+    </div>
+
+    <div class="status" id="status">Pronto.</div>
+  </div>
+
+  <div class="right">
+    <div class="paper">
+      <div class="topbar">
+        <div>
+          <div style="font-weight:900;font-size:14px">Resultados</div>
+          <div style="font-size:12px;color:#64748b" id="summaryLine">Aguardando cálculo...</div>
+        </div>
+        <div class="btns">
+          <button class="b5" id="btnCopyResumo">Copiar Resumo</button>
+        </div>
+      </div>
+
+      <div class="grid" id="cards"></div>
+
+      <table id="tbl">
+        <thead>
+          <tr id="tblHead"><th>Competência</th></tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Configurações e Estado =====
+const LS_KEY = "comparadorjuridico_v3";
+let INDEX = new Map(); 
+let SCENARIOS = [];
+let LAST = null;
+let nextScenarioId = 1;
+
+const $ = id => document.getElementById(id);
+
+// ===== Relógio =====
+function setClock(){ $("clock").textContent = new Date().toLocaleString("pt-BR"); }
+setInterval(setClock,1000); setClock();
+
+// ===== UI Helpers =====
+function ov(on,msg,sub){
+  $("ov").style.display = on ? "flex" : "none";
+  if(msg!=null) $("ovMsg").textContent = msg;
+  if(sub!=null) $("ovSub").textContent = sub;
+}
+function setStatus(s){ $("status").textContent = String(s||""); }
+function fmtBRL(n){ return (Number(n)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+
+function toNumberBR(x){
+  if(x==null) return 0;
+  if(typeof x==="number") return x;
+  let s = String(x).trim();
+  if(!s) return 0;
+  s = s.replace(/[^\d,.\-]/g,"");
+  if(s.includes(",")) s = s.replace(/\./g,"").replace(",",".");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function parseDateBR(str){
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((str||"").trim());
+  if(!m) return null;
+  return new Date(+m[3], +m[2]-1, +m[1]);
+}
+
+function dateToYM(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  return `${y}-${m}`;
+}
+
+function listMonths(startDate,endDate){
+  const out=[];
+  const d=new Date(startDate.getTime()); d.setDate(1);
+  const e=new Date(endDate.getTime()); e.setDate(1);
+  while(d<=e){
+    out.push(dateToYM(d));
+    d.setMonth(d.getMonth()+1);
+  }
+  return out;
+}
+
+// ===== Persistência =====
+function snapshotToObject(){
+  return {
+    ui: {
+      numProcesso: $("numProcesso").value,
+      principal: $("principal").value,
+      dataInicio: $("dataInicio").value,
+      dataFim: $("dataFim").value,
+      moraInicio: $("moraInicio").value,
+      moraFixaPct: $("moraFixaPct").value,
+      obs: $("obs").value,
+      tjText: $("tjText").value,
+      tjFormula: $("tjFormula").value,
+      bcbCode: $("bcbCode").value,
+      bcbCol: $("bcbCol").value,
+      honPct: $("honPct").value,
+      honBase: $("honBase").value
+    },
+    index: Array.from(INDEX.values()),
+    scenarios: SCENARIOS,
+    nextScenarioId
+  };
+}
+
+function saveToLS(){
+  localStorage.setItem(LS_KEY, JSON.stringify(snapshotToObject()));
+  setStatus("Auto-salvo: " + new Date().toLocaleTimeString());
+}
+
+function loadFromLS(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw) return false;
+  try {
+    const obj = JSON.parse(raw);
+    applySnapshot(obj);
+    return true;
+  } catch(e) { return false; }
+}
+
+function applySnapshot(obj){
+  const ui = obj.ui || {};
+  Object.keys(ui).forEach(k => { if($(k)) $(k).value = ui[k]; });
+  
+  INDEX.clear();
+  if(obj.index) obj.index.forEach(r => INDEX.set(r.competencia, r));
+  
+  SCENARIOS = obj.scenarios || [];
+  nextScenarioId = obj.nextScenarioId || 1;
+  renderScenarios();
+}
+
+// ===== TJMG Parser =====
+function extractTJ(raw, formula){
+  const txt = raw.replace(/\r/g,"\n");
+  const lines = txt.split("\n").filter(l => l.trim());
+  let loaded = 0;
+  let prevFator = null;
+
+  lines.forEach(line => {
+    const nums = line.match(/\d+,\d+/g);
+    const yearMatch = line.match(/\b(19|20)\d{2}\b/);
+    if(yearMatch && nums && nums.length >= 12){
+      const year = yearMatch[0];
+      nums.slice(0,12).forEach((n, i) => {
+        const comp = `${year}-${String(i+1).padStart(2,"0")}`;
+        const fator = toNumberBR(n);
+        let cor = 0;
+        if(prevFator){
+          cor = (formula === "curroverprev") ? (fator/prevFator - 1)*100 : (prevFator/fator - 1)*100;
+        }
+        const entry = INDEX.get(comp) || {competencia: comp};
+        entry.fator_tj = fator;
+        entry.correcao_pct = cor;
+        INDEX.set(comp, entry);
+        prevFator = fator;
+        loaded++;
+      });
+    }
+  });
+  return loaded;
+}
+
+$("btnConvertTJ").onclick = () => {
+  const n = extractTJ($("tjText").value, $("tjFormula").value);
+  setStatus(`TJMG: ${n} meses carregados.`);
+  saveToLS();
+};
+
+// ===== BCB SGS =====
+$("btnFetchBCB").onclick = async () => {
+  const code = $("bcbCode").value;
+  const col = $("bcbCol").value || "rembcbpct";
+  const dIni = $("dataInicio").value;
+  const dFim = $("dataFim").value;
+  if(!code || !dIni || !dFim) return alert("Preencha datas e código SGS.");
+
+  ov(true, "Buscando BCB...");
+  try {
+    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${dIni}&dataFinal=${dFim}`;
+    const r = await fetch(url);
+    const data = await r.json();
+    data.forEach(item => {
+      const p = item.data.split("/");
+      const ym = `${p[2]}-${p[1]}`;
+      const entry = INDEX.get(ym) || {competencia: ym};
+      entry[col] = toNumberBR(item.valor);
+      INDEX.set(ym, entry);
+    });
+    setStatus(`BCB: ${data.length} registros importados na coluna ${col}`);
+    saveToLS();
+  } catch(e) { alert("Erro BCB: " + e.message); }
+  finally { ov(false); }
+};
+
+// ===== Cenários UI =====
+function renderScenarios(){
+  const cont = $("scenariosContainer");
+  cont.innerHTML = "";
+  SCENARIOS.forEach(sc => {
+    const div = document.createElement("div");
+    div.className = "scenarioBox";
+    div.innerHTML = `
+      <button class="rmBtn" onclick="removeScenario(${sc.id})">Remover</button>
+      <h4>${sc.nome}</h4>
+      <input onchange="updateScen(${sc.id},'nome',this.value)" value="${sc.nome}" placeholder="Nome"/>
+      <div class="row">
+        <select onchange="updateScen(${sc.id},'remMode',this.value)">
+          <option value="compound_monthly" ${sc.remMode==='compound_monthly'?'selected':''}>Juros Composto Mensal</option>
+          <option value="compound_annual" ${sc.remMode==='compound_annual'?'selected':''}>Juros Composto Anual</option>
+          <option value="simple_monthly" ${sc.remMode==='simple_monthly'?'selected':''}>Juros Simples Mensal</option>
+        </select>
+      </div>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+function addScenario(nome = "Novo Cenário"){
+  SCENARIOS.push({id: nextScenarioId++, nome, remMode: 'compound_monthly', corrField: 'correcao_pct', remField: 'rembcbpct'});
+  renderScenarios();
+  saveToLS();
+}
+function removeScenario(id){
+  SCENARIOS = SCENARIOS.filter(s => s.id !== id);
+  renderScenarios();
+  saveToLS();
+}
+function updateScen(id, field, val){
+  const s = SCENARIOS.find(x => x.id === id);
+  if(s) s[field] = val;
+  saveToLS();
+}
+$("btnAddScenario").onclick = () => addScenario();
+$("btnResetScenarios").onclick = () => {
+  SCENARIOS = [];
+  addScenario("Cenário A (Contrato)");
+  addScenario("Cenário B (Sentença)");
+};
+
+// ===== Cálculo Core =====
+function calcular(){
+  const principal = toNumberBR($("principal").value);
+  const dIni = parseDateBR($("dataInicio").value);
+  const dFim = parseDateBR($("dataFim").value);
+  if(!dIni || !dFim) return alert("Datas inválidas.");
+
+  const months = listMonths(dIni, dFim);
+  const moraYM = $("moraInicio").value ? dateToYM(parseDateBR($("moraInicio").value)) : null;
+  const moraFixa = toNumberBR($("moraFixaPct").value);
+
+  const results = SCENARIOS.map(sc => {
+    let saldo = principal;
+    let poteRem = 0;
+    let poteMora = 0;
+    const rows = [];
+
+    months.forEach(ym => {
+      const idx = INDEX.get(ym) || {};
+      const cPct = (idx.correcao_pct || 0);
+      const rPct = (idx[sc.remField] || 0);
+      const mPct = moraFixa > 0 ? moraFixa : (idx.mora_pct || 0);
+
+      // Correção
+      saldo *= (1 + cPct/100);
+      poteRem *= (1 + cPct/100);
+      poteMora *= (1 + cPct/100);
+
+      // Juros Remuneratórios
+      if(sc.remMode === 'compound_monthly'){
+        saldo += (saldo * rPct/100);
+      } else if(sc.remMode === 'compound_annual'){
+        poteRem += (saldo * rPct/100);
+        if(ym.endsWith("-12")){ saldo += poteRem; poteRem = 0; }
+      } else {
+        poteRem += (saldo * rPct/100);
+      }
+
+      // Mora
+      if(moraYM && ym >= moraYM){
+        poteMora += (saldo * mPct/100);
+      }
+
+      rows.push({ym, total: saldo + poteRem + poteMora, saldo, poteRem, poteMora});
+    });
+
+    return { ...sc, rows, final: rows[rows.length-1].total };
+  });
+
+  LAST = { scenarios: results, months, principal };
+  renderTable();
+}
+
+function renderTable(){
+  const cards = $("cards");
+  cards.innerHTML = "";
+  LAST.scenarios.forEach(s => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `<h3>${s.nome}</h3><div class="val">${fmtBRL(s.final)}</div>`;
+    cards.appendChild(div);
+  });
+
+  const body = $("tblBody");
+  body.innerHTML = "";
+  LAST.months.forEach((ym, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${ym}</td>`;
+    LAST.scenarios.forEach(s => {
+      tr.innerHTML += `<td>${fmtBRL(s.rows[i].total)}</td>`;
+    });
+    body.appendChild(tr);
+  });
+  $("summaryLine").textContent = `Cálculo realizado para ${LAST.months.length} meses.`;
+}
+
+$("btnCalcular").onclick = calcular;
+
+// ===== Export/Import =====
+$("btnExportJSON").onclick = () => {
+  const blob = new Blob([JSON.stringify(snapshotToObject(), null, 2)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `calculo_${$("numProcesso").value || 'juridico'}.json`;
+  a.click();
+};
+
+$("fileIn").onchange = (e) => {
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    applySnapshot(JSON.parse(ev.target.result));
+    setStatus("Configuração importada com sucesso.");
+  };
+  reader.readAsText(e.target.files[0]);
+};
+
+$("btnClearAll").onclick = () => {
+  if(confirm("Deseja apagar TUDO e começar do zero?")){
+    localStorage.removeItem(LS_KEY);
+    location.reload();
+  }
+};
+
+$("btnCopyResumo").onclick = () => {
+  if(!LAST) return;
+  let txt = `RESUMO JURÍDICO - Proc: ${$("numProcesso").value}\n`;
+  LAST.scenarios.forEach(s => txt += `${s.nome}: ${fmtBRL(s.final)}\n`);
+  navigator.clipboard.writeText(txt);
+  alert("Copiado!");
+};
+
+// Inicialização
+if(!loadFromLS()){
+  $("btnResetScenarios").click();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Extrair Texto com Filtros</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .tab { display: inline-block; padding: 10px; margin-right: 5px; background: #ddd; cursor: pointer; }
+    .tab.active { background: #aaa; font-weight: bold; }
+    .tab-content { display: none; margin-top: 20px; }
+    .tab-content.active { display: block; }
+    textarea { width: 100%; }
+  </style>
+</head>
+<body>
+  <h2>Extrair Texto com Filtros</h2>
+
+  <!-- Abas -->
+  <div>
+    <div class="tab active" onclick="showTab('auto')">Filtro Automático</div>
+    <div class="tab" onclick="showTab('manual')">Filtro Manual</div>
+  </div>
+
+  <!-- Conteúdo da aba Automático -->
+  <div id="auto" class="tab-content active">
+    <h3>Filtro Automático (remove rodapés e separa páginas)</h3>
+    <input type="file" id="fileInputAuto" accept=".pdf,.txt,.png,.jpg,.jpeg,.docx">
+    <button onclick="extractTextAuto()">Extrair Texto</button>
+    <button onclick="downloadText()">Baixar TXT</button>
+    <button onclick="downloadPDF()">Baixar PDF</button>
+    <button onclick="downloadDOCX()">Baixar DOCX</button>
+   <button onclick="downloadMarkdown()" class="bg-green-400 hover:bg-purple-400 px-3 py-2 rounded transition" title=>Baixar Markdown
+    <button onclick="copyText()">Copiar Texto</button>
+    <textarea id="outputAuto" rows="20"></textarea>
+  </div>
+  </div>
+        
+
+  <!-- Conteúdo da aba Manual -->
+  <div id="manual" class="tab-content">
+    <h3>Filtro Manual (remover termos escolhidos)</h3>
+    <input type="file" id="fileInputManual" accept=".txt">
+    <button onclick="loadTextManual()">Carregar Texto</button><br><br>
+    <input type="text" id="customPatterns" placeholder="Digite termos para excluir, separados por vírgula">
+    <button onclick="applyCustomFilter()">Aplicar filtro</button>
+    <button onclick="downloadTextManual()">Baixar TXT</button>
+    <button onclick="downloadPDFManual()">Baixar PDF</button>
+    <button onclick="downloadDOCXManual()">Baixar DOCX</button>
+    <button onclick="downloadMarkdownManual()">Baixar Markdown</button>
+    <button onclick="copyTextManual()">Copiar Texto</button>
+    <textarea id="outputManual" rows="20"></textarea>
+  </div>
+
+  <!-- Bibliotecas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.36.0/docxtemplater.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPDF/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    // Alternar abas
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector('.tab[onclick="showTab(\''+tabId+'\')"]').classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Filtro automático
+    let extractedTextAuto = "";
+    function cleanFooter(text) {
+      const patterns = [
+        /Num\.\s*\d+\s*-\s*Pág\.\s*\d+[\s\S]*?Número do documento:\s*\d+[^\n]*\n?/gi,
+        /Assinado digitalmente por:[\s\S]*?Número do documento:[^\n]*\n?/gi,
+        /Documento eletrônico assinado[\s\S]*?Número do documento:[^\n]*\n?/gi
+      ];
+      let cleaned = text;
+      patterns.forEach(p => cleaned = cleaned.replace(p, ""));
+      return cleaned;
+    }
+
+    async function extractTextAuto() {
+      const file = document.getElementById("fileInputAuto").files[0];
+      if (!file) return alert("Selecione um arquivo primeiro!");
+
+      if (file.type === "text/plain") {
+        const text = await file.text();
+        extractedTextAuto = cleanFooter(text);
+
+      } else if (file.type === "application/pdf") {
+        const reader = new FileReader();
+        reader.onload = async function() {
+          const typedArray = new Uint8Array(this.result);
+          const pdf = await pdfjsLib.getDocument(typedArray).promise;
+          let textContent = "";
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const text = await page.getTextContent();
+            text.items.forEach(item => textContent += item.str + " ");
+            textContent += `\n\n--- Página ${i} ---\n\n`;
+          }
+          extractedTextAuto = cleanFooter(textContent);
+          document.getElementById("outputAuto").value = extractedTextAuto;
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    function downloadText() {
+      const blob = new Blob([extractedTextAuto], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_filtrado.txt";
+      link.click();
+    }
+
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const lines = doc.splitTextToSize(extractedTextAuto, 180);
+      doc.text(lines, 10, 10);
+      doc.save("texto_filtrado.pdf");
+    }
+
+    function downloadDOCX() {
+      const blob = new Blob(
+        [`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+          <w:body><w:p><w:r><w:t>${extractedTextAuto.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</w:t></w:r></w:p></w:body>
+        </w:document>`],
+        { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
+      );
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_filtrado.docx";
+      link.click();
+    }
+
+    function downloadMarkdown() {
+      const mdText = extractedTextAuto.replace(/--- Página (\d+) ---/g, "### Página $1");
+      const blob = new Blob([mdText], { type: "text/markdown" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_filtrado.md";
+      link.click();
+    }
+
+    function copyText() {
+      navigator.clipboard.writeText(extractedTextAuto).then(() => alert("Texto copiado!"));
+    }
+
+    // Filtro manual
+    let extractedTextManual = "";
+    async function loadTextManual() {
+      const file = document.getElementById("fileInputManual").files[0];
+      if (!file) return alert("Selecione um arquivo primeiro!");
+      const text = await file.text();
+      extractedTextManual = text;
+      document.getElementById("outputManual").value = extractedTextManual;
+    }
+
+    function customFilter(text, patterns) {
+      let filtered = text;
+      patterns.forEach(p => {
+        const regex = new RegExp(p, "gi");
+        filtered = filtered.replace(regex, "");
+      });
+      return filtered;
+    }
+
+    function applyCustomFilter() {
+      const input = document.getElementById("customPatterns").value;
+      if (!input) return;
+      const patterns = input.split(",").map(p => p.trim());
+      extractedTextManual = customFilter(extractedTextManual, patterns);
+      document.getElementById("outputManual").value = extractedTextManual;
+    }
+
+    function downloadTextManual() {
+      const blob = new Blob([extractedTextManual], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_filtrado_manual.txt";
+      link.click();
+    }
+
+    function downloadPDFManual() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const lines = doc.splitTextToSize(extractedTextManual,

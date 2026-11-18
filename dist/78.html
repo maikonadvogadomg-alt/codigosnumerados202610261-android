@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>🎨 Editor Visual - Funcional de Verdade</title>
+<style>
+body { font-family: Arial; background: #1e1e1e; color: #eee; margin: 0; height: 100vh; display: flex; flex-direction: column; }
+.header { background: #2d2d2d; padding: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+button { padding: 10px 16px; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+button:hover { background: #005a9e; }
+.container { display: flex; flex: 1; overflow: hidden; }
+.panel { display: flex; flex-direction: column; border: 1px solid #3e3e42; }
+.left { flex: 1; }
+.center { flex: 1.8; background: white; }
+.right { width: 300px; background: #252526; }
+textarea { flex: 1; background: #1e1e1e; color: #d4d4d4; border: none; padding: 12px; font-family: monospace; font-size: 13px; resize: none; }
+#preview { flex: 1; padding: 20px; overflow: auto; }
+#props { padding: 12px; overflow: auto; }
+.status { background: #2d2d2d; padding: 8px; font-size: 12px; color: #999; }
+.element-selected { outline: 3px solid #007acc !important; outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2 style="margin:0;color:#007acc;">🎨 Editor Visual</h2>
+  <button onclick="colarCodigo()">📋 COLAR CÓDIGO</button>
+  <button onclick="importarArquivo()">📂 IMPORTAR ARQUIVO (REAL)</button>
+  <button onclick="copiarCodigo()">📋 COPIAR CÓDIGO</button>
+  <button onclick="salvarArquivo()">💾 SALVAR ARQUIVO</button>
+</div>
+
+<div class="container">
+  <!-- ESQUERDA: CÓDIGO -->
+  <div class="panel left">
+    <div style="padding:8px;background:#2d2d2d;font-size:12px;">📝 Código HTML</div>
+    <textarea id="codigo" placeholder="Cole ou importe seu código aqui..."></textarea>
+  </div>
+
+  <!-- CENTRO: PREVIEW -->
+  <div class="panel center">
+    <div style="padding:8px;background:#2d2d2d;font-size:12px;">👁️ Preview (clique nos elementos)</div>
+    <div id="preview"></div>
+  </div>
+
+  <!-- DIREITA: PROPRIEDADES -->
+  <div class="panel right">
+    <div style="padding:8px;background:#2d2d2d;font-size:12px;color:#007acc;">⚙️ Propriedades</div>
+    <div id="props"><p style="padding:20px;color:#999;text-align:center;">Clique em um elemento para editar</p></div>
+  </div>
+</div>
+
+<div class="status" id="status">Pronto</div>
+
+<input type="file" id="file" accept=".html,.htm" style="display:none" onchange="carregarArquivo()">
+
+<script>
+// ====== FUNÇÕES PRINCIPAIS ======
+
+function colarCodigo() {
+  const codigo = prompt("Cole seu código HTML completo aqui:");
+  if (codigo) {
+    document.getElementById('codigo').value = codigo;
+    renderizar();
+  }
+}
+
+function importarArquivo() {
+  document.getElementById('file').click(); // <- BOTÃO DE IMPORTAR DE VERDADE
+}
+
+function carregarArquivo() {
+  const file = document.getElementById('file').files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('codigo').value = e.target.result;
+    renderizar();
+    document.getElementById('status').textContent = '✅ Arquivo importado com sucesso!';
+  };
+  reader.readAsText(file);
+}
+
+function renderizar() {
+  const html = document.getElementById('codigo').value;
+  const preview = document.getElementById('preview');
+  preview.innerHTML = html;
+  
+  // Adiciona clique em todos os elementos
+  preview.querySelectorAll('*').forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      selecionar(el);
+    };
+  });
+}
+
+let elementoSelecionado = null;
+
+function selecionar(el) {
+  if (elementoSelecionado) elementoSelecionado.classList.remove('element-selected');
+  elementoSelecionado = el;
+  el.classList.add('element-selected');
+  mostrarPropriedades(el);
+}
+
+function mostrarPropriedades(el) {
+  const props = document.getElementById('props');
+  const style = getComputedStyle(el);
+  
+  props.innerHTML = `
+    <b>Elemento:</b> ${el.tagName}<br><br>
+    
+    <b>Cor do texto:</b><br>
+    <input type="color" value="${rgbToHex(style.color)}" onchange="mudarEstilo('color', this.value)"><br><br>
+    
+    <b>Fundo:</b><br>
+    <input type="color" value="${rgbToHex(style.backgroundColor)}" onchange="mudarEstilo('backgroundColor', this.value)"><br><br>
+    
+    <b>Largura:</b><br>
+    <input type="text" value="${style.width}" onchange="mudarEstilo('width', this.value)"><br><br>
+    
+    <b>Altura:</b><br>
+    <input type="text" value="${style.height}" onchange="mudarEstilo('height', this.value)"><br><br>
+    
+    <b>Texto:</b><br>
+    <textarea style="width:100%;height:60px;" onchange="mudarTexto(this.value)">${el.textContent}</textarea><br><br>
+    
+    <button onclick="atualizarCodigo()">Atualizar código</button>
+    <button onclick="remover()" style="background:#d13438;">Remover</button>
+  `;
+}
+
+function mudarEstilo(prop, valor) {
+  if (elementoSelecionado) {
+    elementoSelecionado.style[prop] = valor;
+    atualizarCodigo();
+  }
+}
+
+function mudarTexto(texto) {
+  if (elementoSelecionado) {
+    elementoSelecionado.textContent = texto;
+    atualizarCodigo();
+  }
+}
+
+function remover() {
+  if (elementoSelecionado) {
+    elementoSelecionado.remove();
+    elementoSelecionado = null;
+    atualizarCodigo();
+    document.getElementById('props').innerHTML = '<p style="padding:20px;color:#999;text-align:center;">Clique em um elemento para editar</p>';
+  }
+}
+
+function atualizarCodigo() {
+  document.getElementById('codigo').value = document.getElementById('preview').innerHTML;
+}
+
+function copiarCodigo() {
+  const codigo = document.getElementById('codigo').value;
+  navigator.clipboard.writeText(codigo);
+  document.getElementById('status').textContent = '✅ Código copiado!';
+}
+
+function salvarArquivo() {
+  const codigo = document.getElementById('codigo').value;
+  const blob = new Blob([codigo], {type: 'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'meu-codigo-editado.html';
+  a.click();
+}
+
+function rgbToHex(rgb) {
+  if (!rgb) return '#ffffff';
+  const match = rgb.match(/\d+/g);
+  if (!match) return '#ffffff';
+  return '#' + match.map(x => parseInt(x).toString(16).padStart(2,'0')).join('');
+}
+
+// Atualiza preview ao digitar
+document.getElementById('codigo').addEventListener('input', renderizar);
+
+// Exemplo inicial
+document.getElementById('codigo').value = `<div style="padding:20px;background:#f0f0f0;text-align:center;">
+  <h2>Clique em mim</h2>
+  <button>Clique aqui</button>
+</div>`;
+renderizar();
+</script>
+</body>
+</html>

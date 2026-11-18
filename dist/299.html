@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel – Flexibilização de Renda</title>
+  <style>
+    /* Mantive o seu estilo original exato */
+    :root{
+      --bg:#0f172a; --card:#111827; --ink:#e5e7eb; --muted:#9ca3af; --accent:#22c55e; --warn:#ef4444; --line:#374151;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    header{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+    header h1{font-size:20px;margin:0}
+    header small{color:var(--muted)}
+    main{padding:20px;display:grid;grid-template-columns:1fr;gap:16px;max-width:1100px;margin:0 auto}
+    section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+    section h2{margin:0 0 12px;font-size:18px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    
+    /* Input ajustado para não quebrar no celular */
+    input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#0b1324;color:var(--ink); outline:none;}
+    input:focus{border-color:var(--accent);}
+    
+    textarea{min-height:90px;resize:vertical}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border:1px solid var(--line);padding:8px;text-align:left}
+    th{background:#0b1324;color:var(--muted);font-weight:600}
+    tfoot td{font-weight:700}
+    .row-actions{display:flex;gap:8px}
+    .btn{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#0b1324;color:var(--ink);cursor:pointer}
+    .btn:hover{filter:brightness(1.15)}
+    .btn-accent{background:var(--accent);color:#062b16;border:none}
+    .btn-warn{background:var(--warn);color:#fff;border:none}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px}
+    .ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.35)}
+    .no{background:rgba(239,68,68,.15);color:#fecaca;border:1px solid rgba(239,68,68,.35)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    .muted{color:var(--muted);font-size:12px}
+    .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .right{margin-left:auto}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+    
+    /* Novo estilo para dinheiro ficar verde e alinhado */
+    .input-money { text-align: right; color: #86efac; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MAIKON DA ROCHA CALDEIRA - OAB/MG 183.712</h1>
+    <small>Tel: (33) 99949-5030 / Email: maikon.advogado.mg@gmail.com)</small>
+  </header>
+
+<body>
+  <header>
+    <h1>Painel – Flexibilização de Renda</h1>
+    <small>Versão Corrigida (Botões OK + R$ OK)</small>
+  </header>
+
+  <main>
+    <section>
+      <h2>Identificação e processo</h2>
+      <div class="grid">
+        <div><label>Nome do requerente</label><input id="req_nome" placeholder="Nome completo" /></div>
+        <div><label>CPF</label><input id="req_cpf" class="mono" placeholder="000.000.000-00" /></div>
+        <div><label>NIS/PIS</label><input id="req_nis" class="mono" placeholder="NIS/PIS" /></div>
+        <div><label>Nº do processo</label><input id="proc_num" class="mono" placeholder="Ex.: 0001234-56..." /></div>
+       <div><label>DER</label><input id="req_der" class="mono" placeholder="00/00/0000" /></div>
+         <div><label>NUMERO BENEFICIO</label><input id="req_cpf" class="mono" placeholder="Ex: 87/155.234.987-0" /></div>
+         </div>
+        <div style="margin-top:10px">
+        <label>Resumo do caso / observações</label>
+        <textarea id="proc_obs" placeholder="Contexto, pedidos, decisões, observações relevantes"></textarea>
+      </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Base legal e artigos aplicáveis</h2>
+      <div class="grid-3">
+        <div><label>Lei</label><input id="lei_nome" placeholder="Lei/Portaria" /></div>
+        
+        <div>
+            <label>Limiar (R$)</label>
+            <input id="limiar" type="tel" class="input-money" placeholder="R$ 0,00" />
+        </div>
+        
+        <div><label>Critério</label>
+          <select id="criterio_tipo" onchange="recalc()">
+            <option value="total">Renda Total</option>
+            <option value="percapita">Renda Per Capita</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex" style="margin-top:10px">
+        <label style="width:100%">Artigos</label><input id="artigos" />
+      </div>
+    </section>
+
+    <section>
+      <h2>Rendimentos</h2>
+      <div class="toolbar">
+        <button class="btn btn-accent" onclick="addRow('rend')">Adicionar rendimento</button>
+        <button class="btn" onclick="importCSV('rend')">Importar CSV</button>
+      </div>
+      <table id="rend_table">
+        <thead><tr><th>Fonte</th><th>Descrição</th><th>Periodicidade</th><th>Valor (R$)</th><th>Doc</th><th>Ações</th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="3">Total</td><td id="rend_total" class="mono">R$ 0,00</td><td colspan="2"></td></tr></tfoot>
+      </table>
+    </section>
+
+    <section>
+      <h2>Despesas dedutíveis</h2>
+      <div class="toolbar">
+        <button class="btn btn-accent" onclick="addRow('ded')">Adicionar despesa</button>
+        <button class="btn" onclick="importCSV('ded')">Importar CSV</button>
+      </div>
+      <table id="ded_table">
+        <thead><tr><th>Tipo</th><th>Descrição</th><th>Base legal</th><th>Valor (R$)</th><th>Doc</th><th>Ações</th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="3">Total</td><td id="ded_total" class="mono">R$ 0,00</td><td colspan="2"></td></tr></tfoot>
+      </table>
+    </section>
+
+    <section>
+      <h2>Composição familiar</h2>
+      <div class="toolbar">
+        <button class="btn btn-accent" onclick="addRow('fam')">Adicionar membro</button>
+        <button class="btn" onclick="importCSV('fam')">Importar CSV</button>
+      </div>
+      <table id="fam_table">
+        <thead><tr><th>Nome</th><th>Parentesco</th><th>Renda (R$)</th><th>Doc</th><th>Ações</th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="2">Total</td><td id="fam_total" class="mono">R$ 0,00</td><td colspan="2"></td></tr></tfoot>
+      </table>
+    </section>
+
+    <section>
+      <h2>Eventos do processo</h2>
+      <div class="toolbar">
+        <button class="btn btn-accent" onclick="addRow('evt')">Adicionar evento</button>
+      </div>
+      <table id="evt_table">
+        <thead><tr><th>Tipo</th><th>Data</th><th>Descrição</th><th>Doc</th><th>Ações</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Cálculo e conformidade</h2>
+      <div class="grid">
+        <div><label>Renda bruta</label><input id="calc_renda_bruta" class="mono" readonly /></div>
+        <div><label>Total deduções</label><input id="calc_deducoes" class="mono" readonly /></div>
+        <div><label>Renda líquida</label><input id="calc_renda_liquida" class="mono" readonly style="color:var(--accent); font-weight:bold" /></div>
+        <div><label>Per capita</label><input id="calc_percapita" class="mono" readonly style="font-weight:bold" /></div>
+      </div>
+      <div class="flex" style="margin-top:10px">
+        <span id="conformidade" class="badge no">Critério não avaliado</span>
+      </div>
+      <div class="toolbar" style="margin-top:12px">
+        <button class="btn" onclick="saveLocal()">Salvar</button>
+        <button class="btn" onclick="loadLocal()">Carregar</button>
+        <button class="btn" onclick="exportJSON()">Backup JSON</button>
+        <button class="btn" onclick="exportCSV()">Exportar CSV</button>
+        <button class="btn" onclick="window.print()">Imprimir PDF</button>
+      </div>
+    </section>
+  </main>
+
+  <input type="file" id="csv_input" accept=".csv" style="display:none" />
+
+  <script>
+    // --- PARTE NOVA: LÓGICA DE DINHEIRO ---
+    const fmt = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+
+    // Lê "R$ 1.500,00" e transforma em número 1500.00
+    const lerMoeda = v => {
+        if(!v) return 0;
+        let s = String(v).replace(/\D/g,''); // Tira R$, pontos, virgulas
+        return parseFloat(s) / 100; // Divide por 100 para dar os centavos
+    };
+
+    // Formata o que você digita para virar R$
+    const ativarMascara = (el) => {
+        el.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, "");
+            if (value === "") { e.target.value = ""; recalc(); return; }
+            value = (parseInt(value) / 100).toFixed(2) + "";
+            value = value.replace(".", ",");
+            value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            e.target.value = "R$ " + value;
+            recalc();
+        });
+    };
+
+    // --- SEU CÓDIGO ORIGINAL (Levemente ajustado) ---
+
+    function addRow(kind, data={}){
+      const map = {
+        rend: { table:'rend_table', cols:[
+          {key:'fonte',type:'text',ph:'Ex.: Salário'},
+          {key:'desc',type:'text',ph:'Detalhes'},
+          {key:'per', type:'select', opts:['Mensal','Semanal','Anual','Único']},
+          // AQUI MUDOU: type='tel' e isMoney=true
+          {key:'valor',type:'tel',ph:'R$ 0,00', isMoney:true},
+          {key:'doc',  type:'text',ph:'ID'}
+        ]},
+        ded: { table:'ded_table', cols:[
+          {key:'tipo', type:'text',ph:'Ex.: Medicamentos'},
+          {key:'desc', type:'text',ph:'Detalhes'},
+          {key:'base', type:'text',ph:'Artigo/Lei'},
+          {key:'valor',type:'tel',ph:'R$ 0,00', isMoney:true},
+          {key:'doc',  type:'text',ph:'ID'}
+        ]},
+        fam: { table:'fam_table', cols:[
+          {key:'nome', type:'text',ph:'Nome'},
+          {key:'parentesco', type:'text',ph:'Parentesco'},
+          {key:'renda', type:'tel',ph:'R$ 0,00', isMoney:true},
+          {key:'doc',   type:'text',ph:'CPF'}
+        ]},
+        evt: { table:'evt_table', cols:[
+          {key:'tipo', type:'text',ph:'Tipo'},
+          {key:'data', type:'date'},
+          {key:'desc', type:'text',ph:'Resumo'},
+          {key:'doc',  type:'text',ph:'ID'}
+        ]}
+      };
+      
+      const cfg = map[kind];
+      const tbody = document.querySelector(`#${cfg.table} tbody`);
+      const tr = document.createElement('tr');
+
+      cfg.cols.forEach(c=>{
+        const td=document.createElement('td');
+        let input;
+        if(c.type==='select'){
+          input=document.createElement('select');
+          c.opts.forEach(o=>{ const op=document.createElement('option'); op.textContent=o; input.appendChild(op); });
+        } else {
+          input=document.createElement('input');
+          input.type=c.type;
+          input.placeholder=c.ph||'';
+        }
+        
+        input.value = data[c.key] ?? '';
+        
+        // SE FOR DINHEIRO, ATIVA A MASCARA NOVA
+        if(c.isMoney) {
+            input.classList.add('input-money');
+            ativarMascara(input);
+        }
+        
+        td.appendChild(input);
+        tr.appendChild(td);
+      });
+
+      const tdAct=document.createElement('td'); tdAct.className='row-actions';
+      const rm=document.createElement('button'); rm.className='btn btn-warn'; rm.textContent='Remover';
+      rm.onclick=()=>{ tr.remove(); recalc(); };
+      tdAct.appendChild(rm);
+      tr.appendChild(tdAct);
+      tbody.appendChild(tr);
+      
+      recalc();
+    }
+
+    // Import CSV (Mantido e melhorado para ler ;)
+    function importCSV(kind){
+      const input=document.getElementById('csv_input');
+      input.onchange=()=> {
+        const file=input.files[0]; if(!file) return;
+        const reader=new FileReader();
+        reader.onload=()=> {
+          const lines=reader.result.split(/\r?\n/).filter(l=>l.trim().length);
+          lines.forEach((line,i)=>{
+            // Tenta detectar se é vírgula ou ponto-virgula
+            const cols = line.includes(';') ? line.split(';') : line.split(',');
+            const c = cols.map(x => x.replace(/"/g, '').trim()); // limpa aspas
+
+            if(kind==='rend') addRow('rend',{fonte:c[0],desc:c[1],per:c[2],valor:c[3],doc:c[4]});
+            if(kind==='ded') addRow('ded',{tipo:c[0],desc:c[1],base:c[2],valor:c[3],doc:c[4]});
+            if(kind==='fam') addRow('fam',{nome:c[0],parentesco:c[1],renda:c[2],doc:c[3]});
+          });
+          input.value='';
+        };
+        reader.readAsText(file,'utf-8');
+      };
+      input.click();
+    }
+
+    // Calculations (Corrigido para usar lerMoeda)
+    function recalc(){
+      const sum = (sel, idx) => {
+        let total=0;
+        document.querySelectorAll(`#${sel} tbody tr`).forEach(tr=>{
+          // Busca o input dentro da célula correta
+          const inputs = tr.querySelectorAll('td input, td select');
+          const v = inputs[idx]?.value; 
+          total += lerMoeda(v);
+        });
+        return total;
+      };
+
+      // Índices corretos baseados na ordem das colunas
+      const rendTotal = sum('rend_table',3);
+      const dedTotal  = sum('ded_table',3);
+      const famTotal  = sum('fam_table',2);
+
+      document.getElementById('rend_total').textContent = fmt.format(rendTotal);
+      document.getElementById('ded_total').textContent  = fmt.format(dedTotal);
+      document.getElementById('fam_total').textContent  = fmt.format(famTotal);
+
+      const rendaLiquida = Math.max(rendTotal - dedTotal, 0);
+      document.getElementById('calc_renda_bruta').value = fmt.format(rendTotal);
+      document.getElementById('calc_deducoes').value    = fmt.format(dedTotal);
+      document.getElementById('calc_renda_liquida').value = fmt.format(rendaLiquida);
+
+      const percapita = calcPerCapita(rendaLiquida);
+      document.getElementById('calc_percapita').value = percapita!=null ? fmt.format(percapita) : '';
+
+      avaliarConformidade(rendaLiquida, percapita);
+    }
+
+    function calcPerCapita(rendaLiquida){
+      const membros = document.querySelectorAll('#fam_table tbody tr').length;
+      if(membros<=0) return null;
+      return rendaLiquida / membros;
+    }
+
+    function avaliarConformidade(rendaLiquida, percapita){
+      const tipo = document.getElementById('criterio_tipo').value;
+      const limiar = lerMoeda(document.getElementById('limiar').value);
+      const badge = document.getElementById('conformidade');
+
+      if(!limiar){
+        badge.textContent='Defina o limiar para avaliar';
+        badge.className='badge no';
+        return;
+      }
+
+      let valorComparado = rendaLiquida;
+      if(tipo==='percapita' && percapita!=null) valorComparado = percapita;
+
+      if(valorComparado <= limiar + 0.01){
+        badge.textContent = `Em conformidade (≤ ${fmt.format(limiar)})`;
+        badge.className='badge ok';
+      } else {
+        badge.textContent = `Não conformidade (> ${fmt.format(limiar)})`;
+        badge.className='badge no';
+      }
+    }
+
+    // Persistence (Mantido)
+    function getState(){
+      const pickRows = (tableId, keysIdx) => {
+        const rows=[];
+        document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr=>{
+          const inputs=[...tr.querySelectorAll('td input, td select')];
+          const row={};
+          keysIdx.forEach(([key,idx])=> row[key] = inputs[idx]?.value || '');
+          rows.push(row);
+        });
+        return rows;
+      };
+      return {
+        req_nome: document.getElementById('req_nome').value,
+        req_cpf:  document.getElementById('req_cpf').value,
+        req_nis:  document.getElementById('req_nis').value,
+        proc_num: document.getElementById('proc_num').value,
+        proc_obs: document.getElementById('proc_obs').value,
+        lei_nome: document.getElementById('lei_nome').value,
+        limiar:   document.getElementById('limiar').value,
+        criterio_tipo: document.getElementById('criterio_tipo').value,
+        artigos:  document.getElementById('artigos').value,
+        rend: pickRows('rend_table', [['fonte',0],['desc',1],['per',2],['valor',3],['doc',4]]),
+        ded:  pickRows('ded_table',  [['tipo',0],['desc',1],['base',2],['valor',3],['doc',4]]),
+        fam:  pickRows('fam_table',  [['nome',0],['parentesco',1],['renda',2],['doc',3]]),
+        evt:  pickRows('evt_table',  [['tipo',0],['data',1],['desc',2],['doc',3]])
+      };
+    }
+
+    function setState(s){
+      document.getElementById('req_nome').value = s.req_nome||'';
+      document.getElementById('req_cpf').value  = s.req_cpf||'';
+      document.getElementById('req_nis').value  = s.req_nis||'';
+      document.getElementById('proc_num').value = s.proc_num||'';
+      document.getElementById('proc_obs').value = s.proc_obs||'';
+      document.getElementById('lei_nome').value = s.lei_nome||'';
+      document.getElementById('limiar').value   = s.limiar||'';
+      document.getElementById('criterio_tipo').value = s.criterio_tipo||'total';
+      document.getElementById('artigos').value  = s.artigos||'';
+
+      ['rend','ded','fam','evt'].forEach(k=>{
+        const tbody=document.querySelector(`#${k}_table tbody`);
+        tbody.innerHTML='';
+        (s[k]||[]).forEach(row=> addRow(k,row));
+      });
+      recalc();
+    }
+
+    function saveLocal(){
+      localStorage.setItem('painel_flex_renda_final', JSON.stringify(getState()));
+      alert('Salvo no navegador!');
+    }
+    function loadLocal(){
+      const raw=localStorage.getItem('painel_flex_renda_final');
+      if(!raw) return alert('Nada salvo.');
+      setState(JSON.parse(raw));
+    }
+    function exportJSON(){
+      const blob=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='painel-flex-renda.json'; a.click();
+    }
+    function exportCSV(){
+      const s=getState();
+      const toCSV=(rows,header)=> [header.join(';'), ...rows.map(r=> header.map(h=> (r[h]||'').toString().replace(/;/g,',')).join(';'))].join('\n');
+      const files = [
+        ['rendimentos.csv', toCSV(s.rend, ['fonte','desc','per','valor','doc'])],
+        ['deducoes.csv',   toCSV(s.ded,  ['tipo','desc','base','valor','doc'])],
+        ['familia.csv',    toCSV(s.fam,  ['nome','parentesco','renda','doc'])],
+        ['eventos.csv',    toCSV(s.evt,  ['tipo','data','desc','doc'])],
+      ];
+      files.forEach(([name,data])=>{
+        const blob=new Blob([data],{type:'text/csv;charset=utf-8'});
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
+      });
+    }
+
+    // Inicialização da máscara no Limiar
+    ativarMascara(document.getElementById('limiar'));
+    document.getElementById('limiar').addEventListener('input', recalc);
+
+    // Linhas iniciais
+    addRow('rend'); addRow('ded'); addRow('fam'); addRow('evt');
+  </script>
+</body>
+</html>

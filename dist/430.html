@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Filtrador Jurídico Completo (VIP + Word)</title>
+  
+  <!-- PDF.js (Para ler PDFs) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script>
+    window.pdfjsLib && (pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js");
+  </script>
+  
+  <!-- Mammoth (Para ler DOCX) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#1e293b; --input-bg:#0f172a; --txt:#f1f5f9; --muted:#94a3b8;
+      --accent:#38bdf8; --danger:#ef4444; --success:#22c55e; --warn:#f59e0b;
+      --paper:#ffffff; --paper-txt:#000000;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:"Segoe UI", Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--txt); height:100vh; overflow:hidden;}
+    
+    /* Layout Principal */
+    .wrap{display:flex; height:100%; gap:0;}
+    
+    /* Coluna Esquerda (Controles) */
+    .left{
+      width:400px; min-width:350px; background:var(--panel); 
+      display:flex; flex-direction:column; border-right:1px solid #334155;
+    }
+    .left-scroll{padding:20px; overflow-y:auto; flex:1;}
+    
+    /* Coluna Direita (Papel) */
+    .right{flex:1; background:#334155; padding:20px; overflow-y:auto; display:flex; justify-content:center;}
+    .paper{
+      background:var(--paper); color:var(--paper-txt); 
+      width:100%; max-width:850px; min-height:90%; 
+      padding:40px 50px; box-shadow:0 10px 40px rgba(0,0,0,0.5);
+      font-family:"Times New Roman", Times, serif; font-size:12pt; line-height:1.5;
+      white-space:pre-wrap;
+    }
+
+    /* Elementos de UI */
+    h1{font-size:18px; color:var(--accent); margin:0 0 15px; text-transform:uppercase; letter-spacing:1px;}
+    h2{font-size:13px; color:var(--muted); margin:25px 0 10px; text-transform:uppercase; border-bottom:1px solid #334155; padding-bottom:5px;}
+    
+    label{font-size:12px; color:var(--muted); display:block; margin-bottom:5px;}
+    textarea, input[type="text"], input[type="number"]{
+      width:100%; background:var(--input-bg); color:var(--txt); border:1px solid #334155;
+      border-radius:6px; padding:10px; font-size:13px; outline:none; transition:0.2s;
+    }
+    textarea:focus, input:focus{border-color:var(--accent);}
+    textarea{min-height:100px; resize:vertical; font-family:monospace;}
+    
+    .row{display:flex; gap:10px; margin-bottom:10px;}
+    .col{flex:1;}
+    
+    button{
+      width:100%; padding:12px; border:none; border-radius:6px; 
+      font-weight:bold; cursor:pointer; text-transform:uppercase; font-size:12px;
+      transition:0.2s; margin-bottom:5px;
+    }
+    button:hover{opacity:0.9;}
+    .btn-primary{background:var(--accent); color:#0f172a;}
+    .btn-danger{background:var(--danger); color:white;}
+    .btn-success{background:var(--success); color:white;}
+    .btn-warn{background:var(--warn); color:#0f172a;}
+    .btn-sec{background:#334155; color:var(--txt);}
+
+    .checks{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;}
+    .check-item{display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;}
+    .check-item input{cursor:pointer;}
+
+    .status-box{
+      background:#0f172a; border:1px solid #334155; padding:10px; 
+      border-radius:6px; font-size:12px; color:var(--accent); margin-top:10px; white-space:pre-wrap;
+    }
+
+    /* Overlay de Carregamento */
+    .overlay{
+      position:fixed; top:0; left:0; width:100%; height:100%; 
+      background:rgba(0,0,0,0.7); z-index:999; display:none; 
+      align-items:center; justify-content:center; flex-direction:column;
+    }
+    .spinner {
+      width: 40px; height: 40px; border: 4px solid #f3f3f3; 
+      border-top: 4px solid var(--accent); border-radius: 50%; 
+      animation: spin 1s linear infinite; margin-bottom:15px;
+    }
+    @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+    /* Detalhes (Removidos) */
+    details{background:#0f172a; padding:10px; border-radius:6px; margin-top:10px;}
+    summary{cursor:pointer; font-size:12px; font-weight:bold;}
+    .removed-item{
+      font-size:11px; padding:8px; border-left:2px solid var(--danger); 
+      background:rgba(239,68,68,0.1); margin-top:5px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Overlay de Processamento -->
+<div class="overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div style="color:white; font-weight:bold;" id="loadingMsg">Processando...</div>
+</div>
+
+<div class="wrap">
+  <!-- Painel Esquerdo -->
+  <div class="left">
+    <div class="left-scroll">
+      <h1>Filtrador Jurídico</h1>
+      
+      <!-- 1. Importação -->
+      <label>1) Importar Arquivos (PDF, DOCX, TXT, JSON)</label>
+      <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.json" style="margin-bottom:15px;">
+      
+      <label>Texto Bruto (ou cole aqui)</label>
+      <textarea id="rawText" placeholder="O texto dos arquivos aparecerá aqui..."></textarea>
+
+      <!-- 2. Configurações Básicas -->
+      <h2>2) Configurações</h2>
+      <div class="checks">
+        <label class="check-item"><input type="checkbox" id="cleanSymbols" checked> Limpar Símbolos (*, **,***,#,##,###)</label>
+        <label class="check-item"><input type="checkbox" id="dedupeExact" checked> Duplicatas Exatas</label>
+        <label class="check-item"><input type="checkbox" id="dedupeNear" checked> Duplicatas Aprox.</label>
+        <label class="check-item"><input type="checkbox" id="keepOrder" checked> Manter Ordem</label>
+      </div>
+      
+      <div class="row">
+        <div class="col">
+          <label>Mín. Caracteres</label>
+          <input type="number" id="minChars" value="30">
+        </div>
+        <div class="col">
+          <label>Similaridade (0.5 - 1.0)</label>
+          <input type="number" id="simLevel" value="0.75" step="0.01">
+        </div>
+      </div>
+
+      <!-- 3. Regras de Exclusão (Blacklist) -->
+      <h2>3) Regras de Exclusão (Blacklist)</h2>
+      <label>Palavras proibidas (1 por linha)</label>
+      <textarea id="banWords" placeholder="Ex: excelentíssimo&#10;pede deferimento" style="height:80px"></textarea>
+      
+      <label>Regex proibido (1 por linha)</label>
+      <textarea id="banRegex" placeholder="Ex: ^\s*OAB.*$" style="height:80px"></textarea>
+
+      <!-- 4. Regras de Manutenção (Whitelist / VIP) -->
+      <h2 style="color:var(--success); border-color:var(--success);">4) Lista VIP (Whitelist)</h2>
+      <div style="background:rgba(34, 197, 94, 0.05); padding:10px; border-radius:6px; border:1px solid rgba(34, 197, 94, 0.2);">
+        <label style="color:var(--success);">MANTER se contiver (1 por linha)</label>
+        <textarea id="keepWords" placeholder="Ex: Cláusula de Confidencialidade&#10;Valor da Causa" style="height:80px; border-color:rgba(34, 197, 94, 0.3);"></textarea>
+        
+        <label style="color:var(--success);">MANTER por Regex (1 por linha)</label>
+        <textarea id="keepRegex" placeholder="Ex: ^IMPORTANTE.*" style="height:80px; border-color:rgba(34, 197, 94, 0.3);"></textarea>
+        
+        <div style="font-size:11px; color:var(--muted); margin-top:5px;">
+          * Itens da Lista VIP não serão excluídos pelas regras de exclusão.
+        </div>
+      </div>
+
+      <!-- Botões de Ação -->
+      <h2 style="border:none;">Ações</h2>
+      <button class="btn-primary" id="btnFilter">FILTRAR TEXTO</button>
+      
+      <div class="row">
+        <button class="btn-sec" id="btnSaveRules">Salvar Regras</button>
+        <button class="btn-sec" id="btnClearRules">Limpar Regras</button>
+      </div>
+
+      <div class="row">
+        <button class="btn-warn" id="btnExportWord">Exportar WORD</button>
+        <button class="btn-success" id="btnExportJson">Exportar JSON</button>
+      </div>
+      
+      <button class="btn-sec" id="btnExportTxt">Exportar TXT</button>
+
+      <!-- Status e Logs -->
+      <div class="status-box" id="statusBox">Aguardando...</div>
+      
+      <details>
+        <summary>Ver itens removidos</summary>
+        <div id="removedLog"></div>
+      </details>
+      <br><br>
+    </div>
+  </div>
+
+  <!-- Painel Direito (Resultado) -->
+  <div class="right">
+    <div class="paper" id="outputText" contenteditable="true">
+      [O texto filtrado aparecerá aqui. Você pode editar este texto diretamente.]
+    </div>
+  </div>
+</div>
+
+<script>
+/**
+ * LÓGICA COMPLETA DO SISTEMA
+ * Sem dependências externas além das bibliotecas já importadas no head.
+ */
+
+// --- Gerenciamento de Estado (Salvar no Navegador) ---
+const STORAGE_KEY = 'juridico_filter_v2_full';
+
+function loadState() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
+  try {
+    const data = JSON.parse(saved);
+    if(data.banWords) document.getElementById('banWords').value = data.banWords;
+    if(data.banRegex) document.getElementById('banRegex').value = data.banRegex;
+    if(data.keepWords) document.getElementById('keepWords').value = data.keepWords;
+    if(data.keepRegex) document.getElementById('keepRegex').value = data.keepRegex;
+    if(data.minChars) document.getElementById('minChars').value = data.minChars;
+    if(data.simLevel) document.getElementById('simLevel').value = data.simLevel;
+    // Checkboxes
+    document.getElementById('cleanSymbols').checked = data.cleanSymbols !== false;
+    document.getElementById('dedupeExact').checked = data.dedupeExact !== false;
+    document.getElementById('dedupeNear').checked = data.dedupeNear !== false;
+  } catch (e) { console.error("Erro ao carregar estado", e); }
+}
+
+function saveState() {
+  const data = {
+    banWords: document.getElementById('banWords').value,
+    banRegex: document.getElementById('banRegex').value,
+    keepWords: document.getElementById('keepWords').value,
+    keepRegex: document.getElementById('keepRegex').value,
+    minChars: document.getElementById('minChars').value,
+    simLevel: document.getElementById('simLevel').value,
+    cleanSymbols: document.getElementById('cleanSymbols').checked,
+    dedupeExact: document.getElementById('dedupeExact').checked,
+    dedupeNear: document.getElementById('dedupeNear').checked
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  showStatus("Configurações e Regras salvas!");
+}
+
+// --- Funções Auxiliares de Texto ---
+function cleanText(text) {
+  // Remove marcadores comuns de markdown ou listas se solicitado
+  return text
+    .replace(/^\s*[\**\-\•]\s+/gm, "") // Bullets
+    .replace(/^\s*##{1,6}\s+/gm, "")   // Headers markdown
+    .replace(/\r\n/g, "\n");
+}
+
+function getLines(textareaId) {
+  return document.getElementById(textareaId).value
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
+}
+
+// --- Algoritmo de Similaridade (Jaccard com Shingles) ---
+function getShingles(text, size=3) {
+  const words = text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+    .replace(/[^a-z0-9\s]/g, "") // Remove pontuação
+    .split(/\s+/).filter(w => w.length > 0);
+  
+  if (words.length < size) return new Set([words.join(" ")]);
+  
+  const shingles = new Set();
+  for (let i = 0; i <= words.length - size; i++) {
+    shingles.add(words.slice(i, i + size).join(" "));
+  }
+  return shingles;
+}
+
+function calculateSimilarity(setA, setB) {
+  if (setA.size === 0 || setB.size === 0) return 0;
+  let intersection = 0;
+  for (let item of setA) {
+    if (setB.has(item)) intersection++;
+  }
+  const union = setA.size + setB.size - intersection;
+  return union === 0 ? 0 : intersection / union;
+}
+
+// --- Processamento Principal ---
+async function processText() {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.style.display = 'flex';
+  document.getElementById('loadingMsg').innerText = "Analisando texto...";
+
+  // Pequeno delay para a UI atualizar
+  await new Promise(r => setTimeout(r, 50));
+
+  try {
+    const raw = document.getElementById('rawText').value;
+    if (!raw.trim()) throw new Error("O campo de texto está vazio.");
+
+    // Configurações
+    const doClean = document.getElementById('cleanSymbols').checked;
+    const doExact = document.getElementById('dedupeExact').checked;
+    const doNear = document.getElementById('dedupeNear').checked;
+    const minLen = parseInt(document.getElementById('minChars').value) || 20;
+    const threshold = parseFloat(document.getElementById('simLevel').value) || 0.75;
+
+    // Listas
+    const banWords = getLines('banWords').map(w => w.toLowerCase());
+    const banRegex = getLines('banRegex').map(r => new RegExp(r, 'i'));
+    const keepWords = getLines('keepWords').map(w => w.toLowerCase());
+    const keepRegex = getLines('keepRegex').map(r => new RegExp(r, 'i'));
+
+    // 1. Quebrar em parágrafos
+    // Quebra por quebra de linha dupla OU linha que parece título (caixa alta)
+    let paragraphs = raw.split(/\n\s*\n/);
+    
+    // Se tiver poucas quebras duplas, tenta quebra simples
+    if (paragraphs.length < 5) {
+        paragraphs = raw.split(/\n/);
+    }
+
+    const output = [];
+    const removedLog = [];
+    const processedSignatures = []; // Para deduplicação aproximada
+    const exactSet = new Set();
+
+    for (let i = 0; i < paragraphs.length; i++) {
+      let p = paragraphs[i].trim();
+      if (doClean) p = cleanText(p);
+      
+      if (p.length < minLen) continue; // Ignora muito curtos (não loga como removido para não poluir)
+
+      // --- Lógica VIP (Whitelist) ---
+      let isVip = false;
+      
+      // Checa VIP por Palavra
+      for (let kw of keepWords) {
+        if (p.toLowerCase().includes(kw)) { isVip = true; break; }
+      }
+      // Checa VIP por Regex
+      if (!isVip) {
+        for (let kr of keepRegex) {
+          if (kr.test(p)) { isVip = true; break; }
+        }
+      }
+
+      // Se for VIP, pulamos a checagem de BAN, mas ainda podemos checar duplicata
+      // (Depende da lógica. Geralmente VIP queremos manter mesmo que pareça duplicado? 
+      //  Vou assumir que VIP protege de BAN, mas duplicata exata ainda remove para não ficar feio.
+      //  Se quiser que VIP force a entrada mesmo duplicado, mude a lógica abaixo).
+
+      if (!isVip) {
+        // --- Checagem de Banimento (Blacklist) ---
+        let banned = false;
+        // Por palavra
+        for (let bw of banWords) {
+          if (p.toLowerCase().includes(bw)) {
+            removedLog.push({ text: p, reason: `Palavra proibida: ${bw}` });
+            banned = true; break;
+          }
+        }
+        if (banned) continue;
+
+        // Por Regex
+        for (let br of banRegex) {
+          if (br.test(p)) {
+            removedLog.push({ text: p, reason: `Regex proibido` });
+            banned = true; break;
+          }
+        }
+        if (banned) continue;
+      }
+
+      // --- Deduplicação ---
+      
+      // Exata
+      if (doExact) {
+        const pLower = p.toLowerCase();
+        if (exactSet.has(pLower)) {
+          removedLog.push({ text: p, reason: "Duplicata Exata" });
+          continue;
+        }
+        exactSet.add(pLower);
+      }
+
+      // Aproximada
+      if (doNear) {
+        const pShingles = getShingles(p);
+        let isDup = false;
+        // Compara com os últimos 200 parágrafos aceitos (janela deslizante para performance)
+        const lookBack = Math.max(0, processedSignatures.length - 200);
+        
+        for (let j = lookBack; j < processedSignatures.length; j++) {
+          const sim = calculateSimilarity(pShingles, processedSignatures[j]);
+          if (sim >= threshold) {
+            removedLog.push({ text: p, reason: `Duplicata Aprox (${(sim*100).toFixed(0)}%)` });
+            isDup = true;
+            break;
+          }
+        }
+        if (isDup) continue;
+        processedSignatures.push(pShingles);
+      }
+
+      // Passou por tudo
+      output.push(p);
+    }
+
+    // Atualiza UI
+    document.getElementById('outputText').innerText = output.join("\n\n");
+    
+    // Atualiza Log de Removidos
+    const logDiv = document.getElementById('removedLog');
+    logDiv.innerHTML = "";
+    if (removedLog.length === 0) {
+      logDiv.innerHTML = "<div style='color:var(--muted); font-size:11px'>Nenhum item removido.</div>";
+    } else {
+      removedLog.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'removed-item';
+        div.innerHTML = `<b>[${item.reason}]</b> ${item.text.substring(0, 100)}...`;
+        logDiv.appendChild(div);
+      });
+    }
+
+    showStatus(`Concluído! ${output.length} parágrafos mantidos. ${removedLog.length} removidos.`);
+
+  } catch (err) {
+    alert("Erro: " + err.message);
+  } finally {
+    overlay.style.display = 'none';
+  }
+}
+
+// --- Importação de Arquivos ---
+async function handleFiles(e) {
+  const files = e.target.files;
+  if (!files.length) return;
+
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.style.display = 'flex';
+  document.getElementById('loadingMsg').innerText = "Lendo arquivos...";
+
+  let fullText = document.getElementById('rawText').value;
+  if (fullText) fullText += "\n\n";
+
+  for (let file of files) {
+    try {
+      let text = "";
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      if (ext === 'txt') {
+        text = await file.text();
+      } else if (ext === 'json') {
+        const jsonContent = await file.text();
+        // Tenta extrair valores de string do JSON recursivamente
+        text = extractStringsFromJson(JSON.parse(jsonContent));
+      } else if (ext === 'pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map(item => item.str).join(' ') + "\n";
+        }
+      } else if (ext === 'docx') {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+        text = result.value;
+      }
+
+      fullText += `--- ${file.name} ---\n${text}\n\n`;
+    } catch (err) {
+      console.error("Erro ao ler " + file.name, err);
+      fullText += `\n[ERRO AO LER ${file.name}]\n`;
+    }
+  }
+
+  document.getElementById('rawText').value = fullText;
+  overlay.style.display = 'none';
+  showStatus(`${files.length} arquivos importados.`);
+}
+
+function extractStringsFromJson(obj) {
+  let str = "";
+  if (typeof obj === 'string') return obj + "\n";
+  if (typeof obj === 'object' && obj !== null) {
+    for (let key in obj) {
+      str += extractStringsFromJson(obj[key]);
+    }
+  }
+  return str;
+}
+
+// --- Exportação ---
+function downloadFile(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Exportar WORD (Hack HTML)
+function exportWord() {
+  const text = document.getElementById('outputText').innerText;
+  // Cria um HTML simples que o Word entende
+  const htmlContent = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset='utf-8'><title>Export</title></head>
+    <body>
+      ${text.replace(/\n/g, "<br><br>")}
+    </body></html>`;
+  
+  downloadFile(htmlContent, 'filtrado.doc', 'application/msword');
+}
+
+// Exportar JSON
+function exportJson() {
+  const data = {
+    data: new Date().toISOString(),
+    textoFiltrado: document.getElementById('outputText').innerText,
+    regrasUsadas: {
+      banWords: document.getElementById('banWords').value,
+      keepWords: document.getElementById('keepWords').value
+    }
+  };
+  downloadFile(JSON.stringify(data, null, 2), 'filtrado.json', 'application/json');
+}
+
+// Exportar TXT
+function exportTxt() {
+  downloadFile(document.getElementById('outputText').innerText, 'filtrado.txt', 'text/plain');
+}
+
+function showStatus(msg) {
+  const el = document.getElementById('statusBox');
+  el.innerText = msg;
+  // Piscar cor
+  el.style.borderColor = "var(--accent)";
+  setTimeout(() => el.style.borderColor = "#334155", 1000);
+}
+
+// --- Event Listeners ---
+document.getElementById('btnFilter').addEventListener('click', processText);
+document.getElementById('fileInput').addEventListener('change', handleFiles);
+document.getElementById('btnSaveRules').addEventListener('click', saveState);
+document.getElementById('btnClearRules').addEventListener('click', () => {
+  if(confirm("Limpar todas as regras?")) {
+    document.getElementById('banWords').value = "";
+    document.getElementById('banRegex').value = "";
+    document.getElementById('keepWords').value = "";
+    document.getElementById('keepRegex').value = "";
+    saveState();
+  }
+});
+
+document.getElementById('btnExportWord').addEventListener('click', exportWord);
+document.getElementById('btnExportJson').addEventListener('click', exportJson);
+document.getElementById('btnExportTxt').addEventListener('click', exportTxt);
+
+// Inicialização
+loadState();
+
+</script>
+</body>
+</html>

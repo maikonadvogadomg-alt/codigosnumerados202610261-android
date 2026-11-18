@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Build Unpacker — Desempacotar Build</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ INPUT PANEL ═══ */
+    .input-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      border-right: 1px solid #333;
+    }
+
+    .panel-header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 10px;
+    }
+
+    .panel-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px 12px;
+      background: #0066cc;
+      border: 1px solid #0088ff;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #0077dd;
+    }
+
+    .btn.secondary {
+      background: #333;
+      border-color: #555;
+      color: #e0e0e0;
+    }
+
+    .btn.secondary:hover {
+      background: #444;
+    }
+
+    .textarea {
+      flex: 1;
+      padding: 12px;
+      background: #1a1a1a;
+      border: none;
+      color: #e0e0e0;
+      font-family: inherit;
+      font-size: 12px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    .textarea::placeholder {
+      color: #666;
+    }
+
+    /* ═══ OUTPUT PANEL ═══ */
+    .output-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      border-right: 1px solid #333;
+    }
+
+    .tabs {
+      display: flex;
+      background: #222;
+      border-bottom: 1px solid #333;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #8b949e;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      color: #0088ff;
+    }
+
+    .tab.active {
+      color: #0088ff;
+      border-bottom-color: #0088ff;
+    }
+
+    .tab-content {
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .code-output {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 11px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #88ff88;
+      max-height: 100%;
+      overflow: auto;
+    }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      text-align: center;
+    }
+
+    /* ═══ OPTIONS PANEL ═══ */
+    .options-panel {
+      width: 280px;
+      background: #222;
+      border-left: 1px solid #333;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .option-group {
+      background: #333;
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .option-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .option-item:last-child {
+      margin-bottom: 0;
+    }
+
+    input[type="checkbox"] {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+    }
+
+    input[type="number"] {
+      width: 60px;
+      padding: 6px;
+      background: #1a1a1a;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+
+    .files-list {
+      background: #333;
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .file-item {
+      padding: 8px;
+      background: #1a1a1a;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-item:hover {
+      background: #2a2a2a;
+    }
+
+    .file-item.active {
+      background: #0066cc;
+    }
+
+    .file-icon {
+      font-size: 14px;
+    }
+
+    .stats {
+      background: #333;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 11px;
+      color: #999;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .stat-item:last-child {
+      margin-bottom: 0;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .download-btn {
+      padding: 8px 12px;
+      background: #238636;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      transition: all 0.2s;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .download-btn:hover {
+      background: #2ea043;
+    }
+
+    .copy-btn {
+      padding: 6px 10px;
+      background: #0066cc;
+      border: none;
+      color: white;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 10px;
+      margin-top: 8px;
+    }
+
+    .copy-btn:hover {
+      background: #0077dd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- INPUT -->
+    <div class="input-panel">
+      <div class="panel-header">
+        <div class="panel-title">📦 Build Minificado</div>
+        <div class="panel-buttons">
+          <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Importar</button>
+          <button class="btn secondary" onclick="pasteCode()">📋 Colar</button>
+          <button class="btn secondary" onclick="clearInput()">🗑️ Limpar</button>
+        </div>
+      </div>
+      <textarea id="inputCode" class="textarea" placeholder="Cole seu build minificado aqui..."></textarea>
+      <input type="file" id="fileInput" accept=".js,.html,.css,.json,.txt" onchange="handleFileImport(event)" style="display: none;">
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-panel">
+      <div class="tabs" id="tabsContainer"></div>
+      <div id="tabsContent"></div>
+    </div>
+
+    <!-- OPTIONS -->
+    <div class="options-panel">
+      <div class="option-group">
+        <div class="option-title">⚙️ Opções</div>
+        <div class="option-item">
+          <input type="checkbox" id="autoFormat" checked onchange="updateOptions()">
+          <label for="autoFormat">Auto-formatar</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="beautify" checked onchange="updateOptions()">
+          <label for="beautify">Embelezar</label>
+        </div>
+        <div class="option-item">
+          <label for="indentSize" style="flex: 1;">Indentação:</label>
+          <input type="number" id="indentSize" value="2" min="1" max="8" onchange="updateOptions()">
+        </div>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">📁 Arquivos Detectados</div>
+        <div class="files-list" id="filesList">
+          Nenhum arquivo detectado
+        </div>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">📊 Estatísticas</div>
+        <div class="stats">
+          <div class="stat-item">
+            <span>Total:</span>
+            <span id="statTotal">0 bytes</span>
+          </div>
+          <div class="stat-item">
+            <span>Arquivos:</span>
+            <span id="statFiles">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Linhas:</span>
+            <span id="statLines">0</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" onclick="downloadAll()">📥 Baixar Tudo (ZIP)</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════
+
+    let extractedFiles = {};
+    let selectedFile = null;
+
+    // ═══════════════════════════════════════════════════════════════
+    // EXTRACT & UNPACK
+    // ═══════════════════════════════════════════════════════════════
+
+    function unpackBuild() {
+      const input = document.getElementById('inputCode').value;
+      if (!input.trim()) {
+        alert('Cole algum código!');
+        return;
+      }
+
+      extractedFiles = {};
+
+      // Detectar tipo de build
+      if (input.includes('<html') || input.includes('<!DOCTYPE')) {
+        extractHTML(input);
+      } else if (input.includes('function') || input.includes('const') || input.includes('var')) {
+        extractJavaScript(input);
+      } else if (input.includes('{') && input.includes('}') && !input.includes('function')) {
+        extractCSS(input);
+      } else {
+        extractGeneric(input);
+      }
+
+      renderTabs();
+      updateStats();
+    }
+
+    function extractHTML(html) {
+      // Extrair CSS
+      const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+      if (styleMatch) {
+        styleMatch.forEach((style, i) => {
+          const css = style.replace(/<\/?style[^>]*>/gi, '').trim();
+          extractedFiles[`style-${i + 1}.css`] = {
+            type: 'css',
+            content: css
+          };
+        });
+      }
+
+      // Extrair JavaScript
+      const scriptMatch = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi);
+      if (scriptMatch) {
+        scriptMatch.forEach((script, i) => {
+          const js = script.replace(/<\/?script[^>]*>/gi, '').trim();
+          extractedFiles[`script-${i + 1}.js`] = {
+            type: 'js',
+            content: js
+          };
+        });
+      }
+
+      // Extrair HTML puro
+      let htmlPuro = html;
+      htmlPuro = htmlPuro.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+      htmlPuro = htmlPuro.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+
+      extractedFiles['index.html'] = {
+        type: 'html',
+        content: htmlPuro
+      };
+    }
+
+    function extractJavaScript(js) {
+      // Separar por funções
+      const functions = js.match(/function\s+\w+\s*\([^)]*\)\s*\{[^}]*\}/g) || [];
+      const constDeclarations = js.match(/const\s+\w+\s*=\s*[^;]+;/g) || [];
+
+      if (functions.length > 0) {
+        functions.forEach((func, i) => {
+          extractedFiles[`function-${i + 1}.js`] = {
+            type: 'js',
+            content: func
+          };
+        });
+      }
+
+      if (constDeclarations.length > 0) {
+        extractedFiles['variables.js'] = {
+          type: 'js',
+          content: constDeclarations.join('\n')
+        };
+      }
+
+      // Resto do código
+      extractedFiles['main.js'] = {
+        type: 'js',
+        content: js
+      };
+    }
+
+    function extractCSS(css) {
+      // Separar por seletores
+      const rules = css.split('}').filter(r => r.trim());
+
+      rules.forEach((rule, i) => {
+        const parts = rule.split('{');
+        if (parts.length === 2) {
+          const selector = parts[0].trim();
+          const properties = parts[1].trim();
+
+          extractedFiles[`style-${selector.replace(/[^a-z0-9]/gi, '-')}-${i}.css`] = {
+            type: 'css',
+            content: `${selector} {\n  ${properties}\n}`
+          };
+        }
+      });
+
+      extractedFiles['styles.css'] = {
+        type: 'css',
+        content: css
+      };
+    }
+
+    function extractGeneric(content) {
+      // Se não conseguir identificar, salva como texto
+      extractedFiles['content.txt'] = {
+        type: 'text',
+        content: content
+      };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FORMAT CODE
+    // ═══════════════════════════════════════════════════════════════
+
+    function formatCode(code, type) {
+      const options = {
+        indentSize: parseInt(document.getElementById('indentSize').value),
+        beautify: document.getElementById('beautify').checked
+      };
+
+      if (!options.beautify) {
+        return code;
+      }
+
+      if (type === 'js') {
+        return formatJavaScript(code, options);
+      } else if (type === 'css') {
+        return formatCSS(code, options);
+      } else if (type === 'html') {
+        return formatHTML(code, options);
+      }
+
+      return code;
+    }
+
+    function formatJavaScript(code, options) {
+      const indent = ' '.repeat(options.indentSize);
+      let formatted = code;
+
+      // Adicionar quebras de linha
+      formatted = formatted.replace(/\{/g, ' {\n');
+      formatted = formatted.replace(/\}/g, '\n}');
+      formatted = formatted.replace(/;/g, ';\n');
+      formatted = formatted.replace(/,/g, ',\n');
+
+      // Indentar
+      const lines = formatted.split('\n');
+      let indentLevel = 0;
+      formatted = lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('}')) indentLevel = Math.max(0, indentLevel - 1);
+        const result = indent.repeat(indentLevel) + trimmed;
+        if (trimmed.endsWith('{')) indentLevel++;
+        return result;
+      }).join('\n');
+
+      return formatted;
+    }
+
+    function formatCSS(code, options) {
+      const indent = ' '.repeat(options.indentSize);
+      let formatted = code;
+
+      formatted = formatted.replace(/\{/g, ' {\n');
+      formatted = formatted.replace(/;/g, ';\n');
+      formatted = formatted.replace(/\}/g, '\n}\n');
+
+      const lines = formatted.split('\n').filter(l => l.trim());
+      let indentLevel = 0;
+      formatted = lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('}')) indentLevel = Math.max(0, indentLevel - 1);
+        const result = indent.repeat(indentLevel) + trimmed;
+        if (trimmed.endsWith('{')) indentLevel++;
+        return result;
+      }).join('\n');
+
+      return formatted;
+    }
+
+    function formatHTML(code, options) {
+      const indent = ' '.repeat(options.indentSize);
+      let formatted = code;
+
+      formatted = formatted.replace(/></g, '>\n<');
+      formatted = formatted.replace(/>\s+</g, '>\n<');
+
+      const lines = formatted.split('\n').filter(l => l.trim());
+      let indentLevel = 0;
+      formatted = lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('</')) indentLevel = Math.max(0, indentLevel - 1);
+        const result = indent.repeat(indentLevel) + trimmed;
+        if (!trimmed.startsWith('</') && trimmed.endsWith('>') && !trimmed.includes('/>')) {
+          indentLevel++;
+        }
+        return result;
+      }).join('\n');
+
+      return formatted;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // RENDER
+    // ═══════════════════════════════════════════════════════════════
+
+    function renderTabs() {
+      const tabsContainer = document.getElementById('tabsContainer');
+      const tabsContent = document.getElementById('tabsContent');
+
+      if (Object.keys(extractedFiles).length === 0) {
+        tabsContainer.innerHTML = '';
+        tabsContent.innerHTML = '<div class="empty-state">Nenhum arquivo extraído</div>';
+        return;
+      }
+
+      // Criar abas
+      let tabsHTML = '';
+      let contentHTML = '';
+
+      Object.keys(extractedFiles).forEach((filename, i) => {
+        const file = extractedFiles[filename];
+        const formatted = formatCode(file.content, file.type);
+
+        const icon = file.type === 'js' ? '📘' : file.type === 'css' ? '🎨' : file.type === 'html' ? '🌐' : '📄';
+
+        tabsHTML += `
+          <button class="tab ${i === 0 ? 'active' : ''}" onclick="selectTab('${filename}')">
+            ${icon} ${filename}
+          </button>
+        `;
+
+        contentHTML += `
+          <div class="tab-content ${i === 0 ? 'active' : ''}" id="tab-${filename}">
+            <div class="code-output">${escapeHtml(formatted)}</div>
+            <button class="copy-btn" onclick="copyFile('${filename}')">📋 Copiar</button>
+            <button class="download-btn" onclick="downloadFile('${filename}')">💾 Baixar</button>
+          </div>
+        `;
+      });
+
+      tabsContainer.innerHTML = tabsHTML;
+      tabsContent.innerHTML = contentHTML;
+
+      // Atualizar lista de arquivos
+      renderFilesList();
+    }
+
+    function renderFilesList() {
+      const filesList = document.getElementById('filesList');
+      let html = '';
+
+      Object.keys(extractedFiles).forEach(filename => {
+        const file = extractedFiles[filename];
+        const icon = file.type === 'js' ? '📘' : file.type === 'css' ? '🎨' : file.type === 'html' ? '🌐' : '📄';
+
+        html += `
+          <div class="file-item" onclick="selectTab('${filename}')">
+            <span class="file-icon">${icon}</span>
+            <span>${filename}</span>
+          </div>
+        `;
+      });
+
+      filesList.innerHTML = html || 'Nenhum arquivo';
+    }
+
+    function selectTab(filename) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+
+      document.getElementById(`tab-${filename}`).classList.add('active');
+      document.querySelector(`[onclick="selectTab('${filename}')"]`).classList.add('active');
+    }
+
+    function updateStats() {
+      const files = Object.keys(extractedFiles);
+      let totalSize = 0;
+      let totalLines = 0;
+
+      files.forEach(filename => {
+        const content = extractedFiles[filename].content;
+        totalSize += content.length;
+        totalLines += content.split('\n').length;
+      });
+
+      document.getElementById('statTotal').textContent = (totalSize / 1024).toFixed(2) + ' KB';
+      document.getElementById('statFiles').textContent = files.length;
+      document.getElementById('statLines').textContent = totalLines;
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FILE HANDLING
+    // ═══════════════════════════════════════════════════════════════
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('inputCode').value = e.target.result;
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function pasteCode() {
+      const text = prompt('Cole seu build:');
+      if (text) {
+        document.getElementById('inputCode').value = text;
+      }
+    }
+
+    function clearInput() {
+      if (confirm('Limpar tudo?')) {
+        document.getElementById('inputCode').value = '';
+        extractedFiles = {};
+        document.getElementById('tabsContainer').innerHTML = '';
+        document.getElementById('tabsContent').innerHTML = '<div class="empty-state">Cole código e clique em "Desempacotar"</div>';
+      }
+    }
+
+    function copyFile(filename) {
+      const content = extractedFiles[filename].content;
+      navigator.clipboard.writeText(content).then(() => {
+        alert('✓ Copiado!');
+      });
+    }
+
+    function downloadFile(filename) {
+      const content = extractedFiles[filename].content;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+    }
+
+    async function downloadAll() {
+      const zip = new JSZip();
+
+      Object.keys(extractedFiles).forEach(filename => {
+        const content = extractedFiles[filename].content;
+        zip.file(filename, content);
+      });
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `build-unpacked-${Date.now()}.zip`;
+      a.click();
+    }
+
+    function updateOptions() {
+      renderTabs();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Adicionar botão de desempacotar
+      const header = document.querySelector('.panel-buttons');
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = '🚀 Desempacotar';
+      btn.onclick = unpackBuild;
+      header.insertBefore(btn, header.firstChild);
+    });
+  </script>
+</body>
+</html>

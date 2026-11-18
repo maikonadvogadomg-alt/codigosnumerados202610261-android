@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK Editor Jurídico v2 - Seu Ambiente</title>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#0f172a; color:#e2e8f0; }
+    header { background:#1e2937; padding:15px; text-align:center; border-bottom:2px solid #3b82f6; }
+    h1 { margin:0; color:#60a5fa; }
+    .container { display:flex; flex-direction:column; height:calc(100vh - 60px); }
+    .tabs { display:flex; background:#1e2937; }
+    .tab { padding:12px 20px; cursor:pointer; background:#334155; margin:5px; border-radius:6px; }
+    .tab.active { background:#3b82f6; color:white; }
+    .panel { padding:15px; flex:1; overflow:auto; background:#111827; }
+    button { padding:10px 16px; margin:5px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; }
+    button:hover { background:#2563eb; }
+    button.secondary { background:#475569; }
+    textarea, input { width:100%; background:#1e2937; color:#e2e8f0; border:1px solid #475569; border-radius:6px; padding:10px; margin:8px 0; box-sizing:border-box; }
+    pre { background:#020617; padding:12px; border-radius:6px; overflow:auto; white-space:pre-wrap; font-size:13px; }
+    .file-list { max-height:400px; overflow:auto; }
+    .file-item { padding:8px; cursor:pointer; border-bottom:1px solid #334155; }
+    .file-item:hover { background:#1e2937; }
+    .status { padding:8px; margin:8px 0; border-radius:6px; font-size:14px; }
+    .green { background:#166534; color:#86efac; }
+    .red { background:#7f1d1d; color:#fda4af; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔧 SK Editor Jurídico v2</h1>
+    <p>Seu Mini VS Code + Assistente Jurídico (ZIP + GitHub + Cérebro)</p>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab(0)">Importar</div>
+    <div class="tab" onclick="showTab(1)">Arquivos</div>
+    <div class="tab" onclick="showTab(2)">Preview</div>
+    <div class="tab" onclick="showTab(3)">Cérebro + Plano</div>
+    <div class="tab" onclick="showTab(4)">Diagnóstico</div>
+  </div>
+
+  <div class="container">
+    <!-- ABA 0: Importar -->
+    <div id="tab0" class="panel">
+      <h2>1. Importar Projeto</h2>
+      <input type="file" id="zipInput" accept=".zip"><br>
+      <button onclick="loadZip()">Carregar ZIP</button>
+      
+      <h3>Ou usar Repositório GitHub (recomendado)</h3>
+      <input type="text" id="githubUrl" placeholder="https://github.com/usuario/seu-repositorio">
+      <button onclick="loadFromGitHub()">Baixar do GitHub</button>
+      <button class="secondary" onclick="saveToken()">Salvar Token GitHub</button>
+    </div>
+
+    <!-- ABA 1: Arquivos -->
+    <div id="tab1" class="panel" style="display:none;">
+      <h2>Arquivos do Projeto</h2>
+      <input type="text" id="search" placeholder="Buscar arquivo..." onkeyup="filterFiles()">
+      <div id="fileList" class="file-list"></div>
+      <textarea id="fileContent" rows="15" readonly></textarea>
+    </div>
+
+    <!-- ABA 2: Preview -->
+    <div id="tab2" class="panel" style="display:none;">
+      <h2>Preview ao Vivo</h2>
+      <button onclick="openPreview()">Abrir Preview do Projeto</button>
+      <div id="previewArea" style="margin-top:15px; border:1px solid #475569; min-height:400px; background:white;"></div>
+    </div>
+
+    <!-- ABA 3: Cérebro + Plano -->
+    <div id="tab3" class="panel" style="display:none;">
+      <h2>Cérebro & Plano do Projeto</h2>
+      <button onclick="generateBrain()">Gerar/Atualizar Cérebro (Memória)</button>
+      <button onclick="generateProjectPlan()">Gerar Plano Completo do Projeto</button>
+      <pre id="brainOutput"></pre>
+    </div>
+
+    <!-- ABA 4: Diagnóstico -->
+    <div id="tab4" class="panel" style="display:none;">
+      <h2>Diagnóstico Automático</h2>
+      <button onclick="runDiagnosis()">Executar Diagnóstico Completo</button>
+      <pre id="diagnosisOutput">Clique no botão para analisar o projeto...</pre>
+    </div>
+  </div>
+
+<script>
+// ==================== VARIÁVEIS GLOBAIS ====================
+let currentFiles = [];
+let fileContents = {};
+let brain = { history: [], lastUpdated: "" };
+
+// ==================== TABS ====================
+function showTab(n) {
+  document.querySelectorAll('.panel').forEach((p,i) => p.style.display = i===n ? 'block' : 'none');
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
+}
+
+// ==================== IMPORTAÇÃO ====================
+async function loadZip() {
+  const file = document.getElementById('zipInput').files[0];
+  if (!file) return alert("Selecione um arquivo ZIP");
+  const buffer = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buffer);
+  processZip(zip);
+}
+
+async function loadFromGitHub() {
+  let url = document.getElementById('githubUrl').value.trim();
+  if (!url) return alert("Cole o link do repositório");
+
+  if (url.includes('github.com')) {
+    url = url.replace('github.com', 'api.github.com/repos') + '/zipball/main';
+  }
+
+  try {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    const buffer = await blob.arrayBuffer();
+    const zip = await JSZip.loadAsync(buffer);
+    processZip(zip);
+    alert("Repositório importado com sucesso!");
+  } catch(e) {
+    alert("Erro ao baixar do GitHub. Verifique se o repositório é público.");
+  }
+}
+
+// ==================== PROCESSAMENTO DO ZIP ====================
+function processZip(zip) {
+  currentFiles = [];
+  fileContents = {};
+
+  zip.forEach((path, entry) => {
+    if (!entry.dir) currentFiles.push(path);
+  });
+
+  currentFiles.sort();
+
+  currentFiles.forEach(async (path) => {
+    const lower = path.toLowerCase();
+    if (lower.match(/\.(js|ts|tsx|html|css|json|md|txt|sql|yml|yaml)$/)) {
+      try {
+        fileContents[path] = await zip.file(path).async('string');
+      } catch(e) {}
+    }
+  });
+
+  renderFileList();
+  alert("Projeto carregado! Vá para a aba 'Arquivos' ou 'Diagnóstico'.");
+}
+
+function renderFileList() {
+  const container = document.getElementById('fileList');
+  container.innerHTML = currentFiles.map(file => 
+    `<div class="file-item" onclick="openFile('${file}')">${file}</div>`
+  ).join('');
+}
+
+function openFile(filename) {
+  document.getElementById('fileContent').value = fileContents[filename] || "[Arquivo binário ou não suportado]";
+}
+
+function filterFiles() {
+  const term = document.getElementById('search').value.toLowerCase();
+  const filtered = currentFiles.filter(f => f.toLowerCase().includes(term));
+  document.getElementById('fileList').innerHTML = filtered.map(file => 
+    `<div class="file-item" onclick="openFile('${file}')">${file}</div>`
+  ).join('');
+}
+
+// ==================== PREVIEW AO VIVO ====================
+function openPreview() {
+  const htmlFiles = currentFiles.filter(f => f.toLowerCase().endsWith('.html'));
+  if (htmlFiles.length === 0) return alert("Nenhum arquivo HTML encontrado para preview.");
+
+  const content = fileContents[htmlFiles[0]] || "<h1>Sem conteúdo HTML</h1>";
+  const preview = document.getElementById('previewArea');
+  preview.innerHTML = content;
+  alert("Preview aberto! (Funciona melhor com arquivos HTML simples)");
+}
+
+// ==================== CÉREBRO E PLANO ====================
+function generateBrain() {
+  brain.lastUpdated = new Date().toLocaleString('pt-BR');
+  brain.history.push({
+    date: brain.lastUpdated,
+    action: "Projeto analisado",
+    filesCount: currentFiles.length
+  });
+  document.getElementById('brainOutput').textContent = JSON.stringify(brain, null, 2);
+  alert("Cérebro atualizado! Memória salva.");
+}
+
+function generateProjectPlan() {
+  let plan = `# PLANO DO PROJETO - Gerado em ${new Date().toLocaleString('pt-BR')}\n\n`;
+  plan += `Total de arquivos: ${currentFiles.length}\n\n`;
+  plan += `## 1. Diagnóstico Rápido\n`;
+  plan += `- Tem package.json? ${currentFiles.some(f=>f.includes('package.json')) ? 'SIM' : 'NÃO'}\n`;
+  plan += `- Tem Replit? ${currentFiles.some(f=>f.includes('replit')) ? 'SIM (sujeira)' : 'NÃO'}\n`;
+  plan += `- Tem Neon/Supabase? ${currentFiles.some(f=>f.toLowerCase().includes('neon')||f.toLowerCase().includes('supabase')) ? 'SIM' : 'NÃO'}\n\n`;
+  plan += `## 2. O que fazer agora\n`;
+  plan += `1. Limpar arquivos Replit\n`;
+  plan += `2. Corrigir tela azul / erro de nó\n`;
+  plan += `3. Melhorar função de Preview\n`;
+  plan += `4. Testar importação jurídica\n\n`;
+  plan += `## 3. Próximos Passos\nCole este plano na IA e peça correções específicas.`;
+
+  document.getElementById('brainOutput').textContent = plan;
+  alert("Plano completo gerado! Copie o texto acima.");
+}
+
+// ==================== DIAGNÓSTICO ====================
+function runDiagnosis() {
+  let diag = "🔍 DIAGNÓSTICO AUTOMÁTICO\n";
+  diag += "===========================\n\n";
+  diag += `Data: ${new Date().toLocaleString('pt-BR')}\n`;
+  diag += `Total de arquivos: ${currentFiles.length}\n\n`;
+
+  const hasReplit = currentFiles.some(f => f.toLowerCase().includes('replit'));
+  const hasPackage = currentFiles.some(f => f.includes('package.json'));
+  const hasVite = currentFiles.some(f => f.includes('vite'));
+  const hasCapacitor = currentFiles.some(f => f.toLowerCase().includes('capacitor'));
+  const hasNeon = Object.values(fileContents).some(c => c.toLowerCase().includes('neon'));
+
+  diag += hasPackage ? "✅ package.json encontrado\n" : "❌ package.json não encontrado\n";
+  diag += hasVite ? "✅ Projeto Vite/React detectado\n" : "⚠️ Projeto não parece ser Vite\n";
+  diag += hasReplit ? "⚠️ Arquivos Replit detectados (recomendado remover)\n" : "✅ Sem vestígios de Replit\n";
+  diag += hasCapacitor ? "⚠️ Capacitor/APK detectado\n" : "";
+  diag += hasNeon ? "⚠️ Configuração Neon detectada\n" : "";
+
+  diag += "\n\nRECOMENDAÇÃO:\n";
+  diag += "1. Use a aba 'Cérebro + Plano' para gerar plano detalhado\n";
+  diag += "2. Foque em corrigir tela azul e erro de nó primeiro\n";
+  diag += "3. Depois melhore o Preview e Combinar Arquivos";
+
+  document.getElementById('diagnosisOutput').textContent = diag;
+}
+
+// ==================== TOKEN GITHUB ====================
+function saveToken() {
+  const token = prompt("Cole seu Token do GitHub (opcional):");
+  if (token) {
+    localStorage.setItem('githubToken', token);
+    alert("Token salvo no navegador!");
+  }
+}
+
+// Inicialização
+showTab(0);
+alert("SK Editor Jurídico v2 carregado!\n\nUse primeiro a aba 'Importar' com um ZIP ou link do GitHub.");
+</script>
+</body>
+</html>

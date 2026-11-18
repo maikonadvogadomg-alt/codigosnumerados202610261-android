@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maikon Caldeira - Reconhecimentos Pretéritos</title>
+
+<!-- PDF.js via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
+
+<style>
+    :root {
+        --oliva: #5d5e53;
+        --bronze: #a3a082;
+        --fundo: #0a0a0a;
+        --painel: #161614;
+        --texto: #e5e7eb;
+        --alerta: #b91c1c;
+        --sucesso: #15803d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--fundo); color: var(--texto); }
+
+    .no-print { padding: 20px; max-width: 1100px; margin: auto; }
+    
+    header { 
+        border-bottom: 2px solid var(--bronze); 
+        padding-bottom: 15px; 
+        margin-bottom: 25px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+    }
+    
+    .logo-m { background: var(--bronze); color: var(--fundo); padding: 10px 18px; border-radius: 50%; font-weight: bold; font-size: 22px; border: 2px solid #fff; }
+
+    .config-card { background: var(--painel); padding: 20px; border-radius: 12px; border: 1px solid var(--oliva); margin-bottom: 15px; }
+    
+    .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px; }
+    
+    label { display: block; font-size: 10px; font-weight: bold; color: var(--bronze); margin-bottom: 4px; text-transform: uppercase; }
+    input, select, textarea { width: 100%; background: #000; border: 1px solid var(--oliva); color: #fff; padding: 8px; border-radius: 6px; outline: none; font-size: 13px; }
+
+    .btn { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px; transition: 0.3s; }
+    .btn-add     { background: var(--oliva); color: white; width: 100%; margin-top: 10px; }
+    .btn-print   { background: var(--bronze); color: var(--fundo); width: 100%; font-size: 16px; margin-top: 20px; box-shadow: 0 0 15px rgba(163,160,130,0.4); }
+    .btn-gmail   { background: #ea4335; color: white; margin-top: 10px; width: 100%; }
+    .btn-export  { background: #1d4ed8; color: white; margin-top: 10px; width: 100%; }
+    .btn-import  { background: #065f46; color: white; margin-top: 10px; width: 100%; }
+    .btn-limpar  { background: #7f1d1d; color: white; margin-top: 10px; width: 100%; }
+    .btn-cnis    { background: #7c3aed; color: white; margin-top: 10px; width: 100%; font-size: 13px; padding: 14px; }
+
+    /* Barra de status */
+    #status-save {
+        font-size: 11px; color: var(--bronze); text-align: right;
+        padding: 4px 0 10px 0; letter-spacing: 1px; min-height: 20px; transition: opacity 0.5s;
+    }
+
+    /* Modal de progresso */
+    #modal-cnis {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.85); z-index: 9999;
+        align-items: center; justify-content: center;
+    }
+    #modal-cnis.ativo { display: flex; }
+    .modal-box {
+        background: var(--painel); border: 1px solid var(--bronze);
+        border-radius: 12px; padding: 30px; max-width: 480px; width: 90%; text-align: center;
+    }
+    .modal-box h3 { color: var(--bronze); margin-bottom: 15px; }
+    .modal-box p  { font-size: 13px; color: var(--texto); margin-bottom: 20px; line-height: 1.6; }
+    .progress-bar-wrap { background: #000; border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 15px; }
+    .progress-bar      { background: var(--bronze); height: 100%; width: 0%; transition: width 0.3s; }
+    #modal-status      { font-size: 11px; color: var(--bronze); letter-spacing: 1px; }
+
+    /* Documento de Impressão */
+    #doc-confronto { background: white; color: black; padding: 40px; width: 210mm; min-height: 297mm; margin: 20px auto; border-radius: 4px; display: none; }
+    .cabecalho-doc { text-align: center; border-bottom: 3px solid black; padding-bottom: 15px; margin-bottom: 30px; }
+    .alerta-servidor { background: #000; color: #fff; padding: 15px; text-align: center; font-weight: bold; margin-bottom: 25px; text-transform: uppercase; border-radius: 4px; -webkit-print-color-adjust: exact; }
+    .secao-titulo { background: #f0f0f0; padding: 8px; font-weight: bold; border-left: 5px solid #5d5e53; margin: 20px 0 15px 0; text-transform: uppercase; -webkit-print-color-adjust: exact; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; font-size: 12px; }
+    th { background: #f8f8f8; font-weight: bold; text-transform: uppercase; }
+    .badge-reconhecido { background: #dcfce7; color: #166534; padding: 3px 8px; border-radius: 12px; font-weight: bold; border: 1px solid #166534; -webkit-print-color-adjust: exact; }
+    .fundamentacao-juridica { background: #fffbeb; border: 1px solid #f59e0b; padding: 15px; margin-top: 30px; font-size: 12px; text-align: justify; -webkit-print-color-adjust: exact; }
+
+    @media print {
+        .no-print { display: none; }
+        body { background: white; }
+        #doc-confronto { display: block; margin: 0; border: none; width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<!-- MODAL DE PROGRESSO -->
+<div id="modal-cnis">
+    <div class="modal-box">
+        <h3>📂 Lendo CNIS...</h3>
+        <p id="modal-msg">Aguarde enquanto extraímos os períodos do seu extrato.</p>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+        <div id="modal-status">Iniciando...</div>
+    </div>
+</div>
+
+<div class="no-print">
+    <header>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div class="logo-m">M</div>
+            <div>
+                <h2 style="color:var(--bronze)">Maikon Da Rocha Caldeira</h2>
+                <p style="font-size: 10px; letter-spacing: 2px;">ESTRATEGISTA DE PRECLUSÃO ADMINISTRATIVA</p>
+            </div>
+        </div>
+        <a href="index.html" style="color:var(--bronze); text-decoration:none; font-size:12px;">Sair</a>
+    </header>
+
+    <div id="status-save">⏳ Aguardando dados...</div>
+
+    <!-- IMPORTAR CNIS PDF — DESTAQUE -->
+    <div class="config-card" style="border-color: #7c3aed; background: #0d0d1a;">
+        <h3 style="color:#a78bfa; margin-bottom:8px; font-size:13px;">⚡ IMPORTAÇÃO AUTOMÁTICA — CNIS PDF</h3>
+        <p style="font-size:11px; color:#c4b5fd; margin-bottom:10px;">
+            Selecione o extrato CNIS baixado do Meu INSS. O nome do segurado e todos os períodos serão preenchidos automaticamente.
+            Depois é só informar o NB, DER anterior e marcar o tipo de cada período.
+        </p>
+        <button class="btn btn-cnis" onclick="document.getElementById('input-cnis-pdf').click()">
+            📂 Importar CNIS (PDF do Meu INSS)
+        </button>
+        <input type="file" id="input-cnis-pdf" accept=".pdf" style="display:none" onchange="importarCnisPdf(event)">
+    </div>
+
+    <!-- DADOS PRINCIPAIS -->
+    <div class="config-card">
+        <h3 style="color:var(--bronze); margin-bottom:15px; font-size:14px;">DADOS DO SEGURADO E VÍNCULOS RECONHECIDOS</h3>
+        <div class="row">
+            <div style="grid-column: span 2;">
+                <label>Nome do Segurado</label>
+                <input type="text" id="nome-segurado" placeholder="Nome Completo" oninput="autoSave()">
+            </div>
+            <div>
+                <label>DER do Novo Pedido</label>
+                <input type="date" id="der-atual" onchange="autoSave()">
+            </div>
+        </div>
+        <div id="lista-reconhecimentos"></div>
+        <button class="btn btn-add" onclick="adicionarReconhecimento()">+ Adicionar Período Manualmente</button>
+    </div>
+
+    <button class="btn btn-print" onclick="gerarDocumento()">🖨️ Gerar Relatório de Confronto (PDF)</button>
+    <button class="btn btn-gmail" onclick="enviarGmail()">📧 Salvar Texto para Rascunho Gmail</button>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+        <button class="btn btn-export" onclick="exportarJSON()">⬇️ Exportar Dados (.json)</button>
+        <button class="btn btn-import" onclick="document.getElementById('input-importar').click()">⬆️ Importar Dados (.json)</button>
+        <button class="btn btn-limpar" onclick="limparTudo()">🗑️ Limpar Tudo</button>
+    </div>
+
+    <input type="file" id="input-importar" accept=".json" style="display:none" onchange="importarJSON(event)">
+</div>
+
+<!-- DOCUMENTO PARA IMPRESSÃO -->
+<div id="doc-confronto">
+    <div class="cabecalho-doc">
+        <div style="font-weight:bold; font-size: 12px;">MAIKON DA ROCHA CALDEIRA - ADVOCACIA E ESTRATÉGIA PREVIDENCIÁRIA</div>
+        <div style="font-size: 24px; font-weight: bold; margin-top: 10px;">EXPOSIÇÃO DE RECONHECIMENTOS PRETÉRITOS</div>
+        <div style="font-size: 14px; margin-top: 5px;">SEGURADO: <span id="out-nome"></span> | DER ATUAL: <span id="out-der"></span></div>
+    </div>
+    <div class="alerta-servidor">
+        ⚠️ ATENÇÃO: ESTE REQUERIMENTO VISA EVITAR O RETRABALHO E A VIOLAÇÃO DA SEGURANÇA JURÍDICA.
+    </div>
+    <p style="font-size: 13px; margin-bottom: 20px;">
+        Em observância ao <strong>Art. 614 da IN 128/2022</strong> e ao <strong>Art. 270 da mesma Instrução</strong>, apresentamos abaixo o histórico de períodos especiais e urbanos que já foram objeto de análise e <strong>DEVIDO RECONHECIMENTO</strong> por esta Autarquia em requerimentos anteriores, não cabendo nova discussão fática sobre os mesmos.
+    </p>
+    <div class="secao-titulo">Histórico de Períodos Reconhecidos</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Empresa/Vínculo</th>
+                <th>NB/Processo</th>
+                <th>DER Anterior</th>
+                <th>Período (Início/Fim)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="out-tabela"></tbody>
+    </table>
+    <div class="fundamentacao-juridica">
+        <strong>FUNDAMENTAÇÃO PARA MANUTENÇÃO DO DIREITO:</strong><br><br>
+        <strong>IN 128/2022, Art. 270:</strong> Estabelece que a análise técnica de períodos com exposição a agentes nocivos já realizada deve ser mantida em novos requerimentos, salvo comprovação de erro material ou fraude.<br>
+        <strong>IN 128/2022, Art. 614:</strong> As decisões administrativas definitivas são imutáveis, operando a preclusão administrativa pro judicato.<br>
+        <strong>Princípio da Proteção da Confiança:</strong> O segurado possui o direito de que a administração mantenha seus atos decisórios anteriores, evitando decisões contraditórias sobre o mesmo fato e mesma prova.
+    </div>
+    <div style="margin-top: 40px; text-align: right; font-size: 12px;">
+        <p>__________________________________________</p>
+        <p><strong>MAIKON DA ROCHA CALDEIRA</strong></p>
+        <p>OAB/MG 183.712- Estrategista em Direito Previdenciário</p>
+    </div>
+</div>
+
+<script>
+// ================================================
+// CONTROLE GERAL
+// ================================================
+let contador = 0;
+let saveTimer = null;
+const STORAGE_KEY = 'maikon_reconhecimentos_v1';
+
+// ================================================
+// AUTO-SAVE
+// ================================================
+function autoSave() {
+    clearTimeout(saveTimer);
+    document.getElementById('status-save').textContent = '✏️ Editando...';
+    saveTimer = setTimeout(salvarNoStorage, 1000);
+}
+
+function salvarNoStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(coletarDados()));
+    const agora = new Date().toLocaleTimeString('pt-BR');
+    document.getElementById('status-save').textContent = `✅ Salvo automaticamente às ${agora}`;
+}
+
+// ================================================
+// COLETAR DADOS
+// ================================================
+function coletarDados() {
+    const reconhecimentos = [];
+    for (let i = 1; i <= contador; i++) {
+        if (!document.getElementById(`rec-${i}`)) continue;
+        reconhecimentos.push({
+            id: i,
+            empresa : document.getElementById(`empresa-${i}`)?.value || '',
+            nb      : document.getElementById(`nb-${i}`)?.value || '',
+            derAnt  : document.getElementById(`der-ant-${i}`)?.value || '',
+            ini     : document.getElementById(`ini-${i}`)?.value || '',
+            fim     : document.getElementById(`fim-${i}`)?.value || '',
+            tipo    : document.getElementById(`tipo-${i}`)?.value || 'ESPECIAL',
+            obs     : document.getElementById(`obs-${i}`)?.value || ''
+        });
+    }
+    return {
+        nomeSegurado: document.getElementById('nome-segurado').value,
+        derAtual    : document.getElementById('der-atual').value,
+        reconhecimentos
+    };
+}
+
+// ================================================
+// CARREGAR DADOS
+// ================================================
+function carregarDados(dados) {
+    document.getElementById('lista-reconhecimentos').innerHTML = '';
+    contador = 0;
+    document.getElementById('nome-segurado').value = dados.nomeSegurado || '';
+    document.getElementById('der-atual').value = dados.derAtual || '';
+    if (dados.reconhecimentos?.length > 0) {
+        dados.reconhecimentos.forEach(rec => adicionarReconhecimento(rec));
+    } else {
+        adicionarReconhecimento();
+    }
+}
+
+// ================================================
+// ADICIONAR RECONHECIMENTO
+// ================================================
+function adicionarReconhecimento(dados = null) {
+    contador++;
+    const id = contador;
+    const div = document.createElement('div');
+    div.className = 'config-card';
+    div.id = `rec-${id}`;
+    div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="font-size:10px; color:var(--bronze); font-weight:bold;">RECONHECIMENTO #${id}</span>
+            <button onclick="removerReconhecimento('rec-${id}')" style="color:red;background:none;border:none;cursor:pointer;font-size:10px;">[Remover]</button>
+        </div>
+        <div class="row">
+            <div style="grid-column: span 2;">
+                <label>Empresa / Vínculo</label>
+                <input type="text" id="empresa-${id}" placeholder="Ex: Metalúrgica ABC" oninput="autoSave()">
+            </div>
+            <div>
+                <label>NB / Processo</label>
+                <input type="text" id="nb-${id}" placeholder="Ex: 123.456.789-0" oninput="autoSave()">
+            </div>
+        </div>
+        <div class="row">
+            <div><label>DER Anterior</label><input type="date" id="der-ant-${id}" onchange="autoSave()"></div>
+            <div><label>Início</label><input type="date" id="ini-${id}" onchange="autoSave()"></div>
+            <div><label>Fim</label><input type="date" id="fim-${id}" onchange="autoSave()"></div>
+            <div>
+                <label>Tipo</label>
+                <select id="tipo-${id}" onchange="autoSave()">
+                    <option value="ESPECIAL">ESPECIAL</option>
+                    <option value="URBANO">URBANO COMUM</option>
+                    <option value="RURAL">RURAL</option>
+                </select>
+            </div>
+        </div>
+        <label>Motivo do Reconhecimento / Obs</label>
+        <input type="text" id="obs-${id}" placeholder="Ex: Enquadramento por Categoria / PPP Ruído" oninput="autoSave()">
+    `;
+    document.getElementById('lista-reconhecimentos').appendChild(div);
+    if (dados) {
+        document.getElementById(`empresa-${id}`).value = dados.empresa || '';
+        document.getElementById(`nb-${id}`).value      = dados.nb      || '';
+        document.getElementById(`der-ant-${id}`).value = dados.derAnt  || '';
+        document.getElementById(`ini-${id}`).value     = dados.ini     || '';
+        document.getElementById(`fim-${id}`).value     = dados.fim     || '';
+        document.getElementById(`tipo-${id}`).value    = dados.tipo    || 'ESPECIAL';
+        document.getElementById(`obs-${id}`).value     = dados.obs     || '';
+    }
+}
+
+function removerReconhecimento(id) {
+    document.getElementById(id)?.remove();
+    autoSave();
+}
+
+// ================================================
+// ★ IMPORTAR CNIS PDF — NÚCLEO DA FUNCIONALIDADE
+// ================================================
+async function importarCnisPdf(event) {
+    const arquivo = event.target.files[0];
+    if (!arquivo) return;
+    event.target.value = '';
+
+    // Abre modal
+    const modal   = document.getElementById('modal-cnis');
+    const barEl   = document.getElementById('progress-bar');
+    const statusEl= document.getElementById('modal-status');
+    const msgEl   = document.getElementById('modal-msg');
+    modal.classList.add('ativo');
+    barEl.style.width = '10%';
+    statusEl.textContent = 'Carregando PDF...';
+
+    try {
+        // 1. Lê o arquivo como ArrayBuffer
+        const buffer = await arquivo.arrayBuffer();
+        barEl.style.width = '25%';
+        statusEl.textContent = 'Decodificando páginas...';
+
+        // 2. Carrega com PDF.js
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        const totalPaginas = pdf.numPages;
+        let textoCompleto = '';
+
+        for (let p = 1; p <= totalPaginas; p++) {
+            const pagina  = await pdf.getPage(p);
+            const content = await pagina.getTextContent();
+            // Junta os itens de texto com espaço, quebra de linha entre blocos
+            const linhaPagina = content.items.map(i => i.str).join(' ');
+            textoCompleto += linhaPagina + '\n';
+            const pct = 25 + Math.round((p / totalPaginas) * 50);
+            barEl.style.width = pct + '%';
+            statusEl.textContent = `Lendo página ${p} de ${totalPaginas}...`;
+        }
+
+        barEl.style.width = '80%';
+        statusEl.textContent = 'Interpretando períodos...';
+        msgEl.textContent = 'Identificando vínculos e datas no extrato...';
+
+        // 3. Interpreta o texto
+        const resultado = interpretarCnis(textoCompleto);
+
+        barEl.style.width = '95%';
+        statusEl.textContent = 'Preenchendo formulário...';
+
+        // 4. Preenche o formulário
+        if (resultado.nome) {
+            document.getElementById('nome-segurado').value = resultado.nome;
+        }
+
+        if (resultado.periodos.length > 0) {
+            document.getElementById('lista-reconhecimentos').innerHTML = '';
+            contador = 0;
+            resultado.periodos.forEach(p => adicionarReconhecimento(p));
+        }
+
+        salvarNoStorage();
+        barEl.style.width = '100%';
+
+        setTimeout(() => {
+            modal.classList.remove('ativo');
+            const qtd = resultado.periodos.length;
+            document.getElementById('status-save').textContent =
+                `✅ CNIS importado! ${qtd} período(s) encontrado(s). Confira e preencha NB e DER anterior.`;
+            if (qtd === 0) {
+                alert('⚠️ Nenhum período foi encontrado no PDF.\n\nVerifique se é o extrato CNIS do Meu INSS e tente novamente.');
+            }
+        }, 600);
+
+    } catch (err) {
+        modal.classList.remove('ativo');
+        console.error(err);
+        alert('❌ Erro ao ler o PDF: ' + err.message);
+    }
+}
+
+// ================================================
+// ★ INTERPRETADOR DO CNIS — PADRÃO MEU INSS
+// ================================================
+function interpretarCnis(texto) {
+    const resultado = { nome: '', periodos: [] };
+
+    // --- Extrai nome ---
+    // Padrão: "Nome: FULANO DA SILVA" ou "Nome do Segurado: FULANO"
+    const reNome = /Nome(?:\s+do\s+Segurado)?:\s*([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÀÈÌÒÙÇ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÀÈÌÒÙÇa-záéíóúâêîôûãõàèìòùç\s]+)/;
+    const mNome = texto.match(reNome);
+    if (mNome) resultado.nome = mNome[1].trim();
+
+    // --- Estratégia de extração de períodos ---
+    // O CNIS do Meu INSS tem blocos assim:
+    //
+    // Código Emp.  Emp./Orgão  Seq.  Início  Fim  Tipo  Indicadores
+    // 12345678     EMPRESA XYZ  001  01/01/2000  31/12/2005  Empregado
+    //
+    // Vamos buscar padrões de data dd/mm/aaaa perto de nomes de empresa
+
+    // Normaliza espaços múltiplos
+    const linhas = texto.split('\n').map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
+
+    // Regex de data no formato dd/mm/aaaa
+    const reData = /\b(\d{2}\/\d{2}\/\d{4})\b/g;
+
+    // Padrão de linha com pelo menos 2 datas (início e fim) e texto de empresa
+    // Tenta capturar: [texto empresa] [data] [data] [tipo opcional]
+    const reLinha = /([A-ZÁÉÍÓÚÂÊÎÔÛÃÕ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕa-záéíóúâêîôûãõ0-9\s\/\-\.&,]+?)\s+(\d{2}\/\d{2}\/\d{4})\s+(\d{2}\/\d{2}\/\d{4})/g;
+
+    let match;
+    const vistos = new Set();
+
+    while ((match = reLinha.exec(texto)) !== null) {
+        const empresa = match[1].trim();
+        const dataIni = match[2];
+        const dataFim = match[3];
+
+        // Filtra falsos positivos (cabeçalhos, rodapés, datas de emissão)
+        if (empresa.length < 3) continue;
+        if (/^(página|page|data|emissão|emissao|extrato|cnis|inss|cadastro|nacional|previdenci)/i.test(empresa)) continue;
+        if (/^\d+$/.test(empresa)) continue;
+
+        // Evita duplicatas
+        const chave = `${empresa}|${dataIni}|${dataFim}`;
+        if (vistos.has(chave)) continue;
+        vistos.add(chave);
+
+        // Converte datas para formato input date (yyyy-mm-dd)
+        resultado.periodos.push({
+            empresa : empresa.replace(/\s+/g, ' ').trim(),
+            nb      : '',
+            derAnt  : '',
+            ini     : converterData(dataIni),
+            fim     : converterData(dataFim),
+            tipo    : inferirTipo(empresa),
+            obs     : ''
+        });
+    }
+
+    return resultado;
+}
+
+// ================================================
+// UTILITÁRIOS
+// =================================⁷===============
+
+// dd/mm/aaaa → aaaa-mm-dd
+function converterData(d) {
+    if (!d) return '';
+    const [dia, mes, ano] = d.split('/');
+    return `${ano}-${mes}-${dia}`;
+}
+
+// Tenta inferir tipo pelo nome da empresa/vínculo
+function inferirTipo(empresa) {
+    const e = empresa.toUpperCase();
+    if (/RURAL|AGRICOLA|AGRIC|LAVOUR|SÍTIO|SITIO|FAZENDA|CHÁCARA/i.test(e)) return 'RURAL';
+    if (/BENEFÍCIO|BENEFICIO|AUXÍLIO|AUXILIO|APOSENTADORIA|BPC|LOAS/i.test(e)) return 'URBANO';
+    return 'ESPECIAL'; // padrão — usuário ajusta
+}
+
+// ================================================
+// EXPORTAR / IMPORTAR JSON
+// ================================================
+function exportarJSON() {
+    const dados = coletarDados();
+    const nome  = dados.nomeSegurado
+        ? dados.nomeSegurado.replace(/\s+/g, '_').toUpperCase()
+        : 'SEGURADO';
+    const nomeArquivo = `Reconhecimentos_${nome}_${new Date().toISOString().slice(0,10)}.json`;
+    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = nomeArquivo; a.click();
+    URL.revokeObjectURL(url);
+    document.getElementById('status-save').textContent = `📁 Exportado: "${nomeArquivo}"`;
+}
+
+function importarJSON(event) {
+    const arquivo = event.target.files[0];
+    if (!arquivo) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            carregarDados(JSON.parse(e.target.result));
+            salvarNoStorage();
+            document.getElementById('status-save').textContent = `✅ Importado: "${arquivo.name}"`;
+        } catch {
+            alert('❌ Arquivo inválido ou corrompido.');
+        }
+    };
+    reader.readAsText(arquivo);
+    event.target.value = '';
+}
+
+// ================================================
+// LIMPAR TUDO
+// ================================================
+function limparTudo() {
+    if (!confirm('⚠️ Apagará todos os dados. Confirma?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    document.getElementById('lista-reconhecimentos').innerHTML = '';
+    contador = 0;
+    document.getElementById('nome-segurado').value = '';
+    document.getElementById('der-atual').value = '';
+    adicionarReconhecimento();
+    document.getElementById('status-save').textContent = '🗑️ Dados apagados.';
+}
+
+// ================================================
+// GERAR DOCUMENTO / IMPRIMIR
+// ================================================
+function formatarData(dataStr) {
+    if (!dataStr) return '-';
+    return new Date(dataStr).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+}
+
+function gerarDocumento() {
+    document.getElementById('out-nome').innerText = document.getElementById('nome-segurado').value.toUpperCase();
+    document.getElementById('out-der').innerText  = formatarData(document.getElementById('der-atual').value);
+    const tabela = document.getElementById('out-tabela');
+    tabela.innerHTML = '';
+    for (let i = 1; i <= contador; i++) {
+        if (!document.getElementById(`rec-${i}`)) continue;
+        tabela.innerHTML += `
+            <tr>
+                <td><strong>${document.getElementById(`empresa-${i}`).value}</strong><br>
+                <small>${document.getElementById(`obs-${i}`).value}</small></td>
+                <td>${document.getElementById(`nb-${i}`).value}</td>
+                <td>${formatarData(document.getElementById(`der-ant-${i}`).value)}</td>
+                <td>${formatarData(document.getElementById(`ini-${i}`).value)} a ${formatarData(document.getElementById(`fim-${i}`).value)}</td>
+                <td><span class="badge-reconhecido">RECONHECIDO (${document.getElementById(`tipo-${i}`).value})</span></td>
+            </tr>`;
+    }
+    document.getElementById('doc-confronto').style.display = 'block';
+    window.print();
+}
+
+// ================================================
+// GMAIL
+// ================================================
+function enviarGmail() {
+    const nome = document.getElementById('nome-segurado').value;
+    let corpo = `EXPOSIÇÃO DE RECONHECIMENTOS - SEGURADO: ${nome}\n\n`;
+    corpo += `Conforme IN 128/2022, Art. 270 e 614:\n\n`;
+    for (let i = 1; i <= contador; i++) {
+        if (!document.getElementById(`rec-${i}`)) continue;
+        corpo += `- Empresa: ${document.getElementById(`empresa-${i}`).value}\n`;
+        corpo += `  Período: ${formatarData(document.getElementById(`ini-${i}`).value)} a ${formatarData(document.getElementById(`fim-${i}`).value)}\n`;
+        corpo += `  NB Anterior: ${document.getElementById(`nb-${i}`).value}\n\n`;
+    }
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&body=${encodeURIComponent(corpo)}`);
+}
+
+// ================================================
+// INICIALIZAÇÃO
+// ================================================
+window.onload = function() {
+    const salvo = localStorage.getItem(STORAGE_KEY);
+    if (salvo) {
+        try {
+            carregarDados(JSON.parse(salvo));
+            document.getElementById('status-save').textContent = '✅ Dados restaurados do último acesso.';
+        } catch { adicionarReconhecimento(); }
+    } else {
+        adicionarReconhecimento();
+    }
+};
+</script>
+</body>
+</html>

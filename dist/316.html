@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Projetos PWA — Maikon Caldeira</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+.project-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #12121a;
+  border-bottom: 2px solid #a3a082;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  background: #1a1a2e;
+  border: 1px solid #2d2d3a;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #a3a082;
+  color: #000;
+  border-color: #a3a082;
+}
+
+.nav-btn.active {
+  background: #a3a082;
+  color: #000;
+  border-color: #d4d0a8;
+}
+
+.project-container {
+  display: none;
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+.project-container.active {
+  display: block;
+}
+
+/* Isola estilos de cada projeto */
+.project-container iframe {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Navegação -->
+<div class="project-nav">
+  <span style="font-size:14px;font-weight:700;color:#a3a082;margin-right:10px;">📂</span>
+  <button class="nav-btn active" onclick="trocarProjeto(0)">1.oficina</button><button class="nav-btn " onclick="trocarProjeto(1)">2.oficina</button><button class="nav-btn " onclick="trocarProjeto(2)">3. Oficina</button>
+</div>
+
+<!-- Projetos (cada um em iframe isolado) -->
+
+<div class="project-container active" id="projeto0">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Meu Projeto PWA&lt;/title&gt;
+&lt;style&gt;
+
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;title&gt;SK Oficina Jurídica v4 - Maikon Caldeira&lt;/title&gt;
+  &lt;script src=&quot;https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js&quot;&gt;&lt;/script&gt;
+  &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+  &lt;script&gt;
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkBg: '#0d1208',
+            panelBg: '#141c0d',
+            borderGreen: '#223018',
+            textGreen: '#c8dda8',
+            brandGreen: '#5fad3c',
+            focusGreen: '#7dcf55',
+            matrixGreen: '#22c55e',
+            accentGold: '#d4aa4e',
+            accentBlue: '#56b6c2'
+          }
+        }
+      }
+    }
+  &lt;/script&gt;
+  &lt;style&gt;
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1208; }
+    ::-webkit-scrollbar-thumb { background: #223018; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5fad3c; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body class=&quot;bg-darkBg text-textGreen font-sans min-h-screen flex flex-col&quot;&gt;
+
+  &lt;!-- Header Unificado --&gt;
+  &lt;header class=&quot;bg-panelBg border-b border-borderGreen p-4 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0&quot;&gt;
+    &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+      &lt;span class=&quot;text-2xl&quot;&gt;⚖️&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h1 class=&quot;text-brandGreen font-bold text-lg flex items-center gap-2&quot;&gt;
+          SK Oficina Jurídica Unificada &lt;span class=&quot;text-xs bg-brandGreen/20 text-brandGreen px-2 py-0.5 rounded&quot;&gt;v4&lt;/span&gt;
+        &lt;/h1&gt;
+        &lt;p class=&quot;text-[11px] text-focusGreen font-mono&quot;&gt;Maikon Caldeira OAB/MG 183712 — Extrator + Scanner + Combiner&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;!-- Menu de Abas --&gt;
+    &lt;div class=&quot;flex flex-wrap gap-1&quot;&gt;
+      &lt;button onclick=&quot;showSection('importar')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;📥 Importar ZIP/APK&lt;/button&gt;
+      &lt;button onclick=&quot;showSection('extrator')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;🔎 Extrator Web&lt;/button&gt;
+      &lt;button onclick=&quot;showSection('editor')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;📂 Editor&lt;/button&gt;
+      &lt;button onclick=&quot;showSection('scanner')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;🛡️ Scanner&lt;/button&gt;
+      &lt;button onclick=&quot;showSection('combinar')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;🔗 Combinar Apps&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;!-- CONTEÚDO PRINCIPAL --&gt;
+  &lt;main class=&quot;flex-1 overflow-hidden relative flex flex-col&quot;&gt;
+
+    &lt;!-- ABA 1: IMPORTAR LOCAL --&gt;
+    &lt;section id=&quot;section-importar&quot; class=&quot;section-panel p-6 space-y-6 overflow-y-auto max-w-4xl mx-auto w-full&quot;&gt;
+      &lt;div class=&quot;bg-panelBg border border-borderGreen rounded-xl p-6 text-center space-y-4&quot;&gt;
+        &lt;div class=&quot;text-4xl&quot;&gt;📦&lt;/div&gt;
+        &lt;h2 class=&quot;text-white font-bold text-lg&quot;&gt;Carregar Projeto Local (ZIP ou APK)&lt;/h2&gt;
+        &lt;p class=&quot;text-xs text-textGreen&quot;&gt;Arraste ou selecione o arquivo para extrair e analisar o código-fonte.&lt;/p&gt;
+        
+        &lt;div class=&quot;border-2 border-dashed border-borderGreen p-8 rounded-lg bg-darkBg/50 hover:border-brandGreen cursor-pointer transition-all&quot; onclick=&quot;document.getElementById('zipInput').click()&quot;&gt;
+          &lt;p class=&quot;text-xs text-brandGreen font-bold&quot;&gt;Clique para procurar arquivo local (.zip, .apk, .aab)&lt;/p&gt;
+          &lt;span id=&quot;zipName&quot; class=&quot;block text-[10px] mt-2 text-textGreen&quot;&gt;Nenhum arquivo carregado&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;input type=&quot;file&quot; id=&quot;zipInput&quot; accept=&quot;.zip,.apk,.aab&quot; class=&quot;hidden&quot;&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;bg-panelBg border border-borderGreen rounded-xl p-6 space-y-4&quot;&gt;
+        &lt;h3 class=&quot;text-white font-bold text-sm flex items-center gap-2&quot;&gt;🌐 Baixar Repositório do GitHub&lt;/h3&gt;
+        &lt;div class=&quot;space-y-2&quot;&gt;
+          &lt;input type=&quot;text&quot; id=&quot;githubUrl&quot; placeholder=&quot;https://github.com/usuario/repositorio&quot; class=&quot;w-full bg-darkBg border border-borderGreen rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none&quot;&gt;
+          &lt;div class=&quot;grid grid-cols-2 gap-2&quot;&gt;
+            &lt;input type=&quot;text&quot; id=&quot;githubBranch&quot; placeholder=&quot;branch (padrão: main)&quot; class=&quot;bg-darkBg border border-borderGreen rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none&quot;&gt;
+            &lt;input type=&quot;password&quot; id=&quot;githubToken&quot; placeholder=&quot;Token GitHub (opcional)&quot; class=&quot;bg-darkBg border border-borderGreen rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none&quot;&gt;
+          &lt;/div&gt;
+          &lt;button onclick=&quot;loadFromGitHub()&quot; class=&quot;w-full bg-brandGreen text-darkBg py-2 rounded-lg text-xs font-bold hover:bg-focusGreen transition-all&quot;&gt;Baixar e Processar Repositório&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ABA 2: EXTRATOR WEB JURÍDICO --&gt;
+    &lt;section id=&quot;section-extrator&quot; class=&quot;section-panel hidden p-6 overflow-y-auto max-w-5xl mx-auto w-full space-y-6&quot;&gt;
+      &lt;div class=&quot;bg-panelBg border border-borderGreen rounded-xl p-6 space-y-4&quot;&gt;
+        &lt;h2 class=&quot;text-brandGreen font-bold text-lg&quot;&gt;🔎 Extrator de Sites e Cálculos Jurídicos&lt;/h2&gt;
+        &lt;p class=&quot;text-xs text-textGreen&quot;&gt;Varre sites de tribunais, extrai textos de processos, scripts de cálculo e APIs.&lt;/p&gt;
+
+        &lt;div class=&quot;flex gap-2 flex-wrap&quot;&gt;
+          &lt;input type=&quot;text&quot; id=&quot;extractorUrl&quot; placeholder=&quot;https://www.tjmg.jus.br&quot; class=&quot;flex-1 bg-darkBg border border-borderGreen rounded-lg px-3 py-2 text-xs text-white outline-none&quot;&gt;
+          &lt;select id=&quot;extractorDepth&quot; class=&quot;bg-darkBg border border-borderGreen rounded-lg px-3 py-2 text-xs text-textGreen outline-none&quot;&gt;
+            &lt;option value=&quot;1&quot;&gt;Apenas página principal&lt;/option&gt;
+            &lt;option value=&quot;2&quot;&gt;Página + Subpáginas&lt;/option&gt;
+          &lt;/select&gt;
+          &lt;button onclick=&quot;runWebExtractor()&quot; class=&quot;bg-brandGreen text-darkBg px-4 py-2 rounded-lg text-xs font-bold hover:bg-focusGreen transition-all&quot;&gt;Extrair Site&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Atalhos Rápidos --&gt;
+        &lt;div class=&quot;flex flex-wrap gap-1.5 pt-2&quot;&gt;
+          &lt;button onclick=&quot;setExtractorUrl('https://www.tjmg.jus.br')&quot; class=&quot;text-[10px] bg-darkBg border border-borderGreen px-2.5 py-1 rounded hover:border-brandGreen&quot;&gt;TJMG&lt;/button&gt;
+          &lt;button onclick=&quot;setExtractorUrl('https://www.stj.jus.br')&quot; class=&quot;text-[10px] bg-darkBg border border-borderGreen px-2.5 py-1 rounded hover:border-brandGreen&quot;&gt;STJ&lt;/button&gt;
+          &lt;button onclick=&quot;setExtractorUrl('https://www.stf.jus.br')&quot; class=&quot;text-[10px] bg-darkBg border border-borderGreen px-2.5 py-1 rounded hover:border-brandGreen&quot;&gt;STF&lt;/button&gt;
+          &lt;button onclick=&quot;setExtractorUrl('https://www.calculojuridico.com.br')&quot; class=&quot;text-[10px] bg-darkBg border border-borderGreen px-2.5 py-1 rounded hover:border-brandGreen&quot;&gt;Cálculo Jurídico&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Resultados da Extração --&gt;
+        &lt;div id=&quot;extractorResults&quot; class=&quot;hidden space-y-4 pt-4 border-t border-borderGreen&quot;&gt;
+          &lt;div class=&quot;grid grid-cols-2 md:grid-cols-4 gap-2&quot;&gt;
+            &lt;div class=&quot;bg-darkBg p-3 rounded-lg border border-borderGreen text-center&quot;&gt;
+              &lt;span id=&quot;extPagesCount&quot; class=&quot;block text-xl font-mono text-brandGreen&quot;&gt;0&lt;/span&gt;
+              &lt;span class=&quot;text-[10px] text-textGreen&quot;&gt;Páginas Varridas&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;bg-darkBg p-3 rounded-lg border border-borderGreen text-center&quot;&gt;
+              &lt;span id=&quot;extScriptsCount&quot; class=&quot;block text-xl font-mono text-accentGold&quot;&gt;0&lt;/span&gt;
+              &lt;span class=&quot;text-[10px] text-textGreen&quot;&gt;Scripts de Cálculo&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;bg-darkBg p-3 rounded-lg border border-borderGreen text-center&quot;&gt;
+              &lt;span id=&quot;extLinksCount&quot; class=&quot;block text-xl font-mono text-accentBlue&quot;&gt;0&lt;/span&gt;
+              &lt;span class=&quot;text-[10px] text-textGreen&quot;&gt;Links Encontrados&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;bg-darkBg p-3 rounded-lg border border-borderGreen text-center&quot;&gt;
+              &lt;span id=&quot;extApisCount&quot; class=&quot;block text-xl font-mono text-purple-400&quot;&gt;0&lt;/span&gt;
+              &lt;span class=&quot;text-[10px] text-textGreen&quot;&gt;APIs Detectadas&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Abas internas do Extrator --&gt;
+          &lt;div class=&quot;border-b border-borderGreen flex gap-2&quot;&gt;
+            &lt;button onclick=&quot;showExtSubTab('overview')&quot; class=&quot;ext-subtab text-xs py-1 px-3 border-b-2 border-brandGreen text-white&quot;&gt;Visão Geral&lt;/button&gt;
+            &lt;button onclick=&quot;showExtSubTab('scripts')&quot; class=&quot;ext-subtab text-xs py-1 px-3 text-textGreen&quot;&gt;Scripts &amp; Cálculos&lt;/button&gt;
+            &lt;button onclick=&quot;showExtSubTab('text')&quot; class=&quot;ext-subtab text-xs py-1 px-3 text-textGreen&quot;&gt;Texto Extraído&lt;/button&gt;
+          &lt;/div&gt;
+
+          &lt;div id=&quot;ext-subtab-overview&quot; class=&quot;ext-panel space-y-2&quot;&gt;&lt;/div&gt;
+          &lt;div id=&quot;ext-subtab-scripts&quot; class=&quot;ext-panel space-y-2 hidden&quot;&gt;&lt;/div&gt;
+          &lt;div id=&quot;ext-subtab-text&quot; class=&quot;ext-panel space-y-2 hidden&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ABA 3: EDITOR DE CÓDIGO --&gt;
+    &lt;section id=&quot;section-editor&quot; class=&quot;section-panel hidden flex-1 flex flex-col md:flex-row overflow-hidden h-full&quot;&gt;
+      &lt;!-- Lista de arquivos lateral --&gt;
+      &lt;div class=&quot;w-full md:w-80 bg-panelBg border-r border-borderGreen p-3 flex flex-col shrink-0&quot;&gt;
+        &lt;h3 class=&quot;text-xs font-bold text-brandGreen uppercase mb-2 flex justify-between&quot;&gt;
+          &lt;span&gt;📁 Arquivos do Projeto&lt;/span&gt;
+          &lt;span id=&quot;filesCount&quot; class=&quot;text-matrixGreen&quot;&gt;0&lt;/span&gt;
+        &lt;/h3&gt;
+        &lt;input type=&quot;text&quot; id=&quot;fileSearch&quot; placeholder=&quot;Buscar arquivo...&quot; onkeyup=&quot;filterFiles()&quot; class=&quot;bg-darkBg border border-borderGreen rounded-lg px-3 py-1.5 text-xs text-white outline-none mb-2&quot;&gt;
+        &lt;div id=&quot;fileList&quot; class=&quot;flex-1 overflow-y-auto space-y-1 text-xs&quot;&gt;
+          &lt;p class=&quot;text-gray-500 italic p-2 text-center&quot;&gt;Nenhum arquivo carregado.&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;!-- Editor de código --&gt;
+      &lt;div class=&quot;flex-1 bg-darkBg p-3 flex flex-col overflow-hidden&quot;&gt;
+        &lt;div class=&quot;flex justify-between items-center mb-2 bg-panelBg p-2 rounded-lg border border-borderGreen&quot;&gt;
+          &lt;span id=&quot;currentFileName&quot; class=&quot;text-xs font-mono text-brandGreen font-bold&quot;&gt;📝 Nenhum arquivo selecionado&lt;/span&gt;
+          &lt;div class=&quot;flex gap-2&quot;&gt;
+            &lt;button onclick=&quot;saveCurrentFileChanges()&quot; class=&quot;text-[10px] bg-brandGreen/20 text-brandGreen border border-brandGreen/30 px-2.5 py-1 rounded hover:bg-brandGreen hover:text-black transition-all&quot;&gt;Salvar Alteração&lt;/button&gt;
+            &lt;button onclick=&quot;downloadModifiedZip()&quot; class=&quot;text-[10px] bg-accentBlue/20 text-accentBlue border border-accentBlue/30 px-2.5 py-1 rounded hover:bg-accentBlue hover:text-black transition-all&quot;&gt;Exportar ZIP&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;textarea id=&quot;fileContent&quot; class=&quot;flex-1 w-full bg-[#020617] border border-borderGreen rounded-lg p-4 text-xs font-mono text-matrixGreen outline-none resize-none&quot; placeholder=&quot;// Selecione um arquivo para editar...&quot;&gt;&lt;/textarea&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ABA 4: SCANNER DE DEPENDÊNCIAS --&gt;
+    &lt;section id=&quot;section-scanner&quot; class=&quot;section-panel hidden p-6 overflow-y-auto max-w-5xl mx-auto w-full space-y-6&quot;&gt;
+      &lt;div class=&quot;bg-panelBg border border-borderGreen rounded-xl p-6 space-y-4&quot;&gt;
+        &lt;h2 class=&quot;text-brandGreen font-bold text-lg&quot;&gt;🛡️ Scanner de Dependências &amp; Limpeza&lt;/h2&gt;
+        &lt;p class=&quot;text-xs text-textGreen&quot;&gt;Identifique sujeiras do Replit, erros de nó ou termos personalizados em todo o projeto.&lt;/p&gt;
+
+        &lt;div class=&quot;bg-darkBg/50 p-4 rounded-lg border border-borderGreen space-y-2&quot;&gt;
+          &lt;label class=&quot;block text-xs font-bold text-brandGreen&quot;&gt;🔍 Termo de Busca Personalizado (Opcional)&lt;/label&gt;
+          &lt;div class=&quot;flex gap-2&quot;&gt;
+            &lt;input type=&quot;text&quot; id=&quot;customSearchTerm&quot; placeholder=&quot;Ex: localhost, neon, api_key, banco&quot; class=&quot;flex-1 bg-darkBg border border-borderGreen rounded-lg px-3 py-1.5 text-xs text-white outline-none&quot;&gt;
+            &lt;button onclick=&quot;runScan()&quot; class=&quot;bg-brandGreen text-darkBg px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-focusGreen transition-all&quot;&gt;Escanear Projeto&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div id=&quot;scannerActions&quot; class=&quot;hidden flex gap-2&quot;&gt;
+          &lt;button onclick=&quot;downloadScanReport()&quot; class=&quot;bg-borderGreen text-brandGreen border border-brandGreen/30 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-brandGreen hover:text-black transition-all&quot;&gt;📥 Baixar Relatório .TXT&lt;/button&gt;
+          &lt;button onclick=&quot;autoCleanReplitFiles()&quot; class=&quot;bg-red-950/40 text-red-400 border border-red-900/50 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition-all&quot;&gt;🧹 Limpar Replit e Baixar ZIP&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;div id=&quot;scannerResults&quot; class=&quot;space-y-3&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ABA 5: COMBINAR APLICATIVOS (Sua ferramenta recuperada!) --&gt;
+    &lt;section id=&quot;section-combinar&quot; class=&quot;section-panel hidden p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-6&quot;&gt;
+      &lt;div class=&quot;bg-panelBg border border-borderGreen rounded-xl p-6 space-y-4&quot;&gt;
+        &lt;div class=&quot;flex justify-between items-center border-b border-borderGreen pb-3&quot;&gt;
+          &lt;div&gt;
+            &lt;h2 class=&quot;text-brandGreen font-bold text-lg&quot;&gt;🔗 Combinar Projetos &amp; Códigos&lt;/h2&gt;
+            &lt;p class=&quot;text-xs text-textGreen&quot;&gt;Monte a estrutura ideal e gere o prompt perfeito para a IA unificar seus códigos.&lt;/p&gt;
+          &lt;/div&gt;
+          &lt;button onclick=&quot;clearCombiner()&quot; class=&quot;text-xs border border-borderGreen text-textGreen px-2.5 py-1 rounded hover:text-brandGreen transition-all&quot;&gt;Limpar Tudo&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;div&gt;
+          &lt;label class=&quot;block text-brandGreen text-xs font-semibold mb-1&quot;&gt;🎯 Objetivo do Aplicativo Final&lt;/label&gt;
+          &lt;textarea id=&quot;combinerGoal&quot; rows=&quot;2&quot; placeholder=&quot;Ex: Unificar meu PWA Jurídico com a função de gerar relatórios em PDF...&quot; class=&quot;w-full bg-darkBg border border-borderGreen rounded-lg px-3 py-2 text-xs text-textGreen placeholder-gray-600 outline-none resize-none&quot;&gt;&lt;/textarea&gt;
+        &lt;/div&gt;
+
+        &lt;div id=&quot;appsContainer&quot; class=&quot;space-y-4&quot;&gt;&lt;/div&gt;
+
+        &lt;div class=&quot;flex gap-2&quot;&gt;
+          &lt;button onclick=&quot;addAppCard()&quot; class=&quot;flex-1 py-2 border border-dashed border-borderGreen rounded-lg text-brandGreen text-xs font-bold hover:bg-borderGreen/20 transition-all&quot;&gt;➕ Adicionar Outro Código&lt;/button&gt;
+          &lt;button onclick=&quot;generateSuperPrompt()&quot; class=&quot;flex-1 py-2 bg-borderGreen text-brandGreen font-bold text-xs rounded-lg hover:bg-brandGreen hover:text-black transition-all&quot;&gt;✨ Gerar Prompt de Unificação&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Prompt Gerado --&gt;
+        &lt;div id=&quot;promptResultContainer&quot; class=&quot;hidden bg-darkBg border border-borderGreen rounded-xl overflow-hidden mt-4&quot;&gt;
+          &lt;div class=&quot;flex items-center justify-between px-3 py-2 bg-borderGreen/30 border-b border-borderGreen&quot;&gt;
+            &lt;span class=&quot;text-brandGreen text-xs font-bold&quot;&gt;📋 Prompt Pronto para Copiar&lt;/span&gt;
+            &lt;button onclick=&quot;copyGeneratedPrompt()&quot; class=&quot;text-xs bg-borderGreen text-brandGreen px-3 py-1 rounded hover:bg-brandGreen hover:text-black transition-all&quot;&gt;Copiar Prompt&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;textarea id=&quot;generatedPromptTextarea&quot; rows=&quot;8&quot; class=&quot;w-full bg-darkBg p-3 text-xs text-textGreen font-mono leading-relaxed outline-none resize-none&quot; readonly&gt;&lt;/textarea&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+  &lt;/main&gt;
+
+  &lt;!-- Loader Global --&gt;
+  &lt;div id=&quot;globalLoader&quot; class=&quot;hidden fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center space-y-4&quot;&gt;
+    &lt;div class=&quot;w-12 h-12 border-4 border-brandGreen border-t-transparent rounded-full spinner&quot;&gt;&lt;/div&gt;
+    &lt;p id=&quot;loaderMsg&quot; class=&quot;text-brandGreen font-mono text-xs&quot;&gt;Processando...&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    // ==================== ESTADO GLOBAL ====================
+    let currentFiles = [];
+    let fileContents = {};
+    let appsToCombine = [];
+    let activeFile = null;
+    let extractedData = null;
+
+    // Padrões de busca do Replit
+    const _p = String.fromCharCode(114,101,112,108,105,116);
+    const PATS = [
+      { re: new RegExp(_p + &quot;\\.com&quot;,    &quot;gi&quot;), lb: &quot;url-plataforma&quot; },
+      { re: new RegExp(&quot;repl\\.it&quot;,      &quot;gi&quot;), lb: &quot;url-plataforma-antiga&quot; },
+      { re: new RegExp(_p.toUpperCase() + &quot;_&quot;, &quot;g&quot;),  lb: &quot;var-plataforma&quot; },
+      { re: new RegExp(&quot;REPL_ID&quot;,        &quot;g&quot;),  lb: &quot;var-id-plataforma&quot; },
+      { re: new RegExp(&quot;REPL_SLUG&quot;,      &quot;g&quot;),  lb: &quot;var-slug-plataforma&quot; },
+      { re: new RegExp(&quot;REPL_OWNER&quot;,     &quot;g&quot;),  lb: &quot;var-owner-plataforma&quot; },
+      { re: new RegExp(&quot;@&quot; + _p + &quot;/&quot;,   &quot;gi&quot;), lb: &quot;pacote-externo&quot; },
+      { re: /vite-plugin-runtime-error-modal/gi,  lb: &quot;plugin-error-externo&quot; },
+      { re: /vite-plugin-cartographer/gi,         lb: &quot;plugin-cartographer-externo&quot; },
+      { re: /vite-plugin-dev-banner/gi,           lb: &quot;plugin-banner-externo&quot; },
+      { re: new RegExp(&quot;\\.&quot; + _p + &quot;\\b&quot;, &quot;gi&quot;), lb: &quot;config-plataforma&quot; },
+      { re: new RegExp(_p + &quot;\\.app&quot;,    &quot;gi&quot;), lb: &quot;dominio-hospedagem&quot; },
+      { re: new RegExp(_p + &quot;-dev\\.com&quot;,&quot;gi&quot;), lb: &quot;dominio-dev-externo&quot; },
+      { re: new RegExp(&quot;pid1\\.&quot; + _p,   &quot;gi&quot;), lb: &quot;processo-plataforma&quot; },
+    ];
+
+    const SKIP_EXT = new Set([&quot;png&quot;,&quot;jpg&quot;,&quot;jpeg&quot;,&quot;gif&quot;,&quot;webp&quot;,&quot;ico&quot;,&quot;woff&quot;,&quot;woff2&quot;,&quot;ttf&quot;,&quot;eot&quot;,&quot;otf&quot;,&quot;mp3&quot;,&quot;mp4&quot;,&quot;webm&quot;,&quot;ogg&quot;,&quot;bin&quot;,&quot;class&quot;,&quot;dex&quot;]);
+
+    const PROXIES = [
+      { name:&quot;allorigins.win&quot;, fn:u=&gt;`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
+      { name:&quot;corsproxy.io&quot;,   fn:u=&gt;`https://corsproxy.io/?${encodeURIComponent(u)}` },
+      { name:&quot;codetabs.com&quot;,   fn:u=&gt;`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
+    ];
+
+    // ==================== ABAS ====================
+    function showSection(id) {
+      document.querySelectorAll('.section-panel').forEach(p =&gt; p.classList.add('hidden'));
+      document.getElementById(`section-${id}`).classList.remove('hidden');
+    }
+
+    function showLoader(msg) {
+      document.getElementById('loaderMsg').innerText = msg;
+      document.getElementById('globalLoader').classList.remove('hidden');
+    }
+    function hideLoader() {
+      document.getElementById('globalLoader').classList.add('hidden');
+    }
+
+    // ==================== IMPORTAÇÃO ZIP/APK ====================
+    document.getElementById('zipInput').addEventListener('change', async (e) =&gt; {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('zipName').innerText = file.name;
+      showLoader(&quot;Processando arquivo local...&quot;);
+
+      try {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (['zip', 'apk', 'aab', 'jar', 'aar'].includes(ext)) {
+          const buffer = await file.arrayBuffer();
+          const zip = await JSZip.loadAsync(buffer);
+          await processZip(zip);
+        } else {
+          const text = await file.text();
+          currentFiles = [file.name];
+          fileContents[file.name] = text;
+          renderFileList();
+          showSection('editor');
+        }
+      } catch(e) {
+        alert(&quot;Erro ao ler arquivo: &quot; + e.message);
+      } finally {
+        hideLoader();
+      }
+    });
+
+    async function processZip(zip) {
+      currentFiles = [];
+      fileContents = {};
+
+      zip.forEach((path, entry) =&gt; {
+        if (!entry.dir) currentFiles.push(path);
+      });
+
+      currentFiles.sort();
+      showLoader(`Carregando ${currentFiles.length} arquivos...`);
+
+      let promises = currentFiles.map(async (path) =&gt; {
+        const ext = path.split('.').pop().toLowerCase();
+        if (SKIP_EXT.has(ext)) {
+          fileContents[path] = &quot;[Arquivo binário/mídia]&quot;;
+          return;
+        }
+        try {
+          fileContents[path] = await zip.file(path).async('string');
+        } catch(e) {
+          fileContents[path] = &quot;[Erro ao ler arquivo]&quot;;
+        }
+      });
+
+      await Promise.all(promises);
+      renderFileList();
+      showSection('editor');
+    }
+
+    // ==================== GITHUB ====================
+    async function loadFromGitHub() {
+      let url = document.getElementById('githubUrl').value.trim();
+      let branch = document.getElementById('githubBranch').value.trim() || 'main';
+      let token = document.getElementById('githubToken').value.trim();
+
+      if (!url) return alert(&quot;Por favor, indique a URL do repositório.&quot;);
+      const m = url.match(/github\.com\/([^/]+)\/([^/]+)/);
+      if (!m) return alert(&quot;URL inválida.&quot;);
+      const [, owner, repo] = m;
+
+      showLoader(&quot;Baixando do GitHub...&quot;);
+      const zipUrl = `https://codeload.github.com/${owner}/${repo}/zip/refs/heads/${branch}`;
+      const hdrs = token ? { Authorization: `token ${token}` } : {};
+
+      try {
+        let resp = await fetch(zipUrl, { headers: hdrs });
+        if (!resp.ok) {
+          showLoader(&quot;Tentando via proxy secundário...&quot;);
+          const px = `https://api.allorigins.win/raw?url=${encodeURIComponent(zipUrl)}`;
+          resp = await fetch(px);
+        }
+        if (!resp.ok) throw new Error(&quot;Falha ao baixar repositório.&quot;);
+
+        const blob = await resp.blob();
+        const buffer = await blob.arrayBuffer();
+        const zip = await JSZip.loadAsync(buffer);
+
+        const tempFiles = Object.keys(zip.files).filter(n =&gt; !zip.files[n].dir);
+        const prefix = (tempFiles[0]?.split(&quot;/&quot;)[0] ?? &quot;&quot;) + &quot;/&quot;;
+
+        currentFiles = [];
+        fileContents = {};
+
+        for (const n of tempFiles) {
+          const rel = n.startsWith(prefix) ? n.slice(prefix.length) : n;
+          if (!rel) continue;
+          currentFiles.push(rel);
+          fileContents[rel] = await zip.files[n].async(&quot;string&quot;);
+        }
+
+        currentFiles.sort();
+        renderFileList();
+        showSection('editor');
+        alert(&quot;Repositório importado!&quot;);
+      } catch(e) {
+        alert(&quot;Erro: &quot; + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // ==================== EDITOR DE CÓDIGO ====================
+    function renderFileList() {
+      const container = document.getElementById('fileList');
+      document.getElementById('filesCount').innerText = currentFiles.length;
+      
+      if (currentFiles.length === 0) {
+        container.innerHTML = '&lt;p class=&quot;text-gray-500 italic p-2 text-center&quot;&gt;Nenhum arquivo.&lt;/p&gt;';
+        return;
+      }
+
+      container.innerHTML = currentFiles.map(file =&gt; {
+        const isSujo = checkSingleFileIsDirty(file);
+        const badge = isSujo ? '&lt;span class=&quot;text-[9px] bg-red-950 text-red-400 px-1 rounded&quot;&gt;sujo&lt;/span&gt;' : '';
+        return `&lt;div class=&quot;p-1.5 hover:bg-borderGreen rounded cursor-pointer flex justify-between items-center truncate border-b border-borderGreen/10&quot; onclick=&quot;openFile('${file}')&quot;&gt;
+          &lt;span class=&quot;truncate&quot;&gt;📄 ${file}&lt;/span&gt;
+          ${badge}
+        &lt;/div&gt;`;
+      }).join('');
+    }
+
+    function checkSingleFileIsDirty(filename) {
+      const content = fileContents[filename] || &quot;&quot;;
+      return PATS.some(p =&gt; {
+        p.re.lastIndex = 0;
+        const test = p.re.test(content);
+        p.re.lastIndex = 0;
+        return test;
+      });
+    }
+
+    function openFile(filename) {
+      activeFile = filename;
+      document.getElementById('currentFileName').innerText = `📝 ${filename}`;
+      document.getElementById('fileContent').value = fileContents[filename] || &quot;&quot;;
+      showSection('editor');
+    }
+
+    function filterFiles() {
+      const term = document.getElementById('fileSearch').value.toLowerCase();
+      const filtered = currentFiles.filter(f =&gt; f.toLowerCase().includes(term));
+      const container = document.getElementById('fileList');
+      container.innerHTML = filtered.map(file =&gt; {
+        const isSujo = checkSingleFileIsDirty(file);
+        const badge = isSujo ? '&lt;span class=&quot;text-[9px] bg-red-950 text-red-400 px-1 rounded&quot;&gt;sujo&lt;/span&gt;' : '';
+        return `&lt;div class=&quot;p-1.5 hover:bg-borderGreen rounded cursor-pointer flex justify-between items-center truncate border-b border-borderGreen/10&quot; onclick=&quot;openFile('${file}')&quot;&gt;
+          &lt;span class=&quot;truncate&quot;&gt;📄 ${file}&lt;/span&gt;
+          ${badge}
+        &lt;/div&gt;`;
+      }).join('');
+    }
+
+    function saveCurrentFileChanges() {
+      if (!activeFile) return alert(&quot;Selecione um arquivo!&quot;);
+      fileContents[activeFile] = document.getElementById('fileContent').value;
+      alert(&quot;Alteração salva na memória!&quot;);
+      renderFileList();
+    }
+
+    async function downloadModifiedZip() {
+      showLoader(&quot;Gerando ZIP...&quot;);
+      const zip = new JSZip();
+      currentFiles.forEach(file =&gt; {
+        zip.file(file, fileContents[file]);
+      });
+      const content = await zip.generateAsync({type:&quot;blob&quot;});
+      const link = document.createElement(&quot;a&quot;);
+      link.href = URL.createObjectURL(content);
+      link.download = &quot;projeto-oficina-sk.zip&quot;;
+      link.click();
+      hideLoader();
+    }
+
+    // ==================== EXTRATOR WEB JURÍDICO ====================
+    function setExtractorUrl(url) {
+      document.getElementById('extractorUrl').value = url;
+    }
+
+    async function fetchViaProxy(url) {
+      let lastErr = null;
+      for (let i = 0; i &lt; PROXIES.length; i++) {
+        const p = PROXIES[i];
+        try {
+          const r = await fetch(p.fn(url));
+          if (!r.ok) continue;
+          const text = await r.text();
+          if (text.length &gt; 40) return text;
+        } catch (e) { lastErr = e; }
+      }
+      throw new Error(&quot;Falha ao acessar o site via proxies.&quot;);
+    }
+
+    async function runWebExtractor() {
+      let url = document.getElementById('extractorUrl').value.trim();
+      if (!url) return alert(&quot;Insira uma URL.&quot;);
+      if (!/^https?:\/\//i.test(url)) url = &quot;https://&quot; + url;
+
+      showLoader(&quot;Varrendo site jurídico...&quot;);
+      try {
+        const html = await fetchViaProxy(url);
+        
+        // Parsing básico
+        const title = html.match(/&lt;title[^&gt;]*&gt;([^&lt;]*)&lt;\/title&gt;/i)?.[1] || &quot;Sem Título&quot;;
+        const textContent = html.replace(/&lt;script[\s\S]*?&lt;\/script&gt;/gi, &quot;&quot;).replace(/&lt;[^&gt;]+&gt;/g, &quot; &quot;).replace(/\s{2,}/g,&quot; &quot;).trim();
+        
+        // Scripts de cálculo
+        const scripts = [];
+        const p = /&lt;script(?![^&gt;]+src=)[^&gt;]*&gt;([\s\S]*?)&lt;\/script&gt;/gi;
+        let m;
+        while ((m = p.exec(html)) !== null) {
+          const c = (m[1] ?? &quot;&quot;).trim();
+          if (c.length &gt; 30) {
+            const isCalc = /calc|cálculo|previdenci|inss|aposentad|correção|juros/i.test(c);
+            scripts.push({ content: c, isCalc });
+          }
+        }
+
+        extractedData = { url, title, textContent, scripts };
+
+        // Atualizar UI do Extrator
+        document.getElementById('extPagesCount').innerText = &quot;1&quot;;
+        document.getElementById('extScriptsCount').innerText = scripts.filter(s =&gt; s.isCalc).length;
+        document.getElementById('extLinksCount').innerText = (html.match(/href=/g) || []).length;
+        document.getElementById('extApisCount').innerText = (html.match(/\/api\//g) || []).length;
+
+        document.getElementById('extractorResults').classList.remove('hidden');
+
+        // Renderizar subtabs
+        renderExtractorOverview();
+      } catch(e) {
+        alert(e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function showExtSubTab(tabId) {
+      document.querySelectorAll('.ext-panel').forEach(p =&gt; p.classList.add('hidden'));
+      document.querySelectorAll('.ext-subtab').forEach(b =&gt; b.className = &quot;ext-subtab text-xs py-1 px-3 text-textGreen&quot;);
+      
+      document.getElementById(`ext-subtab-${tabId}`).classList.remove('hidden');
+      event.target.className = &quot;ext-subtab text-xs py-1 px-3 border-b-2 border-brandGreen text-white&quot;;
+
+      if (tabId === 'scripts') renderExtractorScripts();
+      if (tabId === 'text') renderExtractorText();
+    }
+
+    function renderExtractorOverview() {
+      const panel = document.getElementById('ext-subtab-overview');
+      panel.innerHTML = `
+        &lt;div class=&quot;bg-darkBg p-4 rounded-lg border border-borderGreen&quot;&gt;
+          &lt;h3 class=&quot;text-brandGreen font-bold text-sm&quot;&gt;🏷️ ${extractedData.title}&lt;/h3&gt;
+          &lt;p class=&quot;text-xs text-gray-400 mt-1&quot;&gt;URL: ${extractedData.url}&lt;/p&gt;
+          &lt;button onclick=&quot;importExtractedToProject()&quot; class=&quot;mt-3 bg-brandGreen text-darkBg px-3 py-1.5 rounded text-xs font-bold hover:bg-focusGreen&quot;&gt;📥 Importar Texto para o Editor&lt;/button&gt;
+        &lt;/div&gt;`;
+    }
+
+    function renderExtractorScripts() {
+      const panel = document.getElementById('ext-subtab-scripts');
+      const calcs = extractedData.scripts.filter(s =&gt; s.isCalc);
+      if (calcs.length === 0) {
+        panel.innerHTML = '&lt;p class=&quot;text-xs text-gray-500 italic&quot;&gt;Nenhum script de cálculo jurídico identificado.&lt;/p&gt;';
+        return;
+      }
+      panel.innerHTML = calcs.map((s, i) =&gt; `
+        &lt;div class=&quot;bg-darkBg border border-accentGold rounded-lg p-3 space-y-2&quot;&gt;
+          &lt;div class=&quot;flex justify-between items-center&quot;&gt;
+            &lt;span class=&quot;text-xs text-accentGold font-bold&quot;&gt;⚖️ Script de Cálculo #${i+1}&lt;/span&gt;
+            &lt;button onclick=&quot;openScriptInEditor(${i})&quot; class=&quot;text-[10px] bg-borderGreen text-brandGreen px-2 py-0.5 rounded&quot;&gt;Abrir no Editor&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;pre class=&quot;text-[10px] font-mono text-textGreen overflow-x-auto max-h-32 p-2 bg-black/40 rounded&quot;&gt;${s.content.slice(0, 500)}...&lt;/pre&gt;
+        &lt;/div&gt;
+      `).join('');
+    }
+
+    function renderExtractorText() {
+      const panel = document.getElementById('ext-subtab-text');
+      panel.innerHTML = `
+        &lt;div class=&quot;bg-darkBg border border-borderGreen rounded-lg p-3&quot;&gt;
+          &lt;textarea readonly class=&quot;w-full h-64 bg-transparent text-xs font-mono text-textGreen outline-none resize-none&quot;&gt;${extractedData.textContent}&lt;/textarea&gt;
+        &lt;/div&gt;`;
+    }
+
+    function importExtractedToProject() {
+      if (!extractedData) return;
+      const filename = &quot;texto-extraido.txt&quot;;
+      if (!currentFiles.includes(filename)) {
+        currentFiles.push(filename);
+      }
+      fileContents[filename] = extractedData.textContent;
+      renderFileList();
+      openFile(filename);
+      alert(&quot;Texto importado para o arquivo 'texto-extraido.txt' no Editor!&quot;);
+    }
+
+    function openScriptInEditor(idx) {
+      const calcs = extractedData.scripts.filter(s =&gt; s.isCalc);
+      const filename = `script-calculo-${idx+1}.js`;
+      if (!currentFiles.includes(filename)) {
+        currentFiles.push(filename);
+      }
+      fileContents[filename] = calcs[idx].content;
+      renderFileList();
+      openFile(filename);
+    }
+
+    // ==================== SCANNER DE DEPENDÊNCIAS ====================
+    let scanResultsData = [];
+
+    function runScan() {
+      if (currentFiles.length === 0) return alert(&quot;Carregue um projeto primeiro!&quot;);
+      
+      const customTerm = document.getElementById('customSearchTerm').value.trim();
+      let customRegex = null;
+      if (customTerm) {
+        customRegex = new RegExp(customTerm, &quot;gi&quot;);
+      }
+
+      scanResultsData = [];
+      showLoader(&quot;Escaneando arquivos...&quot;);
+
+      currentFiles.forEach(file =&gt; {
+        const content = fileContents[file] || &quot;&quot;;
+        const lines = content.split('\n');
+        const hits = [];
+
+        lines.forEach((line, idx) =&gt; {
+          const foundLabels = [];
+          
+          PATS.forEach(p =&gt; {
+            p.re.lastIndex = 0;
+            if (p.re.test(line)) foundLabels.push(p.lb);
+            p.re.lastIndex = 0;
+          });
+
+          if (customRegex) {
+            customRegex.lastIndex = 0;
+            if (customRegex.test(line)) foundLabels.push(`busca:&quot;${customTerm}&quot;`);
+            customRegex.lastIndex = 0;
+          }
+
+          if (foundLabels.length &gt; 0) {
+            hits.push({
+              ln: idx + 1,
+              txt: line.trim().slice(0, 150),
+              labels: foundLabels
+            });
+          }
+        });
+
+        if (hits.length &gt; 0) {
+          scanResultsData.push({ nome: file, hits });
+        }
+      });
+
+      renderScanResults();
+      document.getElementById('scannerActions').classList.remove('hidden');
+      hideLoader();
+    }
+
+    function renderScanResults() {
+      const container = document.getElementById('scannerResults');
+      if (scanResultsData.length === 0) {
+        container.innerHTML = '&lt;div class=&quot;text-center py-8 text-matrixGreen&quot;&gt;🟢 Projeto Limpo! Nenhuma dependência indesejada encontrada.&lt;/div&gt;';
+        return;
+      }
+
+      container.innerHTML = `
+        &lt;div class=&quot;text-xs text-red-400 mb-2 font-mono&quot;&gt;⚠️ Encontrados ${scanResultsData.length} arquivos com referências indesejadas:&lt;/div&gt;
+        &lt;div class=&quot;space-y-2&quot;&gt;
+          ${scanResultsData.map(res =&gt; `
+            &lt;div class=&quot;bg-darkBg border border-red-950 rounded-lg overflow-hidden&quot;&gt;
+              &lt;div class=&quot;bg-red-950/20 px-3 py-2 flex justify-between items-center border-b border-red-950/40&quot;&gt;
+                &lt;span class=&quot;font-mono text-xs text-red-300 truncate cursor-pointer hover:underline&quot; onclick=&quot;openFile('${res.nome}')&quot;&gt;📄 ${res.nome}&lt;/span&gt;
+                &lt;button onclick=&quot;openFile('${res.nome}')&quot; class=&quot;text-[10px] bg-brandGreen/20 text-brandGreen px-2 py-0.5 rounded hover:bg-brandGreen hover:text-black&quot;&gt;Abrir no Editor&lt;/button&gt;
+              &lt;/div&gt;
+              &lt;div class=&quot;p-2 space-y-1 bg-black/30&quot;&gt;
+                ${res.hits.map(h =&gt; `
+                  &lt;div class=&quot;text-[11px] font-mono text-red-200/80 flex gap-2&quot;&gt;
+                    &lt;span class=&quot;text-gray-600&quot;&gt;L${h.ln}:&lt;/span&gt;
+                    &lt;span class=&quot;text-yellow-500/80 bg-yellow-500/10 px-1 rounded text-[9px]&quot;&gt;${h.labels.join(', ')}&lt;/span&gt;
+                    &lt;span class=&quot;truncate&quot;&gt;${h.txt}&lt;/span&gt;
+                  &lt;/div&gt;
+                `).join('')}
+              &lt;/div&gt;
+            &lt;/div&gt;
+          `).join('')}
+        &lt;/div&gt;`;
+    }
+
+    function downloadScanReport() {
+      let txt = `=== RELATÓRIO DE DEPENDÊNCIAS ===\n`;
+      txt += `Gerado em: ${new Date().toLocaleString('pt-BR')}\n`;
+      txt += `Assinado: Maikon Caldeira OAB/MG 183712\n`;
+      txt += `Total de arquivos com problemas: ${scanResultsData.length}\n\n`;
+
+      scanResultsData.forEach(res =&gt; {
+        txt += `\n► ARQUIVO: ${res.nome}\n`;
+        res.hits.forEach(h =&gt; {
+          txt += `  [L${h.ln}] [${h.labels.join(', ')}] -&gt; ${h.txt}\n`;
+        });
+      });
+
+      const blob = new Blob([txt], {type: &quot;text/plain;charset=utf-8&quot;});
+      const link = document.createElement(&quot;a&quot;);
+      link.href = URL.createObjectURL(blob);
+      link.download = &quot;relatorio-scanner-maikon.txt&quot;;
+      link.click();
+    }
+
+    async function autoCleanReplitFiles() {
+      if (!confirm(&quot;Remover automaticamente as linhas com referências do Replit?&quot;)) return;
+      
+      showLoader(&quot;Limpando arquivos...&quot;);
+      scanResultsData.forEach(res =&gt; {
+        let content = fileContents[res.nome] || &quot;&quot;;
+        let lines = content.split('\n');
+        
+        let cleanLines = lines.filter(line =&gt; {
+          return !PATS.some(p =&gt; {
+            p.re.lastIndex = 0;
+            const isMatch = p.re.test(line);
+            p.re.lastIndex = 0;
+            return isMatch;
+          });
+        });
+
+        fileContents[res.nome] = cleanLines.join('\n');
+      });
+
+      alert(&quot;Arquivos limpos localmente! Iniciando download.&quot;);
+      await downloadModifiedZip();
+      runScan();
+    }
+
+    // ==================== COMBINAR APLICATIVOS (RECUPERADO) ====================
+    const COMBINER_STORAGE_KEY = &quot;sk-combinador-v4:data&quot;;
+
+    function createEmptyApp() {
+      return {
+        id: Math.random().toString(36).slice(2, 9),
+        name: &quot;&quot;,
+        sourceType: &quot;github&quot;,
+        sourceLocation: &quot;&quot;,
+        works: &quot;&quot;,
+        broken: &quot;&quot;
+      };
+    }
+
+    function loadCombiner() {
+      try {
+        const raw = localStorage.getItem(COMBINER_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appsToCombine = parsed.apps || [];
+          document.getElementById('combinerGoal').value = parsed.goal || &quot;&quot;;
+        }
+      } catch(e) {}
+
+      if (appsToCombine.length === 0) {
+        appsToCombine.push(createEmptyApp());
+      }
+      renderAppCards();
+    }
+
+    function saveCombiner() {
+      const goal = document.getElementById('combinerGoal').value;
+      localStorage.setItem(COMBINER_STORAGE_KEY, JSON.stringify({ apps: appsToCombine, goal }));
+    }
+
+    function renderAppCards() {
+      const container = document.getElementById('appsContainer');
+      container.innerHTML = appsToCombine.map((app, idx) =&gt; `
+        &lt;div class=&quot;bg-darkBg border border-borderGreen rounded-xl p-4 space-y-3&quot;&gt;
+          &lt;div class=&quot;flex justify-between items-center&quot;&gt;
+            &lt;span class=&quot;text-brandGreen text-xs font-bold uppercase&quot;&gt;📦 Código/App de Origem #${idx + 1}&lt;/span&gt;
+            ${appsToCombine.length &gt; 1 ? `&lt;button onclick=&quot;removeAppCard('${app.id}')&quot; class=&quot;text-xs text-red-400 hover:underline&quot;&gt;Remover&lt;/button&gt;` : ''}
+          &lt;/div&gt;
+          &lt;div class=&quot;grid grid-cols-1 md:grid-cols-3 gap-3&quot;&gt;
+            &lt;input type=&quot;text&quot; value=&quot;${app.name}&quot; onchange=&quot;updateAppField('${app.id}', 'name', this.value)&quot; placeholder=&quot;Nome (ex: PWA Jurídico)&quot; class=&quot;bg-panelBg border border-borderGreen rounded-lg px-3 py-1.5 text-xs text-textGreen outline-none&quot;&gt;
+            &lt;select onchange=&quot;updateAppField('${app.id}', 'sourceType', this.value)&quot; class=&quot;bg-panelBg border border-borderGreen rounded-lg px-3 py-1.5 text-xs text-textGreen outline-none&quot;&gt;
+              &lt;option value=&quot;github&quot; ${app.sourceType === 'github' ? 'selected' : ''}&gt;GitHub&lt;/option&gt;
+              &lt;option value=&quot;zip&quot; ${app.sourceType === 'zip' ? 'selected' : ''}&gt;Arquivo ZIP&lt;/option&gt;
+            &lt;/select&gt;
+            &lt;input type=&quot;text&quot; value=&quot;${app.sourceLocation}&quot; onchange=&quot;updateAppField('${app.id}', 'sourceLocation', this.value)&quot; placeholder=&quot;Link do GitHub ou Nome do ZIP&quot; class=&quot;bg-panelBg border border-borderGreen rounded-lg px-3 py-1.5 text-xs text-textGreen outline-none&quot;&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;grid grid-cols-1 md:grid-cols-2 gap-3&quot;&gt;
+            &lt;textarea rows=&quot;2&quot; onchange=&quot;updateAppField('${app.id}', 'works', this.value)&quot; placeholder=&quot;✅ O que funciona perfeitamente...&quot; class=&quot;bg-panelBg border border-borderGreen rounded-lg px-3 py-2 text-xs text-textGreen outline-none resize-none&quot;&gt;${app.works}&lt;/textarea&gt;
+            &lt;textarea rows=&quot;2&quot; onchange=&quot;updateAppField('${app.id}', 'broken', this.value)&quot; placeholder=&quot;❌ O que está quebrado...&quot; class=&quot;bg-panelBg border border-borderGreen rounded-lg px-3 py-2 text-xs text-textGreen outline-none resize-none&quot;&gt;${app.broken}&lt;/textarea&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      `).join('');
+    }
+
+    function addAppCard() {
+      appsToCombine.push(createEmptyApp());
+      renderAppCards();
+      saveCombiner();
+    }
+
+    function removeAppCard(id) {
+      appsToCombine = appsToCombine.filter(app =&gt; app.id !== id);
+      renderAppCards();
+      saveCombiner();
+    }
+
+    function updateAppField(id, field, value) {
+      appsToCombine = appsToCombine.map(app =&gt; app.id === id ? { ...app, [field]: value } : app);
+      saveCombiner();
+    }
+
+    function clearCombiner() {
+      if (confirm(&quot;Limpar dados do combinador?&quot;)) {
+        appsToCombine = [createEmptyApp()];
+        document.getElementById('combinerGoal').value = &quot;&quot;;
+        document.getElementById('promptResultContainer').classList.add('hidden');
+        renderAppCards();
+        saveCombiner();
+      }
+    }
+
+    function generateSuperPrompt() {
+      const goal = document.getElementById('combinerGoal').value.trim();
+      const filled = appsToCombine.filter(a =&gt; a.name || a.sourceLocation || a.works);
+
+      let prompt = `Estou usando o SK Oficina Jurídica v4 e preciso unificar códigos de projetos diferentes em uma única versão estável.
+
+🎯 OBJETIVO DO PROJETO UNIFICADO:
+${goal ? goal : &quot;Combinar os códigos mantendo a estabilidade e eliminando erros de dependência/Replit.&quot;}
+
+--------------------------------------------------
+📦 FONTES DE CÓDIGO A SEREM ANALISADAS:
+`;
+
+      filled.forEach((app, idx) =&gt; {
+        prompt += `\n[CÓDIGO ${idx + 1}: ${app.name || 'Sem Nome'}]\n`;
+        prompt += `- Origem: ${app.sourceType === 'github' ? 'Repositório GitHub' : 'Arquivo ZIP'}\n`;
+        prompt += `- Endereço/Referência: ${app.sourceLocation || 'Não especificado'}\n`;
+        prompt += `- ✅ O QUE FUNCIONA E DEVE SER MANTIDO:\n  ${app.works || 'Não especificado'}\n`;
+        prompt += `- ❌ O QUE ESTÁ QUEBRADO E DEVE SER CORRIGIDO:\n  ${app.broken || 'Não especificado'}\n`;
+      });
+
+      prompt += `
+--------------------------------------------------
+🛠️ INSTRUÇÕES DE ARQUITETURA PARA A IA (CRÍTICAS):
+1. NÃO comece o projeto do zero. Aproveite a lógica de importação de arquivos pesados e persistência local que já funciona.
+2. Remova qualquer dependência desnecessária do Replit (como arquivos .replit, replit.nix ou pacotes que dependem de terminal).
+3. O projeto final deve rodar como um PWA de arquivo único (HTML/JS) ou uma estrutura limpa de Vite+React que possa ser aberta diretamente no navegador sem precisar de servidores locais complexos.
+4. Explique detalhadamente quais partes de código você unificou e de qual arquivo original elas vieram.
+5. Apresente o código pronto e limpo para ser copiado.`;
+
+      document.getElementById('generatedPromptTextarea').value = prompt;
+      document.getElementById('promptResultContainer').classList.remove('hidden');
+    }
+
+    function copyGeneratedPrompt() {
+      const txt = document.getElementById('generatedPromptTextarea');
+      txt.select();
+      document.execCommand('copy');
+      alert(&quot;Prompt copiado! Cole na sua IA preferida.&quot;);
+    }
+
+    // Inicialização
+    window.onload = () =&gt; {
+      loadCombiner();
+      showSection('importar');
+    };
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+
+&lt;script&gt;
+
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;"></iframe>
+</div>
+
+<div class="project-container " id="projeto1">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;title&gt;SK Rastreador de Rotas &amp; IA v6 - Maikon Caldeira&lt;/title&gt;
+  &lt;script src=&quot;https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js&quot;&gt;&lt;/script&gt;
+  &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+  &lt;script&gt;
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkBg: '#0d1208',
+            panelBg: '#141c0d',
+            borderGreen: '#223018',
+            textGreen: '#c8dda8',
+            brandGreen: '#5fad3c',
+            focusGreen: '#7dcf55',
+            matrixGreen: '#22c55e',
+            accentGold: '#d4aa4e',
+            accentBlue: '#56b6c2'
+          }
+        }
+      }
+    }
+  &lt;/script&gt;
+  &lt;style&gt;
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1208; }
+    ::-webkit-scrollbar-thumb { background: #223018; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5fad3c; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body class=&quot;bg-darkBg text-textGreen font-sans min-h-screen flex flex-col&quot;&gt;
+
+  &lt;!-- Header --&gt;
+  &lt;header class=&quot;bg-panelBg border-b border-borderGreen p-4 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0&quot;&gt;
+    &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+      &lt;span class=&quot;text-2xl&quot;&gt;🔍&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h1 class=&quot;text-brandGreen font-bold text-lg flex items-center gap-2&quot;&gt;
+          SK Rastreador de Rotas &amp; IA &lt;span class=&quot;text-xs bg-brandGreen/20 text-brandGreen px-2 py-0.5 rounded&quot;&gt;v6&lt;/span&gt;
+        &lt;/h1&gt;
+        &lt;p class=&quot;text-[11px] text-focusGreen font-mono&quot;&gt;Maikon Caldeira OAB/MG 183712 — Caçador de APIs, Replit e Importadores&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;span class=&quot;text-xs bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg border border-brandGreen/30&quot;&gt;Análise Local 100% Segura&lt;/span&gt;
+  &lt;/header&gt;
+
+  &lt;!-- Main Grid --&gt;
+  &lt;main class=&quot;flex-1 flex flex-col md:flex-row overflow-hidden&quot;&gt;
+    
+    &lt;!-- Painel Esquerdo: Importação e Lista de Arquivos --&gt;
+    &lt;div class=&quot;w-full md:w-96 bg-panelBg border-r border-borderGreen p-4 flex flex-col shrink-0 overflow-y-auto space-y-4&quot;&gt;
+      
+      &lt;!-- Seletor de Arquivos --&gt;
+      &lt;div class=&quot;border-2 border-dashed border-borderGreen p-4 rounded-lg bg-darkBg/50 hover:border-brandGreen cursor-pointer text-center transition-all&quot; onclick=&quot;document.getElementById('fileInput').click()&quot;&gt;
+        &lt;span class=&quot;text-2xl block&quot;&gt;📦&lt;/span&gt;
+        &lt;p class=&quot;text-xs text-brandGreen font-bold mt-1&quot;&gt;Carregar ZIP ou APK&lt;/p&gt;
+        &lt;span id=&quot;loadedFileName&quot; class=&quot;block text-[10px] text-textGreen mt-1 truncate&quot;&gt;Nenhum arquivo&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;input type=&quot;file&quot; id=&quot;fileInput&quot; accept=&quot;.zip,.apk&quot; class=&quot;hidden&quot;&gt;
+
+      &lt;!-- Filtros Rápidos de Rastreamento --&gt;
+      &lt;div class=&quot;space-y-2&quot;&gt;
+        &lt;h3 class=&quot;text-xs font-bold text-brandGreen uppercase tracking-wider&quot;&gt;🎯 O que rastrear:&lt;/h3&gt;
+        &lt;div class=&quot;grid grid-cols-2 gap-1 text-[10px]&quot;&gt;
+          &lt;label class=&quot;flex items-center gap-1.5 bg-darkBg p-2 rounded border border-borderGreen cursor-pointer&quot;&gt;
+            &lt;input type=&quot;checkbox&quot; id=&quot;trackAI&quot; checked class=&quot;accent-brandGreen&quot;&gt; 🤖 Rotas de IA
+          &lt;/label&gt;
+          &lt;label class=&quot;flex items-center gap-1.5 bg-darkBg p-2 rounded border border-borderGreen cursor-pointer&quot;&gt;
+            &lt;input type=&quot;checkbox&quot; id=&quot;trackReplit&quot; checked class=&quot;accent-brandGreen&quot;&gt; 🔌 Replit/Servidor
+          &lt;/label&gt;
+          &lt;label class=&quot;flex items-center gap-1.5 bg-darkBg p-2 rounded border border-borderGreen cursor-pointer&quot;&gt;
+            &lt;input type=&quot;checkbox&quot; id=&quot;trackImports&quot; checked class=&quot;accent-brandGreen&quot;&gt; 📄 Importadores
+          &lt;/label&gt;
+          &lt;label class=&quot;flex items-center gap-1.5 bg-darkBg p-2 rounded border border-borderGreen cursor-pointer&quot;&gt;
+            &lt;input type=&quot;checkbox&quot; id=&quot;trackKeys&quot; checked class=&quot;accent-brandGreen&quot;&gt; 🔑 Chaves/Tokens
+          &lt;/label&gt;
+        &lt;/div&gt;
+        &lt;button onclick=&quot;startDeepScan()&quot; class=&quot;w-full bg-brandGreen text-darkBg py-2 rounded-lg text-xs font-bold hover:bg-focusGreen transition-all&quot;&gt;Iniciar Varredura Profunda&lt;/button&gt;
+      &lt;/div&gt;
+
+      &lt;!-- Resultados Rápidos --&gt;
+      &lt;div id=&quot;scanSummary&quot; class=&quot;hidden bg-darkBg p-3 rounded-lg border border-borderGreen text-xs space-y-1&quot;&gt;
+        &lt;p class=&quot;text-brandGreen font-bold&quot;&gt;Resumo do Rastreador:&lt;/p&gt;
+        &lt;p&gt;• Arquivos com IA: &lt;span id=&quot;sumAI&quot; class=&quot;text-white font-mono&quot;&gt;0&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;• Arquivos com Replit: &lt;span id=&quot;sumReplit&quot; class=&quot;text-white font-mono&quot;&gt;0&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;• Scripts de Importação: &lt;span id=&quot;sumImports&quot; class=&quot;text-white font-mono&quot;&gt;0&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;• Chaves Expostas: &lt;span id=&quot;sumKeys&quot; class=&quot;text-white font-mono&quot;&gt;0&lt;/span&gt;&lt;/p&gt;
+      &lt;/div&gt;
+
+      &lt;!-- Lista de Arquivos Suspeitos --&gt;
+      &lt;div class=&quot;flex-1 flex flex-col min-h-[200px]&quot;&gt;
+        &lt;h3 class=&quot;text-xs font-bold text-brandGreen uppercase mb-2 flex justify-between&quot;&gt;
+          &lt;span&gt;⚠️ Arquivos Suspeitos&lt;/span&gt;
+          &lt;span id=&quot;suspiciousCount&quot; class=&quot;text-accentGold&quot;&gt;0&lt;/span&gt;
+        &lt;/h3&gt;
+        &lt;div id=&quot;suspiciousList&quot; class=&quot;flex-1 overflow-y-auto space-y-1 text-xs&quot;&gt;
+          &lt;p class=&quot;text-gray-500 italic text-center p-4&quot;&gt;Aguardando varredura...&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Painel Direito: Visualizador e Editor de Código --&gt;
+    &lt;div class=&quot;flex-1 bg-darkBg p-4 flex flex-col overflow-hidden&quot;&gt;
+      &lt;div class=&quot;flex justify-between items-center mb-2 bg-panelBg p-2 rounded-lg border border-borderGreen&quot;&gt;
+        &lt;span id=&quot;currentFileName&quot; class=&quot;text-xs font-mono text-brandGreen font-bold&quot;&gt;📝 Selecione um arquivo suspeito para analisar&lt;/span&gt;
+        &lt;div class=&quot;flex gap-2&quot;&gt;
+          &lt;button onclick=&quot;saveFileChanges()&quot; class=&quot;text-[10px] bg-brandGreen/20 text-brandGreen border border-brandGreen/30 px-3 py-1 rounded hover:bg-brandGreen hover:text-black transition-all&quot;&gt;Salvar Alterações&lt;/button&gt;
+          &lt;button onclick=&quot;downloadCleanProject()&quot; class=&quot;text-[10px] bg-accentBlue/20 text-accentBlue border border-accentBlue/30 px-3 py-1 rounded hover:bg-accentBlue hover:text-black transition-all&quot;&gt;Exportar Projeto Corrigido&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;!-- Linhas com ocorrências no arquivo selecionado --&gt;
+      &lt;div id=&quot;occurrencesContainer&quot; class=&quot;hidden bg-panelBg border border-borderGreen rounded-lg p-3 mb-2 max-h-40 overflow-y-auto text-xs space-y-1&quot;&gt;
+        &lt;p class=&quot;text-accentGold font-bold mb-1&quot;&gt;Ocorrências encontradas neste arquivo:&lt;/p&gt;
+        &lt;div id=&quot;occurrencesList&quot; class=&quot;space-y-1&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;!-- Editor de Código --&gt;
+      &lt;textarea id=&quot;codeEditor&quot; class=&quot;flex-1 w-full bg-[#020617] border border-borderGreen rounded-lg p-4 text-xs font-mono text-matrixGreen outline-none resize-none&quot; placeholder=&quot;// O código do arquivo selecionado aparecerá aqui...&quot;&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+  &lt;/main&gt;
+
+  &lt;!-- Loader --&gt;
+  &lt;div id=&quot;loader&quot; class=&quot;hidden fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center space-y-4&quot;&gt;
+    &lt;div class=&quot;w-12 h-12 border-4 border-brandGreen border-t-transparent rounded-full spinner&quot;&gt;&lt;/div&gt;
+    &lt;p id=&quot;loaderMsg&quot; class=&quot;text-brandGreen font-mono text-xs&quot;&gt;Analisando...&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    // ==================== CONFIGURAÇÃO E PADRÕES ====================
+    let zipInstance = null;
+    let projectFiles = {};
+    let activeFile = null;
+    let scanResults = {};
+
+    const PATTERNS = {
+      ai: [
+        { re: /openai/gi, lb: &quot;OpenAI SDK/Endpoint&quot; },
+        { re: /anthropic/gi, lb: &quot;Anthropic/Claude&quot; },
+        { re: /gemini/gi, lb: &quot;Google Gemini&quot; },
+        { re: /cohere/gi, lb: &quot;Cohere AI&quot; },
+        { re: /chat\/completions/gi, lb: &quot;Rota de Chat&quot; },
+        { re: /v1\/completions/gi, lb: &quot;Rota de Completions antiga&quot; },
+        { re: /playground/gi, lb: &quot;Referência a Playground&quot; },
+        { re: /\/api\/ai/gi, lb: &quot;Rota local /api/ai&quot; },
+        { re: /\/api\/chat/gi, lb: &quot;Rota local /api/chat&quot; }
+      ],
+      replit: [
+        { re: /replit\.dev/gi, lb: &quot;Domínio Replit Dev&quot; },
+        { re: /repl\.co/gi, lb: &quot;Domínio Replit Co antigo&quot; },
+        { re: /replit\.com/gi, lb: &quot;Plataforma Replit&quot; },
+        { re: /REPL_ID/g, lb: &quot;ID do Servidor Replit&quot; },
+        { re: /REPLIT_DEV_DOMAIN/g, lb: &quot;Variável de Domínio Replit&quot; }
+      ],
+      imports: [
+        { re: /tjmg\.jus\.br/gi, lb: &quot;Importador TJMG&quot; },
+        { re: /processo/gi, lb: &quot;Lógica de Processo&quot; },
+        { re: /pje/gi, lb: &quot;Lógica PJe&quot; },
+        { re: /regex/gi, lb: &quot;Filtro de Texto (Regex)&quot; },
+        { re: /parse/gi, lb: &quot;Analisador de Texto/HTML&quot; }
+      ],
+      keys: [
+        { re: /sk-[a-zA-Z0-9]{48}/g, lb: &quot;Chave OpenAI Exposta!&quot; },
+        { re: /api[-_]?key/gi, lb: &quot;Variável de API Key&quot; },
+        { re: /process\.env\.[A-Z0-9_]*KEY/g, lb: &quot;Env de API Key&quot; },
+        { re: /bearer\s[a-zA-Z0-9-_.]+/gi, lb: &quot;Token de Autenticação&quot; }
+      ]
+    };
+
+    const SKIP_EXT = new Set([&quot;png&quot;,&quot;jpg&quot;,&quot;jpeg&quot;,&quot;gif&quot;,&quot;webp&quot;,&quot;ico&quot;,&quot;woff&quot;,&quot;woff2&quot;,&quot;ttf&quot;,&quot;eot&quot;,&quot;otf&quot;,&quot;mp3&quot;,&quot;mp4&quot;,&quot;webm&quot;,&quot;ogg&quot;,&quot;bin&quot;,&quot;class&quot;,&quot;dex&quot;,&quot;so&quot;]);
+
+    // ==================== INTERFACE E LOADER ====================
+    function showLoader(msg) {
+      document.getElementById('loaderMsg').innerText = msg;
+      document.getElementById('loader').classList.remove('hidden');
+    }
+    function hideLoader() {
+      document.getElementById('loader').classList.add('hidden');
+    }
+
+    // ==================== CARREGAMENTO DE ARQUIVOS ====================
+    document.getElementById('fileInput').addEventListener('change', async (e) =&gt; {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('loadedFileName').innerText = file.name;
+      showLoader(&quot;Carregando e descompactando projeto...&quot;);
+
+      try {
+        const buffer = await file.arrayBuffer();
+        zipInstance = await JSZip.loadAsync(buffer);
+        projectFiles = {};
+        
+        const tempFiles = Object.keys(zipInstance.files).filter(n =&gt; !zipInstance.files[n].dir);
+        
+        let loadedCount = 0;
+        for (const path of tempFiles) {
+          const ext = path.split('.').pop().toLowerCase();
+          if (SKIP_EXT.has(ext)) {
+            projectFiles[path] = &quot;[Arquivo Binário]&quot;;
+            continue;
+          }
+          try {
+            projectFiles[path] = await zipInstance.files[path].async(&quot;string&quot;);
+          } catch {
+            projectFiles[path] = &quot;[Erro ao ler arquivo]&quot;;
+          }
+        }
+        
+        hideLoader();
+        alert(`Sucesso! ${tempFiles.length} arquivos carregados na memória.`);
+        startDeepScan();
+      } catch (err) {
+        hideLoader();
+        alert(&quot;Erro ao carregar arquivo: &quot; + err.message);
+      }
+    });
+
+    // ==================== VARREDURA PROFUNDA ====================
+    function startDeepScan() {
+      if (Object.keys(projectFiles).length === 0) {
+        return alert(&quot;Por favor, carregue um arquivo ZIP ou APK primeiro!&quot;);
+      }
+
+      showLoader(&quot;Rastreando rotas, IA e servidores...&quot;);
+      
+      const trackAI = document.getElementById('trackAI').checked;
+      const trackReplit = document.getElementById('trackReplit').checked;
+      const trackImports = document.getElementById('trackImports').checked;
+      const trackKeys = document.getElementById('trackKeys').checked;
+
+      scanResults = {};
+      let totalAI = 0, totalReplit = 0, totalImports = 0, totalKeys = 0;
+
+      for (const [path, content] of Object.entries(projectFiles)) {
+        if (content.startsWith(&quot;[Arquivo Binário]&quot;)) continue;
+
+        const lines = content.split('\n');
+        const fileHits = [];
+
+        lines.forEach((line, idx) =&gt; {
+          const matchedLabels = [];
+
+          if (trackAI) {
+            PATTERNS.ai.forEach(p =&gt; {
+              p.re.lastIndex = 0;
+              if (p.re.test(line)) { matchedLabels.push(p.lb); totalAI++; }
+            });
+          }
+          if (trackReplit) {
+            PATTERNS.replit.forEach(p =&gt; {
+              p.re.lastIndex = 0;
+              if (p.re.test(line)) { matchedLabels.push(p.lb); totalReplit++; }
+            });
+          }
+          if (trackImports) {
+            PATTERNS.imports.forEach(p =&gt; {
+              p.re.lastIndex = 0;
+              if (p.re.test(line)) { matchedLabels.push(p.lb); totalImports++; }
+            });
+          }
+          if (trackKeys) {
+            PATTERNS.keys.forEach(p =&gt; {
+              p.re.lastIndex = 0;
+              if (p.re.test(line)) { matchedLabels.push(p.lb); totalKeys++; }
+            });
+          }
+
+          if (matchedLabels.length &gt; 0) {
+            fileHits.push({
+              lineNum: idx + 1,
+              text: line.trim().slice(0, 120),
+              labels: [...new Set(matchedLabels)]
+            });
+          }
+        });
+
+        if (fileHits.length &gt; 0) {
+          scanResults[path] = fileHits;
+        }
+      }
+
+      // Atualizar UI
+      document.getElementById('sumAI').innerText = totalAI;
+      document.getElementById('sumReplit').innerText = totalReplit;
+      document.getElementById('sumImports').innerText = totalImports;
+      document.getElementById('sumKeys').innerText = totalKeys;
+      document.getElementById('scanSummary').classList.remove('hidden');
+
+      renderSuspiciousList();
+      hideLoader();
+    }
+
+    function renderSuspiciousList() {
+      const container = document.getElementById('suspiciousList');
+      const paths = Object.keys(scanResults);
+      document.getElementById('suspiciousCount').innerText = paths.length;
+
+      if (paths.length === 0) {
+        container.innerHTML = '&lt;p class=&quot;text-matrixGreen text-center p-4&quot;&gt;🟢 Nenhum arquivo suspeito encontrado!&lt;/p&gt;';
+        return;
+      }
+
+      container.innerHTML = paths.map(path =&gt; {
+        const hits = scanResults[path];
+        return `
+          &lt;div onclick=&quot;openSuspiciousFile('${path}')&quot; class=&quot;p-2 bg-darkBg hover:bg-borderGreen/30 rounded border border-borderGreen/50 cursor-pointer transition-all flex justify-between items-center&quot;&gt;
+            &lt;div class=&quot;truncate pr-2 flex-1&quot;&gt;
+              &lt;p class=&quot;font-mono text-xs text-accentGold truncate&quot;&gt;📄 ${path.split('/').pop()}&lt;/p&gt;
+              &lt;p class=&quot;text-[9px] text-gray-500 truncate&quot;&gt;${path}&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;span class=&quot;bg-red-950 text-red-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0&quot;&gt;${hits.length}&lt;/span&gt;
+          &lt;/div&gt;
+        `;
+      }).join('');
+    }
+
+    // ==================== VISUALIZADOR E EDITOR ====================
+    function openSuspiciousFile(path) {
+      activeFile = path;
+      document.getElementById('currentFileName').innerText = `📝 Analisando: ${path}`;
+      document.getElementById('codeEditor').value = projectFiles[path];
+
+      // Renderizar ocorrências no topo
+      const hits = scanResults[path] || [];
+      const occContainer = document.getElementById('occurrencesContainer');
+      const occList = document.getElementById('occurrencesList');
+
+      if (hits.length &gt; 0) {
+        occContainer.classList.remove('hidden');
+        occList.innerHTML = hits.map(h =&gt; `
+          &lt;div class=&quot;flex gap-2 text-[11px] border-b border-borderGreen/20 pb-1&quot;&gt;
+            &lt;span class=&quot;text-accentGold font-bold shrink-0&quot;&gt;Linha ${h.lineNum}:&lt;/span&gt;
+            &lt;span class=&quot;bg-brandGreen/10 text-brandGreen px-1 rounded text-[9px] shrink-0&quot;&gt;${h.labels.join(', ')}&lt;/span&gt;
+            &lt;span class=&quot;text-textGreen/80 truncate font-mono&quot;&gt;${h.text}&lt;/span&gt;
+          &lt;/div&gt;
+        `).join('');
+      } else {
+        occContainer.classList.add('hidden');
+      }
+    }
+
+    function saveFileChanges() {
+      if (!activeFile) return alert(&quot;Nenhum arquivo aberto para salvar!&quot;);
+      projectFiles[activeFile] = document.getElementById('codeEditor').value;
+      alert(&quot;Alterações salvas na memória do rastreador!&quot;);
+      startDeepScan(); // Re-escanear para atualizar ocorrências
+    }
+
+    async function downloadCleanProject() {
+      if (Object.keys(projectFiles).length === 0) return alert(&quot;Nenhum projeto carregado!&quot;);
+      showLoader(&quot;Gerando pacote limpo...&quot;);
+
+      const outZip = new JSZip();
+      for (const [path, content] of Object.entries(projectFiles)) {
+        if (content === &quot;[Arquivo Binário]&quot;) {
+          // Copiar binário original do zip carregado
+          const originalData = await zipInstance.file(path).async(&quot;uint8array&quot;);
+          outZip.file(path, originalData);
+        } else {
+          outZip.file(path, content);
+        }
+      }
+
+      const blob = await outZip.generateAsync({ type: &quot;blob&quot;, compression: &quot;DEFLATE&quot; });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement(&quot;a&quot;);
+      a.href = url;
+      a.download = &quot;projeto-rastreado-limpo.zip&quot;;
+      a.click();
+      hideLoader();
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+<div class="project-container " id="projeto2">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;title&gt;SK Oficina Jurídica v6 - Analyzer + Injector&lt;/title&gt;
+  &lt;script src=&quot;https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js&quot;&gt;&lt;/script&gt;
+  &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+  &lt;script&gt;
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkBg: '#0d1208',
+            panelBg: '#141c0d',
+            borderGreen: '#223018',
+            textGreen: '#c8dda8',
+            brandGreen: '#5fad3c',
+            focusGreen: '#7dcf55',
+            matrixGreen: '#22c55e',
+            accentGold: '#d4aa4e',
+            accentBlue: '#56b6c2'
+          }
+        }
+      }
+    }
+  &lt;/script&gt;
+  &lt;style&gt;
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1208; }
+    ::-webkit-scrollbar-thumb { background: #223018; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5fad3c; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body class=&quot;bg-darkBg text-textGreen font-sans min-h-screen flex flex-col&quot;&gt;
+
+  &lt;!-- Header --&gt;
+  &lt;header class=&quot;bg-panelBg border-b border-borderGreen p-4 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0&quot;&gt;
+    &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+      &lt;span class=&quot;text-2xl&quot;&gt;⚖️&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h1 class=&quot;text-brandGreen font-bold text-lg flex items-center gap-2&quot;&gt;
+          SK Oficina Jurídica &lt;span class=&quot;text-xs bg-brandGreen/20 text-brandGreen px-2 py-0.5 rounded&quot;&gt;v6&lt;/span&gt;
+        &lt;/h1&gt;
+        &lt;p class=&quot;text-[11px] text-focusGreen font-mono&quot;&gt;Analyzer + Extrator + Injetor de Essenciais&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class=&quot;flex flex-wrap gap-1&quot;&gt;
+      &lt;button onclick=&quot;showSection('importar')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;📥 Importar&lt;/button&gt;
+      &lt;button onclick=&quot;showSection('apk-info')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;📱 Dados APK&lt;/button&gt;
+      &lt;button onclick=&quot;showSection('editor')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;📂 Editor&lt;/button&gt;
+      &lt;button onclick=&quot;showSection('scanner')&quot; class=&quot;tab-btn bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-focusGreen hover:text-darkBg transition-all&quot;&gt;🛡️ Limpar &amp; Injetar&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;main class=&quot;flex-1 overflow-hidden relative flex flex-col&quot;&gt;
+
+    &lt;!-- ABA 1: IMPORTAR --&gt;
+    &lt;section id=&quot;section-importar&quot; class=&quot;section-panel p-6 space-y-6 overflow-y-auto max-w-4xl mx-auto w-full&quot;&gt;
+      &lt;div class=&quot;bg-panelBg border border-borderGreen rounded-xl p-6 text-center space-y-4&quot;&gt;
+        &lt;div class=&quot;text-4xl&quot;&gt;📦&lt;/div&gt;
+        &lt;h2 class=&quot;text-white font-bold text-lg&quot;&gt;Carregar APK ou ZIP (Sem Limites)&lt;/h2&gt;
+        &lt;p class=&quot;text-xs text-textGreen&quot;&gt;Arraste ou selecione o arquivo. Processamento 100% no navegador.&lt;/p&gt;
+        
+        &lt;div class=&quot;border-2 border-dashed border-borderGreen p-8 rounded-lg bg-darkBg/50 hover:border-brandGreen cursor-pointer transition-all&quot; onclick=&quot;document.getElementById('zipInput').click()&quot;&gt;
+          &lt;p class=&quot;text-xs text-brandGreen font-bold&quot;&gt;Clique para procurar arquivo (.zip, .apk)&lt;/p&gt;
+          &lt;span id=&quot;zipName&quot; class=&quot;block text-[10px] mt-2 text-textGreen&quot;&gt;Nenhum arquivo carregado&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;input type=&quot;file&quot; id=&quot;zipInput&quot; accept=&quot;.zip,.apk&quot; class=&quot;hidden&quot;&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ABA 2: DADOS DO APK --&gt;
+    &lt;section id=&quot;section-apk-info&quot; class=&quot;section-panel hidden p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-6&quot;&gt;
+      &lt;div class=&quot;bg-panelBg border border-borderGreen rounded-xl p-6 space-y-4&quot;&gt;
+        &lt;h2 class=&quot;text-brandGreen font-bold text-lg&quot;&gt;📱 Informações do AndroidManifest&lt;/h2&gt;
+        &lt;div id=&quot;apkDataContainer&quot; class=&quot;space-y-4&quot;&gt;
+          &lt;p class=&quot;text-xs text-gray-500 italic text-center py-8&quot;&gt;Nenhum APK carregado.&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ABA 3: EDITOR --&gt;
+    &lt;section id=&quot;section-editor&quot; class=&quot;section-panel hidden flex-1 flex flex-col md:flex-row overflow-hidden h-full&quot;&gt;
+      &lt;div class=&quot;w-full md:w-80 bg-panelBg border-r border-borderGreen p-3 flex flex-col shrink-0&quot;&gt;
+        &lt;h3 class=&quot;text-xs font-bold text-brandGreen uppercase mb-2 flex justify-between&quot;&gt;
+          &lt;span&gt;📁 Arquivos (&lt;span id=&quot;filesCount&quot;&gt;0&lt;/span&gt;)&lt;/span&gt;
+        &lt;/h3&gt;
+        &lt;input type=&quot;text&quot; id=&quot;fileSearch&quot; placeholder=&quot;Buscar arquivo...&quot; onkeyup=&quot;filterFiles()&quot; class=&quot;bg-darkBg border border-borderGreen rounded-lg px-3 py-1.5 text-xs text-white outline-none mb-2&quot;&gt;
+        &lt;div id=&quot;fileList&quot; class=&quot;flex-1 overflow-y-auto space-y-1 text-xs&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;flex-1 bg-darkBg p-3 flex flex-col overflow-hidden&quot;&gt;
+        &lt;div class=&quot;flex justify-between items-center mb-2 bg-panelBg p-2 rounded-lg border border-borderGreen&quot;&gt;
+          &lt;span id=&quot;currentFileName&quot; class=&quot;text-xs font-mono text-brandGreen font-bold&quot;&gt;📝 Nenhum arquivo&lt;/span&gt;
+          &lt;button onclick=&quot;saveCurrentFileChanges()&quot; class=&quot;text-[10px] bg-brandGreen text-darkBg px-3 py-1 rounded font-bold hover:bg-focusGreen&quot;&gt;Salvar na Memória&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;textarea id=&quot;fileContent&quot; class=&quot;flex-1 w-full bg-[#020617] border border-borderGreen rounded-lg p-4 text-xs font-mono text-matrixGreen outline-none resize-none&quot;&gt;&lt;/textarea&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ABA 4: SCANNER &amp; INJETOR --&gt;
+    &lt;section id=&quot;section-scanner&quot; class=&quot;section-panel hidden p-6 overflow-y-auto max-w-5xl mx-auto w-full space-y-6&quot;&gt;
+      &lt;div class=&quot;bg-panelBg border border-borderGreen rounded-xl p-6 space-y-4&quot;&gt;
+        &lt;h2 class=&quot;text-brandGreen font-bold text-lg&quot;&gt;🛡️ Limpeza Replit &amp; Injeção de Essenciais&lt;/h2&gt;
+        &lt;p class=&quot;text-xs text-textGreen&quot;&gt;Detecta sujeiras, limpa strings quebradas e &lt;strong&gt;recria arquivos essenciais&lt;/strong&gt; (vite.config.js) para garantir que o projeto funcione fora do Replit.&lt;/p&gt;
+
+        &lt;div class=&quot;bg-darkBg p-4 rounded-lg border border-borderGreen&quot;&gt;
+          &lt;h3 class=&quot;text-xs font-bold text-white mb-2&quot;&gt;Estatísticas do Projeto Atual:&lt;/h3&gt;
+          &lt;ul class=&quot;text-xs space-y-1 text-gray-400&quot;&gt;
+            &lt;li&gt;Total de Arquivos: &lt;strong id=&quot;scanTotalFiles&quot; class=&quot;text-brandGreen&quot;&gt;0&lt;/strong&gt;&lt;/li&gt;
+            &lt;li&gt;Arquivos Infectados (Replit): &lt;strong id=&quot;scanInfectedFiles&quot; class=&quot;text-red-400&quot;&gt;0&lt;/strong&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+
+        &lt;button onclick=&quot;executeCleanAndInject()&quot; class=&quot;w-full bg-brandGreen text-darkBg py-3 rounded-lg text-sm font-bold hover:bg-focusGreen transition-all flex justify-center items-center gap-2&quot;&gt;
+          &lt;span&gt;🧹 Limpar, Injetar Essenciais e Baixar Projeto&lt;/span&gt;
+        &lt;/button&gt;
+
+        &lt;div id=&quot;cleanLogs&quot; class=&quot;hidden bg-black border border-borderGreen p-3 rounded-lg text-[10px] font-mono text-gray-400 h-40 overflow-y-auto space-y-1&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+  &lt;/main&gt;
+
+  &lt;div id=&quot;globalLoader&quot; class=&quot;hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center space-y-4&quot;&gt;
+    &lt;div class=&quot;w-12 h-12 border-4 border-brandGreen border-t-transparent rounded-full spinner&quot;&gt;&lt;/div&gt;
+    &lt;p id=&quot;loaderMsg&quot; class=&quot;text-brandGreen font-mono text-xs&quot;&gt;Processando...&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    // ================= ESTADO GLOBAL =================
+    let currentFiles = [];
+    let fileContents = {};
+    let activeFile = null;
+    let apkInfoData = null;
+    let originalFileName = &quot;projeto&quot;;
+
+    // Padrões exatos do seu código React
+    const REPLIT_PATTERNS = [
+      /replit\.dev/gi, /repl\.co/gi, /repl\.it/gi,
+      /REPL_ID/g, /REPLIT_DEV_DOMAIN/g, /REPLIT_DOMAINS/g,
+      /replit\.com/gi, /cartographer/gi, /vite-plugin-dev-banner/gi,
+      /vite-plugin-runtime-error-modal/gi, /replitDomain/gi,
+      /__replit/gi,
+    ];
+
+    const SKIP_EXT = new Set([&quot;png&quot;,&quot;jpg&quot;,&quot;jpeg&quot;,&quot;gif&quot;,&quot;webp&quot;,&quot;ico&quot;,&quot;woff&quot;,&quot;woff2&quot;,&quot;ttf&quot;,&quot;eot&quot;,&quot;otf&quot;,&quot;mp3&quot;,&quot;mp4&quot;,&quot;webm&quot;,&quot;ogg&quot;,&quot;bin&quot;,&quot;class&quot;,&quot;dex&quot;]);
+
+    // ================= UTILITÁRIOS =================
+    function showSection(id) {
+      document.querySelectorAll('.section-panel').forEach(p =&gt; p.classList.add('hidden'));
+      document.getElementById(`section-${id}`).classList.remove('hidden');
+      if(id === 'scanner') updateScannerStats();
+    }
+
+    function showLoader(msg) {
+      document.getElementById('loaderMsg').innerText = msg;
+      document.getElementById('globalLoader').classList.remove('hidden');
+    }
+    function hideLoader() {
+      document.getElementById('globalLoader').classList.add('hidden');
+    }
+
+    function logAction(msg, type=&quot;info&quot;) {
+      const logs = document.getElementById('cleanLogs');
+      logs.classList.remove('hidden');
+      const color = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-brandGreen' : 'text-gray-400';
+      logs.innerHTML += `&lt;div class=&quot;${color}&quot;&gt;&gt; ${msg}&lt;/div&gt;`;
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    // ================= PARSER AXML (Idêntico ao seu) =================
+    function parseAxml(buf) {
+      const data = new Uint8Array(buf);
+      const dv = new DataView(buf);
+      const strings = [];
+      try {
+        const off = 8;
+        const strCount  = dv.getUint32(off + 8, true);
+        const flags     = dv.getUint32(off + 16, true);
+        const strStart  = dv.getUint32(off + 20, true);
+        const poolHSize = dv.getUint16(off + 2, true);
+        const isUtf8    = !!(flags &amp; (1 &lt;&lt; 8));
+        const offsetsBase = off + poolHSize;
+        const stringsBase = off + strStart;
+        for (let i = 0; i &lt; Math.min(strCount, 500); i++) {
+          const idxOff = offsetsBase + i * 4;
+          if (idxOff + 4 &gt; data.byteLength) break;
+          const sOff = stringsBase + dv.getUint32(idxOff, true);
+          if (sOff &gt;= data.byteLength) continue;
+          let s = &quot;&quot;;
+          if (isUtf8) {
+            const clen = data[sOff + 1];
+            if (sOff + 2 + clen &gt; data.byteLength) continue;
+            for (let j = 0; j &lt; clen; j++) { const c = data[sOff + 2 + j]; if (c &gt;= 0x20) s += String.fromCharCode(c); }
+          } else {
+            const clen = dv.getUint16(sOff, true);
+            if (sOff + 2 + clen * 2 &gt; data.byteLength) continue;
+            for (let j = 0; j &lt; clen; j++) { const c = dv.getUint16(sOff + 2 + j * 2, true); if (c &gt;= 0x20) s += String.fromCharCode(c); }
+          }
+          if (s.length &gt;= 2) strings.push(s);
+        }
+      } catch(e) {}
+      return strings;
+    }
+
+    function extractApkInfo(strings, fileName) {
+      const pkg = strings.find(s =&gt; /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,6}$/.test(s) &amp;&amp; !s.startsWith(&quot;android&quot;) &amp;&amp; !s.startsWith(&quot;androidx&quot;) &amp;&amp; !s.startsWith(&quot;com.google&quot;)) ?? &quot;Desconhecido&quot;;
+      const verName = strings.find(s =&gt; /^\d+(\.\d+){0,3}$/.test(s)) ?? &quot;1.0&quot;;
+      return { fileName, packageName: pkg, versionName: verName };
+    }
+
+    // ================= IMPORTAÇÃO =================
+    document.getElementById('zipInput').addEventListener('change', async (e) =&gt; {
+      const file = e.target.files[0];
+      if (!file) return;
+      originalFileName = file.name;
+      document.getElementById('zipName').innerText = file.name;
+      showLoader(&quot;Lendo arquivo na memória...&quot;);
+
+      try {
+        const buffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(buffer);
+        
+        if (file.name.endsWith('.apk')) {
+          const manifest = zip.files[&quot;AndroidManifest.xml&quot;];
+          if (manifest) {
+            const mBuf = await manifest.async(&quot;arraybuffer&quot;);
+            const strings = parseAxml(mBuf);
+            apkInfoData = extractApkInfo(strings, file.name);
+            renderApkInfo();
+          }
+        }
+
+        currentFiles = [];
+        fileContents = {};
+
+        // SEM LIMITE DE 60 ARQUIVOS AQUI! Lê todos.
+        const promises = [];
+        zip.forEach((path, entry) =&gt; {
+          if (!entry.dir) {
+            currentFiles.push(path);
+            const ext = path.split('.').pop().toLowerCase();
+            if (!SKIP_EXT.has(ext)) {
+              promises.push(
+                entry.async('string').then(txt =&gt; fileContents[path] = txt).catch(() =&gt; fileContents[path] = &quot;[Erro]&quot;)
+              );
+            } else {
+              promises.push(
+                entry.async('uint8array').then(bin =&gt; fileContents[path] = bin)
+              );
+            }
+          }
+        });
+
+        await Promise.all(promises);
+        currentFiles.sort();
+        renderFileList();
+        showSection('editor');
+      } catch(e) {
+        alert(&quot;Erro: &quot; + e.message);
+      } finally {
+        hideLoader();
+      }
+    });
+
+    function renderApkInfo() {
+      if (!apkInfoData) return;
+      document.getElementById('apkDataContainer').innerHTML = `
+        &lt;div class=&quot;bg-darkBg p-4 rounded-lg border border-borderGreen&quot;&gt;
+          &lt;h3 class=&quot;text-brandGreen font-bold&quot;&gt;${apkInfoData.fileName}&lt;/h3&gt;
+          &lt;p class=&quot;text-xs text-gray-400 mt-2&quot;&gt;Package ID: &lt;strong class=&quot;text-accentGold&quot;&gt;${apkInfoData.packageName}&lt;/strong&gt;&lt;/p&gt;
+          &lt;p class=&quot;text-xs text-gray-400&quot;&gt;Versão: &lt;strong class=&quot;text-white&quot;&gt;${apkInfoData.versionName}&lt;/strong&gt;&lt;/p&gt;
+        &lt;/div&gt;`;
+    }
+
+    // ================= EDITOR =================
+    function hasReplitRef(text) {
+      if (typeof text !== 'string') return false;
+      return REPLIT_PATTERNS.some(p =&gt; { p.lastIndex = 0; return p.test(text); });
+    }
+
+    function renderFileList() {
+      document.getElementById('filesCount').innerText = currentFiles.length;
+      const container = document.getElementById('fileList');
+      container.innerHTML = currentFiles.map(file =&gt; {
+        const isSujo = hasReplitRef(fileContents[file]);
+        const badge = isSujo ? '&lt;span class=&quot;text-[9px] bg-red-950 text-red-400 px-1 rounded&quot;&gt;Replit&lt;/span&gt;' : '';
+        return `&lt;div class=&quot;p-1.5 hover:bg-borderGreen rounded cursor-pointer flex justify-between items-center truncate border-b border-borderGreen/10&quot; onclick=&quot;openFile('${file}')&quot;&gt;
+          &lt;span class=&quot;truncate&quot;&gt;📄 ${file}&lt;/span&gt;${badge}
+        &lt;/div&gt;`;
+      }).join('');
+    }
+
+    function openFile(filename) {
+      activeFile = filename;
+      document.getElementById('currentFileName').innerText = `📝 ${filename}`;
+      const content = fileContents[filename];
+      document.getElementById('fileContent').value = typeof content === 'string' ? content : &quot;[Arquivo Binário]&quot;;
+    }
+
+    function saveCurrentFileChanges() {
+      if (!activeFile) return;
+      fileContents[activeFile] = document.getElementById('fileContent').value;
+      alert(&quot;Salvo na memória!&quot;);
+      renderFileList();
+    }
+
+    // ================= LIMPEZA E INJEÇÃO (A MÁGICA) =================
+    function updateScannerStats() {
+      document.getElementById('scanTotalFiles').innerText = currentFiles.length;
+      let infected = 0;
+      currentFiles.forEach(f =&gt; { if(hasReplitRef(fileContents[f])) infected++; });
+      document.getElementById('scanInfectedFiles').innerText = infected;
+    }
+
+    // Lógica de limpeza de strings (igual a sua do React)
+    function cleanReplitStrings(text) {
+      let out = text;
+      out = out.replace(/https?:\/\/[a-z0-9-]+\.replit\.dev[^\s&quot;'`)]*/gi, &quot;&quot;);
+      out = out.replace(/https?:\/\/[a-z0-9-]+\.repl\.co[^\s&quot;'`)]*/gi, &quot;&quot;);
+      out = out.replace(/[&quot;']REPLIT_DEV_DOMAIN[&quot;']\s*:\s*[&quot;'][^&quot;']*[&quot;']/gi, '&quot;REPLIT_DEV_DOMAIN&quot;:&quot;&quot;');
+      out = out.replace(/[&quot;']REPL_ID[&quot;']\s*:\s*[&quot;'][^&quot;']*[&quot;']/gi, '&quot;REPL_ID&quot;:&quot;&quot;');
+      out = out.replace(/process\.env\.REPL_ID/g, '&quot;&quot;');
+      out = out.replace(/process\.env\.REPLIT_DEV_DOMAIN/g, '&quot;&quot;');
+      out = out.replace(/import\.meta\.env\.REPLIT[A-Z_]*/g, '&quot;&quot;');
+      return out;
+    }
+
+    // Lógica nova: Injetar arquivos essenciais se for código fonte
+    function injectEssentialFiles() {
+      // Se tiver package.json, é um projeto Node/Vite (ZIP)
+      const isSourceCode = currentFiles.some(f =&gt; f.includes('package.json'));
+      
+      if (isSourceCode) {
+        logAction(&quot;Detectado código-fonte (ZIP). Injetando arquivos essenciais...&quot;, &quot;info&quot;);
+        
+        // 1. Forçar um vite.config.js limpo
+        const cleanViteConfig = `import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig({\n  plugins: [react()],\n  server: { host: '0.0.0.0', port: 3000 }\n});`;
+        
+        // Procura onde está o vite config (pode estar na raiz ou numa pasta)
+        let vitePath = currentFiles.find(f =&gt; f.endsWith('vite.config.js') || f.endsWith('vite.config.ts'));
+        if (!vitePath) {
+          vitePath = &quot;vite.config.js&quot;;
+          currentFiles.push(vitePath);
+        }
+        fileContents[vitePath] = cleanViteConfig;
+        logAction(`Substituído/Criado: ${vitePath}`, &quot;success&quot;);
+
+        // 2. Limpar index.html de scripts injetados
+        let htmlPath = currentFiles.find(f =&gt; f.endsWith('index.html'));
+        if (htmlPath &amp;&amp; typeof fileContents[htmlPath] === 'string') {
+          let html = fileContents[htmlPath];
+          // Remove scripts do replit
+          html = html.replace(/&lt;script[^&gt;]*src=[&quot;'][^&quot;']*replit[^&quot;']*[&quot;'][^&gt;]*&gt;&lt;\/script&gt;/gi, &quot;&quot;);
+          fileContents[htmlPath] = html;
+          logAction(`Limpado: ${htmlPath}`, &quot;success&quot;);
+        }
+      } else {
+        logAction(&quot;Detectado APK compilado. Apenas limpando strings, sem injetar arquivos.&quot;, &quot;info&quot;);
+      }
+    }
+
+    async function executeCleanAndInject() {
+      if (currentFiles.length === 0) return alert(&quot;Importe um projeto primeiro!&quot;);
+      showLoader(&quot;Limpando e Injetando...&quot;);
+      document.getElementById('cleanLogs').innerHTML = &quot;&quot;;
+      
+      let cleanedCount = 0;
+
+      // 1. Limpar strings
+      currentFiles.forEach(f =&gt; {
+        if (typeof fileContents[f] === 'string' &amp;&amp; hasReplitRef(fileContents[f])) {
+          fileContents[f] = cleanReplitStrings(fileContents[f]);
+          cleanedCount++;
+          logAction(`Strings limpas em: ${f}`);
+        }
+      });
+
+      // 2. Injetar Essenciais (A resposta para a sua dúvida)
+      injectEssentialFiles();
+
+      logAction(`Total de arquivos modificados: ${cleanedCount}`, &quot;success&quot;);
+      logAction(&quot;Gerando novo arquivo para download...&quot;, &quot;info&quot;);
+
+      // 3. Gerar ZIP/APK
+      const zip = new JSZip();
+      currentFiles.forEach(f =&gt; {
+        zip.file(f, fileContents[f]);
+      });
+
+      const blob = await zip.generateAsync({ type: &quot;blob&quot;, compression: &quot;DEFLATE&quot;, compressionOptions: { level: 6 } });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement(&quot;a&quot;);
+      a.href = url; 
+      
+      const isApk = originalFileName.endsWith('.apk');
+      a.download = originalFileName.replace(isApk ? &quot;.apk&quot; : &quot;.zip&quot;, isApk ? &quot;-limpo.apk&quot; : &quot;-limpo.zip&quot;);
+      
+      document.body.appendChild(a); 
+      a.click();
+      document.body.removeChild(a);
+      
+      hideLoader();
+      renderFileList(); // Atualiza a lista tirando as tags vermelhas
+      logAction(&quot;Download concluído com sucesso!&quot;, &quot;success&quot;);
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+
+<script>
+function trocarProjeto(index) {
+  // Esconde todos
+  document.querySelectorAll('.project-container').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  // Mostra o selecionado
+  document.getElementById('projeto' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+  
+  // Salva preferência
+  localStorage.setItem('ultimo-projeto', index);
+}
+
+// Restaura último projeto aberto
+window.onload = function() {
+  const ultimo = localStorage.getItem('ultimo-projeto');
+  if (ultimo !== null) trocarProjeto(parseInt(ultimo));
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Code Formatter — Organize seu Código</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ INPUT PANEL ═══ */
+    .input-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      border-right: 1px solid #333;
+    }
+
+    .panel-header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 10px;
+    }
+
+    .panel-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px 12px;
+      background: #0066cc;
+      border: 1px solid #0088ff;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #0077dd;
+    }
+
+    .btn.secondary {
+      background: #333;
+      border-color: #555;
+      color: #e0e0e0;
+    }
+
+    .btn.secondary:hover {
+      background: #444;
+    }
+
+    .textarea {
+      flex: 1;
+      padding: 12px;
+      background: #1a1a1a;
+      border: none;
+      color: #e0e0e0;
+      font-family: inherit;
+      font-size: 12px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    .textarea::placeholder {
+      color: #666;
+    }
+
+    /* ═══ OUTPUT PANEL ═══ */
+    .output-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+    }
+
+    .output-content {
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+      background: #1a1a1a;
+    }
+
+    .code-output {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #88ff88;
+    }
+
+    .line-number {
+      display: inline-block;
+      width: 30px;
+      text-align: right;
+      color: #666;
+      margin-right: 12px;
+      user-select: none;
+    }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      text-align: center;
+    }
+
+    /* ═══ OPTIONS ═══ */
+    .options-panel {
+      width: 280px;
+      background: #222;
+      border-left: 1px solid #333;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .option-group {
+      background: #333;
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .option-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .option-item:last-child {
+      margin-bottom: 0;
+    }
+
+    input[type="checkbox"] {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+    }
+
+    input[type="number"] {
+      width: 60px;
+      padding: 6px;
+      background: #1a1a1a;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+
+    .stats {
+      background: #333;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 11px;
+      color: #999;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .stat-item:last-child {
+      margin-bottom: 0;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .keyword { color: #ff6b9d; }
+    .function { color: #88ff88; }
+    .string { color: #ffff88; }
+    .number { color: #88ccff; }
+    .comment { color: #888888; }
+    .bracket { color: #ff88ff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- INPUT -->
+    <div class="input-panel">
+      <div class="panel-header">
+        <div class="panel-title">📝 Código Bagunçado</div>
+        <div class="panel-buttons">
+          <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Importar</button>
+          <button class="btn secondary" onclick="pasteCode()">📋 Colar</button>
+          <button class="btn secondary" onclick="clearInput()">🗑️ Limpar</button>
+        </div>
+      </div>
+      <textarea id="inputCode" class="textarea" placeholder="Cole seu código bagunçado aqui..."></textarea>
+      <input type="file" id="fileInput" accept=".js,.html,.css,.json,.txt" onchange="handleFileImport(event)" style="display: none;">
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-panel">
+      <div class="panel-header">
+        <div class="panel-title">✨ Código Formatado</div>
+        <div class="panel-buttons">
+          <button class="btn" onclick="formatCode()">🚀 Formatar</button>
+          <button class="btn secondary" onclick="copyOutput()">📋 Copiar</button>
+          <button class="btn secondary" onclick="downloadFormatted()">💾 Baixar</button>
+        </div>
+      </div>
+      <div class="output-content">
+        <div id="outputCode" class="empty-state">
+          Cole código e clique em "Formatar"
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTIONS -->
+    <div class="options-panel">
+      <div class="option-group">
+        <div class="option-title">⚙️ Opções</div>
+        <div class="option-item">
+          <input type="checkbox" id="minify" onchange="updateOptions()">
+          <label for="minify">Minificar</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="removeComments" onchange="updateOptions()">
+          <label for="removeComments">Remover comentários</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="sortProperties" onchange="updateOptions()">
+          <label for="sortProperties">Ordenar propriedades</label>
+        </div>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">🔧 Indentação</div>
+        <div class="option-item">
+          <label for="indentSize" style="flex: 1;">Espaços:</label>
+          <input type="number" id="indentSize" value="2" min="1" max="8" onchange="updateOptions()">
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="useTabs" onchange="updateOptions()">
+          <label for="useTabs">Usar tabs</label>
+        </div>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">📊 Estatísticas</div>
+        <div class="stats">
+          <div class="stat-item">
+            <span>Linhas:</span>
+            <span id="statLines">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Caracteres:</span>
+            <span id="statChars">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Funções:</span>
+            <span id="statFunctions">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Variáveis:</span>
+            <span id="statVariables">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // FORMATTER
+    // ═══════════════════════════════════════════════════════════════
+
+    function formatCode() {
+      const input = document.getElementById('inputCode').value;
+      if (!input.trim()) {
+        alert('Cole algum código!');
+        return;
+      }
+
+      const options = {
+        indentSize: parseInt(document.getElementById('indentSize').value),
+        useTabs: document.getElementById('useTabs').checked,
+        minify: document.getElementById('minify').checked,
+        removeComments: document.getElementById('removeComments').checked,
+        sortProperties: document.getElementById('sortProperties').checked
+      };
+
+      let formatted = input;
+
+      // Detectar tipo de código
+      const isHTML = formatted.includes('<') && formatted.includes('>');
+      const isJSON = formatted.trim().startsWith('{') || formatted.trim().startsWith('[');
+      const isCSS = formatted.includes('{') && formatted.includes('}') && !isHTML;
+      const isJS = !isHTML && !isJSON && !isCSS;
+
+      if (isHTML) {
+        formatted = formatHTML(formatted, options);
+      } else if (isJSON) {
+        formatted = formatJSON(formatted, options);
+      } else if (isCSS) {
+        formatted = formatCSS(formatted, options);
+      } else {
+        formatted = formatJavaScript(formatted, options);
+      }
+
+      displayOutput(formatted);
+      updateStats(formatted);
+    }
+
+    function formatHTML(code, options) {
+      let formatted = code;
+
+      // Remover comentários
+      if (options.removeComments) {
+        formatted = formatted.replace(/<!--[\s\S]*?-->/g, '');
+      }
+
+      // Adicionar quebras de linha após tags
+      formatted = formatted.replace(/></g, '>\n<');
+      formatted = formatted.replace(/>\s+</g, '>\n<');
+
+      // Indentar
+      formatted = indentCode(formatted, options);
+
+      return formatted;
+    }
+
+    function formatJSON(code, options) {
+      try {
+        const parsed = JSON.parse(code);
+        let formatted = JSON.stringify(parsed, null, options.useTabs ? '\t' : ' '.repeat(options.indentSize));
+        return formatted;
+      } catch (e) {
+        return 'Erro ao formatar JSON: ' + e.message;
+      }
+    }
+
+    function formatCSS(code, options) {
+      let formatted = code;
+
+      // Remover comentários
+      if (options.removeComments) {
+        formatted = formatted.replace(/\/\*[\s\S]*?\*\//g, '');
+      }
+
+      // Adicionar quebras de linha
+      formatted = formatted.replace(/\{/g, ' {\n');
+      formatted = formatted.replace(/;/g, ';\n');
+      formatted = formatted.replace(/\}/g, '\n}\n');
+
+      // Remover linhas vazias
+      formatted = formatted.split('\n').filter(line => line.trim()).join('\n');
+
+      // Indentar
+      formatted = indentCode(formatted, options);
+
+      // Ordenar propriedades
+      if (options.sortProperties) {
+        formatted = sortCSSProperties(formatted);
+      }
+
+      return formatted;
+    }
+
+    function formatJavaScript(code, options) {
+      let formatted = code;
+
+      // Remover comentários
+      if (options.removeComments) {
+        formatted = formatted.replace(/\/\/.*$/gm, '');
+        formatted = formatted.replace(/\/\*[\s\S]*?\*\//g, '');
+      }
+
+      // Adicionar quebras de linha após chaves
+      formatted = formatted.replace(/\{/g, ' {\n');
+      formatted = formatted.replace(/\}/g, '\n}\n');
+      formatted = formatted.replace(/;/g, ';\n');
+      formatted = formatted.replace(/,/g, ',\n');
+
+      // Remover linhas vazias múltiplas
+      formatted = formatted.replace(/\n\n+/g, '\n');
+
+      // Indentar
+      formatted = indentCode(formatted, options);
+
+      return formatted;
+    }
+
+    function indentCode(code, options) {
+      const indent = options.useTabs ? '\t' : ' '.repeat(options.indentSize);
+      const lines = code.split('\n');
+      let indentLevel = 0;
+      let formatted = [];
+
+      lines.forEach(line => {
+        const trimmed = line.trim();
+
+        if (!trimmed) return;
+
+        // Diminuir indentação para linhas com }
+        if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith(')')) {
+          indentLevel = Math.max(0, indentLevel - 1);
+        }
+
+        // Adicionar indentação
+        formatted.push(indent.repeat(indentLevel) + trimmed);
+
+        // Aumentar indentação para linhas com {
+        if (trimmed.endsWith('{') || trimmed.endsWith('[') || trimmed.endsWith('(')) {
+          indentLevel++;
+        }
+      });
+
+      return formatted.join('\n');
+    }
+
+    function sortCSSProperties(code) {
+      const rules = code.split('}');
+      let sorted = [];
+
+      rules.forEach(rule => {
+        if (!rule.trim()) return;
+
+        const parts = rule.split('{');
+        if (parts.length !== 2) return;
+
+        const selector = parts[0].trim();
+        const properties = parts[1].trim().split(';').filter(p => p.trim());
+
+        properties.sort();
+
+        sorted.push(selector + ' {\n  ' + properties.join(';\n  ') + ';\n}');
+      });
+
+      return sorted.join('\n\n');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // DISPLAY & STATS
+    // ═══════════════════════════════════════════════════════════════
+
+    function displayOutput(code) {
+      const outputDiv = document.getElementById('outputCode');
+      const lines = code.split('\n');
+
+      let html = '<div class="code-output">';
+      lines.forEach((line, i) => {
+        html += `<span class="line-number">${i + 1}</span>${escapeHtml(line)}\n`;
+      });
+      html += '</div>';
+
+      outputDiv.innerHTML = html;
+    }
+
+    function updateStats(code) {
+      const lines = code.split('\n').length;
+      const chars = code.length;
+      const functions = (code.match(/function|const|let|var/g) || []).length;
+      const variables = (code.match(/const|let|var/g) || []).length;
+
+      document.getElementById('statLines').textContent = lines;
+      document.getElementById('statChars').textContent = chars;
+      document.getElementById('statFunctions').textContent = functions;
+      document.getElementById('statVariables').textContent = variables;
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function updateOptions() {
+      // Atualizar quando opções mudam
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FILE HANDLING
+    // ═══════════════════════════════════════════════════════════════
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('inputCode').value = e.target.result;
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function pasteCode() {
+      const text = prompt('Cole seu código:');
+      if (text) {
+        document.getElementById('inputCode').value = text;
+      }
+    }
+
+    function clearInput() {
+      if (confirm('Limpar tudo?')) {
+        document.getElementById('inputCode').value = '';
+        document.getElementById('outputCode').innerHTML = '<div class="empty-state">Cole código e clique em "Formatar"</div>';
+      }
+    }
+
+    function copyOutput() {
+      const outputDiv = document.getElementById('outputCode');
+      const text = outputDiv.textContent.replace(/\d+\s+/g, '').trim();
+
+      if (!text) {
+        alert('Nada para copiar!');
+        return;
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✓ Copiado!');
+      });
+    }
+
+    function downloadFormatted() {
+      const outputDiv = document.getElementById('outputCode');
+      const text = outputDiv.textContent.replace(/\d+\s+/g, '').trim();
+
+      if (!text) {
+        alert('Nada para baixar!');
+        return;
+      }
+
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `formatted-${Date.now()}.txt`;
+      a.click();
+    }
+  </script>
+</body>
+</html>

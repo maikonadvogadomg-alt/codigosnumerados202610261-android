@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Conversor TJMG (Fator) → competencia/correcao_pct</title>
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --txt:#e5e7eb; --muted:#9ca3af; --accent:#f59e0b;
+      --good:#10b981; --bad:#ef4444; --info:#3b82f6; --card:#0b1220; --border:#243244;
+      --paper:#ffffff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#e5e7eb;color:#111827}
+    header{background:var(--bg);color:var(--txt);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    header h1{font-size:14px;letter-spacing:.4px;text-transform:uppercase}
+    header .sub{font-size:12px;color:var(--muted)}
+    .wrap{display:grid;grid-template-columns:460px 1fr;gap:12px;height:calc(100vh - 58px);padding:12px}
+    .left{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:auto;padding:12px;color:var(--txt)}
+    .right{background:var(--paper);border:1px solid #d1d5db;border-radius:12px;overflow:auto;padding:12px}
+    h2{font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.35px;margin:14px 0 8px}
+    .box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:10px}
+    label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
+    input,select,textarea{
+      width:100%;border-radius:10px;border:1px solid var(--border);
+      background:rgba(0,0,0,.25);color:var(--txt);padding:10px;font-size:13px;outline:none;
+    }
+    textarea{min-height:160px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    button{
+      border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer;
+      text-transform:uppercase;font-size:11px;letter-spacing:.35px
+    }
+    .b1{background:var(--accent);color:#111827}
+    .b2{background:var(--bad);color:#fff}
+    .b3{background:var(--good);color:#052e16}
+    .b4{background:var(--info);color:#fff}
+    .b5{background:#fff;color:#111827;border:1px solid #d1d5db}
+    .hint{font-size:12px;line-height:1.35;color:var(--txt);background:rgba(59,130,246,.12);border-left:3px solid var(--info);padding:10px;border-radius:10px}
+    .status{white-space:pre-wrap;font-size:12px;line-height:1.35;background:rgba(0,0,0,.22);border:1px solid var(--border);padding:10px;border-radius:10px;color:var(--txt)}
+    .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:#eef2ff;border:1px solid #c7d2fe;color:#1e3a8a}
+    table{border-collapse:collapse;width:100%;font-size:12px;margin-top:10px}
+    th,td{border-bottom:1px solid #e5e7eb;padding:8px 10px;text-align:left;vertical-align:top}
+    th{background:#f3f4f6;position:sticky;top:0;z-index:1}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    details{margin-top:10px}
+    summary{cursor:pointer;font-weight:800;color:var(--txt);font-size:12px}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999}
+    .ovbox{background:#fff;border-radius:12px;padding:18px;min-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+    .spin{width:18px;height:18px;border:3px solid #cbd5e1;border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:middle;margin-right:8px}
+    @keyframes sp{to{transform:rotate(360deg)}}
+    .ok{color:#065f46}
+    .warn{color:#92400e}
+  </style>
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- SheetJS (XLSX/XLSM) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Conversor TJMG (fator em colunas) → competencia/correcao_pct</h1>
+    <div class="sub">Importa PDF/XLSX/XLSM ou cola texto. Converte para CSV pronto pra colar no seu comparador.</div>
+  </div>
+  <div class="sub mono" id="clock"></div>
+</header>
+
+<div class="overlay" id="ov">
+  <div class="ovbox">
+    <div><span class="spin"></span><b id="ovMsg">Processando…</b></div>
+    <div style="margin-top:6px;color:#64748b" id="ovSub">Aguarde.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="left">
+    <div class="hint">
+      Você disse que o TJMG vem como <b>Ano (4 dígitos) + meses em colunas + fator (não %)</b>.
+      Este arquivo tenta reconhecer isso automaticamente e gerar: <span class="mono">competencia,correcao_pct</span>.
+    </div>
+
+    <h2>1) Importar arquivo (PDF / Excel)</h2>
+    <div class="box">
+      <label>Arquivo</label>
+      <input id="file" type="file" accept=".pdf,.xlsx,.xlsm,.xls,.csv,.txt"/>
+      <div class="row" style="margin-top:10px">
+        <button class="b4" id="btnLoadFile">Ler arquivo</button>
+        <button class="b2" id="btnClearAll">Limpar tudo</button>
+      </div>
+      <details>
+        <summary>Se PDF der ruim (normal em tabela), o que fazer?</summary>
+        <div class="hint" style="margin-top:10px">
+          Abra o PDF, selecione a tabela, copie e cole em “2) Colar texto”.
+          Mesmo que venha bagunçado, o modo “Auto” tenta achar anos e 12 números por linha.
+        </div>
+      </details>
+    </div>
+
+    <h2>2) Colar texto (do PDF/Excel copiado)</h2>
+    <div class="box">
+      <label>Texto bruto</label>
+      <textarea id="raw" placeholder="Cole aqui o texto que você copia do PDF/Excel (pode vir bagunçado)."></textarea>
+
+      <label>Modo de interpretação</label>
+      <select id="mode">
+        <option value="auto" selected>Auto (recomendado)</option>
+        <option value="y12">Forçar: Ano + 12 meses (colunas)</option>
+        <option value="ymf">Forçar: Ano/Mês/Fator (3 colunas)</option>
+      </select>
+
+      <div class="row" style="margin-top:10px">
+        <button class="b1" id="btnConvert">Converter</button>
+        <button class="b5" id="btnTryFix">Tentar “limpar” texto</button>
+      </div>
+    </div>
+
+    <h2>3) Saída</h2>
+    <div class="box">
+      <label>CSV final (pronto pra colar)</label>
+      <textarea id="out" readonly placeholder="Aqui sai: competencia,correcao_pct"></textarea>
+
+      <div class="row3" style="margin-top:10px">
+        <button class="b3" id="btnCopy">Copiar</button>
+        <button class="b4" id="btnDownload">Baixar CSV</button>
+        <button class="b5" id="btnDownloadDebug">Baixar “debug”</button>
+      </div>
+    </div>
+
+    <h2>Status</h2>
+    <div class="status" id="status">Pronto.</div>
+  </div>
+
+  <div class="right">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="pill">Prévia</div>
+        <div style="color:#6b7280;font-size:12px;margin-top:6px" id="previewInfo">Sem dados.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="b5" id="btnExampleY12">Colar exemplo (Ano + 12 meses)</button>
+        <button class="b5" id="btnExampleYMF">Colar exemplo (Ano/Mês/Fator)</button>
+      </div>
+    </div>
+
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>competência</th>
+          <th>fator</th>
+          <th>correção % (mês)</th>
+          <th>observação</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="4" style="color:#6b7280">Sem dados.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+/* ===== relógio ===== */
+function tick(){
+  document.getElementById("clock").textContent = new Date().toLocaleString("pt-BR");
+}
+setInterval(tick,1000); tick();
+
+/* ===== overlay/status ===== */
+function ov(on,msg,sub){
+  const o=document.getElementById("ov");
+  o.style.display=on?"flex":"none";
+  if(msg)document.getElementById("ovMsg").textContent=msg;
+  if(sub)document.getElementById("ovSub").textContent=sub;
+}
+function setStatus(s){ document.getElementById("status").textContent = s; }
+
+/* ===== util num ===== */
+function normNumToken(t){
+  // mantém dígitos, vírgula, ponto e sinal
+  return String(t ?? "").trim().replace(/[^\d,.\-]/g,"");
+}
+function toNumberBR(x){
+  if(x==null) return NaN;
+  if(typeof x==="number") return x;
+  let s = String(x).trim();
+  if(!s) return NaN;
+  s = normNumToken(s);
+
+  // Heurística BR:
+  // - se tiver vírgula, assume vírgula decimal e remove pontos de milhar.
+  // - senão, assume ponto decimal.
+  if(s.includes(",")){
+    s = s.replace(/\./g,"").replace(",",".");
+  }
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+function pad2(n){ return String(n).padStart(2,"0"); }
+
+/* ===== meses ===== */
+const MES_MAP = {
+  "janeiro":1,"jan":1,
+  "fevereiro":2,"fev":2,
+  "março":3,"marco":3,"mar":3,
+  "abril":4,"abr":4,
+  "maio":5,"mai":5,
+  "junho":6,"jun":6,
+  "julho":7,"jul":7,
+  "agosto":8,"ago":8,
+  "setembro":9,"set":9,
+  "outubro":10,"out":10,
+  "novembro":11,"nov":11,
+  "dezembro":12,"dez":12
+};
+const MESES_ORD = [
+  ["janeiro","jan"],["fevereiro","fev"],["março","mar"],["abril","abr"],["maio","mai"],["junho","jun"],
+  ["julho","jul"],["agosto","ago"],["setembro","set"],["outubro","out"],["novembro","nov"],["dezembro","dez"]
+];
+
+/* ===== Parser 1: Ano + 12 fatores em linha ===== */
+function parseYear12FromText(raw){
+  // tenta achar padrões: 1965 0,0027937 0,0023560 ... (12 valores)
+  // retorna array {competencia, fator, src, note}
+  const txt = raw
+    .replace(/\u00A0/g," ")
+    .replace(/[|;]/g," ")
+    .replace(/\r/g,"\n");
+
+  const lines = txt.split("\n").map(l=>l.trim()).filter(Boolean);
+  const out = [];
+
+  for(const line of lines){
+    // tokens separados por espaços
+    const tokens = line.split(/\s+/).filter(Boolean);
+    if(tokens.length < 13) continue;
+
+    // procura um token de ano (4 dígitos)
+    for(let i=0;i<tokens.length;i++){
+      const yearTok = tokens[i];
+      if(!/^(19|20)\d{2}$/.test(yearTok)) continue;
+
+      // pega próximos tokens numéricos (até 12)
+      const year = Number(yearTok);
+      const nums = [];
+      let j=i+1;
+      while(j<tokens.length && nums.length<12){
+        const n = toNumberBR(tokens[j]);
+        if(Number.isFinite(n)) nums.push(n);
+        j++;
+      }
+      if(nums.length===12){
+        for(let m=1;m<=12;m++){
+          out.push({
+            competencia: `${year}-${pad2(m)}`,
+            fator: nums[m-1],
+            src: "y12",
+            note: ""
+          });
+        }
+        break;
+      }
+    }
+  }
+
+  return out;
+}
+
+/* ===== Parser 2: Ano/Mês/Fator (3 colunas) ===== */
+function parseYearMonthFactorFromText(raw){
+  // aceita CSV ou texto com separadores: vírgula, tab, múltiplos espaços
+  const txt = raw.replace(/\u00A0/g," ").replace(/\r/g,"\n");
+  const lines = txt.split("\n").map(l=>l.trim()).filter(Boolean);
+  const out = [];
+
+  for(const line of lines){
+    // tenta separar por vírgula primeiro, senão por TAB, senão por múltiplos espaços
+    let parts = line.split(",");
+    if(parts.length < 3) parts = line.split("\t");
+    if(parts.length < 3) parts = line.split(/\s{2,}|\s+\|\s+/); // colunas meio “tabela”
+    if(parts.length < 3) parts = line.split(/\s+/);
+
+    if(parts.length < 3) continue;
+
+    const y = String(parts[0]).trim();
+    if(!/^(19|20)\d{2}$/.test(y)) continue;
+
+    const mesRaw = String(parts[1]).trim().toLowerCase();
+    const mes = MES_MAP[mesRaw];
+    if(!mes) continue;
+
+    const fator = toNumberBR(parts[2]);
+    if(!Number.isFinite(fator) || fator<=0) continue;
+
+    out.push({
+      competencia: `${y}-${pad2(mes)}`,
+      fator,
+      src: "ymf",
+      note: ""
+    });
+  }
+
+  return out;
+}
+
+/* ===== Parser 3: Auto (tenta os dois e escolhe o melhor) ===== */
+function parseAuto(raw){
+  const a = parseYear12FromText(raw);
+  const b = parseYearMonthFactorFromText(raw);
+
+  // escolha simples: mais registros e mais “contínuo”
+  if(a.length===0 && b.length===0) return {rows:[], picked:"none"};
+  if(a.length>=b.length) return {rows:a, picked:"y12"};
+  return {rows:b, picked:"ymf"};
+}
+
+/* ===== Normalização / ordenação ===== */
+function ymKey(competencia){
+  const m = /^(\d{4})-(\d{2})$/.exec(competencia);
+  if(!m) return Number.MAX_SAFE_INTEGER;
+  return Number(m[1])*100 + Number(m[2]);
+}
+function dedupeAndSort(rows){
+  const map = new Map();
+  for(const r of rows){
+    if(!/^\d{4}-\d{2}$/.test(r.competencia)) continue;
+    if(!Number.isFinite(r.fator) || r.fator<=0) continue;
+    // última ocorrência vence
+    map.set(r.competencia, r);
+  }
+  const arr = [...map.values()].sort((x,y)=>ymKey(x.competencia)-ymKey(y.competencia));
+  return arr;
+}
+
+/* ===== Cálculo correção mensal a partir do fator ===== */
+function computeMonthlyPctFromFactors(rows){
+  // regra usada aqui (como em muitos fatores TJMG “invertidos”):
+  // correcao_pct[t] = (fator[t-1]/fator[t] - 1) * 100
+  // primeiro mês fica sem anterior => 0 e marca note.
+  const out = [];
+  let prev = null;
+  for(const r of rows){
+    let pct = 0;
+    let note = r.note || "";
+    if(prev && prev.fator>0){
+      pct = ((prev.fator / r.fator) - 1) * 100;
+      if(!Number.isFinite(pct)) pct = 0;
+    }else{
+      note = (note ? (note+" | ") : "") + "primeiro mês (sem anterior): correcao_pct=0";
+    }
+    out.push({...r, correcao_pct:pct, note});
+    prev = r;
+  }
+  return out;
+}
+
+/* ===== Render ===== */
+let LAST_DEBUG = { parsedMode:null, rawLen:0, parsedCount:0, keptCount:0, warnings:[] };
+
+function renderTable(rows){
+  const tb = document.getElementById("tbody");
+  tb.innerHTML = "";
+  if(!rows.length){
+    tb.innerHTML = `<tr><td colspan="4" style="color:#6b7280">Sem dados.</td></tr>`;
+    document.getElementById("previewInfo").textContent = "Sem dados.";
+    return;
+  }
+  const show = rows.slice(0,200);
+  for(const r of show){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="mono">${r.competencia}</td>
+      <td class="mono">${String(r.fator).replace(".",",")}</td>
+      <td class="mono">${r.correcao_pct.toFixed(6).replace(".",",")}</td>
+      <td style="color:#6b7280">${(r.note||"")}</td>
+    `;
+    tb.appendChild(tr);
+  }
+  const first = rows[0].competencia;
+  const last = rows[rows.length-1].competencia;
+  document.getElementById("previewInfo").textContent =
+    `Registros: ${rows.length} | Período: ${first} → ${last} | Mostrando: ${Math.min(rows.length,200)}`;
+}
+
+function toCSV(rows){
+  const lines = ["competencia,correcao_pct,fator"];
+  for(const r of rows){
+    lines.push(`${r.competencia},${r.correcao_pct.toFixed(6)},${r.fator}`);
+  }
+  return lines.join("\n");
+}
+
+function download(name, text, mime="text/plain;charset=utf-8"){
+  const blob = new Blob([text],{type:mime});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+
+/* ===== Botão “limpar texto” ===== */
+function tryFixText(raw){
+  // tira coisas comuns que atrapalham: cabeçalhos, muitos espaços, linhas vazias repetidas
+  let t = raw.replace(/\u00A0/g," ");
+  // normaliza separadores
+  t = t.replace(/[•]/g," ");
+  t = t.replace(/\t+/g,"\t");
+  // reduz múltiplos espaços
+  t = t.replace(/[ ]{2,}/g," ");
+  // remove algumas linhas com títulos comuns (não perfeito, mas ajuda)
+  t = t.split("\n").filter(l=>{
+    const s = l.toLowerCase();
+    if(s.includes("contadoria") || s.includes("poder judiciário") || s.includes("fatores de atualização")) return false;
+    if(s.includes("tabela válida") || s.includes("justiça de") || s.includes("icgj")) return false;
+    return true;
+  }).join("\n");
+  return t.trim();
+}
+
+/* ===== Converter fluxo ===== */
+function convertNow(){
+  const raw = document.getElementById("raw").value;
+  const mode = document.getElementById("mode").value;
+
+  if(!raw.trim()){
+    alert("Cole o texto ou importe um arquivo primeiro.");
+    return;
+  }
+
+  LAST_DEBUG = { parsedMode:null, rawLen:raw.length, parsedCount:0, keptCount:0, warnings:[] };
+
+  let parsed = [];
+  let picked = mode;
+
+  if(mode==="y12"){
+    parsed = parseYear12FromText(raw);
+  }else if(mode==="ymf"){
+    parsed = parseYearMonthFactorFromText(raw);
+  }else{
+    const res = parseAuto(raw);
+    parsed = res.rows;
+    picked = res.picked;
+  }
+
+  LAST_DEBUG.parsedMode = picked;
+  LAST_DEBUG.parsedCount = parsed.length;
+
+  const norm = dedupeAndSort(parsed);
+  LAST_DEBUG.keptCount = norm.length;
+
+  if(norm.length<2){
+    LAST_DEBUG.warnings.push("Poucos registros reconhecidos. Se veio em colunas, use 'Forçar: Ano + 12 meses'. Se veio em 3 colunas, use 'Forçar: Ano/Mês/Fator'.");
+  }
+
+  const computed = computeMonthlyPctFromFactors(norm);
+  const csv = toCSV(computed);
+
+  document.getElementById("out").value = csv;
+  renderTable(computed);
+
+  setStatus(
+    `OK.\n`+
+    `Modo: ${picked}\n`+
+    `Lidos: ${LAST_DEBUG.parsedCount} | Mantidos (dedupe/ordenado): ${LAST_DEBUG.keptCount}\n`+
+    (LAST_DEBUG.warnings.length ? `Avisos:\n- ${LAST_DEBUG.warnings.join("\n- ")}` : "")
+  );
+}
+
+/* ===== Importar arquivo ===== */
+async function readPDF(file){
+  ov(true,"Lendo PDF…","Extraindo texto (todas as páginas).");
+  try{
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+    let full = "";
+    for(let p=1;p<=pdf.numPages;p++){
+      const page = await pdf.getPage(p);
+      const tc = await page.getTextContent();
+      // junta por linhas aproximadas (pdf.js não garante linha perfeita)
+      full += tc.items.map(i=>i.str).join(" ") + "\n";
+    }
+    return full;
+  } finally {
+    ov(false);
+  }
+}
+
+async function readExcel(file){
+  ov(true,"Lendo Excel…","Carregando primeira planilha.");
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:"array"});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const aoa = XLSX.utils.sheet_to_json(sheet, {header:1, raw:true, blankrows:false});
+
+    // Detecta se é (Ano, Mes, Fator) ou (Ano + 12 meses)
+    // Monta um texto “simples” para reaproveitar os parsers.
+    let text = "";
+    for(const row of aoa){
+      if(!row || !row.length) continue;
+      const cells = row.map(c=>String(c ?? "").trim());
+      if(cells.every(c=>!c)) continue;
+
+      // se tem ano e 12 nums, já joga em formato "ano num num ..."
+      const y = cells[0];
+      if(/^(19|20)\d{2}$/.test(y)){
+        // tenta achar 12 números na linha
+        const nums = cells.slice(1).map(toNumberBR).filter(n=>Number.isFinite(n));
+        if(nums.length>=12){
+          text += `${y} ${nums.slice(0,12).map(n=>String(n).replace(".",",")).join(" ")}\n`;
+          continue;
+        }
+        // tenta 3 colunas
+        if(cells.length>=3){
+          text += `${cells[0]},${cells[1]},${cells[2]}\n`;
+          continue;
+        }
+      } else {
+        // header ou lixo: ignora
+      }
+    }
+    return text.trim();
+  } finally {
+    ov(false);
+  }
+}
+
+async function loadFile(){
+  const inp = document.getElementById("file");
+  const file = inp.files?.[0];
+  if(!file){
+    alert("Selecione um arquivo primeiro.");
+    return;
+  }
+  const name = file.name.toLowerCase();
+  try{
+    let text = "";
+    if(name.endsWith(".pdf")){
+      text = await readPDF(file);
+    }else if(name.endsWith(".xlsx") || name.endsWith(".xlsm") || name.endsWith(".xls")){
+      text = await readExcel(file);
+    }else if(name.endsWith(".csv") || name.endsWith(".txt")){
+      text = await file.text();
+    }else{
+      alert("Formato não suportado. Use PDF, XLSX, XLSM, XLS, CSV ou TXT.");
+      return;
+    }
+    document.getElementById("raw").value = text;
+    setStatus(`Arquivo carregado: ${file.name}\nDica: clique em “Converter”. Se vier em colunas, tente “Forçar: Ano + 12 meses”.`);
+  }catch(e){
+    console.error(e);
+    alert("Falha ao ler arquivo: " + e.message);
+  }
+}
+
+/* ===== Botões ===== */
+document.getElementById("btnLoadFile").addEventListener("click", loadFile);
+document.getElementById("btnConvert").addEventListener("click", convertNow);
+
+document.getElementById("btnTryFix").addEventListener("click", ()=>{
+  const raw = document.getElementById("raw").value;
+  if(!raw.trim()) return;
+  document.getElementById("raw").value = tryFixText(raw);
+  setStatus("Texto “limpo”. Agora tente Converter.");
+});
+
+document.getElementById("btnCopy").addEventListener("click", async ()=>{
+  const out = document.getElementById("out").value;
+  if(!out.trim()){ alert("Nada para copiar. Converta primeiro."); return; }
+  try{
+    await navigator.clipboard.writeText(out);
+    setStatus("CSV copiado. Agora é só colar no seu comparador.");
+  }catch(e){
+    alert("Não consegui copiar automaticamente. Copie manualmente do campo de saída.");
+  }
+});
+
+document.getElementById("btnDownload").addEventListener("click", ()=>{
+  const out = document.getElementById("out").value;
+  if(!out.trim()){ alert("Nada para baixar. Converta primeiro."); return; }
+  download("tjmg_convertido.csv", out, "text/csv;charset=utf-8");
+});
+
+document.getElementById("btnDownloadDebug").addEventListener("click", ()=>{
+  download("tjmg_debug.json", JSON.stringify(LAST_DEBUG,null,2), "application/json;charset=utf-8");
+});
+
+document.getElementById("btnClearAll").addEventListener("click", ()=>{
+  document.getElementById("file").value = "";
+  document.getElementById("raw").value = "";
+  document.getElementById("out").value = "";
+  document.getElementById("mode").value = "auto";
+  document.getElementById("tbody").innerHTML = `<tr><td colspan="4" style="color:#6b7280">Sem dados.</td></tr>`;
+  document.getElementById("previewInfo").textContent = "Sem dados.";
+  setStatus("Pronto.");
+});
+
+/* ===== Exemplos ===== */
+document.getElementById("btnExampleY12").addEventListener("click", ()=>{
+  document.getElementById("mode").value = "y12";
+  document.getElementById("raw").value =
+`1964 0,0031568 0,0031568 0,0031568 0,0031568 0,0031568 0,0031568 0,0031568 0,0031568 0,0031568 0,0031568 0,0031568 0,0031568
+1965 0,0027937 0,0023560 0,0027937 0,0020769 0,0023560 0,0019677 0,0019367 0,0019858 0,0020106 0,0020769 0,0023560 0,0027937`;
+  setStatus("Exemplo colado. Clique em Converter.");
+});
+
+document.getElementById("btnExampleYMF").addEventListener("click", ()=>{
+  document.getElementById("mode").value = "ymf";
+  document.getElementById("raw").value =
+`Ano,Mes,Fator
+1964,outubro,0,0031568
+1964,novembro,0,0031568
+1964,dezembro,0,0031568
+1965,janeiro,0,0027937
+1965,fevereiro,0,0023560`;
+  setStatus("Exemplo colado. Clique em Converter.");
+});
+</script>
+</body>
+</html>

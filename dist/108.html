@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Analisador Profissional de Projetos - Importar, Analisar e Exportar">
+    <meta name="theme-color" content="#667eea">
+    <title>Analisador de Projetos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-close-mobile" id="sidebarCloseMobile">✕</button>
+                <h1>🔍 Analisador</h1>
+                <p>De Projetos</p>
+            </div>
+
+            <nav class="sidebar-menu" id="sidebarMenu">
+                <div class="menu-item active" data-page="upload">
+                    <span class="menu-icon">📤</span>
+                    <span class="menu-text">Upload</span>
+                </div>
+                <div class="menu-item" data-page="analise">
+                    <span class="menu-icon">📊</span>
+                    <span class="menu-text">Análise</span>
+                </div>
+                <div class="menu-item" data-page="estrutura">
+                    <span class="menu-icon">🏗️</span>
+                    <span class="menu-text">Estrutura</span>
+                </div>
+                <div class="menu-item" data-page="terminal">
+                    <span class="menu-icon">💻</span>
+                    <span class="menu-text">Terminal</span>
+                </div>
+                <div class="menu-item" data-page="exportar">
+                    <span class="menu-icon">📥</span>
+                    <span class="menu-text">Exportar</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="connection-status">
+                    <div class="status-dot"></div>
+                    <span id="statusText">Pronto</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- OVERLAY MOBILE -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="main-content">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <button class="menu-toggle-mobile" id="menuToggle">☰</button>
+                <h2 class="topbar-title" id="pageTitle">Upload de Projeto</h2>
+                <div class="topbar-actions">
+                    <button class="btn btn-secondary btn-small" id="limparBtn" onclick="limparProjeto()">
+                        🗑️
+                    </button>
+                </div>
+            </header>
+
+            <!-- ÁREA DE CONTEÚDO -->
+            <div class="content-area" id="contentArea"></div>
+        </div>
+    </div>
+
+    <!-- MODAL NOMEAÇÃO DE ARQUIVO -->
+    <div class="modal" id="nomeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📝 Nomear Arquivo</h2>
+                <button class="close-btn" onclick="fecharModal('nomeModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="nomeArquivo">Nome do Arquivo:</label>
+                    <input type="text" id="nomeArquivo" placeholder="Ex: utils.js, styles.css">
+                </div>
+                <div class="form-group">
+                    <label for="tipoModulo">Tipo de Módulo:</label>
+                    <select id="tipoModulo">
+                        <option value="arquivo">Arquivo Simples</option>
+                        <option value="componente">Componente</option>
+                        <option value="utilitario">Utilitário</option>
+                        <option value="servico">Serviço</option>
+                        <option value="modelo">Modelo/Schema</option>
+                        <option value="config">Configuração</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="descricaoArquivo">Descrição (opcional):</label>
+                    <textarea id="descricaoArquivo" placeholder="Descreva o propósito do arquivo"></textarea>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="confirmarNomeArquivo()">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOMEAÇÃO DE PROJETO -->
+    <div class="modal" id="projetoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📁 Nomear Projeto</h2>
+                <button class="close-btn" onclick="fecharModal('projetoModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="nomeProjeto">Nome do Projeto:</label>
+                    <input type="text" id="nomeProjeto" placeholder="Ex: Meu Sistema Jurídico">
+                </div>
+                <div class="form-group">
+                    <label for="descricaoProjeto">Descrição:</label>
+                    <textarea id="descricaoProjeto" placeholder="Descrição do projeto"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tipoProjeto">Tipo de Projeto:</label>
+                    <select id="tipoProjeto">
+                        <option value="web">Aplicação Web</option>
+                        <option value="mobile">Aplicação Mobile</option>
+                        <option value="desktop">Aplicação Desktop</option>
+                        <option value="pwa">PWA</option>
+                        <option value="biblioteca">Biblioteca/Módulo</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="confirmarNomeProjeto()">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VISUALIZAR CÓDIGO -->
+    <div class="modal" id="codigoModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="codigoModalTitle">Visualizar Código</h2>
+                <button class="close-btn" onclick="fecharModal('codigoModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <pre id="codigoPreview" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; overflow-x: auto; max-height: 400px;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <style>
+/* ============================================
+   RESET E VARIÁVEIS
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #667eea;
+    --secondary: #764ba2;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --light: #f8f9fa;
+    --dark: #1e1e1e;
+    --border: #e9ecef;
+    --shadow: 0 2px 8px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: #333;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+}
+
+.app-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 280px;
+    background: white;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    text-align: center;
+}
+
+.sidebar-header h1 {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+}
+
+.sidebar-header p {
+    font-size: 0.85em;
+    opacity: 0.9;
+}
+
+.sidebar-close-mobile {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px 0;
+}
+
+.menu-item {
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #666;
+    font-weight: 500;
+}
+
+.menu-item:hover {
+    background: var(--light);
+    border-left-color: var(--primary);
+    color: var(--primary);
+}
+
+.menu-item.active {
+    background: rgba(102, 126, 234, 0.1);
+    border-left-color: var(--primary);
+    color: var(--primary);
+}
+
+.menu-icon {
+    font-size: 1.3em;
+}
+
+.sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--light);
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #28a745;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+}
+
+/* MAIN CONTENT */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.topbar {
+    background: white;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    box-shadow: var(--shadow);
+}
+
+.menu-toggle-mobile {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #333;
+}
+
+.topbar-title {
+    font-size: 1.5em;
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.content-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px;
+    background: #f5f6fa;
+}
+
+/* BOTÕES */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+    background: var(--light);
+    color: #666;
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-small {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+/* CARDS */
+.card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.card-title {
+    font-size: 1.3em;
+    font-weight: 600;
+    color: #333;
+}
+
+.card-body {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* FORMULÁRIOS */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 1em;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* UPLOAD */
+.upload-area {
+    border: 3px dashed var(--primary);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    background: rgba(102, 126, 234, 0.05);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.upload-area:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: var(--secondary);
+}
+
+.upload-area.dragover {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: var(--secondary);
+}
+
+.upload-area h3 {
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.upload-area p {
+    color: #999;
+    margin-bottom: 20px;
+}
+
+#fileInput {
+    display: none;
+}
+
+/* TABELAS */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: var(--light);
+}
+
+th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid var(--border);
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+tr:hover {
+    background: var(--light);
+}
+
+/* MODAIS */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #999;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+/* ALERTAS */
+.alert {
+    padding: 15px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border-left: 4px solid #17a2b8;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.stat-label {
+    color: #999;
+    margin-top: 10px;
+    font-size: 0.95em;
+}
+
+/* BADGE */
+.badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* ARQUIVO ITEM */
+.arquivo-item {
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid var(--primary);
+}
+
+.arquivo-info {
+    flex: 1;
+}
+
+.arquivo-nome {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.arquivo-tipo {
+    font-size: 0.9em;
+    color: #999;
+}
+
+.arquivo-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+/* CÓDIGO BLOCK */
+.code-block {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+}
+
+/* SPINNER */
+.spinner {
+    border: 3px solid var(--light);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 50px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 80%;
+        max-width: 280px;
+        transform: translateX(-100%);
+        transition: all 0.3s;
+        z-index: 101;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    .sidebar-close-mobile {
+        display: block;
+    }
+
+    .menu-toggle-mobile {
+        display: block;
+    }
+
+    .topbar {
+        padding: 12px 15px;
+    }
+
+    .topbar-title {
+        font-size: 1.2em;
+    }
+
+    .content-area {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .upload-area {
+        padding: 20px;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .arquivo-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .arquivo-acoes {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+    </style>
+
+    <script>
+// ============================================
+// CONFIGURAÇÃO GLOBAL
+// ============================================
+const CONFIG = {
+    currentPage: 'upload',
+    projeto: {
+        nome: '',
+        descricao: '',
+        tipo: 'web',
+        arquivos: [],
+        estrutura: {}
+    },
+    arquivoEmEdicao: null
+};
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    carregarPagina('upload');
+});
+
+function setupEventListeners() {
+    // Menu items
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const page = item.dataset.page;
+            mudarPagina(page);
+        });
+    });
+
+    // Menu toggle mobile
+    document.getElementById('menuToggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    });
+
+    document.getElementById('sidebarCloseMobile').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    });
+
+    document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    });
+}
+
+// ============================================
+// GERENCIAMENTO DE PÁGINAS
+// ============================================
+function mudarPagina(page) {
+    CONFIG.currentPage = page;
+    
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.page === page) {
+            item.classList.add('active');
+        }
+    });
+
+    carregarPagina(page);
+}
+
+function carregarPagina(page) {
+    const titles = {
+        upload: 'Upload de Projeto',
+        analise: 'Análise de Arquivos',
+        estrutura: 'Estrutura do Projeto',
+        terminal: 'Comandos Terminal',
+        exportar: 'Exportar Projeto'
+    };
+
+    document.getElementById('pageTitle').textContent = titles[page] || 'Página';
+    document.getElementById('contentArea').innerHTML = '<div class="spinner"></div>';
+
+    setTimeout(() => {
+        let conteudo = '';
+        switch(page) {
+            case 'upload':
+                conteudo = renderUpload();
+                break;
+            case 'analise':
+                conteudo = renderAnalise();
+                break;
+            case 'estrutura':
+                conteudo = renderEstrutura();
+                break;
+            case 'terminal':
+                conteudo = renderTerminal();
+                break;
+            case 'exportar':
+                conteudo = renderExportar();
+                break;
+        }
+        document.getElementById('contentArea').innerHTML = conteudo;
+    }, 300);
+}
+
+// ============================================
+// RENDERIZADORES
+// ============================================
+function renderUpload() {
+    return `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📤 Importar Projeto</h3>
+            </div>
+            <div class="card-body">
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <h3>📁 Arraste arquivos aqui ou clique</h3>
+                    <p>Suporta: ZIP, arquivos individuais, ou cole código</p>
+                    <p style="font-size: 0.9em; color: #666;">Máximo 50MB</p>
+                </div>
+                <input type="file" id="fileInput" multiple accept=".zip,.js,.html,.css,.json,.md,.txt,.py,.java,.cpp,.ts,.jsx,.tsx,.vue">
+                
+                <div style="margin-top: 30px;">
+                    <h4 style="margin-bottom: 15px;">Ou Cole Código Aqui:</h4>
+                    <textarea id="codeInput" placeholder="Cole seu código aqui..." style="width: 100%; height: 200px; padding: 10px; border: 1px solid var(--border); border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em;"></textarea>
+                    <button class="btn btn-primary" style="margin-top: 10px;" onclick="adicionarCodigoColado()">
+                        ➕ Adicionar Código
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        ${CONFIG.projeto.arquivos.length > 0 ? `
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📋 Arquivos Importados (${CONFIG.projeto.arquivos.length})</h3>
+                    <button class="btn btn-primary btn-small" onclick="abrirModalNomeProjeto()">
+                        ✅ Nomear Projeto
+                    </button>
+                </div>
+                <div class="card-body">
+                    ${CONFIG.projeto.arquivos.map((arquivo, index) => `
+                        <div class="arquivo-item">
+                            <div class="arquivo-info">
+                                <div class="arquivo-nome">📄 ${arquivo.nome}</div>
+                                <div class="arquivo-tipo">
+                                    Tipo: <span class="badge badge-info">${arquivo.tipo}</span> 
+                                    Tamanho: ${formatarTamanho(arquivo.tamanho)}
+                                </div>
+                            </div>
+                            <div class="arquivo-acoes">
+                                <button class="btn btn-secondary btn-small" onclick="visualizarCodigo(${index})">👁️</button>
+                                <button class="btn btn-secondary btn-small" onclick="editarArquivo(${index})">✏️</button>
+                                <button class="btn btn-danger btn-small" onclick="removerArquivo(${index})">🗑️</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        ` : ''}
+    `;
+}
+
+function renderAnalise() {
+    if (CONFIG.projeto.arquivos.length === 0) {
+        return `
+            <div class="card">
+                <div class="card-body" style="text-align: center; padding: 50px;">
+                    <p style="font-size: 1.2em; color: #999;">📤 Importe arquivos primeiro</p>
+                </div>
+            </div>
+        `;
+    }
+
+    const analise = analisarProjeto();
+
+    return `
+        <div class="grid">
+            <div class="stat-card">
+                <div class="stat-number">${analise.totalArquivos}</div>
+                <div class="stat-label">Arquivos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${analise.totalLinhas}</div>
+                <div class="stat-label">Linhas de Código</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${formatarTamanho(analise.tamanhoTotal)}</div>
+                <div class="stat-label">Tamanho Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${analise.linguagens.length}</div>
+                <div class="stat-label">Linguagens</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🔍 Análise Detalhada</h3>
+            </div>
+            <div class="card-body">
+                <h4 style="margin-bottom: 15px;">Linguagens Detectadas:</h4>
+                ${analise.linguagens.map(ling => `
+                    <div style="margin-bottom: 10px;">
+                        <strong>${ling.nome}</strong>: ${ling.arquivos} arquivo(s)
+                    </div>
+                `).join('')}
+
+                <h4 style="margin-top: 30px; margin-bottom: 15px;">Tipos de Arquivo:</h4>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Quantidade</th>
+                                <th>Tamanho</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${analise.tiposArquivo.map(tipo => `
+                                <tr>
+                                    <td>${tipo.extensao}</td>
+                                    <td>${tipo.quantidade}</td>
+                                    <td>${formatarTamanho(tipo.tamanho)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderEstrutura() {
+    if (CONFIG.projeto.arquivos.length === 0) {
+        return `
+            <div class="card">
+                <div class="card-body" style="text-align: center; padding: 50px;">
+                    <p style="font-size: 1.2em; color: #999;">📤 Importe arquivos primeiro</p>
+                </div>
+            </div>
+        `;
+    }
+
+    const estrutura = gerarEstrutura();
+
+    return `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🏗️ Estrutura do Projeto</h3>
+                <button class="btn btn-primary btn-small" onclick="copiarEstrutura()">📋 Copiar</button>
+            </div>
+            <div class="card-body">
+                <div class="code-block" id="estruturaCode">${estrutura}</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📝 Descrição de Módulos</h3>
+            </div>
+            <div class="card-body">
+                ${CONFIG.projeto.arquivos.map((arquivo, index) => `
+                    <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                        <h4>${arquivo.nome}</h4>
+                        <p><strong>Tipo:</strong> ${arquivo.tipo}</p>
+                        <p><strong>Descrição:</strong> ${arquivo.descricao || 'Sem descrição'}</p>
+                        <p><strong>Linhas:</strong> ${arquivo.linhas || 0}</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderTerminal() {
+    if (!CONFIG.projeto.nome) {
+        return `
+            <div class="card">
+                <div class="card-body" style="text-align: center; padding: 50px;">
+                    <p style="font-size: 1.2em; color: #999;">📁 Nomeie o projeto primeiro</p>
+                </div>
+            </div>
+        `;
+    }
+
+    const comandos = gerarComandosTerminal();
+
+    return `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">💻 Comandos para Terminal</h3>
+                <button class="btn btn-primary btn-small" onclick="copiarTodosComandos()">📋 Copiar Tudo</button>
+            </div>
+            <div class="card-body">
+                <h4 style="margin-bottom: 15px;">Estrutura de Pastas:</h4>
+                <div class="code-block">${comandos.estrutura}</div>
+
+                <h4 style="margin-top: 30px; margin-bottom: 15px;">Comandos de Criação:</h4>
+                <div class="code-block">${comandos.criacao}</div>
+
+                <h4 style="margin-top: 30px; margin-bottom: 15px;">Arquivo de Inicialização (init.sh):</h4>
+                <div class="code-block">${comandos.script}</div>
+                <button class="btn btn-success" style="margin-top: 10px;" onclick="baixarScript()">📥 Baixar Script</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderExportar() {
+    if (CONFIG.projeto.arquivos.length === 0) {
+        return `
+            <div class="card">
+                <div class="card-body" style="text-align: center; padding: 50px;">
+                    <p style="font-size: 1.2em; color: #999;">📤 Importe arquivos primeiro</p>
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📥 Exportar Projeto</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <button class="btn btn-primary" style="padding: 20px; flex-direction: column; height: auto;" onclick="exportarZip()">
+                        <span style="font-size: 2em; margin-bottom: 10px;">📦</span>
+                        <span>Exportar como ZIP</span>
+                    </button>
+                    <button class="btn btn-primary" style="padding: 20px; flex-direction: column; height: auto;" onclick="exportarMarkdown()">
+                        <span style="font-size: 2em; margin-bottom: 10px;">📄</span>
+                        <span>Exportar como MD</span>
+                    </button>
+                    <button class="btn btn-primary" style="padding: 20px; flex-direction: column; height: auto;" onclick="exportarJSON()">
+                        <span style="font-size: 2em; margin-bottom: 10px;">⚙️</span>
+                        <span>Exportar como JSON</span>
+                    </button>
+                    <button class="btn btn-primary" style="padding: 20px; flex-direction: column; height: auto;" onclick="exportarHTML()">
+                        <span style="font-size: 2em; margin-bottom: 10px;">🌐</span>
+                        <span>Exportar como HTML</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📋 Resumo do Projeto</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Nome:</strong> ${CONFIG.projeto.nome || 'Sem nome'}</p>
+                <p><strong>Descrição:</strong> ${CONFIG.projeto.descricao || 'Sem descrição'}</p>
+                <p><strong>Tipo:</strong> ${CONFIG.projeto.tipo}</p>
+                <p><strong>Arquivos:</strong> ${CONFIG.projeto.arquivos.length}</p>
+                <p><strong>Tamanho Total:</strong> ${formatarTamanho(CONFIG.projeto.arquivos.reduce((a, b) => a + b.tamanho, 0))}</p>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================
+// FUNÇÕES DE UPLOAD
+// ============================================
+const uploadArea = document.querySelector('.upload-area');
+if (uploadArea) {
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        processarArquivos(e.dataTransfer.files);
+    });
+}
+
+document.addEventListener('change', (e) => {
+    if (e.target.id === 'fileInput') {
+        processarArquivos(e.target.files);
+    }
+});
+
+function processarArquivos(files) {
+    Array.from(files).forEach(file => {
+        if (file.name.endsWith('.zip')) {
+            processarZip(file);
+        } else {
+            processarArquivoSimples(file);
+        }
+    });
+}
+
+function processarArquivoSimples(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const conteudo = e.target.result;
+        const tipo = detectarTipo(file.name);
+        const linhas = conteudo.split('\n').length;
+
+        CONFIG.projeto.arquivos.push({
+            nome: file.name,
+            conteudo: conteudo,
+            tipo: tipo,
+            tamanho: file.size,
+            linhas: linhas,
+            descricao: ''
+        });
+
+        mostrarAlerta('✅ Arquivo adicionado: ' + file.name, 'success');
+        carregarPagina('upload');
+    };
+    reader.readAsText(file);
+}
+
+function processarZip(file) {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const zip = new JSZip();
+            const conteudo = await zip.loadAsync(e.target.result);
+
+            for (const [path, file] of Object.entries(conteudo.files)) {
+                if (!file.dir && !path.includes('node_modules') && !path.includes('.git')) {
+                    const dados = await file.async('string');
+                    const nome = path.split('/').pop();
+                    const tipo = detectarTipo(nome);
+                    const linhas = dados.split('\n').length;
+
+                    CONFIG.projeto.arquivos.push({
+                        nome: nome,
+                        caminho: path,
+                        conteudo: dados,
+                        tipo: tipo,
+                        tamanho: dados.length,
+                        linhas: linhas,
+                        descricao: ''
+                    });
+                }
+            }
+
+            mostrarAlerta('✅ ZIP extraído: ' + CONFIG.projeto.arquivos.length + ' arquivos', 'success');
+            carregarPagina('upload');
+        } catch (erro) {
+            mostrarAlerta('❌ Erro ao processar ZIP: ' + erro.message, 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function adicionarCodigoColado() {
+    const codigo = document.getElementById('codeInput').value.trim();
+    if (!codigo) {
+        mostrarAlerta('❌ Cole algum código', 'error');
+        return;
+    }
+
+    CONFIG.arquivoEmEdicao = {
+        nome: 'novo-arquivo',
+        conteudo: codigo,
+        tipo: 'arquivo',
+        tamanho: codigo.length,
+        linhas: codigo.split('\n').length,
+        descricao: ''
+    };
+
+    abrirModalNomeArquivo();
+}
+
+// ============================================
+// FUNÇÕES DE ANÁLISE
+// ============================================
+function analisarProjeto() {
+    const analise = {
+        totalArquivos: CONFIG.projeto.arquivos.length,
+        totalLinhas: 0,
+        tamanhoTotal: 0,
+        linguagens: {},
+        tiposArquivo: {}
+    };
+
+    CONFIG.projeto.arquivos.forEach(arquivo => {
+        analise.totalLinhas += arquivo.linhas || 0;
+        analise.tamanhoTotal += arquivo.tamanho || 0;
+
+        const extensao = arquivo.nome.split('.').pop();
+        if (!analise.tiposArquivo[extensao]) {
+            analise.tiposArquivo[extensao] = { extensao, quantidade: 0, tamanho: 0 };
+        }
+        analise.tiposArquivo[extensao].quantidade++;
+        analise.tiposArquivo[extensao].tamanho += arquivo.tamanho || 0;
+
+        const linguagem = detectarLinguagem(arquivo.nome);
+        if (!analise.linguagens[linguagem]) {
+            analise.linguagens[linguagem] = 0;
+        }
+        analise.linguagens[linguagem]++;
+    });
+
+    analise.linguagens = Object.entries(analise.linguagens).map(([nome, arquivos]) => ({ nome, arquivos }));
+    analise.tiposArquivo = Object.values(analise.tiposArquivo);
+
+    return analise;
+}
+
+function gerarEstrutura() {
+    let estrutura = `${CONFIG.projeto.nome || 'projeto'}/\n`;
+    
+    CONFIG.projeto.arquivos.forEach(arquivo => {
+        const caminho = arquivo.caminho || arquivo.nome;
+        const linhas = '│   '.repeat(caminho.split('/').length - 1);
+        estrutura += `${linhas}├── ${arquivo.nome}\n`;
+    });
+
+    return estrutura;
+}
+
+function gerarComandosTerminal() {
+    const nomeProjeto = CONFIG.projeto.nome.toLowerCase().replace(/\s+/g, '-');
+    
+    const estrutura = `mkdir -p ${nomeProjeto}
+cd ${nomeProjeto}`;
+
+    const criacao = CONFIG.projeto.arquivos.map(arquivo => {
+        const caminho = arquivo.caminho || arquivo.nome;
+        const dirs = caminho.split('/').slice(0, -1);
+        let cmd = '';
+        if (dirs.length > 0) {
+            cmd += `mkdir -p ${dirs.join('/')}\n`;
+        }
+        cmd += `touch ${caminho}`;
+        return cmd;
+    }).join('\n');
+
+    const script = `#!/bin/bash
+# Script de inicialização para ${CONFIG.projeto.nome}
+
+echo "Criando estrutura de projeto..."
+
+${estrutura}
+
+${criacao}
+
+echo "✅ Projeto criado com sucesso!"`;
+
+    return { estrutura, criacao, script };
+}
+
+// ============================================
+// FUNÇÕES DE EXPORTAÇÃO
+// ============================================
+async function exportarZip() {
+    const zip = new JSZip();
+    const pasta = zip.folder(CONFIG.projeto.nome || 'projeto');
+
+    CONFIG.projeto.arquivos.forEach(arquivo => {
+        const caminho = arquivo.caminho || arquivo.nome;
+        pasta.file(caminho, arquivo.conteudo);
+    });
+
+    const conteudo = await zip.generateAsync({ type: 'blob' });
+    baixarArquivo(conteudo, `${CONFIG.projeto.nome || 'projeto'}.zip`);
+    mostrarAlerta('📦 ZIP exportado com sucesso!', 'success');
+}
+
+function exportarMarkdown() {
+    let md = `# ${CONFIG.projeto.nome || 'Projeto'}\n\n`;
+    md += `${CONFIG.projeto.descricao || ''}\n\n`;
+    md += `## Estrutura\n\n`;
+    md += '```\n' + gerarEstrutura() + '\n```\n\n';
+    md += `## Arquivos\n\n`;
+
+    CONFIG.projeto.arquivos.forEach(arquivo => {
+        md += `### ${arquivo.nome}\n\n`;
+        md += `**Tipo:** ${arquivo.tipo}\n\n`;
+        md += `**Descrição:** ${arquivo.descricao || 'N/A'}\n\n`;
+        md += `**Linhas:** ${arquivo.linhas}\n\n`;
+        md += '```\n' + arquivo.conteudo.substring(0, 500) + '\n...\n```\n\n';
+    });
+
+    const blob = new Blob([md], { type: 'text/markdown' });
+    baixarArquivo(blob, `${CONFIG.projeto.nome || 'projeto'}.md`);
+    mostrarAlerta('📄 Markdown exportado com sucesso!', 'success');
+}
+
+function exportarJSON() {
+    const dados = {
+        nome: CONFIG.projeto.nome,
+        descricao: CONFIG.projeto.descricao,
+        tipo: CONFIG.projeto.tipo,
+        dataExportacao: new Date().toISOString(),
+        arquivos: CONFIG.projeto.arquivos.map(a => ({
+            nome: a.nome,
+            tipo: a.tipo,
+            tamanho: a.tamanho,
+            linhas: a.linhas,
+            descricao: a.descricao
+        }))
+    };
+
+    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+    baixarArquivo(blob, `${CONFIG.projeto.nome || 'projeto'}.json`);
+    mostrarAlerta('⚙️ JSON exportado com sucesso!', 'success');
+}
+
+function exportarHTML() {
+    const analise = analisarProjeto();
+    let html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${CONFIG.projeto.nome}</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #667eea; }
+        .stat { display: inline-block; margin: 10px; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+        .arquivo { margin: 20px 0; padding: 15px; border-left: 4px solid #667eea; background: #f9f9f9; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>${CONFIG.projeto.nome}</h1>
+    <p>${CONFIG.projeto.descricao}</p>
+    
+    <h2>Estatísticas</h2>
+    <div class="stat"><strong>Arquivos:</strong> ${analise.totalArquivos}</div>
+    <div class="stat"><strong>Linhas:</strong> ${analise.totalLinhas}</div>
+    <div class="stat"><strong>Tamanho:</strong> ${formatarTamanho(analise.tamanhoTotal)}</div>
+    
+    <h2>Estrutura</h2>
+    <pre>${gerarEstrutura()}</pre>
+    
+    <h2>Arquivos</h2>
+    ${CONFIG.projeto.arquivos.map(a => `
+        <div class="arquivo">
+            <h3>${a.nome}</h3>
+            <p><strong>Tipo:</strong> ${a.tipo} | <strong>Linhas:</strong> ${a.linhas}</p>
+            <p>${a.descricao}</p>
+        </div>
+    `).join('')}
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    baixarArquivo(blob, `${CONFIG.projeto.nome || 'projeto'}.html`);
+    mostrarAlerta('🌐 HTML exportado com sucesso!', 'success');
+}
+
+// ============================================
+// FUNÇÕES AUXILIARES
+// ============================================
+function detectarTipo(nome) {
+    const extensao = nome.split('.').pop().toLowerCase();
+    const tipos = {
+        'js': 'JavaScript',
+        'ts': 'TypeScript',
+        'jsx': 'React',
+        'tsx': 'React TS',
+        'vue': 'Vue',
+        'html': 'HTML',
+        'css': 'CSS',
+        'scss': 'SCSS',
+        'json': 'JSON',
+        'md': 'Markdown',
+        'py': 'Python',
+        'java': 'Java',
+        'cpp': 'C++',
+        'c': 'C',
+        'txt': 'Texto'
+    };
+    return tipos[extensao] || 'Outro';
+}
+
+function detectarLinguagem(nome) {
+    const extensao = nome.split('.').pop().toLowerCase();
+    const linguagens = {
+        'js': 'JavaScript',
+        'ts': 'TypeScript',
+        'jsx': 'React',
+        'tsx': 'React',
+        'vue': 'Vue',
+        'html': 'HTML',
+        'css': 'CSS',
+        'scss': 'SCSS',
+        'json': 'JSON',
+        'md': 'Markdown',
+        'py': 'Python',
+        'java': 'Java',
+        'cpp': 'C++',
+        'c': 'C'
+    };
+    return linguagens[extensao] || 'Outro';
+}
+
+function formatarTamanho(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const tamanhos = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + tamanhos[i];
+}
+
+function baixarArquivo(blob, nome) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nome;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function mostrarAlerta(mensagem, tipo = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${tipo}`;
+    alertDiv.innerHTML = `<span>${mensagem}</span>`;
+    
+    const contentArea = document.getElementById('contentArea');
+    contentArea.insertBefore(alertDiv, contentArea.firstChild);
+
+    setTimeout(() => alertDiv.remove(), 4000);
+}
+
+// ============================================
+// FUNÇÕES DE MODAL
+// ============================================
+function abrirModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+}
+
+function fecharModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+function abrirModalNomeArquivo() {
+    document.getElementById('nomeArquivo').value = CONFIG.arquivoEmEdicao?.nome || '';
+    document.getElementById('tipoModulo').value = 'arquivo';
+    document.getElementById('descricaoArquivo').value = '';
+    abrirModal('nomeModal');
+}
+
+function abrirModalNomeProjeto() {
+    document.getElementById('nomeProjeto').value = CONFIG.projeto.nome || '';
+    document.getElementById('descricaoProjeto').value = CONFIG.projeto.descricao || '';
+    document.getElementById('tipoProjeto').value = CONFIG.projeto.tipo || 'web';
+    abrirModal('projetoModal');
+}
+
+function confirmarNomeArquivo() {
+    const nome = document.getElementById('nomeArquivo').value.trim();
+    const tipo = document.getElementById('tipoModulo').value;
+    const descricao = document.getElementById('descricaoArquivo').value.trim();
+
+    if (!nome) {
+        mostrarAlerta('❌ Digite um nome', 'error');
+        return;
+    }
+
+    if (CONFIG.arquivoEmEdicao) {
+        CONFIG.arquivoEmEdicao.nome = nome;
+        CONFIG.arquivoEmEdicao.tipo = tipo;
+        CONFIG.arquivoEmEdicao.descricao = descricao;
+        CONFIG.projeto.arquivos.push(CONFIG.arquivoEmEdicao);
+        CONFIG.arquivoEmEdicao = null;
+        mostrarAlerta('✅ Arquivo adicionado!', 'success');
+    }
+
+    fecharModal('nomeModal');
+    carregarPagina('upload');
+}
+
+function confirmarNomeProjeto() {
+    const nome = document.getElementById('nomeProjeto').value.trim();
+    const descricao = document.getElementById('descricaoProjeto').value.trim();
+    const tipo = document.getElementById('tipoProjeto').value;
+
+    if (!nome) {
+        mostrarAlerta('❌ Digite um nome para o projeto', 'error');
+        return;
+    }
+
+    CONFIG.projeto.nome = nome;
+    CONFIG.projeto.descricao = descricao;
+    CONFIG.projeto.tipo = tipo;
+
+    mostrarAlerta('✅ Projeto nomeado com sucesso!', 'success');
+    fecharModal('projetoModal');
+    carregarPagina('upload');
+}
+
+// ============================================
+// FUNÇÕES DE ARQUIVO
+// ============================================
+function visualizarCodigo(index) {
+    const arquivo = CONFIG.projeto.arquivos[index];
+    document.getElementById('codigoModalTitle').textContent = arquivo.nome;
+    document.getElementById('codigoPreview').textContent = arquivo.conteudo;
+    abrirModal('codigoModal');
+}
+
+function editarArquivo(index) {
+    CONFIG.arquivoEmEdicao = CONFIG.projeto.arquivos[index];
+    abrirModalNomeArquivo();
+}
+
+function removerArquivo(index) {
+    if (confirm('Remover arquivo?')) {
+        CONFIG.projeto.arquivos.splice(index, 1);
+        mostrarAlerta('🗑️ Arquivo removido!', 'info');
+        carregarPagina('upload');
+    }
+}
+
+function limparProjeto() {
+    if (confirm('Limpar todo o projeto?')) {
+        CONFIG.projeto = {
+            nome: '',
+            descricao: '',
+            tipo: 'web',
+            arquivos: [],
+            estrutura: {}
+        };
+        mostrarAlerta('🗑️ Projeto limpo!', 'info');
+        carregarPagina('upload');
+    }
+}
+
+// ============================================
+// FUNÇÕES DE CÓPIA E DOWNLOAD
+// ============================================
+function copiarEstrutura() {
+    const estrutura = gerarEstrutura();
+    navigator.clipboard.writeText(estrutura);
+    mostrarAlerta('📋 Estrutura copiada!', 'success');
+}
+
+function copiarTodosComandos() {
+    const comandos = gerarComandosTerminal();
+    const texto = `${comandos.estrutura}\n\n${comandos.criacao}`;
+    navigator.clipboard.writeText(texto);
+    mostrarAlerta('📋 Comandos copiados!', 'success');
+}
+
+function baixarScript() {
+    const comandos = gerarComandosTerminal();
+    const blob = new Blob([comandos.script], { type: 'text/plain' });
+    baixarArquivo(blob, 'init.sh');
+    mostrarAlerta('📥 Script baixado!', 'success');
+}
+    </script>
+</body>
+</html>

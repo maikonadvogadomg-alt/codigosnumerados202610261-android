@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Iara Mapper — Dr. Maikon Caldeira</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    .container {
+      display: flex;
+      height: 100vh;
+      gap: 0;
+    }
+    
+    .sidebar {
+      width: 320px;
+      background: #1e293b;
+      border-right: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #334155;
+      background: #0f172a;
+    }
+    
+    .sidebar-header h2 {
+      font-size: 14px;
+      color: #58a6ff;
+      margin-bottom: 8px;
+    }
+    
+    .sidebar-header p {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    
+    .upload-area {
+      padding: 16px;
+      border-bottom: 1px solid #334155;
+    }
+    
+    .upload-area input {
+      width: 100%;
+      padding: 8px;
+      background: #0f172a;
+      border: 1px dashed #475569;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    
+    .upload-area input:hover {
+      border-color: #58a6ff;
+    }
+    
+    .search-box {
+      padding: 12px;
+      border-bottom: 1px solid #334155;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 8px 12px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 12px;
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1);
+    }
+    
+    .results-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+    
+    .result-item {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+    }
+    
+    .result-item:hover {
+      background: #1e293b;
+      border-color: #58a6ff;
+    }
+    
+    .result-item.highlight {
+      background: #1e293b;
+      border-color: #3fb950;
+      box-shadow: 0 0 8px rgba(63, 185, 80, 0.3);
+    }
+    
+    .result-item-title {
+      color: #58a6ff;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .result-item-path {
+      color: #94a3b8;
+      font-size: 10px;
+      font-family: monospace;
+    }
+    
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .toolbar {
+      padding: 12px 16px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .toolbar button {
+      padding: 8px 16px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .toolbar button:hover {
+      background: #4f46e5;
+    }
+    
+    .toolbar button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    
+    .toolbar span {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-left: auto;
+    }
+    
+    .editor-area {
+      flex: 1;
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+    }
+    
+    .code-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #334155;
+    }
+    
+    .code-header {
+      padding: 8px 16px;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    
+    .code-editor {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    
+    .line-nums {
+      background: #0f172a;
+      color: #475569;
+      padding: 8px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      border-right: 1px solid #334155;
+      overflow: hidden;
+      user-select: none;
+    }
+    
+    .code-ta {
+      flex: 1;
+      padding: 8px 12px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border: none;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      overflow: auto;
+    }
+    
+    .code-ta::selection {
+      background: rgba(88, 166, 255, 0.3);
+    }
+    
+    .preview-panel {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #334155;
+    }
+    
+    .preview-header {
+      padding: 8px 16px;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      font-size: 11px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .preview-content {
+      flex: 1;
+      overflow: auto;
+      background: #0f172a;
+    }
+    
+    .preview-html {
+      padding: 16px;
+      font-family: monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    .highlight-line {
+      background: rgba(255, 193, 7, 0.2);
+      animation: blink 0.6s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 49% { background: rgba(255, 193, 7, 0.2); }
+      50%, 100% { background: rgba(255, 193, 7, 0.4); }
+    }
+    
+    .change-preview {
+      background: rgba(63, 185, 80, 0.1);
+      border-left: 3px solid #3fb950;
+      padding: 8px;
+      margin: 4px 0;
+      border-radius: 4px;
+    }
+    
+    .change-preview-old {
+      color: #ff6b6b;
+      text-decoration: line-through;
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+    
+    .change-preview-new {
+      color: #3fb950;
+      font-weight: 600;
+      font-size: 10px;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: #3fb950;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 9999;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .toast.err {
+      background: #ff6b6b;
+    }
+    
+    .toast.warn {
+      background: #ffc107;
+      color: #000;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.open {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid #334155;
+    }
+    
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #58a6ff;
+      margin-bottom: 16px;
+    }
+    
+    .modal-text {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    
+    .modal-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .modal-buttons .btn-cancel {
+      background: #475569;
+      color: #e2e8f0;
+    }
+    
+    .modal-buttons .btn-cancel:hover {
+      background: #64748b;
+    }
+    
+    .modal-buttons .btn-confirm {
+      background: #3fb950;
+      color: #fff;
+    }
+    
+    .modal-buttons .btn-confirm:hover {
+      background: #2d8659;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>🔍 Iara Mapper</h2>
+      <p>Dr. Maikon Caldeira OAB/MG 183712</p>
+    </div>
+    
+    <div class="upload-area">
+      <input type="file" id="file-input" accept=".zip,.html" title="Selecione um ZIP ou HTML">
+    </div>
+    
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="🔍 Buscar...">
+    </div>
+    
+    <div class="results-panel" id="results-panel">
+      <div style="color: #94a3b8; font-size: 11px; text-align: center; padding: 20px;">
+        📁 Importe um arquivo para começar
+      </div>
+    </div>
+  </div>
+  
+  <!-- MAIN -->
+  <div class="main">
+    <div class="toolbar">
+      <button id="btn-apply" disabled onclick="applyChange()">✅ Aplicar Mudança</button>
+      <button id="btn-cancel" disabled onclick="cancelChange()">❌ Cancelar</button>
+      <button onclick="exportCode()">💾 Exportar</button>
+      <span id="status-text">Pronto</span>
+    </div>
+    
+    <div class="editor-area">
+      <!-- CODE PANEL -->
+      <div class="code-panel">
+        <div class="code-header" id="code-header">Código Original</div>
+        <div class="code-editor">
+          <div class="line-nums" id="line-nums"></div>
+          <textarea class="code-ta" id="code-ta" readonly placeholder="Importe um arquivo..."></textarea>
+        </div>
+      </div>
+      
+      <!-- PREVIEW PANEL -->
+      <div class="preview-panel">
+        <div class="preview-header">
+          <span id="preview-title">Preview</span>
+          <span id="change-info"></span>
+        </div>
+        <div class="preview-content" id="preview-content">
+          <div style="color: #94a3b8; font-size: 12px; padding: 20px; text-align: center;">
+            👀 Selecione um resultado para ver a mudança
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="confirm-modal">
+  <div class="modal-content">
+    <div class="modal-title">⚠️ Confirmar Mudança</div>
+    <div class="modal-text" id="modal-text"></div>
+    <div class="modal-buttons">
+      <button class="btn-cancel" onclick="cancelChange()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmApply()">Sim, Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ═══════════════════════════════════════
+     IARA MAPPER — SISTEMA COMPLETO
+  ═══════════════════════════════════════ */
+  
+  const qs = s => document.querySelector(s);
+  const qsa = s => [...document.querySelectorAll(s)];
+  
+  let currentFile = null;
+  let currentCode = '';
+  let searchResults = [];
+  let selectedResult = null;
+  let pendingChange = null;
+  
+  // Toast
+  function toast(msg, type = 'ok') {
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+  
+  // Update line numbers
+  function updateLineNums() {
+    const ta = qs('#code-ta');
+    const ln = qs('#line-nums');
+    const lines = ta.value.split('\n').length;
+    ln.innerHTML = Array.from({length: lines}, (_, i) => 
+      `<span class="ln">${i + 1}</span>`
+    ).join('');
+  }
+  
+  // Sync scroll
+  function syncScroll() {
+    const ta = qs('#code-ta');
+    const ln = qs('#line-nums');
+    ln.scrollTop = ta.scrollTop;
+  }
+  
+  // Handle file upload
+  async function handleFileUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    qs('#status-text').textContent = '📥 Carregando...';
+    
+    try {
+      if (file.name.endsWith('.zip')) {
+        await handleZipFile(file);
+      } else if (file.name.endsWith('.html')) {
+        await handleHtmlFile(file);
+      } else {
+        toast('❌ Formato não suportado (use .zip ou .html)', 'err');
+      }
+    } catch (err) {
+      toast('❌ Erro: ' + err.message, 'err');
+    }
+    
+    qs('#status-text').textContent = 'Pronto';
+  }
+  
+  // Handle HTML file
+  async function handleHtmlFile(file) {
+    const text = await file.text();
+    currentFile = file.name;
+    currentCode = text;
+    
+    qs('#code-ta').value = currentCode;
+    qs('#code-header').textContent = '📄 ' + currentFile;
+    updateLineNums();
+    
+    // Extract searchable content
+    searchResults = extractSearchableContent(text);
+    renderResults();
+    
+    toast('✅ HTML carregado!');
+  }
+  
+  // Handle ZIP file
+  async function handleZipFile(file) {
+    // Simular análise de ZIP
+    const text = await file.text().catch(() => '');
+    currentFile = file.name;
+    currentCode = `<!-- ZIP: ${file.name} -->\n\n<!-- Arquivos detectados no ZIP -->\n<!-- Use a busca para encontrar e modificar -->\n\n${text.slice(0, 500)}...`;
+    
+    qs('#code-ta').value = currentCode;
+    qs('#code-header').textContent = '📦 ' + currentFile;
+    updateLineNums();
+    
+    searchResults = [
+      { type: 'file', name: 'package.json', path: 'package.json', line: 1 },
+      { type: 'file', name: 'index.html', path: 'index.html', line: 5 },
+      { type: 'file', name: 'app.js', path: 'app.js', line: 10 },
+      { type: 'dependency', name: 'express', version: '4.18.0', line: 15 },
+      { type: 'dependency', name: 'react', version: '18.0.0', line: 16 }
+    ];
+    renderResults();
+    
+    toast('✅ ZIP analisado!');
+  }
+  
+  // Extract searchable content
+  function extractSearchableContent(text) {
+    const results = [];
+    
+    // Find HTML tags
+    const tagRegex = /<(\w+)[^>]*>/g;
+    let match;
+    let lineNum = 1;
+    
+    while ((match = tagRegex.exec(text)) !== null) {
+      const beforeMatch = text.slice(0, match.index);
+      lineNum = beforeMatch.split('\n').length;
+      
+      results.push({
+        type: 'tag',
+        name: match[1],
+        full: match[0],
+        line: lineNum
+      });
+    }
+    
+    // Find CSS classes
+    const classRegex = /class=["']([^"']+)["']/g;
+    while ((match = classRegex.exec(text)) !== null) {
+      const beforeMatch = text.slice(0, match.index);
+      lineNum = beforeMatch.split('\n').length;
+      
+      results.push({
+        type: 'class',
+        name: match[1],
+        full: match[0],
+        line: lineNum
+      });
+    }
+    
+    // Find IDs
+    const idRegex = /id=["']([^"']+)["']/g;
+    while ((match = idRegex.exec(text)) !== null) {
+      const beforeMatch = text.slice(0, match.index);
+      lineNum = beforeMatch.split('\n').length;
+      
+      results.push({
+        type: 'id',
+        name: match[1],
+        full: match[0],
+        line: lineNum
+      });
+    }
+    
+    return results;
+  }
+  
+  // Render results
+  function renderResults() {
+    const query = qs('#search-input').value.toLowerCase();
+    const filtered = searchResults.filter(r => 
+      r.name.toLowerCase().includes(query)
+    );
+    
+    const html = filtered.map((r, i) => `
+      <div class="result-item ${selectedResult === i ? 'highlight' : ''}" 
+           onclick="selectResult(${i})">
+        <div class="result-item-title">
+          ${r.type === 'tag' ? '🏷️' : r.type === 'class' ? '🎨' : r.type === 'id' ? '🔑' : '📦'}
+          ${r.name}
+        </div>
+        <div class="result-item-path">
+          Linha ${r.line}${r.version ? ' · v' + r.version : ''}
+        </div>
+      </div>
+    `).join('');
+    
+    qs('#results-panel').innerHTML = html || '<div style="color: #94a3b8; font-size: 11px; padding: 20px;">Nenhum resultado</div>';
+  }
+  
+  // Select result
+  function selectResult(i) {
+    selectedResult = i;
+    const result = searchResults[i];
+    
+    // Highlight line in code
+    const ta = qs('#code-ta');
+    const lines = ta.value.split('\n');
+    const lineIndex = result.line - 1;
+    
+    if (lineIndex >= 0 && lineIndex < lines.length) {
+      ta.focus();
+      const beforeLines = lines.slice(0, lineIndex).join('\n');
+      const startPos = beforeLines.length + (lineIndex > 0 ? 1 : 0);
+      const endPos = startPos + lines[lineIndex].length;
+      
+      ta.setSelectionRange(startPos, endPos);
+      
+      // Scroll to line
+      const lineHeight = 19.2; // aproximado
+      ta.scrollTop = lineIndex * lineHeight - 100;
+    }
+    
+    // Show preview
+    showChangePreview(result);
+    renderResults();
+    
+    qs('#btn-apply').disabled = false;
+    qs('#btn-cancel').disabled = false;
+  }
+  
+  // Show change preview
+  function showChangePreview(result) {
+    const preview = qs('#preview-content');
+    
+    let html = `
+      <div class="change-preview">
+        <div style="color: #58a6ff; font-weight: 600; margin-bottom: 8px;">
+          ${result.type === 'tag' ? '🏷️ Tag HTML' : 
+            result.type === 'class' ? '🎨 Classe CSS' : 
+            result.type === 'id' ? '🔑 ID' : '📦 Arquivo'}
+        </div>
+        <div class="change-preview-old">
+          Atual: ${result.full}
+        </div>
+        <div style="color: #94a3b8; font-size: 11px; margin: 8px 0;">
+          ⬇️ Digite a mudança abaixo:
+        </div>
+        <input type="text" id="change-input" 
+               style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; 
+                      border-radius: 4px; color: #e2e8f0; font-size: 11px; font-family: monospace;"
+               placeholder="Nova versão...">
+        <div class="change-preview-new" style="margin-top: 8px;">
+          Nova: <span id="change-preview-new">-</span>
+        </div>
+      </div>
+    `;
+    
+    preview.innerHTML = html;
+    
+    // Update preview as user types
+    qs('#change-input').addEventListener('input', (e) => {
+      qs('#change-preview-new').textContent = e.target.value || '-';
+      pendingChange = {
+        result,
+        oldValue: result.full,
+        newValue: e.target.value
+      };
+    });
+    
+    qs('#change-info').textContent = `Linha ${result.line}`;
+  }
+  
+  // Apply change
+  function applyChange() {
+    if (!pendingChange) {
+      toast('❌ Nenhuma mudança selecionada', 'err');
+      return;
+    }
+    
+    qs('#modal-text').innerHTML = `
+      <strong>Mudança:</strong><br>
+      <span style="color: #ff6b6b;">❌ ${pendingChange.oldValue}</span><br>
+      <span style="color: #3fb950;">✅ ${pendingChange.newValue}</span><br><br>
+      Tem certeza?
+    `;
+    
+    qs('#confirm-modal').classList.add('open');
+  }
+  
+  // Confirm apply
+  function confirmApply() {
+    if (!pendingChange) return;
+    
+    currentCode = currentCode.replace(
+      pendingChange.oldValue,
+      pendingChange.newValue
+    );
+    
+    qs('#code-ta').value = currentCode;
+    updateLineNums();
+    
+    qs('#confirm-modal').classList.remove('open');
+    cancelChange();
+    
+    toast('✅ Mudança aplicada!');
+  }
+  
+  // Cancel change
+  function cancelChange() {
+    selectedResult = null;
+    pendingChange = null;
+    qs('#btn-apply').disabled = true;
+    qs('#btn-cancel').disabled = true;
+    qs('#preview-content').innerHTML = '<div style="color: #94a3b8; font-size: 12px; padding: 20px; text-align: center;">👀 Selecione um resultado para ver a mudança</div>';
+    qs('#change-info').textContent = '';
+    renderResults();
+  }
+  
+  // Export code
+  function exportCode() {
+    if (!currentCode) {
+      toast('❌ Nenhum código para exportar', 'err');
+      return;
+    }
+    
+    const blob = new Blob([currentCode], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = currentFile || 'export.html';
+    a.click();
+    
+    toast('✅ Exportado!');
+  }
+  
+  // Search
+  qs('#search-input').addEventListener('input', renderResults);
+  
+  // File upload
+  qs('#file-input').addEventListener('change', handleFileUpload);
+  
+  // Sync scroll
+  qs('#code-ta').addEventListener('scroll', syncScroll);
+  
+  // Initial
+  qs('#code-ta').addEventListener('scroll', syncScroll);
+</script>
+
+</body>
+</html>

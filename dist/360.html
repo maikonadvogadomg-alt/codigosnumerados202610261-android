@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitor Visual de CNIS</title>
+    <!-- Importando a biblioteca do Google/Mozilla para ler PDF no navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .btn-upload {
+            background-color: #27ae60;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .btn-upload:hover {
+            background-color: #2ecc71;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        #resultado {
+            margin-top: 20px;
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: monospace;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>📄 Importador Visual de CNIS</h1>
+        <p>Selecione o PDF do CNIS para extrair os dados. Tudo acontece aqui na sua tela!</p>
+        
+        <!-- Botão visual para escolher o arquivo -->
+        <label class="btn-upload">
+            Clique aqui para escolher o PDF do CNIS
+            <input type="file" id="arquivoPdf" accept="application/pdf">
+        </label>
+
+        <div id="status" class="status">Aguardando arquivo...</div>
+
+        <!-- Caixa de texto onde o resultado vai aparecer -->
+        <textarea id="resultado" placeholder="O texto do CNIS vai aparecer aqui..." readonly></textarea>
+    </div>
+
+    <script>
+        // Configurando a biblioteca de PDF
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        // Quando o usuário escolhe um arquivo
+        document.getElementById('arquivoPdf').addEventListener('change', function(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let statusEl = document.getElementById('status');
+            let resultadoEl = document.getElementById('resultado');
+            
+            statusEl.innerText = "Lendo o PDF... ⏳";
+            statusEl.style.color = "#2980b9";
+            resultadoEl.value = "";
+
+            let fileReader = new FileReader();
+
+            fileReader.onload = function() {
+                let typedarray = new Uint8Array(this.result);
+
+                // Abrindo o PDF
+                pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+                    let maxPages = pdf.numPages;
+                    let textPromises = [];
+
+                    // Lendo todas as páginas
+                    for (let i = 1; i <= maxPages; i++) {
+                        textPromises.push(pdf.getPage(i).then(function(page) {
+                            return page.getTextContent().then(function(textContent) {
+                                return textContent.items.map(function(item) {
+                                    return item.str;
+                                }).join(' ');
+                            });
+                        }));
+                    }
+
+                    // Juntando o texto e mostrando na tela
+                    Promise.all(textPromises).then(function(texts) {
+                        let fullText = texts.join('\n\n--- Nova Página ---\n\n');
+                        resultadoEl.value = fullText;
+                        statusEl.innerText = "✅ Leitura concluída! Veja o texto abaixo.";
+                        statusEl.style.color = "#27ae60";
+                    });
+
+                }).catch(function(error) {
+                    statusEl.innerText = "❌ Erro ao ler o PDF.";
+                    statusEl.style.color = "#c0392b";
+                    console.error(error);
+                });
+            };
+
+            fileReader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>

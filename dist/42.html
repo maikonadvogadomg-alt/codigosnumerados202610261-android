@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playground Supabase</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #101827;
+      color: #f3f4f6;
+    }
+
+    header {
+      padding: 16px;
+      background: #172235;
+      border-bottom: 1px solid #334155;
+    }
+
+    header h1 {
+      margin: 0 0 12px;
+      font-size: 22px;
+    }
+
+    .config,
+    .toolbar,
+    .search-area,
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input,
+    select,
+    button {
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 9px 11px;
+      font-size: 14px;
+    }
+
+    input,
+    select {
+      background: #0f172a;
+      color: #f8fafc;
+      min-width: 180px;
+    }
+
+    button {
+      cursor: pointer;
+      color: white;
+      background: #2563eb;
+      border: none;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button.secondary {
+      background: #475569;
+    }
+
+    button.success {
+      background: #059669;
+    }
+
+    button.danger {
+      background: #dc2626;
+    }
+
+    button.warning {
+      background: #d97706;
+    }
+
+    #status {
+      margin-top: 10px;
+      padding: 9px;
+      border-radius: 6px;
+      background: #263449;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+    }
+
+    #status.success {
+      background: #064e3b;
+      color: #a7f3d0;
+    }
+
+    #status.error {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 150px);
+    }
+
+    aside {
+      padding: 14px;
+      background: #111c2d;
+      border-right: 1px solid #334155;
+      overflow-y: auto;
+    }
+
+    aside h2 {
+      margin-top: 0;
+      font-size: 17px;
+    }
+
+    #projectSearch {
+      width: 100%;
+      min-width: 0;
+      margin-bottom: 10px;
+    }
+
+    .project-item {
+      padding: 10px;
+      margin-bottom: 7px;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #1e293b;
+    }
+
+    .project-item:hover {
+      background: #334155;
+    }
+
+    .project-item strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #bfdbfe;
+      overflow-wrap: anywhere;
+    }
+
+    .project-item small {
+      color: #94a3b8;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-rows: auto 1fr 1fr;
+      min-width: 0;
+    }
+
+    .project-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: #172235;
+      border-bottom: 1px solid #334155;
+    }
+
+    #title {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .editors {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 10px;
+      min-height: 300px;
+    }
+
+    .editor-box {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .editor-box label {
+      padding: 8px;
+      background: #263449;
+      color: #bfdbfe;
+      font-weight: bold;
+    }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      min-height: 250px;
+      resize: vertical;
+      padding: 12px;
+      color: #e2e8f0;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 0 0 6px 6px;
+      font-family: Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .preview-area {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      min-height: 300px;
+    }
+
+    .preview-area h2 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    iframe {
+      flex: 1;
+      width: 100%;
+      min-height: 260px;
+      background: white;
+      border: 1px solid #475569;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        border-right: none;
+        border-bottom: 1px solid #334155;
+      }
+
+      .editors {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Playground conectado ao Supabase</h1>
+
+    <div class="config">
+      <input id="supabaseUrl" placeholder="URL do Supabase" />
+      <input id="supabaseKey" type="password" placeholder="Chave anon/public" />
+      <button id="connectBtn">Conectar</button>
+    </div>
+
+    <div id="status">Informe a URL e a chave pública do Supabase.</div>
+  </header>
+
+  <main>
+    <aside>
+      <h2>Projetos salvos</h2>
+
+      <div class="search-area">
+        <input id="projectSearch" placeholder="Pesquisar projetos..." />
+      </div>
+
+      <div class="actions">
+        <button id="refreshBtn" class="secondary">Atualizar lista</button>
+        <button id="exportBtn" class="warning">Baixar CSV</button>
+        <button id="importBtn" class="secondary">Importar CSV</button>
+        <input id="csvFile" type="file" accept=".csv,text/csv" hidden />
+      </div>
+
+      <div id="projectList" style="margin-top: 14px;"></div>
+    </aside>
+
+    <section class="workspace">
+      <div class="project-bar">
+        <input id="title" placeholder="Nome do projeto" value="Meu projeto" />
+
+        <select id="mode">
+          <option value="html">HTML</option>
+          <option value="jsx">JSX</option>
+          <option value="javascript">JavaScript</option>
+        </select>
+
+        <button id="newBtn" class="secondary">Novo</button>
+        <button id="saveBtn" class="success">Salvar</button>
+        <button id="updateBtn">Atualizar</button>
+        <button id="deleteBtn" class="danger">Excluir</button>
+        <button id="previewBtn">Atualizar preview</button>
+      </div>
+
+      <div class="editors">
+        <div class="editor-box">
+          <label for="htmlCode">HTML</label>
+          <textarea id="htmlCode" spellcheck="false"><h1>Olá!</h1>
+<p>Edite este código e clique em Salvar.</p></textarea>
+        </div>
+
+        <div class="editor-box">
+          <label for="cssCode">CSS</label>
+          <textarea id="cssCode" spellcheck="false">body {
+  font-family: Arial;
+  padding: 30px;
+}
+
+h1 {
+  color: #2563eb;
+}</textarea>
+        </div>
+
+        <div class="editor-box">
+          <label for="jsCode">JavaScript</label>
+          <textarea id="jsCode" spellcheck="false">console.log("Playground funcionando");</textarea>
+        </div>
+      </div>
+
+      <div class="preview-area">
+        <h2>Pesquisar no código atual</h2>
+
+        <div class="search-area" style="margin-bottom: 8px;">
+          <input id="codeSearch" placeholder="Digite um termo para pesquisar no código..." />
+          <button id="searchCodeBtn" class="secondary">Pesquisar</button>
+          <button id="clearSearchBtn" class="secondary">Limpar pesquisa</button>
+        </div>
+
+        <div id="searchResult" style="margin-bottom: 8px; color: #cbd5e1;"></div>
+
+        <h2>Preview</h2>
+        <iframe id="preview" sandbox="allow-scripts"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let supabaseClient = null;
+    let currentId = null;
+    let allProjects = [];
+
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(message, type = "") {
+      const status = $("status");
+      status.textContent = message;
+      status.className = type;
+    }
+
+    function getEditorData() {
+      return {
+        title: $("title").value.trim() || "Untitled",
+        html: $("htmlCode").value,
+        css: $("cssCode").value,
+        js: $("jsCode").value,
+        mode: $("mode").value
+      };
+    }
+
+    function setEditorData(project) {
+      currentId = project.id || null;
+      $("title").value = project.title || "Untitled";
+      $("htmlCode").value = project.html || "";
+      $("cssCode").value = project.css || "";
+      $("jsCode").value = project.js || "";
+      $("mode").value = project.mode || "html";
+      updatePreview();
+    }
+
+    function ensureConnection() {
+      if (!supabaseClient) {
+        setStatus("Conecte o Supabase antes de continuar.", "error");
+        return false;
+      }
+
+      return true;
+    }
+
+    async function connectSupabase() {
+      const url = $("supabaseUrl").value.trim();
+      const key = $("supabaseKey").value.trim();
+
+      if (!url || !key) {
+        setStatus("Informe a URL e a chave pública anon do Supabase.", "error");
+        return;
+      }
+
+      try {
+        supabaseClient = window.supabase.createClient(url, key);
+
+        const { error } = await supabaseClient
+          .from("snippets")
+          .select("id")
+          .limit(1);
+
+        if (error) throw error;
+
+        setStatus("Conectado com sucesso à tabela snippets.", "success");
+        await loadProjects();
+      } catch (error) {
+        supabaseClient = null;
+        setStatus(
+          "A conexão foi configurada, mas o teste na tabela snippets falhou:\n" +
+          (error.message || JSON.stringify(error)),
+          "error"
+        );
+      }
+    }
+
+    async function loadProjects() {
+      if (!ensureConnection()) return;
+
+      const { data, error } = await supabaseClient
+        .from("snippets")
+        .select("id,title,html,css,js,mode")
+        .order("title", { ascending: true });
+
+      if (error) {
+        setStatus("Erro ao carregar projetos:\n" + error.message, "error");
+        return;
+      }
+
+      allProjects = data || [];
+      renderProjects();
+    }
+
+    function renderProjects() {
+      const term = $("projectSearch").value.trim().toLowerCase();
+
+      const projects = allProjects.filter((project) =>
+        (project.title || "").toLowerCase().includes(term)
+      );
+
+      const list = $("projectList");
+      list.innerHTML = "";
+
+      if (!projects.length) {
+        list.innerHTML = "<p style='color:#94a3b8'>Nenhum projeto encontrado.</p>";
+        return;
+      }
+
+      projects.forEach((project) => {
+        const item = document.createElement("div");
+        item.className = "project-item";
+
+        const title = document.createElement("strong");
+        title.textContent = project.title || "Untitled";
+
+        const mode = document.createElement("small");
+        mode.textContent = "Modo: " + (project.mode || "html");
+
+        item.appendChild(title);
+        item.appendChild(mode);
+
+        item.addEventListener("click", () => {
+          setEditorData(project);
+          setStatus("Projeto carregado: " + project.title, "success");
+        });
+
+        list.appendChild(item);
+      });
+    }
+
+    async function saveProject() {
+      if (!ensureConnection()) return;
+
+      const project = getEditorData();
+
+      const { data, error } = await supabaseClient
+        .from("snippets")
+        .insert(project)
+        .select("id,title,html,css,js,mode")
+        .single();
+
+      if (error) {
+        setStatus("Erro ao salvar:\n" + error.message, "error");
+        console.error(error);
+        return;
+      }
+
+      currentId = data.id;
+      setEditorData(data);
+      await loadProjects();
+      setStatus("Projeto salvo com sucesso.", "success");
+    }
+
+    async function updateProject() {
+      if (!ensureConnection()) return;
+
+      if (!currentId) {
+        setStatus("Carregue um projeto existente ou use Salvar para criar um novo.", "error");
+        return;
+      }
+
+      const project = getEditorData();
+
+      const { data, error } = await supabaseClient
+        .from("snippets")
+        .update(project)
+        .eq("id", currentId)
+        .select("id,title,html,css,js,mode")
+        .single();
+
+      if (error) {
+        setStatus("Erro ao atualizar:\n" + error.message, "error");
+        console.error(error);
+        return;
+      }
+
+      setEditorData(data);
+      await loadProjects();
+      setStatus("Projeto atualizado com sucesso.", "success");
+    }
+
+    async function deleteProject() {
+      if (!ensureConnection()) return;
+
+      if (!currentId) {
+        setStatus("Nenhum projeto foi carregado.", "error");
+        return;
+      }
+
+      const confirmed = confirm("Deseja excluir este projeto?");
+      if (!confirmed) return;
+
+      const { error } = await supabaseClient
+        .from("snippets")
+        .delete()
+        .eq("id", currentId);
+
+      if (error) {
+        setStatus("Erro ao excluir:\n" + error.message, "error");
+        console.error(error);
+        return;
+      }
+
+      newProject();
+      await loadProjects();
+      setStatus("Projeto excluído.", "success");
+    }
+
+    function newProject() {
+      currentId = null;
+      $("title").value = "Meu projeto";
+      $("htmlCode").value = "";
+      $("cssCode").value = "";
+      $("jsCode").value = "";
+      $("mode").value = "html";
+      $("codeSearch").value = "";
+      $("searchResult").textContent = "";
+      updatePreview();
+      setStatus("Novo projeto criado localmente.");
+    }
+
+    function escapeScript(text) {
+      return String(text || "").replace(/<\\/script/gi, "<\\\\/script");
+    }
+
+    function updatePreview() {
+      const html = $("htmlCode").value;
+      const css = $("cssCode").value;
+      const js = escapeScript($("jsCode").value);
+
+      $("preview").srcdoc = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>${css}</style>
+</head>
+<body>
+${html}
+<script>
+try {
+${js}
+} catch (error) {
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    "<pre style='color:red'>" + error.message + "</pre>"
+  );
+}
+<\/script>
+</body>
+</html>`;
+    }
+
+    function searchInCode() {
+      const term = $("codeSearch").value.trim().toLowerCase();
+
+      if (!term) {
+        $("searchResult").textContent = "";
+        return;
+      }
+
+      const fields = [
+        ["HTML", $("htmlCode").value],
+        ["CSS", $("cssCode").value],
+        ["JavaScript", $("jsCode").value]
+      ];
+
+      const results = [];
+
+      fields.forEach(([name, content]) => {
+        const lines = content.split("\\n");
+
+        lines.forEach((line, index) => {
+          if (line.toLowerCase().includes(term)) {
+            results.push(name + ", linha " + (index + 1) + ": " + line.trim());
+          }
+        });
+      });
+
+      $("searchResult").textContent = results.length
+        ? results.join("\\n")
+        : "Nenhuma ocorrência encontrada.";
+
+      $("searchResult").style.whiteSpace = "pre-wrap";
+    }
+
+    function csvEscape(value) {
+      const text = String(value ?? "");
+      return '"' + text.replace(/"/g, '""') + '"';
+    }
+
+    function makeCsv(projects) {
+      const headers = ["id", "title", "html", "css", "js", "mode"];
+
+      const lines = [
+        headers.join(","),
+        ...projects.map((project) =>
+          headers.map((header) => csvEscape(project[header])).join(",")
+        )
+      ];
+
+      return "\\ufeff" + lines.join("\\r\\n");
+    }
+
+    function downloadFile(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = filename;
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
+
+    function exportCsv() {
+      if (!allProjects.length) {
+        setStatus("Não há projetos carregados para exportar.", "error");
+        return;
+      }
+
+      const csv = makeCsv(allProjects);
+      downloadFile("snippets.csv", csv, "text/csv;charset=utf-8");
+      setStatus("CSV baixado com sucesso.", "success");
+    }
+
+    function parseCsvLine(line) {
+      const values = [];
+      let value = "";
+      let quoted = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const next = line[i + 1];
+
+        if (char === '"' && quoted && next === '"') {
+          value += '"';
+          i++;
+        } else if (char === '"') {
+          quoted = !quoted;
+        } else if (char === "," && !quoted) {
+          values.push(value);
+          value = "";
+        } else {
+          value += char;
+        }
+      }
+
+      values.push(value);
+      return values;
+    }
+
+    function parseCsv(text) {
+      text = text.replace(/^\\uFEFF/, "");
+
+      const rows = [];
+      let row = "";
+      let quoted = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (char === '"' && quoted && next === '"') {
+          row += '""';
+          i++;
+        } else if (char === '"') {
+          quoted = !quoted;
+          row += char;
+        } else if ((char === "\\n" || char === "\\r") && !quoted) {
+          if (char === "\\r" && next === "\\n") i++;
+          if (row.trim()) rows.push(parseCsvLine(row));
+          row = "";
+        } else {
+          row += char;
+        }
+      }
+
+      if (row.trim()) rows.push(parseCsvLine(row));
+
+      if (rows.length < 2) return [];
+
+      const headers = rows[0].map((header) =>
+        header.trim().toLowerCase()
+      );
+
+      return rows.slice(1).map((columns) => {
+        const project = {};
+
+        headers.forEach((header, index) => {
+          project[header] = columns[index] ?? "";
+        });
+
+        return {
+          title: project.title || "Imported project",
+          html: project.html || "",
+          css: project.css || "",
+          js: project.js || "",
+          mode: project.mode || "html"
+        };
+      });
+    }
+
+    async function importCsvFile(event) {
+      if (!ensureConnection()) return;
+
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const projects = parseCsv(text);
+
+        if (!projects.length) {
+          setStatus(
+            "Nenhum registro encontrado. O CSV precisa conter as colunas title, html, css, js e mode.",
+            "error"
+          );
+          return;
+        }
+
+        let imported = 0;
+
+        for (const project of projects) {
+          const { error } = await supabaseClient
+            .from("snippets")
+            .insert(project);
+
+          if (error) {
+            console.error("Erro em uma linha do CSV:", error);
+          } else {
+            imported++;
+          }
+        }
+
+        await loadProjects();
+
+        setStatus(
+          "Importação concluída: " + imported + " de " + projects.length + " projetos.",
+          imported ? "success" : "error"
+        );
+      } catch (error) {
+        setStatus("Erro ao importar CSV:\n" + error.message, "error");
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    $("connectBtn").addEventListener("click", connectSupabase);
+    $("refreshBtn").addEventListener("click", loadProjects);
+    $("saveBtn").addEventListener("click", saveProject);
+    $("updateBtn").addEventListener("click", updateProject);
+    $("deleteBtn").addEventListener("click", deleteProject);
+    $("newBtn").addEventListener("click", newProject);
+    $("previewBtn").addEventListener("click", updatePreview);
+    $("projectSearch").addEventListener("input", renderProjects);
+    $("searchCodeBtn").addEventListener("click", searchInCode);
+    $("clearSearchBtn").addEventListener("click", () => {
+      $("codeSearch").value = "";
+      $("searchResult").textContent = "";
+    });
+    $("exportBtn").addEventListener("click", exportCsv);
+    $("importBtn").addEventListener("click", () => $("csvFile").click());
+    $("csvFile").addEventListener("change", importCsvFile);
+
+    ["htmlCode", "cssCode", "jsCode"].forEach((id) => {
+      $(id).addEventListener("input", updatePreview);
+    });
+
+    $("codeSearch").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") searchInCode();
+    });
+
+    updatePreview();
+  </script>
+</body>
+</html>

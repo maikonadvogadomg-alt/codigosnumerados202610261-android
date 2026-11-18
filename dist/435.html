@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Comparador Jurídico — Correção + Juros (Simples/Compostos) por Competência</title>
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --panel2:#0b1220; --txt:#e5e7eb; --muted:#9ca3af;
+      --accent:#f59e0b; --good:#22c55e; --bad:#ef4444; --info:#60a5fa; --paper:#ffffff;
+      --line:rgba(255,255,255,.14);
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; background:#e5e7eb; color:#0b1220;}
+    header{background:var(--bg); color:var(--txt); padding:14px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px;}
+    header h1{font-size:14px; margin:0; letter-spacing:.4px; text-transform:uppercase;}
+    header .small{font-size:12px; color:var(--muted)}
+    .wrap{display:flex; height:calc(100vh - 56px); gap:14px; padding:14px;}
+    .left{width:420px; min-width:340px; background:var(--panel); color:var(--txt); border-radius:12px; padding:14px; overflow:auto;}
+    .right{flex:1; background:#cbd5e1; border-radius:12px; padding:14px; overflow:auto;}
+    h2{font-size:12px; margin:14px 0 8px; color:var(--txt); text-transform:uppercase; letter-spacing:.5px;}
+    .hint{font-size:12px; color:var(--muted); line-height:1.35; background:rgba(96,165,250,.08); border-left:3px solid var(--info); padding:10px; border-radius:8px;}
+    .box{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); border-radius:10px; padding:10px; margin-top:8px;}
+    label{font-size:12px; color:var(--muted); display:block; margin:8px 0 6px;}
+    input, select, textarea{
+      width:100%; background:var(--panel2); color:var(--txt); border:1px solid var(--line);
+      border-radius:8px; padding:10px; outline:none; font-size:13px;
+    }
+    textarea{min-height:96px; resize:vertical; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+    button{
+      border:0; border-radius:10px; padding:11px 10px; font-weight:800; cursor:pointer;
+      text-transform:uppercase; letter-spacing:.3px; font-size:11px;
+    }
+    .b1{background:var(--accent); color:#111827;}
+    .b2{background:var(--bad); color:white;}
+    .b3{background:var(--good); color:#052e16;}
+    .b4{background:var(--info); color:#0b1220;}
+    .b5{background:#fff; color:#111827; border:1px solid #cbd5e1;}
+    .status{white-space:pre-wrap; font-size:12px; color:var(--txt); background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.08); padding:10px; border-radius:10px;}
+    .paper{background:var(--paper); border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,.18); height:100%; display:flex; flex-direction:column;}
+    .paper h3{margin:0 0 8px; font-size:14px;}
+    .topActions{display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between;}
+    .topActions .btns{display:flex; gap:8px; flex-wrap:wrap;}
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;}
+    .card{background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px;}
+    .card h4{margin:0 0 6px; font-size:13px;}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    table{border-collapse:collapse; width:100%; font-size:12px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;}
+    th, td{border-bottom:1px solid #e2e8f0; padding:8px 10px; text-align:left; vertical-align:top;}
+    th{background:#f1f5f9; position:sticky; top:0; z-index:2;}
+    .pill{display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; border:1px solid #e2e8f0; background:#f8fafc;}
+    .warn{color:#b45309}
+    .ok{color:#166534}
+    .muted{color:#64748b}
+    details{margin-top:10px}
+    summary{cursor:pointer; font-weight:800; color:var(--txt);}
+    .overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999;}
+    .ovbox{background:white; border-radius:12px; padding:16px 18px; min-width:320px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .spin{width:18px; height:18px; border:3px solid #cbd5e1; border-top-color:var(--accent); border-radius:50%; display:inline-block; animation:sp 1s linear infinite; vertical-align:middle; margin-right:10px;}
+    @keyframes sp{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Comparador Jurídico — Evolução mensal (correção + juros) e diferença pós-sentença</h1>
+    <div class="small">Dois cenários • competência mensal • importação/exportação • opcional: buscar séries BCB/SGS</div>
+  </div>
+  <div class="small mono" id="clock"></div>
+</header>
+
+<div class="overlay" id="ov">
+  <div class="ovbox">
+    <div><span class="spin"></span><b id="ovMsg">Processando…</b></div>
+    <div class="muted" id="ovSub" style="margin-top:6px">Aguarde.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="left">
+    <div class="hint">
+      Use para comparar: <b>contrato/banco</b> (ex.: Price/juros capitalizados) x <b>pós-sentença</b> (ex.: sem capitalização mensal, troca de correção, mora diferente).<br><br>
+      Base: tabela mensal (YYYY-MM) com colunas de índices/taxas.
+    </div>
+
+    <h2>1) Importar índices e pagamentos</h2>
+    <div class="box">
+      <label>Importar arquivo de índices (CSV ou JSON)</label>
+      <input id="fileIndex" type="file" accept=".csv,.json,.txt" />
+      <div class="row" style="margin-top:8px">
+        <button class="b4" id="btnLoadIndex">Importar Índices</button>
+        <button class="b2" id="btnClearIndex">Limpar Índices</button>
+      </div>
+
+      <label style="margin-top:10px">Importar pagamentos (opcional) (CSV ou JSON)</label>
+      <input id="filePay" type="file" accept=".csv,.json,.txt" />
+      <div class="row" style="margin-top:8px">
+        <button class="b4" id="btnLoadPay">Importar Pagamentos</button>
+        <button class="b2" id="btnClearPay">Limpar Pagamentos</button>
+      </div>
+
+      <details>
+        <summary>Formato dos arquivos (exemplos)</summary>
+        <div class="hint" style="margin-top:10px">
+          <b>Índices (CSV):</b><br>
+          <span class="mono">competencia,correcao_pct,rem_pct,mora_pct</span><br>
+          <span class="mono">2021-01,0.35,1.80,1.00</span><br>
+          <span class="mono">2021-02,0.22,1.75,1.00</span><br><br>
+          <b>Índices (JSON):</b><br>
+          <span class="mono">[{ "competencia":"2021-01","correcao_pct":0.35,"rem_pct":1.80,"mora_pct":1.00 }]</span><br><br>
+          <b>Pagamentos (CSV):</b><br>
+          <span class="mono">competencia,pagamento</span><br>
+          <span class="mono">2021-03,350.00</span><br><br>
+          <b>Pagamentos (JSON):</b><br>
+          <span class="mono">[{ "competencia":"2021-03","pagamento":350.00 }]</span>
+        </div>
+      </details>
+    </div>
+
+    <h2>2) (Opcional) Buscar série do Banco Central (SGS)</h2>
+    <div class="box">
+      <div class="row3">
+        <div>
+          <label>Código SGS</label>
+          <input id="sgsCode" placeholder="Ex.: 11, 433, ..." />
+        </div>
+        <div>
+          <label>De (YYYY-MM-DD)</label>
+          <input id="sgsStart" placeholder="2021-01-01" />
+        </div>
+        <div>
+          <label>Até (YYYY-MM-DD)</label>
+          <input id="sgsEnd" placeholder="2021-12-31" />
+        </div>
+      </div>
+      <label>Salvar no campo (coluna) do índice</label>
+      <input id="sgsField" placeholder="Ex.: correcao_pct (ou rem_pct, mora_pct)" />
+      <div class="row" style="margin-top:8px">
+        <button class="b4" id="btnFetchSGS">Buscar e Mesclar</button>
+        <button class="b5" id="btnHelpSGS">Ajuda SGS</button>
+      </div>
+      <div class="muted" style="margin-top:8px">
+        Observação: depende do navegador permitir CORS. Se falhar, use importação CSV/JSON.
+      </div>
+    </div>
+
+    <h2>3) Cenários (Banco/Contrato vs Pós-sentença)</h2>
+
+    <div class="box">
+      <div class="row">
+        <div>
+          <label>Competência inicial</label>
+          <input id="startComp" placeholder="2021-01" value="2021-01" />
+        </div>
+        <div>
+          <label>Competência final</label>
+          <input id="endComp" placeholder="2021-12" value="2021-12" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:8px">
+        <div>
+          <label>Valor inicial (principal)</label>
+          <input id="principal" type="number" value="10000" />
+        </div>
+        <div>
+          <label>Mora a partir de (YYYY-MM) (opcional)</label>
+          <input id="moraFrom" placeholder="2021-06" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:8px">
+        <div>
+          <label>Pagamentos: aplicar?</label>
+          <select id="usePays">
+            <option value="no" selected>Não</option>
+            <option value="yes">Sim (usar tabela importada)</option>
+          </select>
+        </div>
+        <div>
+          <label>Ordem de aplicação (mês)</label>
+          <select id="order">
+            <option value="corr-rem-mora-pay" selected>Correção → Remuneração → Mora → Pagamento</option>
+            <option value="pay-corr-rem-mora">Pagamento → Correção → Remuneração → Mora</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="row">
+        <div>
+          <label class="pill">Cenário A (ex.: Banco/Contrato)</label>
+          <label>Campo de correção (coluna)</label>
+          <input id="aCorrField" value="correcao_pct" />
+          <label>Campo juros remuneração (coluna)</label>
+          <input id="aRemField" value="rem_pct" />
+          <label>Campo juros mora (coluna)</label>
+          <input id="aMoraField" value="mora_pct" />
+          <label>Regra juros remuneração</label>
+          <select id="aRemMode">
+            <option value="compound_monthly" selected>Composto mensal (capitaliza todo mês)</option>
+            <option value="simple_monthly">Simples mensal (não capitaliza, acumula separado)</option>
+            <option value="compound_annual">Composto anual (capitaliza só em dezembro)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="pill">Cenário B (ex.: Pós-sentença)</label>
+          <label>Campo de correção (coluna)</label>
+          <input id="bCorrField" value="correcao_pct" />
+          <label>Campo juros remuneração (coluna)</label>
+          <input id="bRemField" value="rem_pct" />
+          <label>Campo juros mora (coluna)</label>
+          <input id="bMoraField" value="mora_pct" />
+          <label>Regra juros remuneração</label>
+          <select id="bRemMode">
+            <option value="compound_monthly">Composto mensal (capitaliza todo mês)</option>
+            <option value="simple_monthly" selected>Simples mensal (não capitaliza)</option>
+            <option value="compound_annual">Composto anual (capitaliza só em dezembro)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="b1" id="btnRun">Calcular e Comparar</button>
+        <button class="b2" id="btnReset">Limpar Tudo</button>
+      </div>
+    </div>
+
+    <h2>Status</h2>
+    <div class="status" id="status">Pronto.</div>
+
+    <details>
+      <summary>Manual rápido (como montar as colunas)</summary>
+      <div class="hint" style="margin-top:10px">
+        <b>Você controla as colunas no arquivo de índices.</b> Ex.:<br>
+        • <span class="mono">correcao_pct</span> = correção do mês em % (ex.: 0.35 = 0,35%)<br>
+        • <span class="mono">rem_pct</span> = juros remuneratórios do mês em % (ex.: 1.80 = 1,80%)<br>
+        • <span class="mono">mora_pct</span> = juros de mora do mês em % (ex.: 1.00 = 1,00%)<br><br>
+        Na sentença, você pode trocar: o campo de correção, os juros, e a regra de capitalização (simples vs composto).<br><br>
+        <b>Simples mensal</b>: calcula juros do mês e acumula em “juros simples acumulados” (não entra no principal).<br>
+        <b>Composto mensal</b>: juros entra no saldo e capitaliza mês a mês.<br>
+        <b>Composto anual</b>: acumula juros do ano e capitaliza apenas em dezembro (modelo simplificado).
+      </div>
+    </details>
+  </div>
+
+  <div class="right">
+    <div class="paper">
+      <div class="topActions">
+        <div>
+          <h3>Resultado</h3>
+          <div class="muted" id="summaryLine">Importe índices e rode o cálculo.</div>
+        </div>
+        <div class="btns">
+          <button class="b5" id="btnCopySummary">Copiar resumo (texto limpo)</button>
+          <button class="b3" id="btnExportCSV">Exportar CSV</button>
+          <button class="b4" id="btnExportJSON">Exportar JSON</button>
+          <button class="b4" id="btnExportMD">Exportar MD</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h4>Cenário A</h4>
+          <div class="mono" id="aBox">-</div>
+        </div>
+        <div class="card">
+          <h4>Cenário B</h4>
+          <div class="mono" id="bBox">-</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:10px">
+        <h4>Diferença (A - B) e proveito econômico</h4>
+        <div class="mono" id="dBox">-</div>
+      </div>
+
+      <div style="margin-top:10px; flex:1; overflow:auto;">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Competência</th>
+              <th>A saldo</th>
+              <th>B saldo</th>
+              <th>A - B</th>
+              <th>Notas</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="5" class="muted">Sem dados.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================
+   Estado
+========================== */
+const LSKEY = "cmp_juros_v1_state";
+let INDEX = new Map();   // competencia -> { ...campos }
+let PAYS  = new Map();   // competencia -> pagamento number
+let LAST = null;         // { rows, summary }
+
+/* ==========================
+   Utils
+========================== */
+function setClock(){
+  document.getElementById("clock").textContent = new Date().toLocaleString("pt-BR");
+}
+setInterval(setClock, 1000); setClock();
+
+function ov(on, msg, sub){
+  const o = document.getElementById("ov");
+  o.style.display = on ? "flex" : "none";
+  if (msg) document.getElementById("ovMsg").textContent = msg;
+  if (sub) document.getElementById("ovSub").textContent = sub;
+}
+function setStatus(s){ document.getElementById("status").textContent = s; }
+
+function download(filename, text, mime="text/plain;charset=utf-8"){
+  const blob = new Blob([text], {type:mime});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+function parseCSV(text){
+  const lines = (text||"").replace(/\r\n/g,"\n").split("\n").filter(l=>l.trim().length);
+  if (!lines.length) return [];
+  const head = splitCSVLine(lines[0]).map(h=>h.trim());
+  const rows = [];
+  for (let i=1;i<lines.length;i++){
+    const cols = splitCSVLine(lines[i]);
+    const obj = {};
+    for (let c=0;c<head.length;c++){
+      const key = head[c];
+      obj[key] = (cols[c] ?? "").trim();
+    }
+    rows.push(obj);
+  }
+  return rows;
+
+  function splitCSVLine(line){
+    // CSV simples: separa por vírgula; suporta aspas básicas
+    const out=[]; let cur=""; let q=false;
+    for (let i=0;i<line.length;i++){
+      const ch=line[i];
+      if (ch === '"'){ q = !q; continue; }
+      if (!q && ch === ","){ out.push(cur); cur=""; continue; }
+      cur += ch;
+    }
+    out.push(cur);
+    return out;
+  }
+}
+function toNumber(x){
+  if (x == null) return 0;
+  if (typeof x === "number") return x;
+  const s = String(x).trim().replace(/\./g,"").replace(",","."); // tolera 1.234,56
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+function fmtBRL(n){
+  return (Number(n)||0).toLocaleString("pt-BR",{style:"currency", currency:"BRL"});
+}
+function ymValid(s){
+  return /^\d{4}-\d{2}$/.test(s);
+}
+function ymToDate(ym){
+  const [y,m]=ym.split("-").map(Number);
+  return new Date(y, m-1, 1);
+}
+function dateToYM(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  return `${y}-${m}`;
+}
+function listMonths(startYM, endYM){
+  if (!ymValid(startYM) || !ymValid(endYM)) return [];
+  const a = ymToDate(startYM);
+  const b = ymToDate(endYM);
+  if (a > b) return [];
+  const out = [];
+  const d = new Date(a.getTime());
+  while (d <= b){
+    out.push(dateToYM(d));
+    d.setMonth(d.getMonth()+1);
+  }
+  return out;
+}
+
+/* ==========================
+   Importação Índices
+========================== */
+async function loadIndexFile(file){
+  const txt = await file.text();
+  let rows = [];
+  if (file.name.toLowerCase().endsWith(".json")){
+    rows = JSON.parse(txt);
+    if (!Array.isArray(rows)) throw new Error("JSON de índices deve ser um array de objetos.");
+  } else {
+    rows = parseCSV(txt);
+  }
+
+  let count = 0;
+  for (const r of rows){
+    const comp = (r.competencia || r.Competencia || r.COMP || "").trim();
+    if (!ymValid(comp)) continue;
+    const obj = {};
+    for (const [k,v] of Object.entries(r)){
+      if (k === "competencia" || k === "Competencia" || k === "COMP") continue;
+      obj[k.trim()] = toNumber(v);
+    }
+    INDEX.set(comp, {competencia: comp, ...obj});
+    count++;
+  }
+  return count;
+}
+
+/* ==========================
+   Importação Pagamentos
+========================== */
+async function loadPayFile(file){
+  const txt = await file.text();
+  let rows = [];
+  if (file.name.toLowerCase().endsWith(".json")){
+    rows = JSON.parse(txt);
+    if (!Array.isArray(rows)) throw new Error("JSON de pagamentos deve ser um array de objetos.");
+  } else {
+    rows = parseCSV(txt);
+  }
+
+  let count=0;
+  for (const r of rows){
+    const comp = (r.competencia || r.Competencia || "").trim();
+    if (!ymValid(comp)) continue;
+    const pag = toNumber(r.pagamento ?? r.Pagamento ?? r.valor ?? r.Valor);
+    if (!Number.isFinite(pag)) continue;
+    PAYS.set(comp, pag);
+    count++;
+  }
+  return count;
+}
+
+/* ==========================
+   SGS (BCB)
+========================== */
+async function fetchSGS(code, start, end){
+  const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${encodeURIComponent(code)}/dados?formato=json&dataInicial=${encodeURIComponent(start)}&dataFinal=${encodeURIComponent(end)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Falha SGS: HTTP ${res.status}`);
+  const data = await res.json(); // [{data:"dd/mm/aaaa", valor:"x"}]
+  return data;
+}
+function sgsToYM(dataStr){
+  // dd/mm/aaaa -> YYYY-MM
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dataStr || "");
+  if (!m) return null;
+  const mm = m[2];
+  const yy = m[3];
+  return `${yy}-${mm}`;
+}
+
+/* ==========================
+   Cálculo mensal (cenário)
+========================== */
+function calcScenario(months, principal, cfg){
+  let saldo = principal;                 // saldo principal/capitalizado
+  let jurosSimplesAcum = 0;              // juros remuneratórios simples acumulados
+  let jurosMoraAcum = 0;                 // mora acumulada (sempre simples aqui, aplicada como acréscimo mensal)
+  const notes = [];
+  const rows = [];
+
+  for (const ym of months){
+    const idx = INDEX.get(ym) || {competencia: ym};
+    const corrPct = toNumber(idx[cfg.corrField]); // % mês
+    const remPct  = toNumber(idx[cfg.remField]);  // % mês
+    const moraPct = toNumber(idx[cfg.moraField]); // % mês
+
+    let paid = 0;
+    if (cfg.usePays) paid = toNumber(PAYS.get(ym));
+
+    const hasMora = cfg.moraFrom ? (ym >= cfg.moraFrom) : false;
+
+    const stepNotes = [];
+
+    function applyPay(){
+      if (paid > 0){
+        // paga primeiro mora simples acumulada, depois juros simples acumulado, depois principal
+        const before = {jurosMoraAcum, jurosSimplesAcum, saldo};
+        let p = paid;
+
+        const payMora = Math.min(p, jurosMoraAcum); jurosMoraAcum -= payMora; p -= payMora;
+        const payJS   = Math.min(p, jurosSimplesAcum); jurosSimplesAcum -= payJS; p -= payJS;
+        const payCap  = Math.min(p, saldo); saldo -= payCap; p -= payCap;
+
+        stepNotes.push(`pag=${paid.toFixed(2)} (mora:${payMora.toFixed(2)} js:${payJS.toFixed(2)} cap:${payCap.toFixed(2)})`);
+      }
+    }
+
+    function applyCorr(){
+      if (corrPct){
+        saldo *= (1 + corrPct/100);
+        stepNotes.push(`corr=${corrPct.toFixed(4)}%`);
+      }
+    }
+
+    function applyRem(){
+      if (!remPct) return;
+
+      if (cfg.remMode === "compound_monthly"){
+        saldo *= (1 + remPct/100);
+        stepNotes.push(`rem(comp.mensal)=${remPct.toFixed(4)}%`);
+      } else if (cfg.remMode === "simple_monthly"){
+        // simples sobre o saldo (já corrigido) do mês
+        const j = saldo * (remPct/100);
+        jurosSimplesAcum += j;
+        stepNotes.push(`rem(simples)=${remPct.toFixed(4)}% j=${j.toFixed(2)}`);
+      } else if (cfg.remMode === "compound_annual"){
+        // acumula ao longo do ano como simples e capitaliza em dezembro
+        const j = saldo * (remPct/100);
+        jurosSimplesAcum += j;
+        stepNotes.push(`rem(comp.anual)=${remPct.toFixed(4)}% j(acum)=${j.toFixed(2)}`);
+
+        if (ym.endsWith("-12")){
+          saldo += jurosSimplesAcum;
+          stepNotes.push(`capitalizou anual: +${jurosSimplesAcum.toFixed(2)}`);
+          jurosSimplesAcum = 0;
+        }
+      }
+    }
+
+    function applyMora(){
+      if (!hasMora || !moraPct) return;
+      // mora simples sobre saldo (capitalizado) do mês
+      const j = saldo * (moraPct/100);
+      jurosMoraAcum += j;
+      stepNotes.push(`mora=${moraPct.toFixed(4)}% j=${j.toFixed(2)}`);
+    }
+
+    if (cfg.order === "pay-corr-rem-mora"){
+      applyPay(); applyCorr(); applyRem(); applyMora();
+    } else {
+      applyCorr(); applyRem(); applyMora(); applyPay();
+    }
+
+    const total = saldo + jurosSimplesAcum + jurosMoraAcum;
+
+    rows.push({
+      competencia: ym,
+      saldo_capitalizado: saldo,
+      juros_rem_simples_acum: jurosSimplesAcum,
+      juros_mora_acum: jurosMoraAcum,
+      total: total,
+      corrPct, remPct, moraPct,
+      pagamento: paid,
+      notas: stepNotes.join(" | ")
+    });
+  }
+
+  const last = rows[rows.length-1] || null;
+  return {rows, last};
+}
+
+/* ==========================
+   Render
+========================== */
+function render(resA, resB){
+  const aLast = resA.last, bLast = resB.last;
+  const aTotal = aLast ? aLast.total : 0;
+  const bTotal = bLast ? bLast.total : 0;
+  const diff = aTotal - bTotal;
+
+  document.getElementById("aBox").textContent = aLast
+    ? `total=${fmtBRL(aTotal)}\ncap=${fmtBRL(aLast.saldo_capitalizado)}\nrem_simples_acum=${fmtBRL(aLast.juros_rem_simples_acum)}\nmora_acum=${fmtBRL(aLast.juros_mora_acum)}`
+    : "-";
+  document.getElementById("bBox").textContent = bLast
+    ? `total=${fmtBRL(bTotal)}\ncap=${fmtBRL(bLast.saldo_capitalizado)}\nrem_simples_acum=${fmtBRL(bLast.juros_rem_simples_acum)}\nmora_acum=${fmtBRL(bLast.juros_mora_acum)}`
+    : "-";
+
+  document.getElementById("dBox").textContent =
+    `A - B = ${fmtBRL(diff)}\n(uso típico: “proveito econômico” para sucumbência/apelação, conforme estratégia do caso)`;
+
+  const s = `Período: ${document.getElementById("startComp").value} a ${document.getElementById("endComp").value} • Principal: ${fmtBRL(toNumber(document.getElementById("principal").value))} • Índices: ${INDEX.size} meses • Pagamentos: ${PAYS.size} meses`;
+  document.getElementById("summaryLine").textContent = s;
+
+  // tabela
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  const rows = [];
+  const mapB = new Map(resB.rows.map(r=>[r.competencia, r]));
+
+  for (const ra of resA.rows){
+    const rb = mapB.get(ra.competencia);
+    const at = ra.total;
+    const bt = rb ? rb.total : 0;
+    const df = at - bt;
+
+    rows.push({
+      competencia: ra.competencia,
+      A_total: at,
+      B_total: bt,
+      diff: df,
+      A_notas: ra.notas,
+      B_notas: rb ? rb.notas : ""
+    });
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="mono">${ra.competencia}</td>
+      <td>${fmtBRL(at)}</td>
+      <td>${fmtBRL(bt)}</td>
+      <td class="${df>=0 ? "warn" : "ok"}">${fmtBRL(df)}</td>
+      <td class="muted">${escapeHtml(ra.notas)}${rb && rb.notas ? "<br><span class='pill'>B</span> " + escapeHtml(rb.notas) : ""}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  LAST = {
+    summary: {
+      periodo_ini: document.getElementById("startComp").value,
+      periodo_fim: document.getElementById("endComp").value,
+      principal: toNumber(document.getElementById("principal").value),
+      moraFrom: document.getElementById("moraFrom").value || null,
+      total_A: aTotal,
+      total_B: bTotal,
+      diff_A_menos_B: diff
+    },
+    rows,
+    rawA: resA.rows,
+    rawB: resB.rows
+  };
+}
+
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+/* ==========================
+   Export / Copy
+========================== */
+function toCSV(rows){
+  const head = Object.keys(rows[0] || {});
+  const esc = (v) => {
+    const s = String(v ?? "");
+    if (/[,"\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+    return s;
+  };
+  const lines = [];
+  lines.push(head.join(","));
+  for (const r of rows){
+    lines.push(head.map(h=>esc(r[h])).join(","));
+  }
+  return lines.join("\n");
+}
+function makeMarkdownSummary(){
+  if (!LAST) return "Sem cálculo.";
+  const s = LAST.summary;
+  return [
+    "# Resumo — Comparação A x B",
+    "",
+    `Período: ${s.periodo_ini} a ${s.periodo_fim}`,
+    `Principal: ${fmtBRL(s.principal)}`,
+    s.moraFrom ? `Mora a partir de: ${s.moraFrom}` : "Mora: não aplicada (sem data)",
+    "",
+    `Total A: ${fmtBRL(s.total_A)}`,
+    `Total B: ${fmtBRL(s.total_B)}`,
+    `Diferença (A - B): ${fmtBRL(s.diff_A_menos_B)}`,
+    "",
+    "Observação: a planilha detalhada por competência está no CSV/JSON exportado."
+  ].join("\n");
+}
+function makePlainSummary(){
+  if (!LAST) return "Sem cálculo.";
+  const s = LAST.summary;
+  return [
+    "RESUMO — COMPARAÇÃO A x B",
+    `Período: ${s.periodo_ini} a ${s.periodo_fim}`,
+    `Principal: ${fmtBRL(s.principal)}`,
+    s.moraFrom ? `Mora a partir de: ${s.moraFrom}` : "Mora: não aplicada (sem data)",
+    `Total A: ${fmtBRL(s.total_A)}`,
+    `Total B: ${fmtBRL(s.total_B)}`,
+    `Diferença (A - B): ${fmtBRL(s.diff_A_menos_B)}`
+  ].join("\n");
+}
+
+/* ==========================
+   Listeners
+========================== */
+document.getElementById("btnLoadIndex").addEventListener("click", async ()=>{
+  const f = document.getElementById("fileIndex").files[0];
+  if (!f) return alert("Selecione um arquivo de índices (CSV/JSON).");
+  ov(true, "Importando índices…", f.name);
+  try{
+    const n = await loadIndexFile(f);
+    setStatus(`Índices importados/mesclados: ${n}\nTotal em memória: ${INDEX.size}`);
+  }catch(e){
+    alert("Falha ao importar índices: " + e.message);
+  }finally{
+    ov(false);
+  }
+});
+
+document.getElementById("btnClearIndex").addEventListener("click", ()=>{
+  if (!confirm("Limpar índices?")) return;
+  INDEX.clear();
+  setStatus("Índices limpos.");
+});
+
+document.getElementById("btnLoadPay").addEventListener("click", async ()=>{
+  const f = document.getElementById("filePay").files[0];
+  if (!f) return alert("Selecione um arquivo de pagamentos (CSV/JSON).");
+  ov(true, "Importando pagamentos…", f.name);
+  try{
+    const n = await loadPayFile(f);
+    setStatus(`Pagamentos importados/mesclados: ${n}\nTotal em memória: ${PAYS.size}`);
+  }catch(e){
+    alert("Falha ao importar pagamentos: " + e.message);
+  }finally{
+    ov(false);
+  }
+});
+
+document.getElementById("btnClearPay").addEventListener("click", ()=>{
+  if (!confirm("Limpar pagamentos?")) return;
+  PAYS.clear();
+  setStatus("Pagamentos limpos.");
+});
+
+document.getElementById("btnHelpSGS").addEventListener("click", ()=>{
+  alert(
+`Como usar SGS (BCB):
+1) Informe o código da série (SGS).
+2) Datas no formato YYYY-MM-DD.
+3) Informe em qual coluna salvar (ex.: correcao_pct).
+4) Clique “Buscar e Mesclar”.
+
+Dica: se o SGS retornar dados diários, aqui ele será agregado por mês:
+- pega o último valor existente do mês como valor da competência.
+
+Se der erro de rede/CORS, use importação CSV/JSON.`
+  );
+});
+
+document.getElementById("btnFetchSGS").addEventListener("click", async ()=>{
+  const code = document.getElementById("sgsCode").value.trim();
+  const start = document.getElementById("sgsStart").value.trim();
+  const end = document.getElementById("sgsEnd").value.trim();
+  const field = document.getElementById("sgsField").value.trim();
+  if (!code || !start || !end || !field) return alert("Preencha código SGS, datas e o campo/coluna de destino.");
+
+  ov(true, "Buscando SGS…", `Série ${code}`);
+  try{
+    const data = await fetchSGS(code, start, end);
+
+    // agrega por competência: pega o último valor do mês
+    const monthLast = new Map();
+    for (const it of data){
+      const ym = sgsToYM(it.data);
+      if (!ym) continue;
+      monthLast.set(ym, toNumber(it.valor));
+    }
+
+    // mescla
+    let merged = 0;
+    for (const [ym, val] of monthLast.entries()){
+      const cur = INDEX.get(ym) || {competencia: ym};
+      cur[field] = val;
+      INDEX.set(ym, cur);
+      merged++;
+    }
+    setStatus(`SGS mesclado em "${field}": ${merged} competência(s). Total índices: ${INDEX.size}`);
+  }catch(e){
+    alert("Falha SGS: " + e.message);
+  }finally{
+    ov(false);
+  }
+});
+
+document.getElementById("btnRun").addEventListener("click", ()=>{
+  const start = document.getElementById("startComp").value.trim();
+  const end = document.getElementById("endComp").value.trim();
+  if (!ymValid(start) || !ymValid(end)) return alert("Competências devem estar em YYYY-MM.");
+  const months = listMonths(start, end);
+  if (!months.length) return alert("Período inválido.");
+
+  const principal = toNumber(document.getElementById("principal").value);
+  const moraFrom = document.getElementById("moraFrom").value.trim();
+  if (moraFrom && !ymValid(moraFrom)) return alert("Mora a partir de deve estar em YYYY-MM (ou vazio).");
+
+  if (INDEX.size === 0){
+    const ok = confirm("Você não importou índices. Quer continuar assim mesmo (tudo zero)?");
+    if (!ok) return;
+  }
+
+  ov(true, "Calculando…", "Aplicando índices por competência");
+  setTimeout(()=>{
+    try{
+      const common = {
+        order: document.getElementById("order").value,
+        usePays: document.getElementById("usePays").value === "yes",
+        moraFrom: moraFrom || null
+      };
+
+      const cfgA = {
+        ...common,
+        corrField: document.getElementById("aCorrField").value.trim(),
+        remField: document.getElementById("aRemField").value.trim(),
+        moraField: document.getElementById("aMoraField").value.trim(),
+        remMode: document.getElementById("aRemMode").value
+      };
+      const cfgB = {
+        ...common,
+        corrField: document.getElementById("bCorrField").value.trim(),
+        remField: document.getElementById("bRemField").value.trim(),
+        moraField: document.getElementById("bMoraField").value.trim(),
+        remMode: document.getElementById("bRemMode").value
+      };
+
+      const resA = calcScenario(months, principal, cfgA);
+      const resB = calcScenario(months, principal, cfgB);
+      render(resA, resB);
+
+      setStatus(`Concluído.\nMeses: ${months.length}\nA total: ${fmtBRL(resA.last?.total||0)}\nB total: ${fmtBRL(resB.last?.total||0)}`);
+    }catch(e){
+      console.error(e);
+      alert("Erro no cálculo: " + e.message);
+    }finally{
+      ov(false);
+    }
+  }, 30);
+});
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if (!confirm("Limpar índices, pagamentos e resultados?")) return;
+  INDEX.clear(); PAYS.clear(); LAST = null;
+  document.getElementById("aBox").textContent = "-";
+  document.getElementById("bBox").textContent = "-";
+  document.getElementById("dBox").textContent = "-";
+  document.getElementById("summaryLine").textContent = "Importe índices e rode o cálculo.";
+  document.getElementById("tbody").innerHTML = `<tr><td colspan="5" class="muted">Sem dados.</td></tr>`;
+  setStatus("Pronto.");
+});
+
+document.getElementById("btnExportCSV").addEventListener("click", ()=>{
+  if (!LAST?.rows?.length) return alert("Sem resultado para exportar.");
+  download("comparacao_A_vs_B.csv", toCSV(LAST.rows), "text/csv;charset=utf-8");
+});
+
+document.getElementById("btnExportJSON").addEventListener("click", ()=>{
+  if (!LAST) return alert("Sem resultado para exportar.");
+  download("comparacao_A_vs_B.json", JSON.stringify(LAST, null, 2), "application/json;charset=utf-8");
+});
+
+document.getElementById("btnExportMD").addEventListener("click", ()=>{
+  download("resumo_comparacao.md", makeMarkdownSummary(), "text/markdown;charset=utf-8");
+});
+
+document.getElementById("btnCopySummary").addEventListener("click", async ()=>{
+  const txt = makePlainSummary();
+  try{
+    await navigator.clipboard.writeText(txt);
+    setStatus("Resumo copiado (texto limpo).");
+  }catch(e){
+    alert("Não consegui copiar automaticamente. Copie manualmente:\n\n" + txt);
+  }
+});
+</script>
+</body>
+</html>

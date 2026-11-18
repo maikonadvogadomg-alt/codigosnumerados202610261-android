@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK Decodificador & Comparador de Logs v6</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkBg: '#0d1208',
+            panelBg: '#141c0d',
+            borderGreen: '#223018',
+            textGreen: '#c8dda8',
+            brandGreen: '#5fad3c',
+            focusGreen: '#7dcf55',
+            accentGold: '#d4aa4e',
+            accentRed: '#ef4444',
+            accentBlue: '#3b82f6'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1208; }
+    ::-webkit-scrollbar-thumb { background: #223018; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5fad3c; }
+  </style>
+</head>
+<body class="bg-darkBg text-textGreen font-sans min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-panelBg border-b border-borderGreen p-4 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">🧠</span>
+      <div>
+        <h1 class="text-brandGreen font-bold text-lg flex items-center gap-2">
+          SK Decodificador & Comparador de Logs <span class="text-xs bg-brandGreen/20 text-brandGreen px-2 py-0.5 rounded">v6</span>
+        </h1>
+        <p class="text-[11px] text-focusGreen font-mono">Maikon Caldeira — Tradutor de "Inglês Embolado" de Compilação (EAS/Expo/NPM)</p>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="switchTab('decoder')" id="btnTabDecoder" class="px-3 py-1.5 rounded bg-brandGreen text-darkBg font-bold text-xs transition-all">Decodificar Erro</button>
+      <button onclick="switchTab('comparer')" id="btnTabComparer" class="px-3 py-1.5 rounded bg-borderGreen text-textGreen font-bold text-xs transition-all">Comparar Logs (Certo vs Errado)</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-4 overflow-hidden flex flex-col">
+    
+    <!-- ABA 1: DECODIFICADOR -->
+    <div id="tabDecoder" class="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden">
+      <!-- Input do Log -->
+      <div class="flex-1 flex flex-col bg-panelBg border border-borderGreen rounded-lg p-4">
+        <h2 class="text-xs font-bold text-brandGreen uppercase mb-2">📥 Cole o Log Embolado (RAW) aqui:</h2>
+        <textarea id="rawLogInput" class="flex-1 w-full bg-darkBg border border-borderGreen rounded p-3 text-xs font-mono text-matrixGreen outline-none resize-none" placeholder="Cole aqui aquelas linhas gigantes de erro que a EAS ou o terminal geraram..."></textarea>
+        <button onclick="decodeLog()" class="mt-3 w-full bg-brandGreen text-darkBg py-2.5 rounded-lg text-xs font-bold hover:bg-focusGreen transition-all">Traduzir e Analisar Erro</button>
+      </div>
+
+      <!-- Resultado da Decodificação -->
+      <div class="flex-1 flex flex-col bg-panelBg border border-borderGreen rounded-lg p-4 overflow-y-auto space-y-4">
+        <h2 class="text-xs font-bold text-brandGreen uppercase border-b border-borderGreen pb-2">📋 Diagnóstico em Português</h2>
+        
+        <div id="noAnalysis" class="text-center py-12 text-gray-500 italic text-xs">
+          Aguardando você colar um log para analisar...
+        </div>
+
+        <div id="analysisResult" class="hidden space-y-4 text-xs">
+          <!-- Fase do Erro -->
+          <div class="bg-darkBg p-3 rounded border border-borderGreen">
+            <p class="text-gray-400 font-bold uppercase text-[10px]">📍 Onde o App Parou:</p>
+            <p id="errorPhase" class="text-accentGold font-mono font-bold text-sm mt-1">Fase Desconhecida</p>
+          </div>
+
+          <!-- O Culpado -->
+          <div class="bg-darkBg p-3 rounded border border-borderGreen">
+            <p class="text-gray-400 font-bold uppercase text-[10px]">🔍 O Culpado (Linha do Erro):</p>
+            <pre id="errorCulprit" class="text-accentRed font-mono mt-1 whitespace-pre-wrap bg-red-950/30 p-2 rounded border border-red-900/30 overflow-x-auto text-[11px]"></pre>
+          </div>
+
+          <!-- Tradução Simples -->
+          <div class="bg-darkBg p-3 rounded border border-borderGreen">
+            <p class="text-brandGreen font-bold uppercase text-[10px]">🗣️ O que isso significa em português?</p>
+            <p id="errorTranslation" class="text-white mt-1 leading-relaxed">Nenhuma tradução disponível.</p>
+          </div>
+
+          <!-- Como Corrigir -->
+          <div class="bg-darkBg p-3 rounded border border-borderGreen">
+            <p class="text-focusGreen font-bold uppercase text-[10px]">🛠️ Plano de Ação (Como Resolver):</p>
+            <div id="errorFix" class="text-textGreen mt-1 space-y-1.5 leading-relaxed"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 2: COMPARADOR -->
+    <div id="tabComparer" class="hidden flex-1 flex flex-col overflow-hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-hidden">
+        <!-- Log que deu CERTO -->
+        <div class="flex flex-col bg-panelBg border border-borderGreen rounded-lg p-4">
+          <h2 class="text-xs font-bold text-brandGreen uppercase mb-2">🟢 Log do App que deu CERTO (Sucesso):</h2>
+          <textarea id="logSuccessInput" class="flex-1 w-full bg-darkBg border border-borderGreen rounded p-3 text-xs font-mono text-gray-400 outline-none resize-none" placeholder="Cole o log de sucesso aqui..."></textarea>
+        </div>
+
+        <!-- Log que deu ERRADO -->
+        <div class="flex flex-col bg-panelBg border border-borderGreen rounded-lg p-4">
+          <h2 class="text-xs font-bold text-accentRed uppercase mb-2">🔴 Log do App que deu ERRADO (Falha):</h2>
+          <textarea id="logFailedInput" class="flex-1 w-full bg-darkBg border border-borderGreen rounded p-3 text-xs font-mono text-accentRed/80 outline-none resize-none" placeholder="Cole o log de erro aqui..."></textarea>
+        </div>
+      </div>
+      <button onclick="compareLogs()" class="mt-3 bg-accentBlue text-white py-2.5 rounded-lg text-xs font-bold hover:bg-blue-600 transition-all">Comparar Fases e Achar a Divergência</button>
+
+      <!-- Resultado da Comparação -->
+      <div id="comparisonResult" class="hidden mt-4 bg-panelBg border border-borderGreen rounded-lg p-4 max-h-60 overflow-y-auto text-xs">
+        <h3 class="text-brandGreen font-bold mb-2">Análise de Divergência:</h3>
+        <div id="comparisonOutput" class="space-y-2"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Alternar Abas
+    function switchTab(tab) {
+      if (tab === 'decoder') {
+        document.getElementById('tabDecoder').classList.remove('hidden');
+        document.getElementById('tabComparer').classList.add('hidden');
+        document.getElementById('btnTabDecoder').className = "px-3 py-1.5 rounded bg-brandGreen text-darkBg font-bold text-xs transition-all";
+        document.getElementById('btnTabComparer').className = "px-3 py-1.5 rounded bg-borderGreen text-textGreen font-bold text-xs transition-all";
+      } else {
+        document.getElementById('tabDecoder').classList.add('hidden');
+        document.getElementById('tabComparer').classList.remove('hidden');
+        document.getElementById('btnTabDecoder').className = "px-3 py-1.5 rounded bg-borderGreen text-textGreen font-bold text-xs transition-all";
+        document.getElementById('btnTabComparer').className = "px-3 py-1.5 rounded bg-brandGreen text-darkBg font-bold text-xs transition-all";
+      }
+    }
+
+    // Lógica de Decodificação de Erros Comuns da EAS/NPM
+    function decodeLog() {
+      const raw = document.getElementById('rawLogInput').value;
+      if (!raw.trim()) return alert("Por favor, cole um log de erro primeiro!");
+
+      document.getElementById('noAnalysis').classList.add('hidden');
+      const resultDiv = document.getElementById('analysisResult');
+      resultDiv.classList.remove('hidden');
+
+      let phase = "Compilação Geral";
+      let culprit = "Não foi possível isolar a linha exata do erro no log fornecido.";
+      let translation = "Ocorreu um erro genérico durante a montagem do aplicativo. O compilador encontrou um problema inesperado.";
+      let steps = [
+        "Verifique se o seu arquivo <b>package.json</b> está bem estruturado.",
+        "Confirme se todas as chaves do seu código JavaScript/React estão fechadas corretamente.",
+        "Tente rodar o comando localmente para ver um erro mais detalhado."
+      ];
+
+      // Tentar encontrar linhas de erro comuns
+      const lines = raw.split('\n');
+      
+      // 1. Erro de Dependência (NPM/Yarn)
+      if (raw.includes("npm ERR!") || raw.includes("Yarn pack error") || raw.includes("Resolving packages") || raw.includes("Could not resolve dependency")) {
+        phase = "Fase 1: Instalação de Dependências (Ingredientes Faltando)";
+        const errLine = lines.find(l => l.includes("ERR!") || l.includes("Could not resolve") || l.includes("error")) || "Erro ao instalar pacotes.";
+        culprit = errLine;
+        translation = "A EAS tentou baixar as bibliotecas do seu app, mas alguma delas não existe mais, tem uma versão incompatível ou está escrita errada no seu package.json.";
+        steps = [
+          "Abra o seu arquivo <b>package.json</b>.",
+          "Verifique se o nome de todas as bibliotecas está escrito corretamente.",
+          "Se você adicionou alguma biblioteca recentemente usando IA, verifique se ela realmente existe no NPM.",
+          "Remova a pasta <b>node_modules</b> e o arquivo <b>package-lock.json</b> (ou yarn.lock) e tente gerar novamente."
+        ];
+      }
+      // 2. Erro de Sintaxe / Metro Bundler
+      else if (raw.includes("SyntaxError") || raw.includes("Failed to compile") || raw.includes("Unable to resolve")) {
+        phase = "Fase 2: Compilação do Código (Erro de Escrita)";
+        const errLine = lines.find(l => l.includes("SyntaxError") || l.includes("Unable to resolve") || l.includes("Failed")) || "Erro de sintaxe no código.";
+        culprit = errLine;
+        translation = "O compilador tentou ler o seu código Javascript/React, mas encontrou um erro de escrita. É como escrever uma frase jurídica sem ponto final ou com parênteses abertos que nunca fecham.";
+        steps = [
+          "Olhe a linha do erro acima. Ela geralmente indica o nome do arquivo (ex: <i>App.js</i> ou <i>index.js</i>) e o número da linha.",
+          "Abra esse arquivo no nosso <b>SK Rastreador v6</b> e vá até a linha indicada.",
+          "Verifique se falta fechar alguma chave <code class='bg-darkBg px-1 text-accentGold'>}</code>, parênteses <code class='bg-darkBg px-1 text-accentGold'>)</code> ou se há alguma variável escrita errada.",
+          "Se o erro falar 'Unable to resolve X', significa que você importou um arquivo que mudou de nome ou foi apagado."
+        ];
+      }
+      // 3. Erro de Gradle / Android Nativo
+      else if (raw.includes("gradlew") || raw.includes("Task :app:") || raw.includes("compileReleaseJavaWithJavac") || raw.includes("Build failed with an exception")) {
+        phase = "Fase 3: Construção do APK Android (Erro de Motor Nativo)";
+        const errLine = lines.find(l => l.includes("Task :app:") || l.includes("FAILURE:") || l.includes("compile")) || "Erro na compilação do Gradle.";
+        culprit = errLine;
+        translation = "O código Javascript foi traduzido com sucesso, mas quando o motor do Android (Gradle) tentou transformar isso em um aplicativo de celular de verdade, ele falhou. Isso geralmente acontece por conflito entre bibliotecas nativas ou configuração de SDK incompatível.";
+        steps = [
+          "Verifique o arquivo <b>app.json</b> ou <b>app.config.js</b>. Certifique-se de que o campo <code class='bg-darkBg px-1 text-accentGold'>sdkVersion</code> é compatível com as bibliotecas que você usa.",
+          "Se você usa o Expo, verifique se rodou o comando <code class='bg-darkBg px-1 text-brandGreen'>npx expo install</code> para instalar as bibliotecas, pois ele instala as versões nativas corretas automaticamente.",
+          "Erros de Gradle costumam ser causados por plugins antigos ou mal configurados no seu arquivo de configuração."
+        ];
+      }
+      // 4. Erro de Assinatura / Credenciais da EAS
+      else if (raw.includes("credentials") || raw.includes("keystore") || raw.includes("provisioning profile") || raw.includes("eas.json")) {
+        phase = "Fase 4: Assinatura Digital (Erro de RG/Identidade do App)";
+        const errLine = lines.find(l => l.includes("credentials") || l.includes("keystore") || l.includes("EAS")) || "Erro de credenciais da EAS.";
+        culprit = errLine;
+        translation = "O aplicativo foi gerado com sucesso, mas a EAS não conseguiu colocar a 'assinatura digital' nele. Sem essa assinatura, o Android não permite instalar o app por segurança.";
+        steps = [
+          "Verifique se você está logado na sua conta da Expo no terminal usando o comando <code class='bg-darkBg px-1 text-brandGreen'>eas login</code>.",
+          "Verifique se o arquivo <b>eas.json</b> existe na raiz do seu projeto e se a configuração de build está correta.",
+          "Tente rodar o comando <code class='bg-darkBg px-1 text-brandGreen'>eas credentials</code> para resetar ou reconfigurar as chaves de assinatura do seu projeto na nuvem da Expo."
+        ];
+      }
+      // Se não achar nada específico, mas tiver linhas com "error"
+      else {
+        const errLine = lines.find(l => l.toLowerCase().includes("error") || l.toLowerCase().includes("failed")) || "Erro genérico detectado.";
+        culprit = errLine;
+      }
+
+      document.getElementById('errorPhase').innerText = phase;
+      document.getElementById('errorCulprit').innerText = culprit;
+      document.getElementById('errorTranslation').innerText = translation;
+      
+      const stepsContainer = document.getElementById('errorFix');
+      stepsContainer.innerHTML = steps.map((s, i) => `<p><b>${i+1}.</b> ${s}</p>`).join('');
+    }
+
+    // Lógica de Comparação de Logs
+    function compareLogs() {
+      const success = document.getElementById('logSuccessInput').value;
+      const failed = document.getElementById('logFailedInput').value;
+
+      if (!success.trim() || !failed.trim()) {
+        return alert("Por favor, preencha os dois campos de log para comparar!");
+      }
+
+      const compDiv = document.getElementById('comparisonResult');
+      const compOut = document.getElementById('comparisonOutput');
+      compDiv.classList.remove('hidden');
+
+      // Identificar fases presentes no log de sucesso
+      const phases = [
+        { name: "Instalação de Dependências", keywords: ["install", "yarn", "npm", "resolving"] },
+        { name: "Geração do Bundle Javascript", keywords: ["bundle", "metro", "minify", "assets"] },
+        { name: "Compilação do Android (Gradle)", keywords: ["gradlew", "compileRelease", "assemble"] },
+        { name: "Assinatura do APK", keywords: ["signing", "keystore", "credentials"] }
+      ];
+
+      let outputHTML = "";
+
+      phases.forEach(p => {
+        const inSuccess = p.keywords.some(k => success.toLowerCase().includes(k));
+        const inFailed = p.keywords.some(k => failed.toLowerCase().includes(k));
+
+        if (inSuccess && inFailed) {
+          outputHTML += `<p class="text-brandGreen">🟢 <b>Fase: ${p.name}</b> - Ambos os projetos passaram por aqui com sucesso.</p>`;
+        } else if (inSuccess && !inFailed) {
+          outputHTML += `
+            <div class="bg-red-950/30 p-2 rounded border border-red-900/30">
+              <p class="text-accentRed font-bold">🔴 <b>Fase: ${p.name}</b> - O app com erro FALHOU aqui!</p>
+              <p class="text-gray-400 text-[11px] mt-1">Enquanto o app de sucesso avançou para esta etapa, o app com erro parou antes ou travou logo no início dela. O problema está concentrado aqui.</p>
+            </div>
+          `;
+        } else {
+          outputHTML += `<p class="text-gray-500">⚪ <b>Fase: ${p.name}</b> - Não detectada de forma clara em nenhum dos logs.</p>`;
+        }
+      });
+
+      compOut.innerHTML = outputHTML;
+    }
+  </script>
+</body>
+</html>

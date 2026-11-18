@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netlify Build + Testador API</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f1117; color: #e0e0e0; font-family: sans-serif; padding: 16px; min-height: 100vh; }
+
+h1 { text-align: center; color: #00c7b7; margin-bottom: 4px; font-size: 1.3rem; }
+.sub { text-align: center; color: #555; font-size: 0.8rem; margin-bottom: 20px; }
+
+.abas {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  max-width: 900px; margin: 0 auto 16px;
+}
+.aba {
+  flex: 1; min-width: 130px; padding: 10px 8px;
+  border-radius: 8px; border: 1px solid #2a2d3e;
+  background: #1a1d27; color: #888;
+  font-size: 0.8rem; cursor: pointer; text-align: center;
+  transition: all 0.2s;
+}
+.aba:hover { border-color: #00c7b7; color: #00c7b7; }
+.aba.ativa { background: #00c7b7; color: #0f1117; font-weight: bold; border-color: #00c7b7; }
+
+.pag { display: none; max-width: 900px; margin: 0 auto; }
+.pag.ativa { display: block; }
+
+.card {
+  background: #1a1d27; border: 1px solid #2a2d3e;
+  border-radius: 10px; padding: 16px; margin-bottom: 14px;
+}
+.card.verde   { border-left: 4px solid #7fff7f; }
+.card.azul    { border-left: 4px solid #00c7b7; }
+.card.amarelo { border-left: 4px solid #ffcc44; }
+.card.vermelho{ border-left: 4px solid #ff7c7c; }
+.card.roxo    { border-left: 4px solid #c87cff; }
+
+.titulo { font-weight: bold; font-size: 0.95rem; margin-bottom: 12px; }
+p { color: #aaa; font-size: 0.85rem; line-height: 1.6; margin-bottom: 8px; }
+p:last-child { margin-bottom: 0; }
+
+.lbl {
+  color: #00c7b7; font-size: 0.73rem;
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 4px;
+}
+
+.cmd-box {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 6px; padding: 8px 12px; margin: 5px 0;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.cmd-txt {
+  flex: 1; font-family: monospace; font-size: 0.82rem;
+  color: #c8f0a0; word-break: break-all;
+}
+.btn-c {
+  background: #2a2d3e; color: #888; border: 1px solid #3a3d4e;
+  border-radius: 5px; padding: 4px 10px; font-size: 0.72rem;
+  cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.btn-c:hover { background: #00c7b7; color: #0f1117; border-color: #00c7b7; }
+.btn-c.ok    { background: #7fff7f; color: #0f1117; border-color: #7fff7f; }
+.cmd-desc { width: 100%; color: #555; font-size: 0.72rem; margin-top: 2px; }
+
+.btn {
+  border-radius: 8px; padding: 10px 20px;
+  font-size: 0.85rem; font-weight: bold;
+  cursor: pointer; border: none;
+  margin-right: 6px; margin-top: 8px;
+  transition: all 0.2s;
+}
+.btn-teal  { background: #00c7b7; color: #0f1117; }
+.btn-teal:hover { background: #00e5d3; }
+.btn-verde { background: transparent; color: #7fff7f; border: 1px solid #7fff7f; }
+.btn-verde:hover { background: #7fff7f; color: #0f1117; }
+.btn-roxo  { background: transparent; color: #c87cff; border: 1px solid #c87cff; }
+.btn-roxo:hover { background: #c87cff; color: #0f1117; }
+.btn-vermelho { background: transparent; color: #ff7c7c; border: 1px solid #ff7c7c; }
+.btn-vermelho:hover { background: #ff7c7c; color: #0f1117; }
+
+input[type="text"],
+input[type="number"],
+input[type="url"],
+select {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 6px; color: #c8f0a0; padding: 8px 12px;
+  font-family: monospace; font-size: 0.83rem;
+  width: 100%; margin-top: 4px;
+}
+input:focus, select:focus { outline: none; border-color: #00c7b7; }
+
+textarea {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 6px; color: #c8f0a0; padding: 10px;
+  font-size: 0.8rem; font-family: monospace;
+  resize: vertical; width: 100%; margin-top: 4px;
+}
+textarea:focus { outline: none; border-color: #00c7b7; }
+
+hr { border: none; border-top: 1px solid #2a2d3e; margin: 12px 0; }
+code {
+  background: #0a0c12; padding: 2px 6px;
+  border-radius: 4px; color: #c8f0a0; font-size: 0.8rem;
+}
+.destaque { color: #ffcc44; font-weight: bold; }
+.verde-txt { color: #7fff7f; }
+.teal-txt  { color: #00c7b7; }
+
+/* ── TESTADOR API ── */
+.metodos { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.met-btn {
+  padding: 7px 16px; border-radius: 6px;
+  border: 1px solid #2a2d3e; background: #0a0c12;
+  color: #888; cursor: pointer; font-size: 0.82rem;
+  font-weight: bold; transition: all 0.2s;
+}
+.met-btn:hover { opacity: 0.8; }
+.met-btn.sel { color: #0f1117; }
+.m-GET    { border-color: #7fff7f; }  .m-GET.sel    { background: #7fff7f; }
+.m-POST   { border-color: #7c9fff; }  .m-POST.sel   { background: #7c9fff; }
+.m-PUT    { border-color: #ffcc44; }  .m-PUT.sel    { background: #ffcc44; }
+.m-DELETE { border-color: #ff7c7c; }  .m-DELETE.sel { background: #ff7c7c; }
+.m-PATCH  { border-color: #c87cff; }  .m-PATCH.sel  { background: #c87cff; }
+
+.resp-area {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 8px; padding: 14px; margin-top: 12px;
+  display: none;
+}
+.resp-area.ok   { border-left: 4px solid #7fff7f; }
+.resp-area.erro { border-left: 4px solid #ff7c7c; }
+.resp-area.aviso{ border-left: 4px solid #ffcc44; }
+
+.status-pill {
+  display: inline-block; padding: 3px 12px;
+  border-radius: 20px; font-size: 0.78rem;
+  font-weight: bold; margin-bottom: 10px;
+}
+.s2xx { background: #002a00; color: #7fff7f; }
+.s3xx { background: #002020; color: #00c7b7; }
+.s4xx { background: #2a0000; color: #ff7c7c; }
+.s5xx { background: #2a1000; color: #ffaa44; }
+
+.resp-json {
+  font-family: monospace; font-size: 0.78rem;
+  line-height: 1.6; white-space: pre-wrap;
+  word-break: break-all; max-height: 280px;
+  overflow-y: auto; color: #c8f0a0;
+}
+
+.diagnostico {
+  background: #0f1117; border: 1px solid #2a2d3e;
+  border-radius: 6px; padding: 10px; margin-top: 10px;
+  font-size: 0.8rem; line-height: 1.8;
+}
+.diag-ok    { color: #7fff7f; }
+.diag-erro  { color: #ff7c7c; }
+.diag-aviso { color: #ffcc44; }
+.diag-info  { color: #00c7b7; }
+
+/* ── ROTAS ── */
+.rota-linha {
+  display: flex; gap: 8px; align-items: center;
+  margin-bottom: 8px; flex-wrap: wrap;
+}
+.rota-met {
+  padding: 4px 10px; border-radius: 5px;
+  font-size: 0.75rem; font-weight: bold;
+  font-family: monospace; flex-shrink: 0;
+}
+.rmet-get    { background: #002a00; color: #7fff7f; }
+.rmet-post   { background: #001a2a; color: #7c9fff; }
+.rmet-put    { background: #2a2000; color: #ffcc44; }
+.rmet-delete { background: #2a0000; color: #ff7c7c; }
+.rmet-patch  { background: #1a002a; color: #c87cff; }
+
+.rota-path { font-family: monospace; font-size: 0.83rem; flex: 1; }
+.rota-status-ok   { color: #7fff7f; font-size: 0.75rem; }
+.rota-status-erro { color: #ff7c7c; font-size: 0.75rem; }
+
+.erro-card {
+  background: #1a0000; border: 1px solid #3a0000;
+  border-radius: 8px; padding: 12px; margin-bottom: 10px;
+}
+.erro-nome  { color: #ff7c7c; font-weight: bold; font-size: 0.88rem; margin-bottom: 6px; }
+.erro-causa { color: #aaa; font-size: 0.82rem; margin-bottom: 6px; line-height: 1.5; }
+.erro-fix   { color: #7fff7f; font-size: 0.82rem; line-height: 1.5; }
+
+.tag {
+  display: inline-block; padding: 2px 8px;
+  border-radius: 4px; font-size: 0.72rem; margin: 2px;
+}
+.tag-v { background: #002a00; color: #7fff7f; }
+.tag-a { background: #2a2000; color: #ffcc44; }
+.tag-r { background: #2a0000; color: #ff7c7c; }
+.tag-t { background: #002020; color: #00c7b7; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media(max-width:600px){ .grid2 { grid-template-columns: 1fr; } }
+
+.loader {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid #2a2d3e; border-top-color: #00c7b7;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.historico-item {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 6px; padding: 8px 12px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; font-size: 0.8rem; flex-wrap: wrap;
+}
+.historico-item:hover { border-color: #00c7b7; }
+</style>
+</head>
+<body>
+
+<h1>🚀 Netlify Build + Testador de API</h1>
+<p class="sub">Configure o build, teste rotas e corrija erros — tudo num lugar só</p>
+
+<div class="abas">
+  <div class="aba ativa" onclick="ir('build',this)">⚙️ Build Netlify</div>
+  <div class="aba" onclick="ir('redirects',this)">🔀 Redirects</div>
+  <div class="aba" onclick="ir('testador',this)">🧪 Testador API</div>
+  <div class="aba" onclick="ir('erros',this)">❌ Erros de Rota</div>
+  <div class="aba" onclick="ir('gerar',this)">📦 Gerar Configs</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ABA 1 — BUILD NETLIFY
+══════════════════════════════════════════════════════ -->
+<div class="pag ativa" id="pag-build">
+
+  <div class="card azul">
+    <div class="titulo">⚙️ Configuração de Build para o Netlify</div>
+    <p>O Netlify precisa saber <span class="destaque">qual comando compila</span> e <span class="destaque">qual pasta serve</span>. Sem isso ele não abre nada.</p>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">📦 Instalação do Netlify CLI</div>
+    <div class="lbl">Instalar (só uma vez):</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">npm install -g netlify-cli</span>
+      <button class="btn-c" onclick="cp(this,'npm install -g netlify-cli')">📋</button>
+      <span class="cmd-desc">Instala o comando netlify no sistema</span>
+    </div>
+    <div class="lbl">Verificar se instalou:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify --version</span>
+      <button class="btn-c" onclick="cp(this,'netlify --version')">📋</button>
+    </div>
+    <div class="lbl">Fazer login:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify login</span>
+      <button class="btn-c" onclick="cp(this,'netlify login')">📋</button>
+      <span class="cmd-desc">Abre o navegador para login — só precisa fazer uma vez</span>
+    </div>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">🔗 Conectar e fazer deploy</div>
+    <div class="lbl">Iniciar na pasta do projeto:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify init</span>
+      <button class="btn-c" onclick="cp(this,'netlify init')">📋</button>
+      <span class="cmd-desc">Conecta a pasta ao Netlify — pergunta o comando de build e a pasta de saída</span>
+    </div>
+    <div class="lbl">Testar antes de publicar (link temporário):</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify deploy --dir=dist</span>
+      <button class="btn-c" onclick="cp(this,'netlify deploy --dir=dist')">📋</button>
+      <span class="cmd-desc">Gera um link de preview — você testa antes de ir ao ar</span>
+    </div>
+    <div class="lbl">Publicar de verdade:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify deploy --dir=dist --prod</span>
+      <button class="btn-c" onclick="cp(this,'netlify deploy --dir=dist --prod')">📋</button>
+      <span class="cmd-desc">Publica no site real</span>
+    </div>
+    <div class="lbl">Compilar e publicar de uma vez:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify deploy --build --prod</span>
+      <button class="btn-c" onclick="cp(this,'netlify deploy --build --prod')">📋</button>
+    </div>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">🖥️ Rodar localmente igual ao Netlify</div>
+    <div class="lbl">Servidor local com tudo funcionando igual ao Netlify real:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify dev</span>
+      <button class="btn-c" onclick="cp(this,'netlify dev')">📋</button>
+      <span class="cmd-desc">Redirects, funções e variáveis de ambiente — tudo igual ao servidor real</span>
+    </div>
+    <div class="lbl">Na porta específica:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify dev --port 3000</span>
+      <button class="btn-c" onclick="cp(this,'netlify dev --port 3000')">📋</button>
+    </div>
+    <div class="lbl">Ver seus sites:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify sites:list</span>
+      <button class="btn-c" onclick="cp(this,'netlify sites:list')">📋</button>
+    </div>
+    <div class="lbl">Abrir painel do site:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify open</span>
+      <button class="btn-c" onclick="cp(this,'netlify open')">📋</button>
+    </div>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">📋 Respostas certas para o netlify init</div>
+    <p>Quando rodar <code>netlify init</code> ele vai perguntar:</p>
+    <div class="lbl">Pergunta: "Build command"</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">npm run build</span>
+      <button class="btn-c" onclick="cp(this,'npm run build')">📋</button>
+    </div>
+    <div class="lbl">Pergunta: "Directory to deploy" (pasta de saída):</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">dist</span>
+      <button class="btn-c" onclick="cp(this,'dist')">📋</button>
+      <span class="cmd-desc">Se o projeto usar Next.js use: .next — se usar CRA use: build</span>
+    </div>
+    <div class="lbl">Pergunta: "Functions directory" (se não tiver funções):</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netlify/functions</span>
+      <button class="btn-c" onclick="cp(this,'netlify/functions')">📋</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ABA 2 — REDIRECTS
+══════════════════════════════════════════════════════ -->
+<div class="pag" id="pag-redirects">
+
+  <div class="card azul">
+    <div class="titulo">🔀 Por que precisa de Redirects</div>
+    <p>Sem o redirect, qualquer rota que não seja a raiz dá <span class="destaque">404</span> no Netlify.</p>
+    <p>Exemplo: você acessa <code>/clientes</code> — o Netlify procura um arquivo chamado <code>clientes</code> — não acha — dá 404.</p>
+    <p>O redirect diz: <em>"se não achar o arquivo, manda para o index.html"</em> — aí o React Router assume e funciona.</p>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">✅ Arquivo _redirects — o mais simples que resolve tudo</div>
+    <p>Crie um arquivo chamado exatamente <code>_redirects</code> (sem extensão) dentro da pasta <code>public/</code>:</p>
+    <div class="cmd-box">
+      <span class="cmd-txt">/* /index.html 200</span>
+      <button class="btn-c" onclick="cp(this,'/* /index.html 200')">📋</button>
+      <span class="cmd-desc">Só essa linha já resolve — coloque no arquivo _redirects</span>
+    </div>
+    <button class="btn btn-teal" onclick="baixarTexto('/* /index.html 200','_redirects')">⬇️ Baixar _redirects</button>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">📄 netlify.toml — configuração completa</div>
+    <p>Fica na <span class="destaque">raiz do projeto</span> (não dentro do dist). Configura tudo de uma vez:</p>
+    <textarea id="tomlConteudo" readonly style="height:220px">[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn btn-teal" onclick="cp2('tomlConteudo')">📋 Copiar</button>
+      <button class="btn btn-verde" onclick="baixarEl('tomlConteudo','netlify.toml')">⬇️ Baixar netlify.toml</button>
+    </div>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">⚙️ Garantir que o _redirects vai para o dist/ automaticamente</div>
+    <p>O Vite não copia o _redirects sozinho. Adicione isso no <code>vite.config.ts</code>:</p>
+    <textarea readonly style="height:120px">import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  base: '/',
+  plugins: [react()],
+  publicDir: 'public', // ← pasta public é copiada para dist/ automaticamente
+});</textarea>
+    <p style="margin-top:8px">Coloque o arquivo <code>_redirects</code> dentro da pasta <code>public/</code> — o Vite copia para o <code>dist/</code> no build.</p>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ABA 3 — TESTADOR API
+══════════════════════════════════════════════════════ -->
+<div class="pag" id="pag-testador">
+
+  <div class="card azul">
+    <div class="titulo">🧪 Testador de API Real</div>
+    <p>Faz requisições de verdade para qualquer URL. Mostra o resultado, o status e o diagnóstico do problema.</p>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">🔧 Configurar e testar</div>
+
+    <div class="lbl">Método:</div>
+    <div class="metodos">
+      <button class="met-btn m-GET sel"    onclick="selMetodo(this,'GET')">GET</button>
+      <button class="met-btn m-POST"   onclick="selMetodo(this,'POST')">POST</button>
+      <button class="met-btn m-PUT"    onclick="selMetodo(this,'PUT')">PUT</button>
+      <button class="met-btn m-DELETE" onclick="selMetodo(this,'DELETE')">DELETE</button>
+      <button class="met-btn m-PATCH"  onclick="selMetodo(this,'PATCH')">PATCH</button>
+    </div>
+
+    <div class="lbl">URL da API:</div>
+    <input type="url" id="apiUrl" placeholder="https://meusite.netlify.app/api/clientes"
+      onkeydown="if(event.key==='Enter')testarApi()"/>
+
+    <div class="lbl">Headers (JSON — opcional):</div>
+    <textarea id="apiHeaders" style="height:70px" placeholder='{"Authorization": "Bearer token123", "Content-Type": "application/json"}'></textarea>
+
+    <div id="bodyArea">
+      <div class="lbl">Body (JSON — para POST/PUT/PATCH):</div>
+      <textarea id="apiBody" style="height:90px" placeholder='{"nome": "João", "email": "joao@email.com"}'></textarea>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-teal" onclick="testarApi()" id="btnTestar">▶️ Testar Agora</button>
+      <button class="btn btn-vermelho" onclick="limparTeste()">🗑️ Limpar</button>
+    </div>
+
+    <div class="resp-area" id="respArea">
+      <div id="respStatus"></div>
+      <div id="respTempo" style="color:#555;font-size:0.75rem;margin-bottom:8px"></div>
+      <hr>
+      <div class="lbl">Resposta:</div>
+      <div class="resp-json" id="respJson"></div>
+      <hr>
+      <div class="lbl">Diagnóstico:</div>
+      <div class="diagnostico" id="respDiag"></div>
+    </div>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">📋 Histórico de testes</div>
+    <div id="historico" style="max-height:200px;overflow-y:auto">
+      <p style="color:#555;font-size:0.82rem">Nenhum teste feito ainda.</p>
+    </div>
+    <button class="btn btn-vermelho" style="margin-top:8px" onclick="limparHistorico()">🗑️ Limpar histórico</button>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">🔗 URLs de teste rápido</div>
+    <p>Clique para carregar no testador:</p>
+    <div class="lbl">APIs públicas para testar:</div>
+    <div class="cmd-box" style="cursor:pointer" onclick="carregarUrl('https://jsonplaceholder.typicode.com/posts/1')">
+      <span class="cmd-txt">https://jsonplaceholder.typicode.com/posts/1</span>
+      <span style="color:#00c7b7;font-size:0.75rem;flex-shrink:0">▶ Usar</span>
+      <span class="cmd-desc">API de teste pública — sempre funciona</span>
+    </div>
+    <div class="cmd-box" style="cursor:pointer" onclick="carregarUrl('https://jsonplaceholder.typicode.com/users')">
+      <span class="cmd-txt">https://jsonplaceholder.typicode.com/users</span>
+      <span style="color:#00c7b7;font-size:0.75rem;flex-shrink:0">▶ Usar</span>
+      <span class="cmd-desc">Lista de usuários de teste</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ABA 4 — ERROS DE ROTA
+══════════════════════════════════════════════════════ -->
+<div class="pag" id="pag-erros">
+
+  <div class="card azul">
+    <div class="titulo">❌ Erros de Rota — o que cada um significa e como corrigir</div>
+    <p>Cole o erro que apareceu no terminal ou no navegador e eu identifico o problema:</p>
+    <textarea id="erroInput" style="height:80px" placeholder="Cole aqui o erro — ex: Cannot GET /api/clientes, 404 Not Found, CORS error..."></textarea>
+    <button class="btn btn-teal" style="margin-top:8px" onclick="analisarErro()">🔍 Analisar Erro</button>
+    <div id="resultErro" style="margin-top:10px"></div>
+  </div>
+
+  <hr>
+
+  <div class="card vermelho">
+    <div class="titulo">📚 Erros mais comuns e como corrigir</div>
+
+    <div class="erro-card">
+      <div class="erro-nome">❌ Cannot GET /api/rota — 404 Not Found</div>
+      <div class="erro-causa">
+        <strong>Causa:</strong> A rota não existe no servidor, ou o servidor não está rodando, ou a URL está errada.
+      </div>
+      <div class="erro-fix">
+        <strong>Correção:</strong><br>
+        1. Verifique se o servidor está rodando (<code>npm run dev</code>)<br>
+        2. Confirme o caminho exato da rota no código<br>
+        3. No Netlify: verifique se tem o arquivo <code>_redirects</code>
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-nome">❌ CORS Error — Access-Control-Allow-Origin</div>
+      <div class="erro-causa">
+        <strong>Causa:</strong> O servidor não está permitindo que o navegador acesse a API de outro domínio.
+      </div>
+      <div class="erro-fix">
+        <strong>Correção no Express:</strong><br>
+        <code>app.use((req,res,next)=>{ res.header('Access-Control-Allow-Origin','*'); next(); })</code><br><br>
+        <strong>Correção no netlify.toml:</strong><br>
+        <code>[[headers]] for = "/api/*" [headers.values] Access-Control-Allow-Origin = "*"</code>
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-nome">❌ 404 Page Not Found no Netlify (rotas do React)</div>
+      <div class="erro-causa">
+        <strong>Causa:</strong> O Netlify não sabe que é uma SPA (Single Page App) e tenta achar o arquivo físico.
+      </div>
+      <div class="erro-fix">
+        <strong>Correção:</strong> Criar arquivo <code>_redirects</code> na pasta <code>public/</code> com o conteúdo:<br>
+        <code>/* /index.html 200</code>
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-nome">❌ 500 Internal Server Error</div>
+      <div class="erro-causa">
+        <strong>Causa:</strong> O servidor encontrou um erro interno — geralmente código quebrado, variável undefined, ou banco de dados inacessível.
+      </div>
+      <div class="erro-fix">
+        <strong>Correção:</strong><br>
+        1. Veja os logs do servidor no terminal<br>
+        2. O erro real aparece lá — não no navegador<br>
+        3. No Netlify: vá em Functions → Logs para ver o erro real
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-nome">❌ Failed to fetch / Network Error</div>
+      <div class="erro-causa">
+        <strong>Causa:</strong> O servidor não está rodando, ou a URL está errada, ou tem problema de rede.
+      </div>
+      <div class="erro-fix">
+        <strong>Correção:</strong><br>
+        1. Confirme que o servidor está ligado<br>
+        2. Verifique se a URL usa <code>http://</code> ou <code>https://</code> corretamente<br>
+        3. Teste a URL direto no navegador antes de testar pelo código
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-nome">❌ Sem rotas — 19 não encontrado (erro do seu projeto)</div>
+      <div class="erro-causa">
+        <strong>Causa:</strong> O React Router está configurado mas as rotas não batem com o que o servidor retorna. O número "19" é provavelmente um ID que não existe no banco/arquivo de dados.
+      </div>
+      <div class="erro-fix">
+        <strong>Correção:</strong><br>
+        1. Verifique se os dados existem antes de tentar acessar<br>
+        2. Adicione tratamento de erro: <code>if(!item) return res.status(404).json({erro:'não encontrado'})</code><br>
+        3. No React: use <code>navigate('/404')</code> quando o item não existir
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ABA 5 — GERAR CONFIGS
+══════════════════════════════════════════════════════ -->
+<div class="pag" id="pag-gerar">
+
+  <div class="card azul">
+    <div class="titulo">📦 Gerar todos os arquivos de configuração</div>
+    <p>Preencha as informações do seu projeto e gero tudo pronto para baixar.</p>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">⚙️ Informações do projeto</div>
+
+    <div class="lbl">Nome do projeto:</div>
+    <input type="text" id="gNome" value="meu-projeto"/>
+
+    <div class="lbl" style="margin-top:8px">Tipo de projeto:</div>
+    <select id="gTipo">
+      <option value="react-vite">React + Vite</option>
+      <option value="react-cra">React + CRA (Create React App)</option>
+      <option value="next">Next.js</option>
+      <option value="node-express">Node + Express (API)</option>
+      <option value="html-simples">HTML puro (sem framework)</option>
+    </select>
+
+    <div class="lbl" style="margin-top:8px">Porta local:</div>
+    <input type="number" id="gPorta" value="3000" style="width:120px"/>
+
+    <div class="lbl" style="margin-top:8px">Tem API própria?</div>
+    <select id="gApi">
+      <option value="nao">Não — só frontend</option>
+      <option value="sim">Sim — tem rotas /api/</option>
+    </select>
+
+    <button class="btn btn-teal" style="margin-top:14px" onclick="gerarTudo()">🛠️ Gerar Tudo</button>
+  </div>
+
+  <div id="resultGerar"></div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ══════════════════════════════════════════════════════
+function ir(id, el) {
+  document.querySelectorAll('.pag').forEach(p => p.classList.remove('ativa'));
+  document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+  document.getElementById('pag-' + id).classList.add('ativa');
+  el.classList.add('ativa');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════════
+// COPIAR
+// ══════════════════════════════════════════════════════
+function cp(btn, txt) {
+  navigator.clipboard.writeText(txt).then(() => {
+    const o = btn.textContent;
+    btn.textContent = '✅'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = o; btn.classList.remove('ok'); }, 2000);
+  });
+}
+function cp2(id) {
+  navigator.clipboard.writeText(document.getElementById(id).value)
+    .then(() => alert('✅ Copiado!'));
+}
+function baixarEl(id, nome) {
+  baixarTexto(document.getElementById(id).value, nome);
+}
+function baixarTexto(txt, nome) {
+  const b = new Blob([txt], { type: 'text/plain' });
+  const u = URL.createObjectURL(b);
+  const a = document.createElement('a');
+  a.href = u; a.download = nome; a.click();
+  URL.revokeObjectURL(u);
+}
+
+// ══════════════════════════════════════════════════════
+// TESTADOR API
+// ══════════════════════════════════════════════════════
+let metodoAtual = 'GET';
+const historico = [];
+
+function selMetodo(btn, met) {
+  document.querySelectorAll('.met-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  metodoAtual = met;
+  document.getElementById('bodyArea').style.display =
+    ['POST','PUT','PATCH'].includes(met) ? 'block' : 'none';
+}
+
+// Esconder body para GET/DELETE inicialmente
+document.getElementById('bodyArea').style.display = 'none';
+
+function carregarUrl(url) {
+  document.getElementById('apiUrl').value = url;
+  ir('testador', document.querySelectorAll('.aba')[2]);
+}
+
+async function testarApi() {
+  const url  = document.getElementById('apiUrl').value.trim();
+  const btn  = document.getElementById('btnTestar');
+  const area = document.getElementById('respArea');
+
+  if (!url) { alert('Digite a URL da API'); return; }
+
+  // Validar URL
+  try { new URL(url); } catch(e) {
+    mostrarResposta('erro', null, null, '❌ URL inválida. Precisa começar com http:// ou https://');
+    return;
+  }
+
+  btn.innerHTML = '<span class="loader"></span>Testando...';
+  btn.disabled = true;
+
+  let headers = {};
+  try {
+    const h = document.getElementById('apiHeaders').value.trim();
+    if (h) headers = JSON.parse(h);
+  } catch(e) {
+    btn.innerHTML = '▶️ Testar Agora'; btn.disabled = false;
+    alert('Headers com JSON inválido. Verifique as aspas e vírgulas.');
+    return;
+  }
+
+  let body = undefined;
+  if (['POST','PUT','PATCH'].includes(metodoAtual)) {
+    const b = document.getElementById('apiBody').value.trim();
+    if (b) {
+      try { JSON.parse(b); body = b; headers['Content-Type'] = headers['Content-Type'] || 'application/json'; }
+      catch(e) { body = b; }
+    }
+  }
+
+  const inicio = Date.now();
+
+  try {
+    const opts = { method: metodoAtual, headers };
+    if (body) opts.body = body;
+
+    const resp = await fetch(url, opts);
+    const tempo = Date.now() - inicio;
+    const txt   = await resp.text();
+
+    let json = null;
+    try { json = JSON.parse(txt); } catch(e) {}
+
+    mostrarResposta(
+      resp.ok ? 'ok' : 'erro',
+      resp.status,
+      tempo,
+      json ? JSON.stringify(json, null, 2) : txt,
+      resp.status
+    );
+
+    adicionarHistorico(metodoAtual, url, resp.status, tempo);
+
+  } catch(e) {
+    const tempo = Date.now() - inicio;
+    mostrarResposta('erro', null, tempo,
+      'Erro de rede: ' + e.message + '\n\nPossíveis causas:\n• Servidor não está rodando\n• URL incorreta\n• Erro de CORS (API não permite acesso do navegador)\n• Sem conexão com a internet');
+    adicionarHistorico(metodoAtual, url, 'ERRO', tempo);
+  }
+
+  btn.innerHTML = '▶️ Testar Agora'; btn.disabled = false;
+}
+
+function mostrarResposta(tipo, status, tempo, corpo, statusCode) {
+  const area = document.getElementById('respArea');
+  area.style.display = 'block';
+  area.className = 'resp-area ' + tipo;
+
+  // Status
+  let statusHtml = '';
+  if (status) {
+    let cls = 's2xx';
+    if (status >= 300 && status < 400) cls = 's3xx';
+    if (status >= 400 && status < 500) cls = 's4xx';
+    if (status >= 500) cls = 's5xx';
+    statusHtml = `<span class="status-pill ${cls}">${status} ${statusTexto(status)}</span>`;
+  } else {
+    statusHtml = `<span class="status-pill s4xx">FALHA NA CONEXÃO</span>`;
+  }
+  document.getElementById('respStatus').innerHTML = statusHtml;
+
+  if (tempo !== null) {
+    document.getElementById('respTempo').textContent = `Tempo de resposta: ${tempo}ms`;
+  }
+
+  // Corpo
+  document.getElementById('respJson').textContent = corpo || '(sem corpo)';
+
+  // Diagnóstico
+  document.getElementById('respDiag').innerHTML = gerarDiagnostico(statusCode, corpo);
+}
+
+function statusTexto(s) {
+  const t = {
+    200:'OK', 201:'Created', 204:'No Content',
+    301:'Moved Permanently', 302:'Found', 304:'Not Modified',
+    400:'Bad Request', 401:'Unauthorized', 403:'Forbidden',
+    404:'Not Found', 405:'Method Not Allowed', 409:'Conflict', 422:'Unprocessable',
+    500:'Internal Server Error', 502:'Bad Gateway', 503:'Service Unavailable'
+  };
+  return t[s] || '';
+}
+
+function gerarDiagnostico(status, corpo) {
+  if (!status) {
+    return `<span class="diag-erro">❌ Conexão falhou</span><br>
+    <span class="diag-info">→ Verifique se o servidor está rodando</span><br>
+    <span class="diag-info">→ Se a URL é de outro domínio, pode ser bloqueio de CORS</span><br>
+    <span class="diag-info">→ Teste a URL direto no navegador primeiro</span>`;
+  }
+  if (status >= 200 && status < 300) {
+    return `<span class="diag-ok">✅ Requisição bem-sucedida!</span><br>
+    <span class="diag-info">→ Status ${status}: a API respondeu corretamente</span>`;
+  }
+  if (status === 404) {
+    return `<span class="diag-erro">❌ Rota não encontrada (404)</span><br>
+    <span class="diag-aviso">→ A URL que você digitou não existe no servidor</span><br>
+    <span class="diag-info">→ Verifique se o caminho está correto (maiúsculas/minúsculas importam)</span><br>
+    <span class="diag-info">→ No Netlify: adicione o arquivo _redirects com: /* /index.html 200</span>`;
+  }
+  if (status === 401) {
+    return `<span class="diag-erro">❌ Não autorizado (401)</span><br>
+    <span class="diag-aviso">→ A API exige autenticação</span><br>
+    <span class="diag-info">→ Adicione o header: Authorization: Bearer SEU_TOKEN</span>`;
+  }
+  if (status === 403) {
+    return `<span class="diag-erro">❌ Acesso negado (403)</span><br>
+    <span class="diag-aviso">→ Você está autenticado mas não tem permissão</span><br>
+    <span class="diag-info">→ Verifique as permissões do usuário</span>`;
+  }
+  if (status === 405) {
+    return `<span class="diag-erro">❌ Método não permitido (405)</span><br>
+    <span class="diag-aviso">→ Você usou ${metodoAtual} mas essa rota só aceita outro método</span><br>
+    <span class="diag-info">→ Tente GET, POST ou PUT dependendo da operação</span>`;
+  }
+  if (status === 500) {
+    return `<span class="diag-erro">❌ Erro interno do servidor (500)</span><br>
+    <span class="diag-aviso">→ O servidor quebrou ao processar sua requisição</span><br>
+    <span class="diag-info">→ Veja os logs do terminal do servidor para o erro real</span><br>
+    <span class="diag-info">→ No Netlify: vá em Functions → Logs</span>`;
+  }
+  if (status >= 400) {
+    return `<span class="diag-erro">❌ Erro ${status}</span><br>
+    <span class="diag-info">→ Verifique o corpo da resposta acima para mais detalhes</span>`;
+  }
+  return `<span class="diag-info">ℹ️ Status ${status} — verifique se era o esperado</span>`;
+}
+
+function adicionarHistorico(met, url, status, tempo) {
+  historico.unshift({ met, url, status, tempo, hora: new Date().toLocaleTimeString() });
+  if (historico.length > 20) historico.pop();
+  renderHistorico();
+}
+
+function renderHistorico() {
+  const div = document.getElementById('historico');
+  if (!historico.length) {
+    div.innerHTML = '<p style="color:#555;font-size:0.82rem">Nenhum teste feito ainda.</p>';
+    return;
+  }
+  div.innerHTML = historico.map((h, i) => `
+    <div class="historico-item" onclick="carregarHistorico(${i})">
+      <span class="rota-met rmet-${h.met.toLowerCase()}">${h.met}</span>
+      <span style="flex:1;font-family:monospace;font-size:0.78rem;color:#aaa;word-break:break-all">${h.url}</span>
+      <span class="${typeof h.status==='number' && h.status<400 ? 'rota-status-ok' : 'rota-status-erro'}">${h.status}</span>
+      <span style="color:#555;font-size:0.72rem">${h.hora}</span>
+    </div>
+  `).join('');
+}
+
+function carregarHistorico(i) {
+  const h = historico[i];
+  document.getElementById('apiUrl').value = h.url;
+  const btn = document.querySelector(`.m-${h.met}`);
+  if (btn) selMetodo(btn, h.met);
+}
+
+function limparTeste() {
+  document.getElementById('apiUrl').value = '';
+  document.getElementById('apiHeaders').value = '';
+  document.getElementById('apiBody').value = '';
+  document.getElementById('respArea').style.display = 'none';
+}
+
+function limparHistorico() {
+  historico.length = 0;
+  renderHistorico();
+}
+
+// ══════════════════════════════════════════════════════
+// ANALISADOR DE ERRO
+// ══════════════════════════════════════════════════════
+function analisarErro() {
+  const txt = document.getElementById('erroInput').value.toLowerCase();
+  const div = document.getElementById('resultErro');
+
+  if (!txt.trim()) { div.innerHTML = ''; return; }
+
+  let html = '';
+
+  if (txt.includes('cors') || txt.includes('access-control')) {
+    html = `<div class="erro-card">
+      <div class="erro-nome">🔴 Erro de CORS detectado</div>
+      <div class="erro-causa">O servidor não está permitindo requisições de outro domínio.</div>
+      <div class="erro-fix">
+        <strong>Correção no Express:</strong><br>
+        <code>npm install cors</code><br>
+        <code>const cors = require('cors'); app.use(cors());</code><br><br>
+        <strong>No netlify.toml:</strong><br>
+        <code>[[headers]] for = "/*" [headers.values] Access-Control-Allow-Origin = "*"</code>
+      </div>
+    </div>`;
+  } else if (txt.includes('404') || txt.includes('not found') || txt.includes('cannot get')) {
+    html = `<div class="erro-card">
+      <div class="erro-nome">🔴 Rota não encontrada (404)</div>
+      <div class="erro-causa">A rota que você está tentando acessar não existe no servidor.</div>
+      <div class="erro-fix">
+        <strong>No Netlify:</strong> Crie o arquivo <code>_redirects</code> na pasta public/ com:<br>
+        <code>/* /index.html 200</code><br><br>
+        <strong>No servidor Express:</strong> Verifique se a rota está definida corretamente.<br>
+        <strong>No React Router:</strong> Verifique se o path da rota bate com a URL.
+      </div>
+    </div>`;
+  } else if (txt.includes('500') || txt.includes('internal server')) {
+    html = `<div class="erro-card">
+      <div class="erro-nome">🔴 Erro interno do servidor (500)</div>
+      <div class="erro-causa">O código do servidor quebrou ao processar a requisição.</div>
+      <div class="erro-fix">
+        <strong>Onde ver o erro real:</strong><br>
+        • No terminal onde o servidor está rodando<br>
+        • No Netlify: Functions → Logs<br>
+        • O erro 500 no navegador é genérico — o real está no terminal
+      </div>
+    </div>`;
+  } else if (txt.includes('failed to fetch') || txt.includes('network error') || txt.includes('econnrefused')) {
+    html = `<div class="erro-card">
+      <div class="erro-nome">🔴 Falha de conexão</div>
+      <div class="erro-causa">O servidor não está acessível — pode estar desligado ou a URL está errada.</div>
+      <div class="erro-fix">
+        1. Verifique se o servidor está rodando (<code>npm run dev</code>)<br>
+        2. Confirme a porta — tente <code>http://localhost:3000</code><br>
+        3. Teste a URL direto no navegador
+      </div>
+    </div>`;
+  } else if (txt.includes('sem rotas') || txt.includes('rota') || txt.includes('route')) {
+    html = `<div class="erro-card">
+      <div class="erro-nome">🔴 Problema de rotas</div>
+      <div class="erro-causa">O React Router ou o servidor não encontrou a rota solicitada.</div>
+      <div class="erro-fix">
+        <strong>No React Router:</strong> Adicione uma rota catch-all:<br>
+        <code>&lt;Route path="*" element={&lt;Pagina404 /&gt;} /&gt;</code><br><br>
+        <strong>No Netlify:</strong> Arquivo _redirects com <code>/* /index.html 200</code><br><br>
+        <strong>Se o ID não existe:</strong> Trate o erro no componente com:<br>
+        <code>if(!item) return &lt;Navigate to="/404" /&gt;</code>
+      </div>
+    </div>`;
+  } else if (txt.includes('vite') || txt.includes('build') || txt.includes('rollup')) {
+    html = `<div class="erro-card">
+      <div class="erro-nome">🔴 Erro de build (Vite/Rollup)</div>
+      <div class="erro-causa">O Vite encontrou um problema ao compilar o projeto.</div>
+      <div class="erro-fix">
+        1. Leia a linha exata do erro — ela diz o arquivo e a linha<br>
+        2. Erros comuns: import de arquivo que não existe, TypeScript com tipo errado<br>
+        3. Tente: <code>npm run build 2>&1 | head -50</code> para ver o início do erro
+      </div>
+    </div>`;
+  } else {
+    html = `<div class="erro-card">
+      <div class="erro-nome">🔍 Erro não identificado automaticamente</div>
+      <div class="erro-causa">Cole o erro completo para uma análise mais precisa.</div>
+      <div class="erro-fix">
+        Dicas gerais:<br>
+        1. Leia a primeira linha do erro — ela diz o tipo<br>
+        2. Leia a linha que diz "at" — ela diz onde aconteceu<br>
+        3. Cole o erro completo aqui para eu analisar
+      </div>
+    </div>`;
+  }
+
+  div.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════
+// GERADOR DE CONFIGS
+// ══════════════════════════════════════════════════════
+function gerarTudo() {
+  const nome  = document.getElementById('gNome').value  || 'meu-projeto';
+  const tipo  = document.getElementById('gTipo').value;
+  const porta = document.getElementById('gPorta').value || '3000';
+  const temApi = document.getElementById('gApi').value === 'sim';
+  const div   = document.getElementById('resultGerar');
+  div.innerHTML = '';
+
+  const arquivos = [];
+
+  // ── netlify.toml ──
+  let buildCmd = 'npm run build';
+  let publishDir = 'dist';
+  if (tipo === 'react-cra') publishDir = 'build';
+  if (tipo === 'next') { buildCmd = 'npm run build'; publishDir = '.next'; }
+
+  let toml = `[build]
+  command = "${buildCmd}"
+  publish = "${publishDir}"
+
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
+`;
+
+  if (temApi) {
+    toml += `
+[[redirects]]
+  from = "/api/*"
+  to   = "/.netlify/functions/:splat"
+  status = 200
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin  = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+`;
+  }
+
+  toml += `
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"`;
+
+  arquivos.push({ nome: 'netlify.toml', conteudo: toml });
+
+  // ── _redirects ──
+  arquivos.push({ nome: '_redirects (pasta public/)', conteudo: '/* /index.html 200' });
+
+  // ── vite.config.ts ──
+  if (tipo === 'react-vite') {
+    arquivos.push({
+      nome: 'vite.config.ts',
+      conteudo: `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  base: '/',
+  plugins: [react()],
+  publicDir: 'public',
+  server: {
+    port: ${porta},
+    host: '0.0.0.0'
+  },
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name].[ext]'
+      }
+    }
+  }
+});`
+    });
+  }
+
+  // ── package.json scripts ──
+  let scripts = {};
+  if (tipo === 'react-vite') {
+    scripts = { dev: `vite --port ${porta}`, build: 'vite build', preview: `vite preview --port ${porta}`, setup: 'npm install' };
+  } else if (tipo === 'react-cra') {
+    scripts = { start: `PORT=${porta} react-scripts start`, build: 'react-scripts build', setup: 'npm install' };
+  } else if (tipo === 'next') {
+    scripts = { dev: `next dev -p ${porta}`, build: 'next build', start: `next start -p ${porta}`, setup: 'npm install' };
+  } else if (tipo === 'node-express') {
+    scripts = { start: 'node server.js', dev: 'nodemon server.js', setup: 'npm install' };
+  } else {
+    scripts = { start: 'node server.js', setup: 'npm install' };
+  }
+
+  arquivos.push({
+    nome: 'package.json (seção scripts)',
+    conteudo: JSON.stringify({ name: nome, version: '1.0.0', scripts }, null, 2)
+  });
+
+  // Renderizar
+  arquivos.forEach((arq, i) => {
+    const id = 'garq' + i;
+    const card = document.createElement('div');
+    card.className = 'card verde';
+    card.innerHTML = `
+      <div class="titulo">📄 ${arq.nome}</div>
+      <textarea id="${id}" readonly style="height:160px">${arq.conteudo}</textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-teal"
+          onclick="navigator.clipboard.writeText(document.getElementById('${id}').value).then(()=>alert('✅ Copiado!'))">
+          📋 Copiar
+        </button>
+        <button class="btn btn-verde"
+          onclick="baixarTexto(document.getElementById('${id}').value,'${arq.nome.split(' ')[0]}')">
+          ⬇️ Baixar
+        </button>
+      </div>`;
+    div.appendChild(card);
+  });
+
+  // Instruções
+  const inst = document.createElement('div');
+  inst.className = 'card amarelo';
+  inst.innerHTML = `
+    <div class="titulo">▶️ Ordem de uso</div>
+    <p>1. Baixe o <strong>netlify.toml</strong> → coloque na raiz do projeto</p>
+    <p>2. Baixe o <strong>_redirects</strong> → coloque dentro da pasta <code>public/</code></p>
+    ${tipo === 'react-vite' ? '<p>3. Baixe o <strong>vite.config.ts</strong> → substitui o que tem na raiz</p>' : ''}
+    <p>4. No terminal: <code>npm install</code></p>
+    <p>5. Para testar local: <code>netlify dev</code></p>
+    <p>6. Para publicar: <code>netlify deploy --build --prod</code></p>
+  `;
+  div.appendChild(inst);
+}
+</script>
+</body>
+</html>

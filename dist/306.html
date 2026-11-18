@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor HTML</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Olá mundo!</h1>
+    <p>Edite este código e veja o resultado em tempo real.</p>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Extrator Jurídico BPC/LOAS (PDF/DOCX) - TRF6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/docx@0.2.3/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+        window.jsPDF = window.jspdf.jsPDF;
+    </script>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden font-sans">
+    <header class="bg-blue-900 text-white p-3 shadow-lg flex flex-wrap justify-between items-center z-20 gap-2">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-balance-scale text-2xl text-yellow-400"></i>
+            <div>
+                <h1 class="text-lg font-bold leading-tight">Extrator BPC/LOAS (TRF6)</h1>
+                <p class="text-[10px] text-blue-200 opacity-80">Blocos Completos • Acórdãos • Gastos • Vícios</p>
+            </div>
+        </div>
+        <div class="flex gap-2 text-xs">
+            <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded font-bold transition flex items-center gap-2 shadow">
+                <i class="fas fa-folder-open text-lg"></i> Importar (PDF/DOCX)
+            </button>
+            <div class="h-8 w-px bg-blue-700 mx-1"></div>
+            <button onclick="exportarWord()" class="bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded transition" title="Exportar Word">
+                <i class="fas fa-file-word text-lg"></i>
+            </button>
+            <button onclick="exportarExcel()" class="bg-green-700 hover:bg-green-600 px-3 py-2 rounded transition" title="Exportar Excel">
+                <i class="fas fa-file-excel text-lg"></i>
+            </button>
+            <button onclick="exportarPDF()" class="bg-red-700 hover:bg-red-600 px-3 py-2 rounded transition" title="Exportar PDF">
+                <i class="fas fa-file-pdf text-lg"></i>
+            </button>
+            <button onclick="exportarJSON()" class="bg-yellow-600 hover:bg-yellow-500 px-3 py-2 rounded transition" title="Exportar JSON">
+                <i class="fas fa-code text-lg"></i>
+            </button>
+        </div>
+        <input type="file" id="fileInput" multiple accept=".pdf,.docx" class="hidden">
+    </header>
+    <div class="flex flex-1 overflow-hidden">
+        <aside class="w-1/4 min-w-[300px] bg-white border-r border-gray-200 flex flex-col shadow-md z-10">
+            <div class="p-4 bg-slate-50 border-b">
+                <h2 class="font-bold text-slate-700 mb-1 flex items-center gap-2">
+                    <i class="fas fa-search"></i> Critérios de Busca
+                </h2>
+                <p class="text-xs text-slate-500 mb-4">Configure Regex para extrair blocos úteis dos autos.</p>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-blue-800">Nome do Dado</label>
+                        <input type="text" id="varNome" placeholder="Ex: Acórdão Theo (Bloco)" class="w-full text-sm p-2 border border-gray-300 rounded focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-blue-800">Expressão Regular (Regex)</label>
+                        <div class="flex gap-1">
+                            <input type="text" id="varRegex" placeholder="Ex: \\bEvento\\s+85\\b[\\s\\S]{0,5000}" class="w-full text-sm p-2 border border-gray-300 rounded font-mono bg-yellow-50 focus:bg-white transition">
+                            <button onclick="adicionarVariavel()" class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold">+</button>
+                        </div>
+                        <button onclick="carregarPadroesTheoMiguel()" class="w-full bg-orange-500 text-white text-xs py-2 px-3 rounded mt-2 font-bold hover:bg-orange-600 transition">
+                            <i class="fas fa-magic mr-1"></i> Padrões Theo e Miguel
+                        </button>
+                        <div class="flex justify-between mt-1">
+                            <button onclick="restaurarPadrao()" class="text-[10px] text-gray-400 hover:text-gray-600 underline">Restaurar Padrões</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-50" id="listaVariaveis"></div>
+            <div class="p-4 border-t bg-white">
+                <button onclick="reprocessar()" class="w-full bg-indigo-100 text-indigo-800 font-bold py-3 rounded hover:bg-indigo-200 transition flex justify-center items-center gap-2">
+                    <i class="fas fa-sync-alt"></i> Analisar Documentos
+                </button>
+            </div>
+        </aside>
+        <main class="w-3/4 flex flex-col relative">
+            <div class="h-3/5 overflow-auto p-4 bg-white border-b border-gray-300">
+                <h3 class="font-bold text-gray-700 mb-2 sticky top-0 bg-white z-10 py-2 border-b flex justify-between">
+                    <span><i class="fas fa-table"></i> Quadro Comparativo</span>
+                    <span id="statusCount" class="text-xs font-normal text-gray-500">0 arquivos carregados</span>
+                </h3>
+                <table class="w-full text-sm text-left border-collapse" id="tabelaResultados">
+                    <thead class="bg-gray-100 text-gray-600 sticky top-10 z-10 shadow-sm" id="tabelaHeader">
+                        <tr><th class="p-3 border">Arquivo</th></tr>
+                    </thead>
+                    <tbody id="tabelaBody" class="divide-y divide-gray-100">
+                        <tr><td class="p-8 text-center text-gray-400 italic">Importe arquivos PDF ou Word para iniciar a análise...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="h-2/5 flex flex-col bg-slate-800 text-green-400 font-mono text-xs p-4 border-t-4 border-blue-900">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold flex items-center gap-2">
+                        <i class="fas fa-terminal"></i> Leitor de Texto Bruto
+                    </span>
+                    <select id="seletorArquivoTexto" class="bg-slate-700 text-white border border-slate-600 rounded p-1 text-xs max-w-[300px]" onchange="mostrarTextoBruto()">
+                        <option>Nenhum arquivo selecionado</option>
+                    </select>
+                </div>
+                <textarea id="textoBrutoArea" class="flex-1 w-full bg-slate-900 border border-slate-700 p-4 resize-none focus:outline-none rounded text-xs leading-relaxed" readonly spellcheck="false" placeholder="O texto extraído do documento aparecerá aqui para conferência..."></textarea>
+            </div>
+        </main>
+    </div>
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded shadow-xl flex flex-col items-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-3"></i>
+            <p class="font-bold text-gray-700">Processando arquivos...</p>
+        </div>
+    </div>
+    <script>
+        let ARQUIVOS_CACHE = [];
+        const VARIAVEIS_PADRAO = [
+            // Processos específicos de Theo e Miguel
+            { nome: "Processo Miguel (JEF Cível - 1001321-33.2023.4.06.3819)", regex: "\\b1001321-33\\.2023\\.4\\.06\\.3819\\b" },
+            { nome: "Processo Theo (Recurso 2024 - 6002755-35.2024.4.06.3819)", regex: "\\b6002755-35\\.2024\\.4\\.06\\.3819\\b" },
+            { nome: "Processo Theo (1º - 1000774-27.2022.4.06.3819)", regex: "\\b1000774-27\\.2022\\.4\\.06\\.3819\\b" },
+            // Classes de processo
+            { nome: "Classe Processo (JEF Cível)", regex: "\\bProcedimento\\s+do\\s+Juizado\\s+Especial\\s+C[ií]vel\\b[\\s\\S]{0,200}" },
+            { nome: "Classe Processo (Recurso Cível)", regex: "\\bRECURSO\\s+C[IÍ]VEL\\b|\\bRecurso\\s+C[ií]vel\\b[\\s\\S]{0,200}" },
+            // Eventos cronológicos e específicos
+            { nome: "Eventos Cronológicos (Bloco Completo)", regex: "\\bconstam\\s+os\\s+seguintes\\s+eventos\\b[\\s\\S]{0,15000}" },
+            { nome: "Evento Individual (Cada Entrada)", regex: "\\bem\\s+\\d{2}\\/\\d{2}\\/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2},[\\s\\S]{0,800}?(?:;|\\n|$)" },
+            { nome: "Evento 85 (Gastos ACPs - Theo)", regex: "\\bEvento\\s+85\\b[\\s\\S]{0,5000}" },
+            { nome: "Evento 79 (Acórdão Paradigma Miguel)", regex: "\\bEvento\\s+79\\b[\\s\\S]{0,6000}" },
+            { nome: "Evento 3 (Theo 2024 - Referência)", regex: "\\bRefer\\.\\s+ao\\s+Evento\\s+3\\b[\\s\\S]{0,5000}" },
+            // IDs e rótulos de documentos
+            { nome: "IDs no PJE (Número)", regex: "\\bId\\s+no\\s+PJE:\\s*\\d+\\b" },
+            { nome: "IDs no PJE + Rótulo (ex: 1346811847 (INIC1))", regex: "\\bId\\s+no\\s+PJE:\\s*\\d+\\s*\\([A-Z0-9_]+\\)\\b" },
+            { nome: "Rótulos Documentos (ex: INIC1, CALCRMI20)", regex: "\\(([A-Z_]+\\d+)\\)" },
+            // Acórdãos (blocos amplos)
+            { nome: "Acórdão Miguel (Bloco por Processo)", regex: "\\b1001321-33\\.2023\\.4\\.06\\.3819\\b[\\s\\S]{0,5000}?\\b(?:AC[ÓO]RD[ÃA]O|EMENTA|VOTO|Julgamento|Relator|Turma)\\b[\\s\\S]{0,5000}" },
+            { nome: "Acórdão Theo Recurso 2024 (Bloco por Processo)", regex: "\\b6002755-35\\.2024\\.4\\.06\\.3819\\b[\\s\\S]{0,5000}?\\b(?:AC[ÓO]RD[ÃA]O|EMENTA|VOTO|Julgamento|Relator|Turma)\\b[\\s\\S]{0,5000}" },
+            { nome: "Acórdão Theo Anterior (Bloco por Processo)", regex: "\\b1000774-27\\.2022\\.4\\.06\\.3819\\b[\\s\\S]{0,5000}?\\b(?:AC[ÓO]RD[ÃA]O|EMENTA|VOTO|Julgamento|Relator|Turma)\\b[\\s\\S]{0,5000}" },
+            { nome: "Acórdão Genérico (Bloco por Cabeçalho)", regex: "\\b(?:AC[ÓO]RD[ÃA]O|EMENTA|VOTO|Julgamento)\\b[\\s\\S]{0,5000}?\\b(?:Turma|Relator|Data\\s+do\\s+Julgamento|Publicado\\s+em)\\b[\\s\\S]{0,5000}" },
+            // Grupo Familiar (baseado no arquivo enviado)
+            { nome: "Grupo Familiar (Theo - Contexto)", regex: "\\brequerente\\s+reside\\b[\\s\\S]{0,500}|\\bgenitora\\b[\\s\\S]{0,500}|\\birmãos\\b[\\s\\S]{0,500}|\\btrigêmeas\\b[\\s\\S]{0,500}" },
+            // DER e DIB
+            { nome: "DER (Data Entrada Requerimento)", regex: "\\bData\\s+de\\s+Entrada\\s+do\\s+Requerimento\\b[\\s\\S]{0,200}|\\bDER\\b[\\s\\S]{0,200}|\\b03/08/2021\\b[\\s\\S]{0,200}|\\b04/11/2022\\b[\\s\\S]{0,200}" },
+            { nome: "DIB (Data Início Benefício - Citação)", regex: "\\bDIB\\b[\\s\\S]{0,500}|\\bcitação\\b[\\s\\S]{0,500}" },
+            // Gastos e ACPs
+            { nome: "Gastos Fraldas (Menção + Valor)", regex: "\\bfraldas\\b[\\s\\S]{0,300}?\\bR\\$\\s*[\\d\\.]+,\\d{2}\\b[\\s\\S]{0,300}" },
+            { nome: "Gastos Medicamentos (Menção + Valor)", regex: "\\bmedicamentos\\b[\\s\\S]{0,300}?\\bR\\$\\s*[\\d\\.]+,\\d{2}\\b[\\s\\S]{0,300}|\\bAririprazol\\b[\\s\\S]{0,300}|\\bRisperidona\\b[\\s\\S]{0,300}" },
+            { nome: "Gastos Tratamento/Terapias (Menção + Valor)", regex: "\\b(terapia|psicolog|fonoaudiolog|tratamento|consulta|neuropediatr)\\w*\\b[\\s\\S]{0,300}?\\bR\\$\\s*[\\d\\.]+,\\d{2}\\b[\\s\\S]{0,300}" },
+            { nome: "ACP (Menção + Contexto)", regex: "\\bACP\\b|\\bA[cç][aã]o\\s+Civil\\s+P[uú]blica\\b[\\s\\S]{0,1000}" },
+            // Dossiê Remunerações e Renda (CNIS ou outros formatos)
+            { nome: "Dossiê Renda/Remunerações (Genérico)", regex: "\\b(CNIS|Dossiê|Extrato|Histórico|Remuneração|Contribuições|Benefícios)\\b[\\s\\S]{0,1000}?\\b(R\\$\\s*[\\d\\.]+,\\d{2}|Período|Competência|NIT|NI|PIS|PASEP)\\b[\\s\\S]{0,1000}" },
+            { nome: "Renda Familiar (Contexto)", regex: "\\brenda\\s+familiar\\b[\\s\\S]{0,500}|\\bper\\s+capita\\b[\\s\\S]{0,500}|\\bflexibilização\\s+de\\s+renda\\b[\\s\\S]{0,500}" },
+            // Vícios Processuais e Fundamentos Jurídicos
+            { nome: "Vícios Processuais (DIB/Citação)", regex: "\\bDIB\\b[\\s\\S]{0,1000}?\\b(citação|fato\\s+novo|trigêmeas)\\b[\\s\\S]{0,1000}" },
+            { nome: "Vícios Processuais (Ausência Perícia)", regex: "\\b(perícia\\s+médica|ausência\\s+de\\s+perícia|erro\\s+do\\s+INSS)\\b[\\s\\S]{0,1000}" },
+            { nome: "Vícios Processuais (Prazo Exigência)", regex: "\\b(prazo\\s+de\\s+exigência|mandado\\s+de\\s+segurança|resoluções\\s+do\\s+CNJ|ato\\s+normativo\\s+do\\s+INSS)\\b[\\s\\S]{0,1000}" },
+            { nome: "Flexibilização Renda/Gastos Dedutíveis", regex: "\\b(flexibilização\\s+de\\s+renda|gastos\\s+dedutíveis|deduções\\s+legais)\\b[\\s\\S]{0,1000}" },
+            { nome: "Tema 1124 STJ / Súmulas TNU", regex: "\\b(Tema\\s+1124|STJ|Súmula\\s+22|Súmula\\s+29|Súmula\\s+79|Súmula\\s+80|TNU)\\b[\\s\\S]{0,1000}" },
+            // Laudos Médicos e Sociais
+            { nome: "Laudos Médicos/Sociais (Contexto)", regex: "\\b(laudo\\s+médico|laudo\\s+social|deficiência\\s+desde\\s+o\\s+nascimento|autismo|CID-10-F84|CID-11-6A02|atraso\\s+no\\s+desenvolvimento)\\b[\\s\\S]{0,1000}" }
+        ];
+         
+        let VARIAVEIS = JSON.parse(JSON.stringify(VARIAVEIS_PADRAO));
+        window.onload = () => {
+            renderizarListaVariaveis();
+        };
+        function carregarPadroesTheoMiguel() {
+            VARIAVEIS = JSON.parse(JSON.stringify(VARIAVEIS_PADRAO));
+            renderizarListaVariaveis();
+            alert('Padrões para os casos de Theo e Miguel carregados com sucesso!');
+        }
+        function renderizarListaVariaveis() {
+            const container = document.getElementById('listaVariaveis');
+            container.innerHTML = '';
+            VARIAVEIS.forEach(v => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-white p-2 rounded border border-gray-200 text-sm shadow-sm hover:shadow-md transition group";
+                div.innerHTML = `
+                    <div class="overflow-hidden">
+                        <strong class="text-blue-800 block truncate" title="${v.nome}">${v.nome}</strong>
+                        <code class="text-[10px] text-gray-500 block truncate font-mono bg-gray-100 p-0.5 rounded" title="${v.regex}">${v.regex}</code>
+                    </div>
+                    <button onclick="removerVar('${v.nome}')" class="text-red-300 hover:text-red-600 ml-2 px-2"><i class="fas fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        function restaurarPadrao() {
+            if (confirm("Restaurar variáveis padrão para casos de Theo e Miguel?")) {
+                VARIAVEIS = JSON.parse(JSON.stringify(VARIAVEIS_PADRAO));
+                renderizarListaVariaveis();
+                if (ARQUIVOS_CACHE.length > 0) reprocessar();
+            }
+        }
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            ARQUIVOS_CACHE = [];
+            document.getElementById('seletorArquivoTexto').innerHTML = '<option>Nenhum arquivo selecionado</option>';
+            try {
+                for (let file of files) {
+                    let texto = "";
+                    let tipo = "";
+                    if (file.type === "application/pdf") {
+                        texto = await extrairTextoPDF(file);
+                        tipo = "PDF";
+                    } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                        texto = await extrairTextoWord(file);
+                        tipo = "DOCX";
+                    } else {
+                        console.warn("Formato não suportado: " + file.name);
+                        continue;
+                    }
+                    ARQUIVOS_CACHE.push({nome: file.name, texto: texto, tipo: tipo});
+                    let opt = document.createElement('option');
+                    opt.value = ARQUIVOS_CACHE.length - 1;
+                    opt.text = `[${tipo}] ${file.name}`;
+                    document.getElementById('seletorArquivoTexto').appendChild(opt);
+                }
+                document.getElementById('statusCount').innerText = `${ARQUIVOS_CACHE.length} arquivos analisados`;
+                if (ARQUIVOS_CACHE.length > 0) {
+                    document.getElementById('seletorArquivoTexto').selectedIndex = 1;
+                    mostrarTextoBruto();
+                    reprocessar();
+                }
+            } catch (err) {
+                alert("Erro ao processar arquivos: " + err.message);
+                console.error(err);
+            } finally {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        });
+        async function extrairTextoPDF(file) {
+            const buffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(buffer).promise;
+            let fullText = "";
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                fullText += content.items.map(item => item.str).join(" ") + "\n";
+            }
+            return fullText;
+        }
+        async function extrairTextoWord(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+            return result.value;
+        }
+      function reprocessar() {
+  const thead = document.getElementById('tabelaHeader');
+  const tbody = document.getElementById('tabelaBody');
+
+  let headerHTML = `<tr><th class="p-3 border bg-slate-200 text-slate-700">Arquivo</th>`;
+  VARIAVEIS.forEach(v => headerHTML += `<th class="p-3 border bg-slate-200 text-blue-900 font-bold">${v.nome}</th>`);
+  headerHTML += `</tr>`;
+  thead.innerHTML = headerHTML;
+
+  let bodyHTML = "";
+
+  ARQUIVOS_CACHE.forEach(arq => {
+    let row = `<tr class="hover:bg-blue-50 transition"><td class="p-2 border text-xs font-bold text-gray-700 truncate max-w-[150px]" title="${arq.nome}">
+      <i class="fas ${arq.tipo === 'PDF' ? 'fa-file-pdf text-red-500' : 'fa-file-word text-blue-500'} mr-1"></i> ${arq.nome}
+    </td>`;
+
+    VARIAVEIS.forEach(v => {
+      try {
+        const regex = new RegExp(v.regex, "gi");
+        const matches = arq.texto.match(regex);
+
+        if (matches) {
+          // 🔹 Aqui removemos o corte, mas mantemos o regex
+          const preview = [...new Set(matches)].join(" | ");
+
+          const style = v.nome.includes("Acórdão") ? "text-indigo-800 bg-indigo-50" 
+                       : v.nome.includes("Gastos") || v.nome.includes("ACP") ? "text-emerald-800 bg-emerald-50" 
+                       : v.nome.includes("Vícios") ? "text-red-800 bg-red-50" 
+                       : "text-gray-700";
+
+          row += `<td class="p-2 border text-xs ${style}">${preview}</td>`;
+        } else {
+          row += `<td class="p-2 border text-center text-gray-300">-</td>`;
+        }
+      } catch (e) {
+        row += `<td class="p-2 border text-red-500 text-[10px]">Erro Regex</td>`;
+      }
+    });
+
+    row += `</tr>`;
+    bodyHTML += row;
+  });
+
+  tbody.innerHTML = bodyHTML || '<tr><td colspan="100%" class="p-4 text-center text-gray-400">Nenhum dado encontrado.</td></tr>';
+
+        }
+        function mostrarTextoBruto() {
+            const idx = document.getElementById('seletorArquivoTexto').value;
+            if (ARQUIVOS_CACHE[idx]) {
+                document.getElementById('textoBrutoArea').value = ARQUIVOS_CACHE[idx].texto;
+            }
+        }
+        function adicionarVariavel() {
+            const nome = document.getElementById('varNome').value;
+            const regex = document.getElementById('varRegex').value;
+            if (!nome || !regex) return alert("Preencha nome e padrão.");
+            VARIAVEIS.push({nome, regex});
+            renderizarListaVariaveis();
+            document.getElementById('varNome').value = "";
+            document.getElementById('varRegex').value = "";
+        }
+        function removerVar(nome) {
+            VARIAVEIS = VARIAVEIS.filter(v => v.nome !== nome);
+            renderizarListaVariaveis();
+        }
+        function verificarDados() {
+            if (ARQUIVOS_CACHE.length === 0) {
+                alert("Nenhum arquivo processado para exportar.");
+                return false;
+            }
+            return true;
+        }
+        function exportarExcel() {
+            if (!verificarDados()) return;
+            const table = document.getElementById('tabelaResultados');
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Análise BPC"});
+            XLSX.writeFile(wb, 'Analise_BPC_Juridica.xlsx');
+        }
+        function exportarPDF() {
+            if (!verificarDados()) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            doc.setFontSize(14);
+            doc.text("Relatório de Extração de Dados - BPC/LOAS", 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 22);
+            doc.autoTable({
+                html: '#tabelaResultados',
+                startY: 30,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [30, 58, 138] }
+            });
+            doc.save('Relatorio_BPC_LOAS.pdf');
+        }
+        function exportarJSON() {
+            if (!verificarDados()) return;
+            const data = [];
+            ARQUIVOS_CACHE.forEach(arq => {
+                let item = { Arquivo: arq.nome };
+                VARIAVEIS.forEach(v => {
+                    try {
+                        const regex = new RegExp(v.regex, "gi");
+                        const matches = arq.texto.match(regex);
+                        item[v.nome] = matches ? [...new Set(matches)].join(" | ") : "-";
+                    } catch (e) {
+                        item[v.nome] = "Erro no Regex";
+                    }
+                });
+                data.push(item);
+            });
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            saveAs(blob, 'Dados_BPC_LOAS.json');
+        }
+        function exportarWord() {
+            if (!verificarDados()) return;
+            const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } = docx;
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: [
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: "RELATÓRIO EXTRAÇÃO JURÍDICA - BPC/LOAS - TRF6",
+                                    bold: true,
+                                    size: 28
+                                })
+                            ],
+                            alignment: AlignmentType.CENTER
+                        }),
+                        new Paragraph({
+                            children: [new TextRun("Data: " + new Date().toLocaleString())]
+                        }),
+                        new Paragraph({ children: [new TextRun("\n")] })
+                    ]
+                }]
+            });
+            const table = new Table({
+                rows: [
+                    new TableRow({
+                        children: [
+                            new TableCell({
+                                children: [new Paragraph("Arquivo")],
+                                width: { size: 20, type: WidthType.PERCENTAGE }
+                            }),
+                            ...VARIAVEIS.map(v => new TableCell({
+                                children: [new Paragraph(v.nome)],
+                                width: { size: Math.max(80 / VARIAVEIS.length, 5), type: WidthType.PERCENTAGE }
+                            }))
+                        ]
+                    })
+                ]
+            });
+            ARQUIVOS_CACHE.forEach(arq => {
+                let rowCells = [new TableCell({ children: [new Paragraph(arq.nome)] })];
+                VARIAVEIS.forEach(v => {
+                    let content = "-";
+                    try {
+                        const regex = new RegExp(v.regex, "gi");
+                        const matches = arq.texto.match(regex);
+                        if (matches) {
+                            content = [...new Set(matches)].map(m => m.substring(0, 500) + (m.length > 500 ? '...' : '')).join(" | ");
+                        }
+                    } catch (e) {
+                        content = "Erro no Regex";
+                    }
+                    rowCells.push(new TableCell({ children: [new Paragraph(content)] }));
+                });
+                table.root.push(new TableRow({ children: rowCells }));
+            });
+            doc.addSection({ children: [table] });
+            Packer.toBlob(doc).then(blob => {
+                saveAs(blob, "Relatorio_BPC_LOAS.docx");
+            });
+        }
+    </script>.
+</body>
+</html>

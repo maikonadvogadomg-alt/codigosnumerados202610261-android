@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumidor Jurídico Estruturado v2.0</title>
+    <!-- Bibliotecas para ler PDF e Word -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body { background-color: #e8eaeb; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; }
+        
+        /* LAYOUT */
+        .main-container { display: flex; height: 100vh; }
+
+        /* ESQUERDA */
+        .painel-input {
+            width: 35%; background: #2c3e50; color: #ecf0f1; padding: 20px;
+            display: flex; flex-direction: column; border-right: 5px solid #f39c12; overflow-y: auto;
+        }
+        .painel-input h2 { color: #f39c12; margin-top: 0; font-size: 18px; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; }
+        
+        label { font-size: 12px; font-weight: bold; color: #bdc3c7; margin-top: 10px; display: block; }
+        
+        textarea {
+            flex-grow: 1; background: #34495e; color: white; border: 1px solid #7f8c8d; padding: 10px;
+            font-family: monospace; font-size: 11pt; resize: none; margin-bottom: 15px; min-height: 150px;
+        }
+
+        /* BOTÕES */
+        .btn {
+            padding: 12px; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; 
+            margin-bottom: 8px; width: 100%; text-transform: uppercase; font-size: 13px; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-processar { background-color: #f39c12; color: #2c3e50; }
+        .btn-processar:hover { background-color: #d68910; }
+        
+        .btn-importar { background-color: #3498db; color: white; }
+        .btn-importar:hover { background-color: #2980b9; }
+
+        .btn-limpar { background-color: #c0392b; color: white; }
+        .btn-print { background-color: #27ae60; color: white; }
+
+        /* DIREITA */
+        .painel-output {
+            width: 65%; background: #bdc3c7; padding: 30px; overflow-y: auto;
+            display: flex; justify-content: center;
+        }
+        .folha-peticao {
+            background: white; width: 210mm; min-height: 297mm; padding: 25mm 20mm; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.2); font-family: 'Times New Roman', serif; font-size: 12pt;
+            line-height: 1.5; text-align: justify; outline: none; margin-bottom: 50px;
+        }
+        h1 { font-size: 14pt; text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 20px; }
+        h2 { font-size: 12pt; font-weight: bold; text-transform: uppercase; margin-top: 20px; border-bottom: 1px solid black; }
+        
+        .texto-processado { background-color: #fcf3cf; padding: 5px; border-left: 3px solid #f39c12; }
+
+        /* LOADING */
+        #loading {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 999; color: white;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        @media print {
+            .painel-input { display: none; }
+            .painel-output { width: 100%; padding: 0; background: white; }
+            .folha-peticao { box-shadow: none; margin: 0; }
+            .texto-processado { background-color: transparent; border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TELA DE CARREGAMENTO -->
+<div id="loading">
+    <i class="fas fa-spinner fa-spin fa-3x"></i>
+    <p style="margin-top: 15px; font-size: 18px;">Lendo arquivos e processando...</p>
+</div>
+
+<div class="main-container">
+    
+    <div class="painel-input">
+        <h2><i class="fas fa-robot"></i> INPUT E REGRAS</h2>
+        
+        <!-- INPUT DE ARQUIVO ESCONDIDO -->
+        <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt" style="display: none;" onchange="lerArquivos(this)">
+
+        <button class="btn btn-importar" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-file-upload"></i> Importar Arquivos (PDF/Word)
+        </button>
+
+        <label>OU COLE O TEXTO AQUI:</label>
+        <textarea id="textoBruto" placeholder="Cole o texto ou importe arquivos..."></textarea>
+        
+        <div style="background: #34495e; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+            <label style="margin-top:0">FILTRO DE DUPLICIDADE:</label>
+            <input type="radio" name="nivel" value="suave" checked> <span style="color:white; font-size:12px">Padrão (Remove cópias exatas)</span><br>
+            <input type="radio" name="nivel" value="agressivo"> <span style="color:white; font-size:12px">Inteligente (Remove textos parecidos)</span>
+        </div>
+
+        <button class="btn btn-processar" onclick="processarTexto()">
+            <i class="fas fa-bolt"></i> Resumir e Estruturar
+        </button>
+        
+        <div style="display: flex; gap: 5px;">
+            <button class="btn btn-limpar" onclick="limparTudo()"><i class="fas fa-trash"></i> Limpar</button>
+            <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+        </div>
+
+        <hr style="border-color:#555; width:100%">
+        <label>TÍTULO DA PEÇA:</label>
+        <input type="text" id="tituloPeca" value="EMBARGOS DE DECLARAÇÃO" style="width:95%; padding:8px; border-radius:4px; border:none;">
+    </div>
+
+    <div class="painel-output">
+        <div class="folha-peticao" contenteditable="true">
+            <p style="text-align: center; font-weight: bold;">EXCELENTÍSSIMO JUÍZO DA TURMA RECURSAL DO TRF6</p>
+            <br><br>
+            <h1 id="outTitulo">EMBARGOS DE DECLARAÇÃO</h1>
+
+            <p><b>Embargante:</b> THEO PYERRE DIAS DE OLIVEIRA</p>
+            <p><b>Processo:</b> 6002755-35.2024.4.06.3819</p>
+
+            <p>O Embargante vem, respeitosamente, apresentar a presente peça, sintetizando os fatos e fundamentos jurídicos relevantes, expurgando repetições desnecessárias para clareza do Juízo.</p>
+
+            <h2>I. SÍNTESE DOS FATOS (RESUMO)</h2>
+            <div id="saidaFatos" class="texto-processado">[O texto processado aparecerá aqui...]</div>
+
+            <h2>II. FUNDAMENTAÇÃO JURÍDICA</h2>
+            <div id="saidaDireito" class="texto-processado">[As teses jurídicas aparecerão aqui...]</div>
+
+            <h2>III. PEDIDOS</h2>
+            <p>Ante o exposto, requer o conhecimento e provimento do recurso.</p>
+            
+            <br><br>
+            <div style="text-align:center">Pede Deferimento.<br>Advogado</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuração do Worker do PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+    // Palavras-chave para separar o que é Direito do que é Fato
+    const keywordsDireito = [
+        "súmula", "tema", "lei", "artigo", "art.", "constituição", "cf/88", 
+        "jurisprudência", "precedente", "stj", "tnu", "trf", "turma", 
+        "nulidade", "cerceamento", "perícia", "laudo", "omissão", "contradição",
+        "acórdão", "sentença", "mérito", "provimento", "recurso"
+    ];
+
+    // --- FUNÇÕES DE IMPORTAÇÃO DE ARQUIVO ---
+
+    async function lerArquivos(input) {
+        const files = input.files;
+        if (files.length === 0) return;
+
+        document.getElementById('loading').style.display = 'flex';
+        let textoAcumulado = document.getElementById('textoBruto').value;
+        if(textoAcumulado) textoAcumulado += "\n\n";
+
+        for (let file of files) {
+            try {
+                let textoExtraido = "";
+                if (file.type === "application/pdf") {
+                    textoExtraido = await lerPDF(file);
+                } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                    textoExtraido = await lerDOCX(file);
+                } else if (file.type === "text/plain") {
+                    textoExtraido = await lerTXT(file);
+                } else {
+                    alert("Formato não suportado: " + file.name);
+                    continue;
+                }
+                textoAcumulado += `--- INÍCIO ARQUIVO: ${file.name} ---\n${textoExtraido}\n--- FIM ARQUIVO ---\n\n`;
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao ler " + file.name);
+            }
+        }
+
+        document.getElementById('textoBruto').value = textoAcumulado;
+        document.getElementById('loading').style.display = 'none';
+        // Limpa o input para permitir selecionar o mesmo arquivo novamente se quiser
+        input.value = ''; 
+    }
+
+    function lerTXT(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.onerror = reject;
+            reader.readAsText(file);
+        });
+    }
+
+    function lerDOCX(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const arrayBuffer = event.target.result;
+                mammoth.extractRawText({arrayBuffer: arrayBuffer})
+                    .then(result => resolve(result.value))
+                    .catch(reject);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    async function lerPDF(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        let fullText = "";
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + "\n";
+        }
+        return fullText;
+    }
+
+    // --- LÓGICA DE PROCESSAMENTO E SIMILARIDADE ---
+
+    // Calcula quão parecidos são dois textos (0 a 1)
+    function calcularSimilaridade(s1, s2) {
+        let longer = s1;
+        let shorter = s2;
+        if (s1.length < s2.length) { longer = s2; shorter = s1; }
+        let longerLength = longer.length;
+        if (longerLength === 0) return 1.0;
+        return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+    }
+
+    function editDistance(s1, s2) {
+        s1 = s1.toLowerCase(); s2 = s2.toLowerCase();
+        let costs = new Array();
+        for (let i = 0; i <= s1.length; i++) {
+            let lastValue = i;
+            for (let j = 0; j <= s2.length; j++) {
+                if (i == 0) costs[j] = j;
+                else {
+                    if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) != s2.charAt(j - 1)) newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+            }
+            if (i > 0) costs[s2.length] = lastValue;
+        }
+        return costs[s2.length];
+    }
+
+    function processarTexto() {
+        const texto = document.getElementById('textoBruto').value;
+        const modoInteligente = document.querySelector('input[name="nivel"]:checked').value === 'agressivo';
+        
+        // Atualiza título
+        document.getElementById('outTitulo').innerText = document.getElementById('tituloPeca').value;
+
+        if (!texto.trim()) { alert("Cole um texto ou importe um arquivo primeiro!"); return; }
+
+        document.getElementById('loading').style.display = 'flex';
+
+        // Pequeno delay para permitir que o loading apareça
+        setTimeout(() => {
+            // 1. Limpeza inicial e quebra em parágrafos
+            let paragrafos = texto.split(/\n+/).map(p => p.trim()).filter(p => p.length > 30); // Ignora linhas muito curtas
+            
+            let fatosUnicos = [];
+            let direitoUnico = [];
+            let conteudosAceitos = []; // Guarda o texto puro dos parágrafos aceitos para comparação
+
+            paragrafos.forEach(p => {
+                // Remove caracteres especiais para comparação
+                let pClean = p.toLowerCase().replace(/[^a-z0-9ãõáéíóúç]/g, "");
+                
+                let duplicado = false;
+
+                // Lógica de Duplicidade
+                if (modoInteligente) {
+                    // Verifica similaridade (se for > 70% parecido, é duplicado)
+                    for (let aceito of conteudosAceitos) {
+                        if (calcularSimilaridade(aceito, pClean) > 0.70) {
+                            duplicado = true;
+                            break;
+                        }
+                    }
+                } else {
+                    // Verifica apenas se o texto já está contido em outro
+                    for (let aceito of conteudosAceitos) {
+                        if (aceito.includes(pClean) || pClean.includes(aceito)) {
+                            duplicado = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!duplicado) {
+                    conteudosAceitos.push(pClean);
+                    
+                    // Classifica: FATO ou DIREITO?
+                    let ehDireito = keywordsDireito.some(key => p.toLowerCase().includes(key));
+                    
+                    if (ehDireito) {
+                        direitoUnico.push(`<p>${p}</p>`);
+                    } else {
+                        fatosUnicos.push(`<p>${p}</p>`);
+                    }
+                }
+            });
+
+            // Inserir no HTML
+            document.getElementById('saidaFatos').innerHTML = fatosUnicos.length > 0 ? fatosUnicos.join("") : "<p><i>Nenhum fato relevante identificado.</i></p>";
+            document.getElementById('saidaDireito').innerHTML = direitoUnico.length > 0 ? direitoUnico.join("") : "<p><i>Nenhuma tese jurídica identificada.</i></p>";
+            
+            document.getElementById('loading').style.display = 'none';
+        }, 100);
+    }
+
+    function limparTudo() {
+        document.getElementById('textoBruto').value = '';
+        document.getElementById('saidaFatos').innerHTML = '[O texto processado aparecerá aqui...]';
+        document.getElementById('saidaDireito').innerHTML = '[As teses jurídicas aparecerão aqui...]';
+    }
+</script>
+
+</body>
+</html>

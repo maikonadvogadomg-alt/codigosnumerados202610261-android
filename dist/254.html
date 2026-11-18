@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora Judicial Completa</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header { background: #2c3e50; color: white; padding: 15px; text-align: center; border-radius: 5px; margin-bottom: 20px; }
+  .main { display: flex; gap: 20px; }
+  .left-panel { flex: 1; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  .right-panel { flex: 2; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  .section { margin-bottom: 20px; }
+  h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+  label { display: block; margin: 10px 0 5px; font-weight: bold; }
+  input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 3px; }
+  button { background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 3px; cursor: pointer; margin: 5px 0; }
+  button:hover { background: #2980b9; }
+  .result-card { background: #e8f4fc; padding: 15px; margin: 10px 0; border-radius: 5px; }
+  .result-value { font-size: 1.2em; font-weight: bold; color: #2c3e50; }
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  th { background-color: #3498db; color: white; }
+  .money { color: #27ae60; font-weight: bold; }
+  .error { color: #e74c3c; }
+  .success { color: #27ae60; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Calculadora Judicial Avançada</h1>
+    <p>Com correção monetária, juros remuneratórios e honorários sucumbenciais</p>
+  </header>
+  
+  <div class="main">
+    <div class="left-panel">
+      <div class="section">
+        <h2>Dados do Processo</h2>
+        <label>Valor Principal (R$)</label>
+        <input type="number" id="principal" value="10000.00" step="0.01">
+        
+        <label>Data Início</label>
+        <input type="date" id="dtInicio">
+        
+        <label>Data Fim</label>
+        <input type="date" id="dtFim">
+        
+        <label>Data de Início da Mora (Opcional)</label>
+        <input type="date" id="dtMora">
+      </div>
+      
+      <div class="section">
+        <h2>Índices</h2>
+        <label>Cole os índices (CSV formatado)</label>
+        <textarea id="csvInput" rows="8" placeholder="Exemplo: competencia;correcao_pct;remuneracao_pct&#10;2021-01;0.35;1.80&#10;2021-02;0.22;1.80"></textarea>
+        
+        <button onclick="processData()">Processar Índices</button>
+        <button onclick="fetchBCB()">Buscar BCB</button>
+      </div>
+      
+      <div class="section">
+        <h2>Regras de Cálculo</h2>
+        <label>Coluna Correção</label>
+        <select id="selColCorr"></select>
+        
+        <label>Coluna Juros</label>
+        <select id="selColJuros"></select>
+        
+        <label>Capitalização</label>
+        <select id="capRule">
+          <option value="simple">Juros Simples</option>
+          <option value="compound">Composto Mensal</option>
+          <option value="annual">Composto Anual</option>
+        </select>
+        
+        <label>Juros de Mora (%)</label>
+        <input type="number" id="moraFixa" value="1.0" step="0.1">
+        
+        <button onclick="calculate()" style="background: #27ae60;">CALCULAR</button>
+      </div>
+      
+      <div class="section">
+        <h2>Honorários</h2>
+        <label>Percentual de Honorários (%)</label>
+        <input type="number" id="honorariosPercentual" value="10.0" step="0.1">
+        <button onclick="calcularHonorarios()" style="background: #9b59b6;">Calcular Honorários</button>
+      </div>
+    </div>
+    
+    <div class="right-panel">
+      <div id="resultsArea" style="display:none">
+        <h2>Resultados</h2>
+        <div class="result-card">
+          <h3>Total Final</h3>
+          <div class="result-value" id="resTotal">R$ 0,00</div>
+        </div>
+        
+        <div class="result-card">
+          <h3>Principal Atualizado</h3>
+          <div class="result-value" id="resPrincipal">R$ 0,00</div>
+        </div>
+        
+        <div class="result-card">
+          <h3>Juros Remuneratórios</h3>
+          <div class="result-value" id="resRem">R$ 0,00</div>
+        </div>
+        
+        <div class="result-card">
+          <h3>Juros de Mora</h3>
+          <div class="result-value" id="resMora">R$ 0,00</div>
+        </div>
+        
+        <div class="result-card">
+          <h3>Honorários</h3>
+          <div class="result-value" id="resHonorarios">R$ 0,00</div>
+        </div>
+        
+        <h3>Evolução Mensal</h3>
+        <table id="resultTable">
+          <thead>
+            <tr>
+              <th>Competência</th>
+              <th>Correção</th>
+              <th>Juros</th>
+              <th>Principal</th>
+              <th>Juros Mês</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      
+      <div id="emptyState" style="text-align:center; padding:50px; color:#7f8c8d;">
+        <h2>Aguardando Cálculo</h2>
+        <p>Preencha os dados à esquerda e clique em CALCULAR</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- ESTADO GLOBAL ---
+let GLOBAL_DATA = {};
+let COLUMNS = [];
+
+// Funções auxiliares
+function $(id) { return document.getElementById(id); }
+
+function fmtMoney(n) {
+  if (isNaN(n)) return 'R$ 0,00';
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function toYM(date) {
+  const d = new Date(date);
+  return d.toISOString().slice(0, 7);
+}
+
+function processData() {
+  const text = $('csvInput').value.trim();
+  if (!text) {
+    alert('Cole os dados primeiro');
+    return;
+  }
+
+  const lines = text.split('\n');
+  if (lines.length < 2) {
+    alert('Dados inválidos');
+    return;
+  }
+
+  const headers = lines[0].split(';').map(h => h.trim().toLowerCase());
+  GLOBAL_DATA = {};
+  COLUMNS = headers.filter(h => h !== 'competencia');
+  
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const cols = lines[i].split(';');
+    const ym = cols[0].trim();
+    if (!ym) continue;
+    
+    if (!GLOBAL_DATA[ym]) GLOBAL_DATA[ym] = {};
+    headers.forEach((h, idx) => {
+      if (idx === 0) return;
+      let val = parseFloat(cols[idx].replace(',', '.'));
+      if (isNaN(val)) val = 0;
+      GLOBAL_DATA[ym][h] = val;
+    });
+  }
+
+  // Atualizar selects
+  const fillSelect = (id) => {
+    const sel = $(id);
+    sel.innerHTML = '<option value="">(Nenhuma)</option>';
+    COLUMNS.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.innerText = c.toUpperCase();
+      sel.appendChild(opt);
+    });
+  };
+  fillSelect('selColCorr');
+  fillSelect('selColJuros');
+  
+  alert('Dados processados com sucesso!');
+}
+
+async function fetchBCB() {
+  const code = prompt('Código da série BCB (ex: 433 para IPCA):');
+  if (!code) return;
+  
+  const ini = $('dtInicio').value;
+  const fim = $('dtFim').value;
+  
+  if (!ini || !fim) {
+    alert('Defina as datas primeiro');
+    return;
+  }
+  
+  try {
+    const fmt = d => d.split('-').reverse().join('/');
+    const resp = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${fmt(ini)}&dataFinal=${fmt(fim)}`);
+    const data = await resp.json();
+    
+    // Converter para formato esperado
+    let csv = "competencia;correcao_pct\n";
+    data.forEach(item => {
+      const parts = item.data.split('/');
+      const ym = `${parts[2]}-${parts[1]}`;
+      csv += `${ym};${item.valor.replace('.', ',')}\n`;
+    });
+    
+    $('csvInput').value += csv;
+    alert('Dados BCB importados com sucesso!');
+  } catch (e) {
+    alert('Erro ao buscar BCB: ' + e.message);
+  }
+}
+
+function calculate() {
+  const principal = parseFloat($('principal').value);
+  const dtIni = new Date($('dtInicio').value);
+  const dtFim = new Date($('dtFim').value);
+  const dtMora = $('dtMora').value ? new Date($('dtMora').value) : null;
+  
+  const colCorr = $('selColCorr').value;
+  const colJuros = $('selColJuros').value;
+  const capRule = $('capRule').value;
+  const moraFixa = parseFloat($('moraFixa').value) || 0;
+  
+  if (isNaN(principal) || principal <= 0) {
+    alert('Valor principal inválido');
+    return;
+  }
+  
+  if (isNaN(dtIni.getTime()) || isNaN(dtFim.getTime())) {
+    alert('Datas inválidas');
+    return;
+  }
+  
+  let saldoPrincipal = principal;
+  let jurosRemAcumulado = 0;
+  let moraAcumulada = 0;
+  let totalJurosRem = 0;
+  
+  const resultRows = [];
+  let mesesAniversario = 0;
+  let currentDt = new Date(dtIni.getFullYear(), dtIni.getMonth(), 1);
+  
+  while (currentDt <= dtFim) {
+    const ym = toYM(currentDt);
+    const dadosMes = GLOBAL_DATA[ym] || {};
+    
+    // Correção Monetária
+    const indiceCorr = dadosMes[colCorr] || 0;
+    const fatorCorr = 1 + (indiceCorr / 100);
+    saldoPrincipal = saldoPrincipal * fatorCorr;
+    
+    // Juros Remuneratórios
+    const taxaJuros = dadosMes[colJuros] || 0;
+    let jurosMesValor = 0;
+    
+    if (capRule === 'compound') {
+      jurosMesValor = saldoPrincipal * (taxaJuros / 100);
+      saldoPrincipal += jurosMesValor;
+      totalJurosRem += jurosMesValor;
+    }
+    else if (capRule === 'simple') {
+      jurosMesValor = saldoPrincipal * (taxaJuros / 100);
+      jurosRemAcumulado += jurosMesValor;
+      totalJurosRem += jurosMesValor;
+    }
+    else if (capRule === 'annual') {
+      jurosMesValor = saldoPrincipal * (taxaJuros / 100);
+      jurosRemAcumulado += jurosMesValor;
+      totalJurosRem += jurosMesValor;
+      
+      mesesAniversario++;
+      if (mesesAniversario === 12) {
+        saldoPrincipal += jurosRemAcumulado;
+        jurosRemAcumulado = 0;
+        mesesAniversario = 0;
+      }
+    }
+    
+    // Juros de Mora
+    let moraMes = 0;
+    if (dtMora && currentDt >= dtMora) {
+      moraMes = saldoPrincipal * (moraFixa / 100);
+      moraAcumulada += moraMes;
+    }
+    
+    const totalLinha = saldoPrincipal + (capRule !== 'compound' ? jurosRemAcumulado : 0) + moraAcumulada;
+    
+    resultRows.push({
+      ym: ym,
+      indice: indiceCorr,
+      taxa: taxaJuros,
+      principal: saldoPrincipal,
+      jurosMes: jurosMesValor,
+      jurosAcum: (capRule !== 'compound' ? jurosRemAcumulado : totalJurosRem),
+      moraAcum: moraAcumulada,
+      total: totalLinha
+    });
+    
+    currentDt.setMonth(currentDt.getMonth() + 1);
+  }
+
+  // Exibir resultados
+  $('emptyState').style.display = 'none';
+  $('resultsArea').style.display = 'block';
+  
+  const lastRow = resultRows[resultRows.length - 1];
+  $('resTotal').innerText = fmtMoney(lastRow.total);
+  $('resPrincipal').innerText = fmtMoney(lastRow.principal);
+  $('resRem').innerText = fmtMoney(lastRow.jurosAcum);
+  $('resMora').innerText = fmtMoney(lastRow.moraAcum);
+  
+  // Tabela
+  const tbody = $('resultTable').querySelector('tbody');
+  tbody.innerHTML = '';
+  
+  resultRows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.ym}</td>
+      <td>${r.indice}%</td>
+      <td>${r.taxa}%</td>
+      <td>${fmtMoney(r.principal)}</td>
+      <td>${fmtMoney(r.jurosMes)}</td>
+      <td class="money">${fmtMoney(r.total)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+ 
+  alert('Cálculo concluído!');
+}
+
+function calcularHonorarios() {
+  const total = parseFloat($('resTotal').innerText.replace(/\./g,'').replace(',','.').replace('R$ ',''));
+  const percentual = parseFloat($('honorariosPercentual').value) || 10;
+  
+  if (isNaN(total) || total <= 0) {
+    alert('Nenhum valor calculado');
+    return;
+  }
+  
+  const honorarios = total * (percentual / 100);
+  $('resHonorarios').innerText = fmtMoney(honorarios);
+}
+</script>
+</body>
+</html>

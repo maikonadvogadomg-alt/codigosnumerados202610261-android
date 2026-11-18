@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modelo Editável de Peça (TRF6/JEF) — Endereçamento, Qualificação, Fundamentos com Subtítulos e Jurisprudência</title>
+
+  <!-- DOCX real (exportação Word) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#f3f4f6; --card:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --primary:#1e3a8a; --danger:#b91c1c;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--bg); color:var(--ink); font-family: "Segoe UI", Arial, sans-serif; }
+    .app{ display:flex; height:100vh; overflow:hidden; }
+
+    /* Painel */
+    aside{
+      width: 420px; max-width: 45vw;
+      background:var(--card); border-right:1px solid var(--line);
+      padding:16px; overflow:auto;
+    }
+    .panel-title{ font-weight:800; font-size:14px; letter-spacing:.02em; margin:0 0 12px; }
+    .panel-sub{ color:var(--muted); font-size:12px; margin:0 0 14px; }
+    .group{ border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:12px; background:#fff; }
+    .group h3{ margin:0 0 10px; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:#374151; }
+    label{ display:block; font-size:12px; color:#374151; font-weight:700; margin:10px 0 6px; }
+    input, textarea, select{
+      width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px; font-size:13px;
+      outline:none;
+    }
+    textarea{ min-height:72px; resize:vertical; font-family:inherit; }
+    input:focus, textarea:focus, select:focus{ border-color:#93c5fd; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
+    .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 0; }
+    .btn{
+      border:none; border-radius:10px; padding:10px 12px; font-weight:800; cursor:pointer; font-size:13px;
+      color:white; background:var(--primary);
+    }
+    .btn.secondary{ background:#0f766e; }
+    .btn.gray{ background:#374151; }
+    .btn.danger{ background:var(--danger); }
+    .btn.light{
+      background:#e5e7eb; color:#111827; border:1px solid #d1d5db;
+    }
+
+    .mini{ font-size:11px; color:var(--muted); margin-top:8px; line-height:1.35; }
+
+    /* Preview */
+    main{ flex:1; overflow:auto; padding:18px; }
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:0 auto 12px; max-width:900px; }
+    .paper{
+      background:#fff; margin:0 auto; width:210mm; min-height:297mm;
+      padding:25mm 20mm; box-shadow:0 8px 22px rgba(0,0,0,.08);
+    }
+
+    /* Padrão jurídico */
+    .doc{ font-family:"Times New Roman", serif; font-size:12pt; line-height:1.5; text-align:justify; }
+    .doc p{ margin:0 0 10px; text-indent:2cm; }
+    .doc .center{ text-align:center; text-indent:0; }
+    .doc .noindent{ text-indent:0; }
+    .doc .caps{ font-weight:800; text-transform:uppercase; }
+    .doc h2{
+      margin:18px 0 10px;
+      font-weight:800; text-transform:uppercase; font-size:12pt;
+    }
+    .doc h3{
+      margin:12px 0 8px;
+      font-weight:800; font-size:12pt;
+    }
+    /* Citação longa (ABNT/uso forense): recuo 4cm, fonte 10, espaçamento simples */
+    .doc .quote{
+      margin: 8px 0 10px 4cm;
+      font-size:10pt;
+      line-height:1.2;
+      text-indent:0;
+    }
+    .doc .quote p{ text-indent:0; margin:0 0 8px; }
+
+    .doc .signature{ margin-top:36px; }
+    .doc .signature p{ text-indent:0; text-align:center; margin:4px 0; }
+
+    /* Impressão A4 sem “estourar” */
+    @media print{
+      @page{ size:A4 portrait; margin:20mm; }
+      body{ background:#fff; }
+      aside, .toolbar{ display:none !important; }
+      main{ padding:0; }
+      .paper{ box-shadow:none; width:auto; min-height:auto; padding:0; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- PAINEL (EDITÁVEL) -->
+  <aside>
+    <h1 class="panel-title">MODELO EDITÁVEL (TRF6/JEF) — reutilizável</h1>
+    <p class="panel-sub">
+      Estrutura adaptável: endereçamento, qualificação, título/subtítulo, fundamentos com subtítulos, campo de jurisprudência e citações com recuo de 4cm.
+    </p>
+
+    <div class="group">
+      <h3>Tipo de peça (preset opcional)</h3>
+      <label>Modelo</label>
+      <select id="tipoPeca" onchange="aplicarPreset(); atualizar();">
+        <option value="edcl">Embargos de Declaração (com prequestionamento)</option>
+        <option value="pu">Pedido de Uniformização (TRU/TNU) — esqueleto</option>
+        <option value="peticao">Petição Genérica (você edita tudo)</option>
+      </select>
+
+      <div class="mini">
+        Dica: selecione “Petição Genérica” para usar a mesma lógica em outros processuais.
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Cabeçalho / Endereçamento</h3>
+
+      <label>Endereçamento (linha 1 — em caixa alta)</label>
+      <textarea id="enderecamento" oninput="atualizar()" placeholder="EXCELENTÍSSIMO(A) SENHOR(A) ..."></textarea>
+
+      <div class="row2">
+        <div>
+          <label>Nº do processo</label>
+          <input id="processo" oninput="atualizar()" placeholder="6002755-35.2024.4.06.3819"/>
+        </div>
+        <div>
+          <label>Órgão/Unidade (opcional)</label>
+          <input id="orgao" oninput="atualizar()" placeholder="2ª Turma Recursal / JEF ..."/>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>Parte 1 (rótulo)</label>
+          <input id="rotuloP1" oninput="atualizar()" placeholder="Embargante:"/>
+        </div>
+        <div>
+          <label>Parte 1 (nome)</label>
+          <input id="parte1" oninput="atualizar()" placeholder="Theo Pyerre Dias de Oliveira"/>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>Parte 2 (rótulo)</label>
+          <input id="rotuloP2" oninput="atualizar()" placeholder="Embargado:"/>
+        </div>
+        <div>
+          <label>Parte 2 (nome)</label>
+          <input id="parte2" oninput="atualizar()" placeholder="INSS"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Título / Subtítulo / Jurisprudência</h3>
+
+      <label>Título da peça (CAIXA ALTA)</label>
+      <input id="titulo" oninput="atualizar()" placeholder="EMBARGOS DE DECLARAÇÃO"/>
+
+      <label>Subtítulo (opcional)</label>
+      <input id="subtitulo" oninput="atualizar()" placeholder="COM PEDIDO DE EFEITOS INFRINGENTES E PREQUESTIONAMENTO"/>
+
+      <label>Jurisprudência/Temas/Súmulas (para aparecer no subtítulo/rodapé do título)</label>
+      <textarea id="jurisTitulo" oninput="atualizar()" placeholder="Ex.: Tema 1124/STJ; Súmula 22/TNU; Súmula 98/TNU; RE 567.985/MT..."></textarea>
+
+      <div class="mini">
+        Esse campo é útil para “padrão de admissibilidade”: já deixa claro, no início, qual é o eixo jurídico do recurso.
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Qualificação e “parte fixa”</h3>
+
+      <label>Parágrafo de qualificação (você controla o texto)</label>
+      <textarea id="qualificacao" oninput="atualizar()" placeholder="(nome), (qualificação), por intermédio de seu advogado..., vem..."></textarea>
+
+      <label>Fundamento legal base (linha curta)</label>
+      <input id="fundBase" oninput="atualizar()" placeholder="com fundamento no art. 1.022 do CPC"/>
+
+      <div class="mini">
+        A ideia é você ter um “bloco fixo” reutilizável e mudar apenas nomes/qualificação conforme o caso.
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Seções principais</h3>
+
+      <label>I — Síntese fática</label>
+      <textarea id="sintese" oninput="atualizar()" placeholder="Faça a moldura fática padronizada para cotejo analítico..."></textarea>
+
+      <label>II — Fundamentos (texto introdutório)</label>
+      <textarea id="fundIntro" oninput="atualizar()" placeholder="Introdução: delimitação do vício (omissão/contradição/obscuridade/erro material)..."></textarea>
+
+      <label>III — Pedidos</label>
+      <textarea id="pedidos" oninput="atualizar()" placeholder="Pedidos (conhecimento, provimento, efeitos infringentes, prequestionamento)..."></textarea>
+    </div>
+
+    <div class="group">
+      <h3>Fundamentos com Subtítulos (II.1, II.2...)</h3>
+
+      <button class="btn" onclick="adicionarFundamento()">➕ Adicionar subtítulo de fundamento</button>
+      <button class="btn light" onclick="limparFundamentos()">Limpar subtítulos</button>
+
+      <div id="listaFundamentos"></div>
+
+      <div class="mini">
+        Use um subtítulo por “vício” (omissão/contradição etc.) e finalize com o dispositivo/tema/súmula para prequestionamento.
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Citações longas (recuo 4cm)</h3>
+
+      <button class="btn secondary" onclick="adicionarCitacao()">➕ Adicionar citação (bloco 4cm)</button>
+      <button class="btn light" onclick="limparCitacoes()">Limpar citações</button>
+
+      <div id="listaCitacoes"></div>
+
+      <div class="mini">
+        Padrão: fonte 10, espaçamento simples, recuo esquerdo de 4cm (útil para transcrever ementas/trechos).
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Fecho / Assinatura</h3>
+      <div class="row2">
+        <div>
+          <label>Local e data</label>
+          <input id="localData" oninput="atualizar()" placeholder="Manhumirim/MG, (data)"/>
+        </div>
+        <div>
+          <label>Nome / OAB</label>
+          <input id="advogado" oninput="atualizar()" placeholder="Maikon da Rocha Caldeira — OAB/MG 183.712"/>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn gray" onclick="exportarDOCX()">⬇ Exportar Word (DOCX)</button>
+        <button class="btn" onclick="window.print()">⬇ Salvar PDF (Imprimir)</button>
+        <button class="btn danger" onclick="resetarTudo()">↺ Resetar</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- PREVIEW -->
+  <main>
+    <div class="toolbar">
+      <button class="btn gray" onclick="exportarDOCX()">⬇ Word (DOCX)</button>
+      <button class="btn" onclick="window.print()">⬇ PDF (Imprimir)</button>
+      <span style="color:var(--muted); font-size:12px;">
+        Visualização A4. Texto justificado. Citação longa com recuo 4cm.
+      </span>
+    </div>
+
+    <div class="paper">
+      <div class="doc" id="doc">
+
+        <p class="center caps" id="v_end"></p>
+
+        <p class="noindent"><b>PROCESSO:</b> <span id="v_proc"></span></p>
+        <p class="noindent" id="v_orgaoWrap" style="display:none;"><b>ÓRGÃO/UNIDADE:</b> <span id="v_orgao"></span></p>
+
+        <p class="noindent"><b><span id="v_r1"></span></b> <span id="v_p1"></span></p>
+        <p class="noindent"><b><span id="v_r2"></span></b> <span id="v_p2"></span></p>
+
+        <p class="center caps" style="margin-top:18px;" id="v_titulo"></p>
+        <p class="center caps" style="margin-top:0;" id="v_subtitulo"></p>
+        <p class="center" style="margin-top:6px; font-size:10pt; color:#111827;" id="v_jurisTitulo"></p>
+
+        <p id="v_qual"></p>
+
+        <h2>I — Síntese fática</h2>
+        <p id="v_sintese"></p>
+
+        <h2>II — Fundamentos</h2>
+        <p id="v_fundIntro"></p>
+
+        <div id="v_fundamentos"></div>
+
+        <div id="v_citacoes"></div>
+
+        <h2>III — Pedidos</h2>
+        <p id="v_pedidos"></p>
+
+        <div class="signature">
+          <p class="center">Termos em que,</p>
+          <p class="center">Pede deferimento.</p>
+          <p class="center" id="v_localData"></p>
+          <p class="center" style="font-weight:800;" id="v_adv"></p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  // ============================
+  // ESTADO (reutilizável p/ outras peças)
+  // ============================
+  const state = {
+    fundamentos: [], // {id, titulo, texto}
+    citacoes: []     // {id, referencia, texto}
+  };
+
+  function gid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+
+  // ============================
+  // PRESETS (opcional)
+  // ============================
+  function aplicarPreset(){
+    const tipo = val("tipoPeca");
+
+    if(tipo === "edcl"){
+      setVal("enderecamento", "EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) FEDERAL RELATOR(A) DA TURMA RECURSAL DOS JUIZADOS ESPECIAIS FEDERAIS DO TRF6");
+      setVal("rotuloP1", "Embargante:");
+      setVal("rotuloP2", "Embargado:");
+      setVal("titulo", "EMBARGOS DE DECLARAÇÃO");
+      setVal("subtitulo", "COM PEDIDO DE EFEITOS INFRINGENTES E PREQUESTIONAMENTO");
+      setVal("fundBase", "com fundamento no art. 1.022 do CPC");
+      if(!val("jurisTitulo")) setVal("jurisTitulo", "Tema 1124/STJ; Súmula 22/TNU; Súmula 98/TNU; RE 567.985/MT; Art. 489, §1º, IV, CPC; Art. 93, IX, CF");
+      if(!val("qualificacao")) {
+        setVal("qualificacao",
+          "((NOME DA PARTE)), ((qualificação completa)), por intermédio de seu advogado infra-assinado, vem, respeitosamente, à presença de Vossa Excelência, opor " +
+          "((TÍTULO DA PEÇA)) " + val("fundBase") + ", em face do acórdão/decisão, pelos fatos e fundamentos a seguir expostos."
+        );
+      }
+    }
+
+    if(tipo === "pu"){
+      setVal("enderecamento", "EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) FEDERAL PRESIDENTE DA TURMA RECURSAL DOS JUIZADOS ESPECIAIS FEDERAIS DO TRF6");
+      setVal("rotuloP1", "Recorrente:");
+      setVal("rotuloP2", "Recorrido:");
+      setVal("titulo", "PEDIDO DE UNIFORMIZAÇÃO");
+      setVal("subtitulo", "INCIDENTE REGIONAL/NACIONAL (CONFORME O CASO)");
+      setVal("fundBase", "com fundamento na Lei 10.259/2001 e nos atos normativos aplicáveis (TRU/TNU)");
+      if(!val("jurisTitulo")) setVal("jurisTitulo", "Indique o tema/súmula/precedente divergente + paradigma + similitude fática");
+      if(!val("qualificacao")) {
+        setVal("qualificacao",
+          "((NOME DA PARTE)), ((qualificação completa)), por intermédio de seu advogado infra-assinado, vem interpor o presente " +
+          "((TÍTULO DA PEÇA)), demonstrando a divergência de direito material e o cotejo analítico exigido, pelas razões a seguir."
+        );
+      }
+    }
+
+    if(tipo === "peticao"){
+      // não força nada; deixa ao usuário
+    }
+  }
+
+  // ============================
+  // FUNDAMENTOS (subtítulos II.1, II.2...)
+  // ============================
+  function adicionarFundamento(){
+    const id = gid();
+    state.fundamentos.push({ id, titulo: "", texto: "" });
+    renderFundamentosPainel();
+    atualizar();
+  }
+
+  function removerFundamento(id){
+    state.fundamentos = state.fundamentos.filter(f => f.id !== id);
+    renderFundamentosPainel();
+    atualizar();
+  }
+
+  function limparFundamentos(){
+    if(!confirm("Remover todos os subtítulos de fundamentos?")) return;
+    state.fundamentos = [];
+    renderFundamentosPainel();
+    atualizar();
+  }
+
+  function renderFundamentosPainel(){
+    const wrap = document.getElementById("listaFundamentos");
+    wrap.innerHTML = "";
+    state.fundamentos.forEach((f, idx) => {
+      const box = document.createElement("div");
+      box.style.marginTop = "10px";
+      box.style.padding = "10px";
+      box.style.border = "1px solid #e5e7eb";
+      box.style.borderRadius = "10px";
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <div style="font-weight:800; font-size:12px; color:#374151;">Subtítulo II.${idx+1}</div>
+          <button class="btn light" style="padding:6px 10px;" onclick="removerFundamento('${f.id}')">Remover</button>
+        </div>
+        <label>Título do subtítulo</label>
+        <input value="${escapeHtml(f.titulo)}" oninput="editarFundamento('${f.id}', 'titulo', this.value)" placeholder="Ex.: II.${idx+1} — Omissão quanto à fixação da DIB na DER (Tema 1124/STJ)"/>
+        <label>Texto</label>
+        <textarea oninput="editarFundamento('${f.id}', 'texto', this.value)" placeholder="Explique o vício + norma/tema/súmula + pedido integrativo...">${escapeHtml(f.texto)}</textarea>
+      `;
+      wrap.appendChild(box);
+    });
+  }
+
+  function editarFundamento(id, campo, valor){
+    const f = state.fundamentos.find(x => x.id === id);
+    if(!f) return;
+    f[campo] = valor;
+    atualizar();
+  }
+
+  // ============================
+  // CITAÇÕES (bloco 4cm)
+  // ============================
+  function adicionarCitacao(){
+    const id = gid();
+    state.citacoes.push({ id, referencia: "", texto: "" });
+    renderCitacoesPainel();
+    atualizar();
+  }
+
+  function removerCitacao(id){
+    state.citacoes = state.citacoes.filter(c => c.id !== id);
+    renderCitacoesPainel();
+    atualizar();
+  }
+
+  function limparCitacoes(){
+    if(!confirm("Remover todas as citações longas?")) return;
+    state.citacoes = [];
+    renderCitacoesPainel();
+    atualizar();
+  }
+
+  function renderCitacoesPainel(){
+    const wrap = document.getElementById("listaCitacoes");
+    wrap.innerHTML = "";
+    state.citacoes.forEach((c, idx) => {
+      const box = document.createElement("div");
+      box.style.marginTop = "10px";
+      box.style.padding = "10px";
+      box.style.border = "1px solid #e5e7eb";
+      box.style.borderRadius = "10px";
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <div style="font-weight:800; font-size:12px; color:#374151;">Citação ${idx+1} (recuo 4cm)</div>
+          <button class="btn light" style="padding:6px 10px;" onclick="removerCitacao('${c.id}')">Remover</button>
+        </div>
+        <label>Referência (opcional)</label>
+        <input value="${escapeHtml(c.referencia)}" oninput="editarCitacao('${c.id}','referencia',this.value)" placeholder="Ex.: STJ, Tema 1124, ementa; TNU, Súmula 22..."/>
+        <label>Texto da citação (cole o trecho)</label>
+        <textarea oninput="editarCitacao('${c.id}','texto',this.value)" placeholder="Cole o trecho literal aqui...">${escapeHtml(c.texto)}</textarea>
+      `;
+      wrap.appendChild(box);
+    });
+  }
+
+  function editarCitacao(id, campo, valor){
+    const c = state.citacoes.find(x => x.id === id);
+    if(!c) return;
+    c[campo] = valor;
+    atualizar();
+  }
+
+  // ============================
+  // RENDER PREVIEW
+  // ============================
+  function atualizar(){
+    // Cabeçalho
+    setText("v_end", val("enderecamento").trim().toUpperCase());
+    setText("v_proc", val("processo"));
+    setText("v_orgao", val("orgao"));
+
+    const orgaoWrap = document.getElementById("v_orgaoWrap");
+    orgaoWrap.style.display = val("orgao").trim() ? "block" : "none";
+
+    setText("v_r1", val("rotuloP1"));
+    setText("v_p1", val("parte1"));
+    setText("v_r2", val("rotuloP2"));
+    setText("v_p2", val("parte2"));
+
+    setText("v_titulo", (val("titulo") || "").toUpperCase());
+    setText("v_subtitulo", (val("subtitulo") || "").toUpperCase());
+
+    const jt = val("jurisTitulo").trim();
+    document.getElementById("v_jurisTitulo").innerText = jt ? `Jurisprudência/Referências: ${jt}` : "";
+
+    // Qualificação (auto inclui título/fundamento se a pessoa quiser usar placeholders simples)
+    let qual = val("qualificacao") || "";
+    qual = qual.replaceAll("((TÍTULO DA PEÇA))", val("titulo") || "a presente peça")
+               .replaceAll("((NOME DA PARTE))", val("parte1") || "a parte")
+               .replaceAll("((qualificação completa))", val("qualificacao") ? "" : "devidamente qualificada")
+               .replaceAll("((TÍTULO DA PEÇA))", val("titulo") || "a presente peça");
+    // Se o usuário escreveu tudo, não atrapalha. Apenas renderiza.
+    setHTML("v_qual", `<span>${escapeHtml(qual)}</span>`);
+
+    // Seções
+    setText("v_sintese", val("sintese"));
+    setText("v_fundIntro", val("fundIntro"));
+    setText("v_pedidos", val("pedidos"));
+
+    // Fundamentos com subtítulos
+    const fundWrap = document.getElementById("v_fundamentos");
+    fundWrap.innerHTML = "";
+    state.fundamentos.forEach((f, idx) => {
+      const h = document.createElement("h3");
+      h.innerText = `II.${idx+1} — ${f.titulo || "(sem título)"}`;
+      const p = document.createElement("p");
+      p.innerText = f.texto || "";
+      fundWrap.appendChild(h);
+      fundWrap.appendChild(p);
+    });
+
+    // Citações (bloco 4cm)
+    const citWrap = document.getElementById("v_citacoes");
+    citWrap.innerHTML = "";
+    if(state.citacoes.length){
+      const h2 = document.createElement("h2");
+      h2.innerText = "Citações / Jurisprudência (transcrições)";
+      citWrap.appendChild(h2);
+
+      state.citacoes.forEach((c) => {
+        const div = document.createElement("div");
+        div.className = "quote";
+        const parts = [];
+        if(c.referencia.trim()){
+          parts.push(`<p><b>${escapeHtml(c.referencia.trim())}</b></p>`);
+        }
+        if(c.texto.trim()){
+          // preserva quebras de linha
+          parts.push(`<p>${escapeHtml(c.texto).replaceAll("\n","<br>")}</p>`);
+        }
+        div.innerHTML = parts.join("");
+        citWrap.appendChild(div);
+      });
+    }
+
+    // Fecho
+    setText("v_localData", val("localData"));
+    setText("v_adv", val("advogado"));
+  }
+
+  // ============================
+  // EXPORTAÇÃO WORD (DOCX real)
+  // - Observação: DOCX não mantém “justificado” via CSS; aqui definimos no Word via docx.
+  // - Para recuo de 4cm: 4cm ≈ 2268 twips (1 inch=1440 twips; 1cm ≈ 567 twips)
+  // ============================
+  async function exportarDOCX(){
+    const { docx } = window;
+    const {
+      Document, Packer, Paragraph, TextRun,
+      AlignmentType, HeadingLevel, PageOrientation
+    } = docx;
+
+    // 4cm em twips:
+    const indent4cm = 4 * 567;
+
+    const paras = [];
+
+    // Endereçamento
+    paras.push(new Paragraph({
+      text: (val("enderecamento") || "").toUpperCase(),
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 },
+      children: [ new TextRun({ text: (val("enderecamento") || "").toUpperCase(), bold: true }) ]
+    }));
+
+    // Identificação
+    paras.push(pNoIndent(`PROCESSO: ${val("processo")}`));
+    if(val("orgao").trim()) paras.push(pNoIndent(`ÓRGÃO/UNIDADE: ${val("orgao")}`));
+    paras.push(pNoIndent(`${val("rotuloP1")} ${val("parte1")}`));
+    paras.push(pNoIndent(`${val("rotuloP2")} ${val("parte2")}`));
+
+    paras.push(new Paragraph({ text: "", spacing:{ after: 120 } }));
+
+    // Título/Subtítulo
+    paras.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [ new TextRun({ text: (val("titulo") || "").toUpperCase(), bold: true }) ],
+      spacing: { after: 80 }
+    }));
+    if(val("subtitulo").trim()){
+      paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [ new TextRun({ text: (val("subtitulo") || "").toUpperCase(), bold: true }) ],
+        spacing: { after: 80 }
+      }));
+    }
+    if(val("jurisTitulo").trim()){
+      paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [ new TextRun({ text: `Jurisprudência/Referências: ${val("jurisTitulo").trim()}`, size: 20 }) ],
+        spacing: { after: 200 }
+      }));
+    }
+
+    // Qualificação (justificado, com recuo 2cm ~ 1134 twips)
+    paras.push(new Paragraph({
+      alignment: AlignmentType.JUSTIFIED,
+      indent: { firstLine: 1134 },
+      children: [ new TextRun({ text: stripHtml(val("qualificacao") || ""), }) ],
+      spacing: { after: 200 }
+    }));
+
+    // Seções
+    paras.push(h2("I — SÍNTESE FÁTICA"));
+    paras.push(pJust(val("sintese")));
+
+    paras.push(h2("II — FUNDAMENTOS"));
+    paras.push(pJust(val("fundIntro")));
+
+    // Subtítulos II.1...
+    state.fundamentos.forEach((f, idx) => {
+      paras.push(new Paragraph({
+        text: `II.${idx+1} — ${f.titulo || "(sem título)"}`,
+        heading: HeadingLevel.HEADING_3,
+        spacing: { before: 180, after: 120 }
+      }));
+      paras.push(pJust(f.texto));
+    });
+
+    // Citações
+    if(state.citacoes.length){
+      paras.push(h2("CITAÇÕES / JURISPRUDÊNCIA (TRANSCRIÇÕES)"));
+      state.citacoes.forEach(c => {
+        if(c.referencia.trim()){
+          paras.push(new Paragraph({
+            alignment: AlignmentType.JUSTIFIED,
+            indent: { left: indent4cm },
+            children: [ new TextRun({ text: c.referencia.trim(), bold: true, size: 20 }) ],
+            spacing: { after: 120 }
+          }));
+        }
+        if(c.texto.trim()){
+          // Divide em linhas para preservar quebras
+          const lines = c.texto.split("\n");
+          lines.forEach(line => {
+            paras.push(new Paragraph({
+              alignment: AlignmentType.JUSTIFIED,
+              indent: { left: indent4cm },
+              children: [ new TextRun({ text: line, size: 20 }) ],
+              spacing: { after: 0 }
+            }));
+          });
+          paras.push(new Paragraph({ text:"", spacing:{ after: 120 } }));
+        }
+      });
+    }
+
+    paras.push(h2("III — PEDIDOS"));
+    paras.push(pJust(val("pedidos")));
+
+    // Fecho
+    paras.push(new Paragraph({ text: "", spacing:{ before: 200 } }));
+    paras.push(center("Termos em que,"));
+    paras.push(center("Pede deferimento."));
+    paras.push(center(val("localData")));
+    paras.push(centerBold(val("advogado")));
+
+    const doc = new Document({
+      sections: [{
+        properties: { page: { size: { orientation: PageOrientation.PORTRAIT } } },
+        children: paras
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, `${(val("titulo") || "peca").toLowerCase().replaceAll(" ","_")}.docx`);
+
+    function h2(t){
+      return new Paragraph({ text: t, heading: HeadingLevel.HEADING_2, spacing:{ before: 240, after: 120 } });
+    }
+    function pJust(t){
+      return new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        indent: { firstLine: 1134 },
+        children: [ new TextRun({ text: (t || "").trim() }) ],
+        spacing: { after: 120 }
+      });
+    }
+    function pNoIndent(t){
+      return new Paragraph({ children:[ new TextRun({ text: t, bold: true }) ], spacing:{ after: 80 } });
+    }
+    function center(t){
+      return new Paragraph({ alignment: AlignmentType.CENTER, children:[ new TextRun({ text: t }) ] });
+    }
+    function centerBold(t){
+      return new Paragraph({ alignment: AlignmentType.CENTER, children:[ new TextRun({ text: t, bold: true }) ] });
+    }
+  }
+
+  // ============================
+  // UTIL
+  // ============================
+  function val(id){ return (document.getElementById(id).value || ""); }
+  function setVal(id, v){ document.getElementById(id).value = v; }
+  function setText(id, v){ document.getElementById(id).innerText = v || ""; }
+  function setHTML(id, v){ document.getElementById(id).innerHTML = v || ""; }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+  function stripHtml(s){
+    return String(s ?? "").replace(/<[^>]*>/g,"");
+  }
+
+  function resetarTudo(){
+    if(!confirm("Resetar todos os campos e listas?")) return;
+    state.fundamentos = [];
+    state.citacoes = [];
+    document.querySelectorAll("input, textarea").forEach(el => el.value = "");
+    document.getElementById("tipoPeca").value = "edcl";
+    aplicarPreset();
+    renderFundamentosPainel();
+    renderCitacoesPainel();
+    atualizar();
+  }
+
+  // Boot
+  (function init(){
+    aplicarPreset();
+    renderFundamentosPainel();
+    renderCitacoesPainel();
+    atualizar();
+  })();
+</script>
+</body>
+</html>

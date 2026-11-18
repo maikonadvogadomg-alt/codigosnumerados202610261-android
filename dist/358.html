@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Códigos Jurídicos</title>
+  <meta name="theme-color" content="#0077ff">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      background: #0077ff;
+      color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    li a {
+      display: block;
+      width: 300px;
+      text-decoration: none;
+      background: #28a745;
+      color: #fff;
+      padding: 15px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    li a:hover {
+      background: #218838;
+    }
+    .info {
+      font-size: 14px;
+      color: #555;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📂 Meus Códigos Jurídicos</h1>
+  <p>Clique na ferramenta para abrir:</p>
+  <ul id="lista-codigos">
+    <!-- Adicione aqui os links para seus códigos HTML -->
+    <!-- Exemplo: substitua o nome do arquivo e o título conforme necessário -->
+    <li><a href="BPC_1.html">🤖 BPC/LOAS - Ferramenta 1</a></li>
+    <li><a href="Embargos_2.html">🤖 Embargos de Declaração - Ferramenta 2</a></li>
+    <li><a href="Previdenciario_3.html">🤖 Previdenciário Geral - Ferramenta 3</a></li>
+    <!-- Adicione mais linhas como essas para novos códigos -->
+    <!-- Exemplo: <li><a href="Novo_Codigo.html">🤖 Novo Código - Ferramenta 4</a></li> -->
+  </ul>
+  <p class="info">Organize seus códigos adicionando novos links no código deste menu.</p>
+<script>
+{
+  "name": "Meus Códigos Jurídicos",
+  "short_name": "Códigos App",
+  "description": "App para organizar códigos jurídicos",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0077ff"
+}
+self.addEventListener('install', event => {
+  console.log('Service Worker instalado com sucesso');
+});
+
+self.addEventListener('fetch', event => {
+  // Responde às requisições, pode ser expandido para offline no futuro
+});
+
+</script>
+</body>
+</html>

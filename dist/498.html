@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 Project Manager Pro - Terminal & NPM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: rgba(20, 20, 30, 0.9);
+            padding: 15px 20px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-info {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+        }
+
+        .stat-header {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 5px 12px;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 350px;
+            gap: 0;
+            height: calc(100vh - 60px);
+        }
+
+        /* ===== SIDEBAR ESQUERDA ===== */
+        .sidebar-left {
+            background: #0f0f1e;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid #333;
+            padding: 15px;
+        }
+
+        .sidebar-section h3 {
+            color: #667eea;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .upload-zone {
+            border: 2px dashed #667eea;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: #764ba2;
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        .upload-zone p {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .btn-upload {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-upload:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .tree-item {
+            padding: 6px 8px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tree-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        .tree-item.folder {
+            color: #dcb67a;
+            font-weight: bold;
+        }
+
+        .tree-item.file {
+            color: #888;
+            margin-left: 15px;
+        }
+
+        /* ===== ÁREA CENTRAL ===== */
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            background: #1a1a2e;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(20, 20, 30, 0.5);
+            border-bottom: 1px solid #333;
+            padding: 0 20px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Terminal */
+        .terminal {
+            background: #0f0f1e;
+            border-radius: 6px;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+            flex: 1;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+        }
+
+        .terminal-line {
+            margin: 3px 0;
+        }
+
+        .prompt {
+            color: #4ec9b0;
+        }
+
+        .success {
+            color: #4ec9b0;
+        }
+
+        .error {
+            color: #f48771;
+        }
+
+        .warning {
+            color: #dcdcaa;
+        }
+
+        .input-terminal {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-terminal input {
+            flex: 1;
+            background: #0f0f1e;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .input-terminal input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .input-terminal button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .input-terminal button:hover {
+            background: #764ba2;
+        }
+
+        .quick-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn-quick {
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid #667eea;
+            color: #667eea;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-quick:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Análise */
+        .analysis-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .analysis-box {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 3px solid #667eea;
+            padding: 12px;
+            border-radius: 4px;
+        }
+
+        .analysis-box h4 {
+            color: #667eea;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .deps-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .deps-table th {
+            background: rgba(102, 126, 234, 0.2);
+            padding: 8px;
+            text-align: left;
+            color: #667eea;
+            border-bottom: 1px solid #333;
+        }
+
+        .deps-table td {
+            padding: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .deps-table tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .tag.dev {
+            background: #f6ad55;
+        }
+
+        .tag.prod {
+            background: #48bb78;
+        }
+
+        /* ===== SIDEBAR DIREITA ===== */
+        .sidebar-right {
+            background: #0f0f1e;
+            border-left: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid #333;
+            padding: 15px;
+        }
+
+        .right-section h3 {
+            color: #667eea;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            color: #888;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .deps-list {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .dep-item {
+            background: #1a1a2e;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            border-left: 3px solid #667eea;
+        }
+
+        .dep-item.dev {
+            border-left-color: #f6ad55;
+        }
+
+        .dep-name {
+            flex: 1;
+        }
+
+        .dep-version {
+            color: #888;
+            font-size: 10px;
+        }
+
+        .btn-remove {
+            background: #f48771;
+            color: white;
+            border: none;
+            padding: 3px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+
+        .btn-remove:hover {
+            background: #e53e3e;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-action {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-action:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .btn-action.secondary {
+            background: #48bb78;
+        }
+
+        .btn-action.secondary:hover {
+            background: #38a169;
+        }
+
+        .btn-action.danger {
+            background: #f48771;
+        }
+
+        .btn-action.danger:hover {
+            background: #e53e3e;
+        }
+
+        .code-output {
+            background: #0f0f1e;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 10px;
+            overflow-y: auto;
+            max-height: 200px;
+            margin: 10px 0;
+        }
+
+        .code-output pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        @media (max-width: 1400px) {
+            .container {
+                grid-template-columns: 250px 1fr;
+            }
+            .sidebar-right {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>
+            <span>🚀</span>
+            <span>Project Manager Pro</span>
+        </h1>
+        <div class="header-info">
+            <div class="stat-header">📦 <span id="filesCount">0</span> Arquivos</div>
+            <div class="stat-header">📚 <span id="depsCount">0</span> Dependências</div>
+            <div class="stat-header">🔧 <span id="devDepsCount">0</span> Dev</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- SIDEBAR ESQUERDA: UPLOAD E ÁRVORE -->
+        <div class="sidebar-left">
+            <div class="sidebar-section">
+                <h3>📤 Importar Projeto</h3>
+                <div class="upload-zone" id="dropZone">
+                    <p>📦 Arraste aqui</p>
+                    <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+                        Selecionar
+                    </button>
+                    <input type="file" id="fileInput" multiple accept=".zip,.tar,.gz,.js,.ts,.json,.py,.jsx,.tsx,.html,.css">
+                </div>
+            </div>
+
+            <div class="sidebar-section" style="flex: 1;">
+                <h3>📁 Estrutura</h3>
+                <div class="file-tree" id="fileTree">
+                    <div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">
+                        Nenhum arquivo
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÁREA CENTRAL: TERMINAL E ANÁLISE -->
+        <div class="main-area">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('terminal')">💻 Terminal</button>
+                <button class="tab" onclick="switchTab('analysis')">🔍 Análise</button>
+                <button class="tab" onclick="switchTab('search')">🔎 Buscar NPM</button>
+            </div>
+
+            <!-- TAB: TERMINAL -->
+            <div id="terminal" class="tab-content active">
+                <div class="quick-buttons">
+                    <button class="btn-quick" onclick="executeCommand('npm install')">📥 npm install</button>
+                    <button class="btn-quick" onclick="executeCommand('npm init')">⚙️ npm init</button>
+                    <button class="btn-quick" onclick="executeCommand('tree')">🌳 Ver Árvore</button>
+                    <button class="btn-quick" onclick="executeCommand('clear')">🗑️ Limpar</button>
+                    <button class="btn-quick" onclick="executeCommand('analyze')">🔍 Analisar</button>
+                    <button class="btn-quick" onclick="executeCommand('help')">❓ Ajuda</button>
+                </div>
+
+                <div class="terminal" id="terminalOutput">
+                    <div class="terminal-line success">
+                        ╔════════════════════════════════════════════╗
+                        ║  Project Manager Pro - Terminal Integrado  ║
+                        ╚════════════════════════════════════════════╝
+                    </div>
+                    <div class="terminal-line" style="color: #888;">Digite um comando ou use os botões acima</div>
+                </div>
+
+                <div class="input-terminal">
+                    <input type="text" id="cmdInput" placeholder="Digite um comando..." />
+                    <button onclick="executeCommandInput()">Executar</button>
+                </div>
+            </div>
+
+            <!-- TAB: ANÁLISE -->
+            <div id="analysis" class="tab-content">
+                <div class="analysis-content">
+                    <div class="analysis-box">
+                        <h4>📊 Dependências Detectadas</h4>
+                        <table class="deps-table" id="detectedDepsTable">
+                            <thead>
+                                <tr>
+                                    <th>Pacote</th>
+                                    <th>Tipo</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detectedDepsList">
+                                <tr><td colspan="3" style="text-align: center; color: #666;">Nenhuma dependência detectada</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button class="btn-action secondary" onclick="analyzeProject()">🔍 Analisar Projeto</button>
+                    <button class="btn-action" onclick="addAllDetected()">➕ Adicionar Todas</button>
+                </div>
+            </div>
+
+            <!-- TAB: BUSCAR NPM -->
+            <div id="search" class="tab-content">
+                <div class="form-group">
+                    <label>Buscar Pacote NPM</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="searchInput" placeholder="react, express, lodash..." style="flex: 1;">
+                        <button class="btn-action" onclick="searchNpm()" style="width: auto;">🔍</button>
+                    </div>
+                </div>
+
+                <div id="searchResults" style="flex: 1; overflow-y: auto;">
+                    <div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">
+                        Digite um pacote para buscar
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR DIREITA: GERENCIADOR -->
+        <div class="sidebar-right">
+            <div class="right-section">
+                <h3>📋 Configuração</h3>
+
+                <div class="form-group">
+                    <label>Nome do Projeto</label>
+                    <input type="text" id="projectName" placeholder="meu-projeto" value="meu-projeto">
+                </div>
+
+                <div class="form-group">
+                    <label>Versão</label>
+                    <input type="text" id="projectVersion" value="1.0.0">
+                </div>
+
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="projectDesc" placeholder="Descrição...">
+                </div>
+
+                <div class="form-group">
+                    <label>Autor</label>
+                    <input type="text" id="projectAuthor" placeholder="Seu nome">
+                </div>
+            </div>
+
+            <div class="right-section" style="flex: 1;">
+                <h3>📦 Dependências</h3>
+                <div class="deps-list" id="depsList">
+                    <div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">
+                        Nenhuma dependência
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-section">
+                <h3>📄 package.json</h3>
+                <div class="code-output">
+                    <pre id="packageJsonOutput">{
+  "name": "meu-projeto",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {},
+  "devDependencies": {}
+}</pre>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-action secondary" onclick="generatePackageJson()">✨ Gerar</button>
+                    <button class="btn-action" onclick="copyPackageJson()">📋 Copiar</button>
+                    <button class="btn-action" onclick="downloadPackageJson()">⬇️ Baixar</button>
+                    <button class="btn-action danger" onclick="clearAll()">🗑️ Limpar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        // ============================================
+        // ESTADO GLOBAL
+        // ============================================
+        let projectState = {
+            files: [],
+            dependencies: {},
+            devDependencies: {},
+            detectedDeps: [],
+            fileTree: {}
+        };
+
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDragDrop();
+            setupTerminal();
+        });
+
+        // ============================================
+        // DRAG & DROP
+        // ============================================
+        function setupDragDrop() {
+            const dropZone = document.getElementById('dropZone');
+
+            dropZone.addEventListener('dragover', e => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                processFiles(e.dataTransfer.files);
+            });
+
+            document.getElementById('fileInput').addEventListener('change', e => {
+                processFiles(e.target.files);
+            });
+        }
+
+        // ============================================
+        // PROCESSAMENTO DE ARQUIVOS
+        // ============================================
+        async function processFiles(files) {
+            addTerminalLog('$ Processando arquivos...', 'prompt');
+
+            projectState.files = [];
+            projectState.fileTree = {};
+
+            try {
+                for (let file of files) {
+                    if (file.name.endsWith('.zip')) {
+                        await extractZip(file);
+                    } else if (file.name.endsWith('.tar') || file.name.endsWith('.tar.gz') || file.name.endsWith('.tgz')) {
+                        addTerminalLog('⚠️ TAR/GZ: Use ZIP para melhor compatibilidade', 'warning');
+                    } else {
+                        const content = await file.text();
+                        projectState.files.push({
+                            name: file.name,
+                            content: content,
+                            type: getFileType(file.name)
+                        });
+                    }
+                }
+
+                updateFileTree();
+                updateStats();
+                addTerminalLog(`✅ ${projectState.files.length} arquivo(s) carregado(s)`, 'success');
+            } catch (err) {
+                addTerminalLog(`❌ Erro: ${err.message}`, 'error');
+            }
+        }
+
+        async function extractZip(file) {
+            const zip = new JSZip();
+            const content = await zip.loadAsync(file);
+
+            for (let [path, zipEntry] of Object.entries(content.files)) {
+                if (!zipEntry.dir && /\.(js|ts|jsx|tsx|json|py|html|css)$/.test(path)) {
+                    try {
+                        const fileContent = await zipEntry.async('text');
+                        projectState.files.push({
+                            name: path,
+                            content: fileContent,
+                            type: getFileType(path)
+                        });
+                    } catch (e) {}
+                }
+            }
+        }
+
+        function getFileType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const types = {
+                'js': 'javascript', 'ts': 'typescript', 'jsx': 'javascript',
+                'tsx': 'typescript', 'py': 'python', 'json': 'json',
+                'html': 'html', 'css': 'css'
+            };
+            return types[ext] || 'text';
+        }
+
+        // ============================================
+        // ÁRVORE DE ARQUIVOS
+        // ============================================
+        function updateFileTree() {
+            const tree = {};
+
+            projectState.files.forEach(file => {
+                const parts = file.name.split('/');
+                let current = tree;
+
+                parts.forEach((part, idx) => {
+                    if (idx === parts.length - 1) {
+                        if (!current.files) current.files = [];
+                        current.files.push(file.name);
+                    } else {
+                        if (!current[part]) current[part] = {};
+                        current = current[part];
+                    }
+                });
+            });
+
+            projectState.fileTree = tree;
+            renderFileTree();
+        }
+
+        function renderFileTree() {
+            const treeDiv = document.getElementById('fileTree');
+
+            if (projectState.files.length === 0) {
+                treeDiv.innerHTML = '<div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">Nenhum arquivo</div>';
+                return;
+            }
+
+            let html = '';
+            const renderTree = (obj, depth = 0) => {
+                for (let [key, value] of Object.entries(obj)) {
+                    if (key === 'files') {
+                        value.forEach(file => {
+                            const fileName = file.split('/').pop();
+                            html += `<div class="tree-item file">📄 ${fileName}</div>`;
+                        });
+                    } else if (typeof value === 'object') {
+                        html += `<div class="tree-item folder">📁 ${key}</div>`;
+                        renderTree(value, depth + 1);
+                    }
+                }
+            };
+
+            renderTree(projectState.fileTree);
+            treeDiv.innerHTML = html;
+        }
+
+        // ============================================
+        // ANÁLISE DE DEPENDÊNCIAS
+        // ============================================
+        function analyzeProject() {
+            const code = projectState.files.map(f => f.content).join('\n');
+            const deps = extractDependencies(code);
+            projectState.detectedDeps = deps;
+
+            const tbody = document.getElementById('detectedDepsList');
+            if (deps.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">Nenhuma dependência detectada</td></tr>';
+                addTerminalLog('ℹ️ Nenhuma dependência detectada', 'warning');
+                return;
+            }
+
+            tbody.innerHTML = deps.map(dep => `
+                <tr>
+                    <td><strong>${dep.name}</strong></td>
+                    <td><span class="tag ${dep.type}">${dep.type}</span></td>
+                    <td><button class="btn-quick" onclick="addDependency('${dep.name}', '${dep.type}')">➕</button></td>
+                </tr>
+            `).join('');
+
+            addTerminalLog(`✅ ${deps.length} dependência(s) detectada(s)`, 'success');
+        }
+
+        function extractDependencies(code) {
+            const deps = new Map();
+
+            const patterns = [
+                { regex: /import\s+(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)\s+from\s+['"`]([^'"`/][^'"`]*)['"`]/g, type: 'prod' },
+                { regex: /require\s*\(\s*['"`]([^'"`/][^'"`]*)['"`]\s*\)/g, type: 'prod' },
+                { regex: /import\s+(?:\{[^}]*\}|\w+)\s+from\s+['"`]@?(jest|mocha|chai|webpack|babel|eslint|prettier|typescript|vitest|cypress|playwright)['"`]/g, type: 'dev' },
+                { regex: /from\s+([\w.]+)\s+import/g, type: 'prod' },
+                { regex: /import\s+([\w.,\s]+)/g, type: 'prod' }
+            ];
+
+            patterns.forEach(({ regex, type }) => {
+                let match;
+                while ((match = regex.exec(code)) !== null) {
+                    const depName = match[1].split('/')[0].replace(/['"`;]/g, '').trim();
+                    if (depName && !depName.startsWith('.') && depName.length > 0) {
+                        if (!deps.has(depName)) {
+                            deps.set(depName, { name: depName, type });
+                        }
+                    }
+                }
+            });
+
+            return Array.from(deps.values());
+        }
+
+        function addAllDetected() {
+            projectState.detectedDeps.forEach(dep => {
+                addDependency(dep.name, dep.type);
+            });
+        }
+
+        // ============================================
+        // BUSCA NPM
+        // ============================================
+        async function searchNpm() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+
+            if (!query) {
+                resultsDiv.innerHTML = '<div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">Digite um pacote</div>';
+                return;
+            }
+
+            resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><span style="color: #667eea;">⏳ Buscando...</span></div>';
+
+            try {
+                const response = await fetch(`https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(query)}&size=30`);
+                const data = await response.json();
+                const packages = data.objects || [];
+
+                if (packages.length === 0) {
+                    resultsDiv.innerHTML = '<div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">Nenhum pacote encontrado</div>';
+                    return;
+                }
+
+                resultsDiv.innerHTML = packages.map(pkg => `
+                    <div style="background: rgba(102, 126, 234, 0.1); border-left: 3px solid #667eea; padding: 10px; margin: 8px 0; border-radius: 4px; cursor: pointer; transition: all 0.2s;" onclick="selectNpmPackage('${pkg.package.name}', '${pkg.package.version}')">
+                        <div style="color: #667eea; font-weight: bold; font-size: 12px;">📦 ${pkg.package.name}</div>
+                        <div style="color: #888; font-size: 11px; margin-top: 3px;">${pkg.package.description || 'Sem descrição'}</div>
+                        <div style="color: #666; font-size: 10px; margin-top: 3px;">v${pkg.package.version}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                resultsDiv.innerHTML = `<div style="color: #f48771; font-size: 11px; text-align: center; padding: 20px;">❌ Erro: ${err.message}</div>`;
+            }
+        }
+
+        function selectNpmPackage(name, version) {
+            const type = confirm(`${name}\n\nOK = Dependência Normal\nCANCELAR = Dev Dependency`);
+            addDependency(name, type ? 'prod' : 'dev', version);
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').innerHTML = '<div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">Digite um pacote para buscar</div>';
+        }
+
+        // ============================================
+        // GERENCIADOR DE DEPENDÊNCIAS
+        // ============================================
+        function addDependency(name, type = 'prod', version = 'latest') {
+            const key = type === 'dev' ? 'devDependencies' : 'dependencies';
+            projectState[key][name] = version;
+            updateUI();
+            addTerminalLog(`✅ ${name}@${version} adicionado como ${type}`, 'success');
+        }
+
+        function removeDependency(name, type) {
+            const key = type === 'dev' ? 'devDependencies' : 'dependencies';
+            delete projectState[key][name];
+            updateUI();
+            addTerminalLog(`🗑️ ${name} removido`, 'warning');
+        }
+
+        function updateUI() {
+            const depsList = document.getElementById('depsList');
+            let html = '';
+
+            for (const [name, version] of Object.entries(projectState.dependencies)) {
+                html += `
+                    <div class="dep-item">
+                        <div>
+                            <div class="dep-name">📦 ${name}</div>
+                            <div class="dep-version">${version}</div>
+                        </div>
+                        <button class="btn-remove" onclick="removeDependency('${name}', 'prod')">❌</button>
+                    </div>
+                `;
+            }
+
+            for (const [name, version] of Object.entries(projectState.devDependencies)) {
+                html += `
+                    <div class="dep-item dev">
+                        <div>
+                            <div class="dep-name">🔧 ${name}</div>
+                            <div class="dep-version">${version}</div>
+                        </div>
+                        <button class="btn-remove" onclick="removeDependency('${name}', 'dev')">❌</button>
+                    </div>
+                `;
+            }
+
+            depsList.innerHTML = html || '<div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">Nenhuma dependência</div>';
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('filesCount').textContent = projectState.files.length;
+            document.getElementById('depsCount').textContent = Object.keys(projectState.dependencies).length;
+            document.getElementById('devDepsCount').textContent = Object.keys(projectState.devDependencies).length;
+        }
+
+        // ============================================
+        // PACKAGE.JSON
+        // ============================================
+        function generatePackageJson() {
+            const packageJson = {
+                name: document.getElementById('projectName').value || 'meu-projeto',
+                version: document.getElementById('projectVersion').value || '1.0.0',
+                description: document.getElementById('projectDesc').value || '',
+                main: 'index.js',
+                scripts: {
+                    start: 'node index.js',
+                    dev: 'nodemon index.js',
+                    test: 'jest'
+                },
+                keywords: [],
+                author: document.getElementById('projectAuthor').value || '',
+                license: 'ISC',
+                dependencies: projectState.dependencies,
+                devDependencies: projectState.devDependencies
+            };
+
+            const output = JSON.stringify(packageJson, null, 2);
+            document.getElementById('packageJsonOutput').textContent = output;
+            addTerminalLog('✅ package.json gerado com sucesso', 'success');
+        }
+
+        function copyPackageJson() {
+            const text = document.getElementById('packageJsonOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                addTerminalLog('📋 Copiado para clipboard', 'success');
+            });
+        }
+
+        function downloadPackageJson() {
+            const text = document.getElementById('packageJsonOutput').textContent;
+            const blob = new Blob([text], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'package.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            addTerminalLog('⬇️ package.json baixado', 'success');
+        }
+
+        // ============================================
+        // TERMINAL
+        // ============================================
+        function setupTerminal() {
+            document.getElementById('cmdInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') executeCommandInput();
+            });
+        }
+
+        function executeCommandInput() {
+            const input = document.getElementById('cmdInput').value.trim();
+            if (input) {
+                executeCommand(input);
+                document.getElementById('cmdInput').value = '';
+            }
+        }
+
+        function executeCommand(cmd) {
+            addTerminalLog(`$ ${cmd}`, 'prompt');
+
+            switch (cmd.toLowerCase()) {
+                case 'npm install':
+                    addTerminalLog('📥 Instalando dependências...', 'success');
+                    const deps = Object.keys(projectState.dependencies);
+                    const devDeps = Object.keys(projectState.devDependencies);
+                    if (deps.length > 0) addTerminalLog(`npm install ${deps.join(' ')}`, 'warning');
+                    if (devDeps.length > 0) addTerminalLog(`npm install --save-dev ${devDeps.join(' ')}`, 'warning');
+                    addTerminalLog('✅ Instalação concluída (simulado)', 'success');
+                    break;
+
+                case 'npm init':
+                    addTerminalLog('⚙️ Inicializando projeto...', 'success');
+                    generatePackageJson();
+                    break;
+
+                case 'tree':
+                    addTerminalLog('🌳 Estrutura do projeto:', 'success');
+                    projectState.files.forEach(f => addTerminalLog(`  📄 ${f.name}`));
+                    break;
+
+                case 'analyze':
+                    analyzeProject();
+                    break;
+
+                case 'clear':
+                    document.getElementById('terminalOutput').innerHTML = '';
+                    break;
+
+                case 'help':
+                    addTerminalLog('📚 Comandos disponíveis:', 'success');
+                    addTerminalLog('  npm install - Instalar dependências');
+                    addTerminalLog('  npm init - Inicializar projeto');
+                    addTerminalLog('  tree - Ver estrutura');
+                    addTerminalLog('  analyze - Analisar dependências');
+                    addTerminalLog('  clear - Limpar terminal');
+                    break;
+
+                default:
+                    addTerminalLog(`❌ Comando desconhecido: ${cmd}`, 'error');
+            }
+        }
+
+        function addTerminalLog(text, type = '') {
+            const terminal = document.getElementById('terminalOutput');
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        // ============================================
+        // UTILITÁRIOS
+        // ============================================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function clearAll() {
+            if (confirm('⚠️ Limpar tudo?')) {
+                projectState = {
+                    files: [],
+                    dependencies: {},
+                    devDependencies: {},
+                    detectedDeps: [],
+                    fileTree: {}
+                };
+                updateUI();
+                updateFileTree();
+                generatePackageJson();
+                addTerminalLog('🗑️ Projeto limpo', 'success');
+            }
+        }
+    </script>
+
+</body>
+</html>

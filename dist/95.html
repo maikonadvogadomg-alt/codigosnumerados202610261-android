@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Projetos PWA — Maikon Caldeira</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+.project-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #12121a;
+  border-bottom: 2px solid #a3a082;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  background: #1a1a2e;
+  border: 1px solid #2d2d3a;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #a3a082;
+  color: #000;
+  border-color: #a3a082;
+}
+
+.nav-btn.active {
+  background: #a3a082;
+  color: #000;
+  border-color: #d4d0a8;
+}
+
+.project-container {
+  display: none;
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+.project-container.active {
+  display: block;
+}
+
+/* Isola estilos de cada projeto */
+.project-container iframe {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Navegação -->
+<div class="project-nav">
+  <span style="font-size:14px;font-weight:700;color:#a3a082;margin-right:10px;">📂</span>
+  <button class="nav-btn active" onclick="trocarProjeto(0)">Projeto 2</button>
+</div>
+
+<!-- Projetos (cada um em iframe isolado) -->
+
+<div class="project-container active" id="projeto0">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;🧩 Montador Multi-Projetos — PWA Jurídico&lt;/title&gt;
+&lt;style&gt;
+:root { --bg:#0a0a0f; --bg2:#12121a; --bg3:#1a1a2e; --text:#e2e8f0; --text2:#94a3b8; --accent:#a3a082; --accent2:#d4d0a8; --green:#4ade80; --blue:#60a5fa; --red:#f87171; --border:#2d2d3a; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+.header { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.header h1 { font-size:18px; color:var(--accent); }
+.header h1 small { display:block; font-size:10px; color:var(--text2); font-weight:400; letter-spacing:2px; }
+
+.container { max-width:1400px; margin:0 auto; padding:20px; }
+
+.workspace { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
+.workspace h2 { font-size:14px; color:var(--accent); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+
+.btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:none; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+.btn-sm { padding:5px 10px; font-size:10px; }
+.btn-primary { background:var(--accent); color:#000; }
+.btn-primary:hover { background:var(--accent2); }
+.btn-success { background:var(--green); color:#000; }
+.btn-danger { background:rgba(239,68,68,0.2); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+.btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); }
+.btn-ghost:hover { background:var(--bg3); color:var(--text); }
+
+.input { width:100%; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px; margin-bottom:12px; }
+.input:focus { outline:none; border-color:var(--accent); }
+
+.code-area { width:100%; min-height:300px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:'Consolas','Fira Code',monospace; font-size:12px; color:var(--text); resize:vertical; line-height:1.6; }
+.code-area:focus { outline:none; border-color:var(--accent); }
+
+.project-card { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+.project-card h3 { color:var(--accent2); font-size:14px; margin-bottom:8px; }
+.project-card .actions { display:flex; gap:6px; margin-top:10px; }
+
+.tabs { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; background:var(--bg2); padding:4px; border-radius:10px; }
+.tab-btn { padding:10px 20px; border:none; background:transparent; color:var(--text2); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.tab-btn.active { background:var(--accent); color:#000; }
+.tab-btn:hover:not(.active) { background:var(--bg3); }
+
+/* NOVO: Navegação entre projetos no HTML final */
+.project-nav { position:fixed; top:0; left:0; right:0; background:var(--bg2); border-bottom:2px solid var(--accent); padding:12px 20px; display:flex; gap:8px; align-items:center; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.3); }
+.project-nav .nav-btn { padding:8px 16px; background:var(--bg3); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.project-nav .nav-btn:hover { background:var(--accent); color:#000; }
+.project-nav .nav-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
+
+.project-container { display:none; padding-top:60px; }
+.project-container.active { display:block; }
+
+.status { padding:10px 14px; border-radius:8px; font-size:11px; font-weight:600; margin-bottom:12px; }
+.status-info { background:rgba(96,165,250,0.1); color:var(--blue); border:1px solid rgba(96,165,250,0.2); }
+.status-success { background:rgba(74,222,128,0.1); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+
+.toast { position:fixed; bottom:20px; right:20px; background:var(--bg2); border:1px solid var(--accent); border-radius:10px; padding:12px 20px; font-size:12px; font-weight:600; color:var(--accent2); z-index:2000; transform:translateY(100px); opacity:0; transition:all 0.3s; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div class=&quot;header&quot;&gt;
+  &lt;h1&gt;🧩 Montador Multi-Projetos &lt;small&gt;PWA JURÍDICO — MAIKON CALDEIRA&lt;/small&gt;&lt;/h1&gt;
+  &lt;div style=&quot;display:flex;gap:6px;flex-wrap:wrap;&quot;&gt;
+    &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;gerarHtmlFinal()&quot;&gt;📦 Gerar HTML com Todos os Projetos&lt;/button&gt;
+    &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;exportarBackup()&quot;&gt;💾 Backup&lt;/button&gt;
+    &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;importarBackup()&quot;&gt;📂 Importar&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;container&quot;&gt;
+
+  &lt;div class=&quot;status status-info&quot;&gt;
+    💡 &lt;strong&gt;Como funciona:&lt;/strong&gt; Cole até 3 códigos HTML completos abaixo. Cada um será um &quot;projeto&quot; independente. 
+    Quando gerar o HTML final, você terá um arquivo com abas no topo para alternar entre os projetos — cada um isolado do outro!
+  &lt;/div&gt;
+
+  &lt;!-- PROJETO 1 --&gt;
+  &lt;div class=&quot;workspace&quot;&gt;
+    &lt;h2&gt;🔷 Projeto 1&lt;/h2&gt;
+    &lt;input type=&quot;text&quot; class=&quot;input&quot; id=&quot;nome1&quot; placeholder=&quot;Nome do projeto (ex: Sistema de Processos)&quot; /&gt;
+    &lt;textarea class=&quot;code-area&quot; id=&quot;codigo1&quot; placeholder=&quot;Cole aqui o código HTML COMPLETO do projeto 1...&quot;&gt;&lt;/textarea&gt;
+    &lt;div style=&quot;display:flex;gap:8px;margin-top:10px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;testarProjeto(1)&quot;&gt;👁️ Testar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;limparProjeto(1)&quot;&gt;🗑️ Limpar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;importarArquivo(1)&quot;&gt;📂 Importar Arquivo&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PROJETO 2 --&gt;
+  &lt;div class=&quot;workspace&quot;&gt;
+    &lt;h2&gt;🔶 Projeto 2&lt;/h2&gt;
+    &lt;input type=&quot;text&quot; class=&quot;input&quot; id=&quot;nome2&quot; placeholder=&quot;Nome do projeto (ex: Gerador de Documentos)&quot; /&gt;
+    &lt;textarea class=&quot;code-area&quot; id=&quot;codigo2&quot; placeholder=&quot;Cole aqui o código HTML COMPLETO do projeto 2...&quot;&gt;&lt;/textarea&gt;
+    &lt;div style=&quot;display:flex;gap:8px;margin-top:10px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;testarProjeto(2)&quot;&gt;👁️ Testar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;limparProjeto(2)&quot;&gt;🗑️ Limpar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;importarArquivo(2)&quot;&gt;📂 Importar Arquivo&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PROJETO 3 --&gt;
+  &lt;div class=&quot;workspace&quot;&gt;
+    &lt;h2&gt;🔸 Projeto 3&lt;/h2&gt;
+    &lt;input type=&quot;text&quot; class=&quot;input&quot; id=&quot;nome3&quot; placeholder=&quot;Nome do projeto (ex: Consulta Jurisprudência)&quot; /&gt;
+    &lt;textarea class=&quot;code-area&quot; id=&quot;codigo3&quot; placeholder=&quot;Cole aqui o código HTML COMPLETO do projeto 3...&quot;&gt;&lt;/textarea&gt;
+    &lt;div style=&quot;display:flex;gap:8px;margin-top:10px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;testarProjeto(3)&quot;&gt;👁️ Testar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;limparProjeto(3)&quot;&gt;🗑️ Limpar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;importarArquivo(3)&quot;&gt;📂 Importar Arquivo&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PROJETOS SALVOS --&gt;
+  &lt;div class=&quot;workspace&quot;&gt;
+    &lt;h2&gt;💾 Projetos Salvos&lt;/h2&gt;
+    &lt;div id=&quot;projetosSalvos&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;!-- Hidden inputs --&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput1&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm&quot; /&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput2&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm&quot; /&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput3&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm&quot; /&gt;
+&lt;input type=&quot;file&quot; id=&quot;backupInput&quot; style=&quot;display:none&quot; accept=&quot;.json&quot; /&gt;
+
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+const LS_KEY = 'multiprojetos-v1';
+
+// ========== STORAGE ==========
+function salvarProjetos() {
+  const projetos = {
+    p1: { nome: document.getElementById('nome1').value, codigo: document.getElementById('codigo1').value },
+    p2: { nome: document.getElementById('nome2').value, codigo: document.getElementById('codigo2').value },
+    p3: { nome: document.getElementById('nome3').value, codigo: document.getElementById('codigo3').value }
+  };
+  localStorage.setItem(LS_KEY, JSON.stringify(projetos));
+  mostrarToast('💾 Projetos salvos automaticamente!');
+  renderizarSalvos();
+}
+
+function carregarProjetos() {
+  try {
+    const data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (data.p1) { document.getElementById('nome1').value = data.p1.nome || ''; document.getElementById('codigo1').value = data.p1.codigo || ''; }
+    if (data.p2) { document.getElementById('nome2').value = data.p2.nome || ''; document.getElementById('codigo2').value = data.p2.codigo || ''; }
+    if (data.p3) { document.getElementById('nome3').value = data.p3.nome || ''; document.getElementById('codigo3').value = data.p3.codigo || ''; }
+    renderizarSalvos();
+  } catch(e) {}
+}
+
+function renderizarSalvos() {
+  const data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+  const container = document.getElementById('projetosSalvos');
+  const projetos = [
+    { n: 1, nome: data.p1?.nome, codigo: data.p1?.codigo },
+    { n: 2, nome: data.p2?.nome, codigo: data.p2?.codigo },
+    { n: 3, nome: data.p3?.nome, codigo: data.p3?.codigo }
+  ].filter(p =&gt; p.codigo &amp;&amp; p.codigo.trim());
+
+  if (projetos.length === 0) {
+    container.innerHTML = '&lt;p style=&quot;color:var(--text2);font-size:12px;&quot;&gt;Nenhum projeto salvo ainda.&lt;/p&gt;';
+    return;
+  }
+
+  container.innerHTML = projetos.map(p =&gt; `
+    &lt;div class=&quot;project-card&quot;&gt;
+      &lt;h3&gt;🔷 ${escHtml(p.nome || 'Projeto ' + p.n)}&lt;/h3&gt;
+      &lt;div style=&quot;font-size:11px;color:var(--text2);&quot;&gt;${p.codigo.length} caracteres&lt;/div&gt;
+      &lt;div class=&quot;actions&quot;&gt;
+        &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;testarProjeto(${p.n})&quot;&gt;👁️ Testar&lt;/button&gt;
+        &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;copiarCodigo(${p.n})&quot;&gt;📋 Copiar&lt;/button&gt;
+        &lt;button class=&quot;btn btn-danger btn-sm&quot; onclick=&quot;limparProjeto(${p.n})&quot;&gt;🗑️ Limpar&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `).join('');
+}
+
+// ========== AÇÕES ==========
+function testarProjeto(n) {
+  const codigo = document.getElementById('codigo' + n).value;
+  if (!codigo.trim()) { mostrarToast('❌ Projeto ' + n + ' está vazio!'); return; }
+  
+  const blob = new Blob([codigo], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function limparProjeto(n) {
+  if (!confirm('Limpar projeto ' + n + '?')) return;
+  document.getElementById('nome' + n).value = '';
+  document.getElementById('codigo' + n).value = '';
+  salvarProjetos();
+}
+
+function copiarCodigo(n) {
+  const codigo = document.getElementById('codigo' + n).value;
+  navigator.clipboard.writeText(codigo);
+  mostrarToast('📋 Código do projeto ' + n + ' copiado!');
+}
+
+function importarArquivo(n) {
+  document.getElementById('fileInput' + n).click();
+}
+
+[1,2,3].forEach(n =&gt; {
+  document.getElementById('fileInput' + n).addEventListener('change', (e) =&gt; {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) =&gt; {
+      document.getElementById('codigo' + n).value = ev.target.result;
+      if (!document.getElementById('nome' + n).value) {
+        document.getElementById('nome' + n).value = file.name.replace(/\.[^.]+$/, '');
+      }
+      salvarProjetos();
+      mostrarToast('📂 Projeto ' + n + ' importado!');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+});
+
+// ========== GERAR HTML FINAL ==========
+function gerarHtmlFinal() {
+  const projetos = [
+    { nome: document.getElementById('nome1').value || 'Projeto 1', codigo: document.getElementById('codigo1').value },
+    { nome: document.getElementById('nome2').value || 'Projeto 2', codigo: document.getElementById('codigo2').value },
+    { nome: document.getElementById('nome3').value || 'Projeto 3', codigo: document.getElementById('codigo3').value }
+  ].filter(p =&gt; p.codigo.trim());
+
+  if (projetos.length === 0) {
+    mostrarToast('❌ Adicione pelo menos um projeto!');
+    return;
+  }
+
+  // Extrai só o conteúdo do &lt;body&gt; de cada projeto (se tiver)
+  const extrairConteudo = (html) =&gt; {
+    const match = html.match(/&lt;body[^&gt;]*&gt;([\s\S]*)&lt;\/body&gt;/i);
+    return match ? match[1] : html;
+  };
+
+  const htmlFinal = `&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Multi-Projetos PWA — Maikon Caldeira&lt;/title&gt;
+&lt;style&gt;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+.project-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #12121a;
+  border-bottom: 2px solid #a3a082;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  background: #1a1a2e;
+  border: 1px solid #2d2d3a;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #a3a082;
+  color: #000;
+  border-color: #a3a082;
+}
+
+.nav-btn.active {
+  background: #a3a082;
+  color: #000;
+  border-color: #d4d0a8;
+}
+
+.project-container {
+  display: none;
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+.project-container.active {
+  display: block;
+}
+
+/* Isola estilos de cada projeto */
+.project-container iframe {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  border: none;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- Navegação --&gt;
+&lt;div class=&quot;project-nav&quot;&gt;
+  &lt;span style=&quot;font-size:14px;font-weight:700;color:#a3a082;margin-right:10px;&quot;&gt;📂&lt;/span&gt;
+  ${projetos.map((p, i) =&gt; `&lt;button class=&quot;nav-btn ${i === 0 ? 'active' : ''}&quot; onclick=&quot;trocarProjeto(${i})&quot;&gt;${escHtml(p.nome)}&lt;/button&gt;`).join('')}
+&lt;/div&gt;
+
+&lt;!-- Projetos (cada um em iframe isolado) --&gt;
+${projetos.map((p, i) =&gt; `
+&lt;div class=&quot;project-container ${i === 0 ? 'active' : ''}&quot; id=&quot;projeto${i}&quot;&gt;
+  &lt;iframe srcdoc=&quot;${escHtml(p.codigo).replace(/&quot;/g, '&amp;quot;')}&quot;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+`).join('')}
+
+&lt;script&gt;
+function trocarProjeto(index) {
+  // Esconde todos
+  document.querySelectorAll('.project-container').forEach(c =&gt; c.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b =&gt; b.classList.remove('active'));
+  
+  // Mostra o selecionado
+  document.getElementById('projeto' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+  
+  // Salva preferência
+  localStorage.setItem('ultimo-projeto', index);
+}
+
+// Restaura último projeto aberto
+window.onload = function() {
+  const ultimo = localStorage.getItem('ultimo-projeto');
+  if (ultimo !== null) trocarProjeto(parseInt(ultimo));
+};
+&lt;\/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;`;
+
+  // Download
+  const blob = new Blob([htmlFinal], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'multiprojetos-pwa-' + new Date().toISOString().slice(0,10) + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast('✅ HTML com ' + projetos.length + ' projetos gerado!');
+}
+
+// ========== BACKUP ==========
+function exportarBackup() {
+  const data = localStorage.getItem(LS_KEY);
+  if (!data) { mostrarToast('❌ Nada para exportar!'); return; }
+  
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'backup-projetos-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast('💾 Backup exportado!');
+}
+
+function importarBackup() {
+  document.getElementById('backupInput').click();
+}
+
+document.getElementById('backupInput').addEventListener('change', (e) =&gt; {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) =&gt; {
+    try {
+      localStorage.setItem(LS_KEY, ev.target.result);
+      carregarProjetos();
+      mostrarToast('📂 Backup importado!');
+    } catch(err) {
+      mostrarToast('❌ Arquivo inválido!');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// ========== UTILS ==========
+function escHtml(s) { return String(s).replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(/&gt;/g,'&amp;gt;'); }
+
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.transform = 'translateY(0)';
+  t.style.opacity = '1';
+  setTimeout(() =&gt; { t.style.transform = 'translateY(100px)'; t.style.opacity = '0'; }, 2500);
+}
+
+// Auto-save
+['nome1','codigo1','nome2','codigo2','nome3','codigo3'].forEach(id =&gt; {
+  document.getElementById(id).addEventListener('input', () =&gt; {
+    clearTimeout(window.autoSaveTimer);
+    window.autoSaveTimer = setTimeout(salvarProjetos, 1000);
+  });
+});
+
+// Init
+carregarProjetos();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+
+<script>
+function trocarProjeto(index) {
+  // Esconde todos
+  document.querySelectorAll('.project-container').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  // Mostra o selecionado
+  document.getElementById('projeto' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+  
+  // Salva preferência
+  localStorage.setItem('ultimo-projeto', index);
+}
+
+// Restaura último projeto aberto
+window.onload = function() {
+  const ultimo = localStorage.getItem('ultimo-projeto');
+  if (ultimo !== null) trocarProjeto(parseInt(ultimo));
+};
+</script>
+</body>
+</html>

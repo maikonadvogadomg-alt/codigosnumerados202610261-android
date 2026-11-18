@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador de Juros Simples e Compostos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        h1 { text-align: center; }
+        .container { display: flex; flex-direction: column; align-items: center; }
+        .panel { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 10px; width: 100%; max-width: 600px; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; border: none; border-radius: 4px; background: #007BFF; color: #fff; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>Comparador de Juros Simples e Compostos</h1>
+<div class="container">
+    <div class="panel">
+        <h2>Importar Dados</h2>
+        <input type="file" id="fileInput" accept=".json,.csv" />
+        <button id="importButton">Importar</button>
+    </div>
+
+    <div class="panel">
+        <h2>Calcular Juros</h2>
+        <label for="valorOriginal">Valor Original:</label>
+        <input type="number" id="valorOriginal" placeholder="Digite o valor original" />
+
+        <label for="taxaJuros">Taxa de Juros (% ao ano):</label>
+        <input type="number" id="taxaJuros" placeholder="Digite a taxa de juros" />
+
+        <label for="tempo">Tempo (anos):</label>
+        <input type="number" id="tempo" placeholder="Digite o tempo em anos" />
+
+        <button id="calcular">Calcular</button>
+    </div>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    document.getElementById('calcular').addEventListener('click', function() {
+        const valorOriginal = parseFloat(document.getElementById('valorOriginal').value);
+        const taxaJuros = parseFloat(document.getElementById('taxaJuros').value) / 100;
+        const tempo = parseFloat(document.getElementById('tempo').value);
+
+        // Cálculo de Juros Simples
+        const jurosSimples = valorOriginal * taxaJuros * tempo;
+        const totalSimples = valorOriginal + jurosSimples;
+
+        // Cálculo de Juros Compostos
+        const totalCompostos = valorOriginal * Math.pow((1 + taxaJuros), tempo);
+
+        // Exibir resultados
+        document.getElementById('result').innerHTML = `
+            <h3>Resultados</h3>
+            <p><strong>Juros Simples:</strong> R$ ${jurosSimples.toFixed(2)}</p>
+            <p><strong>Total com Juros Simples:</strong> R$ ${totalSimples.toFixed(2)}</p>
+            <p><strong>Total com Juros Compostos:</strong> R$ ${totalCompostos.toFixed(2)}</p>
+        `;
+    });
+
+    document.getElementById('importButton').addEventListener('click', function() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const contents = event.target.result;
+                // Processar dados do arquivo (JSON ou CSV)
+                console.log(contents);
+                // Aqui você pode adicionar lógica para processar os dados
+            };
+            reader.readAsText(file);
+        }
+    });
+</script>
+</body>
+</html>

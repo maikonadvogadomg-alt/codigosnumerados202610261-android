@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Projetos PWA — Maikon Caldeira</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+.project-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #12121a;
+  border-bottom: 2px solid #a3a082;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  background: #1a1a2e;
+  border: 1px solid #2d2d3a;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #a3a082;
+  color: #000;
+  border-color: #a3a082;
+}
+
+.nav-btn.active {
+  background: #a3a082;
+  color: #000;
+  border-color: #d4d0a8;
+}
+
+.project-container {
+  display: none;
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+.project-container.active {
+  display: block;
+}
+
+/* Isola estilos de cada projeto */
+.project-container iframe {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Navegação -->
+<div class="project-nav">
+  <span style="font-size:14px;font-weight:700;color:#a3a082;margin-right:10px;">📂</span>
+  <button class="nav-btn active" onclick="trocarProjeto(0)">1.</button><button class="nav-btn " onclick="trocarProjeto(1)">2.</button><button class="nav-btn " onclick="trocarProjeto(2)">3.</button>
+</div>
+
+<!-- Projetos (cada um em iframe isolado) -->
+
+<div class="project-container active" id="projeto0">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;title&gt;Playground com IA Integrada&lt;/title&gt;
+&lt;style&gt;
+body{margin:0;padding:0;font-family:Segoe UI,sans-serif;background:#0d0d0d;color:#e0e0e0;height:100vh;display:flex;flex-direction:column}
+#header{background:#141414;border-bottom:1px solid #2a2a2a;padding:8px 16px;display:flex;align-items:center;justify-content:space-between}
+.btn{padding:6px 12px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-left:4px}
+.btn-blue{background:#2563eb;color:white}
+.btn-green{background:#16a34a;color:white}
+.btn-orange{background:#ea580c;color:white}
+.btn-purple{background:#7c3aed;color:white}
+.btn-gray{background:#374151;color:white}
+#main{display:flex;flex:1;overflow:hidden}
+#editor-panel{display:flex;flex-direction:column;flex:1;border-right:2px solid #2a2a2a}
+#editor-header{background:#141414;padding:8px 12px;font-size:12px;color:#9ca3af;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between}
+#editor{flex:1;width:100%;background:#0d0d0d;color:#e0e0e0;border:none;outline:none;padding:16px;font-family:'Courier New',monospace;font-size:13px;resize:none}
+#preview-panel{display:none;flex-direction:column;flex:1;border-right:2px solid #2a2a2a}
+#preview-header{background:#141414;padding:8px 12px;font-size:12px;color:#9ca3af;border-bottom:1px solid #2a2a2a}
+#preview-frame{flex:1;border:none;background:white}
+#chat-panel{display:flex;flex-direction:column;width:380px}
+#chat-header{background:#141414;padding:8px 12px;font-size:12px;color:#9ca3af;border-bottom:1px solid #2a2a2a}
+#chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg{padding:10px 12px;border-radius:10px;font-size:13px;max-width:95%}
+.msg-user{background:#1e40af;color:white;align-self:flex-end}
+.msg-ai{background:#1a1a1a;border:1px solid #2a2a2a;color:#e0e0e0;align-self:flex-start;white-space:pre-wrap}
+.msg-system{background:#1c1c1c;border:1px solid #374151;color:#6b7280;font-size:11px;align-self:center;text-align:center}
+.apply-btn{margin-top:8px;padding:6px 10px;background:#16a34a;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600}
+#chat-input-area{padding:10px;background:#141414;border-top:1px solid #2a2a2a;display:flex;gap:6px}
+#chat-input{flex:1;background:#0d0d0d;border:1px solid #374151;border-radius:8px;padding:8px 10px;color:#e0e0e0;font-size:13px;outline:none;resize:none}
+#send-btn{background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:18px}
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;flex-direction:column}
+#modal.open{display:flex}
+#modal-header{background:#141414;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2a2a2a}
+#modal-editor{flex:1;width:100%;background:#0d0d0d;color:#e0e0e0;border:none;outline:none;padding:20px;font-family:'Courier New',monospace;font-size:14px;resize:none}
+#modal-close{background:#dc2626;color:white;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:700}
+#apimodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:2000;justify-content:center;align-items:center}
+#apimodal.open{display:flex}
+#apimodal-box{background:#1a1a1a;border:1px solid #374151;border-radius:12px;padding:24px;width:400px}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div id=&quot;header&quot;&gt;
+  &lt;h1 style=&quot;font-size:14px;color:#60a5fa;margin:0&quot;&gt;⚡ Playground com IA&lt;/h1&gt;
+  &lt;div&gt;
+    &lt;button class=&quot;btn btn-gray&quot; onclick=&quot;importFile()&quot;&gt;📂 Importar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-green&quot; onclick=&quot;saveFile()&quot;&gt;💾 Salvar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-blue&quot; onclick=&quot;downloadFile()&quot;&gt;⬇️ Baixar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-orange&quot; onclick=&quot;togglePreview()&quot;&gt;👁️ Visualizar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-purple&quot; onclick=&quot;openFullscreen()&quot;&gt;⛶ Ampliar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-gray&quot; onclick=&quot;openApiModal()&quot;&gt;🔑 API Key&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div id=&quot;main&quot;&gt;
+  &lt;!-- EDITOR --&gt;
+  &lt;div id=&quot;editor-panel&quot;&gt;
+    &lt;div id=&quot;editor-header&quot;&gt;
+      &lt;span id=&quot;filename-display&quot;&gt;sem_titulo.html&lt;/span&gt;
+      &lt;span id=&quot;char-count&quot;&gt;0 chars&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;textarea id=&quot;editor&quot; placeholder=&quot;Cole ou importe seu código aqui...&quot; oninput=&quot;updateCount()&quot;&gt;&lt;/textarea&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PREVIEW --&gt;
+  &lt;div id=&quot;preview-panel&quot;&gt;
+    &lt;div id=&quot;preview-header&quot;&gt;👁️ Preview ao vivo&lt;/div&gt;
+    &lt;iframe id=&quot;preview-frame&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+
+  &lt;!-- CHAT --&gt;
+  &lt;div id=&quot;chat-panel&quot;&gt;
+    &lt;div id=&quot;chat-header&quot;&gt;🤖 IA Integrada &lt;span id=&quot;model-label&quot; style=&quot;color:#60a5fa;font-size:11px&quot;&gt;Gemini 1.5 Flash&lt;/span&gt;&lt;/div&gt;
+    &lt;div id=&quot;chat-messages&quot;&gt;
+      &lt;div class=&quot;msg msg-system&quot;&gt;IA conectada ao editor. Ela lê o código e aplica mudanças direto.&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;chat-input-area&quot;&gt;
+      &lt;textarea id=&quot;chat-input&quot; rows=&quot;2&quot; placeholder=&quot;O que precisa? (Enter = enviar)&quot; onkeydown=&quot;if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();sendMessage()}&quot;&gt;&lt;/textarea&gt;
+      &lt;button id=&quot;send-btn&quot; onclick=&quot;sendMessage()&quot;&gt;➤&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- MODAL AMPLIAR --&gt;
+&lt;div id=&quot;modal&quot;&gt;
+  &lt;div id=&quot;modal-header&quot;&gt;
+    &lt;span style=&quot;font-size:14px;font-weight:700;color:#60a5fa&quot;&gt;⛶ Editor Ampliado&lt;/span&gt;
+    &lt;button id=&quot;modal-close&quot; onclick=&quot;closeFullscreen()&quot;&gt;✕ Fechar&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;textarea id=&quot;modal-editor&quot;&gt;&lt;/textarea&gt;
+&lt;/div&gt;
+
+&lt;!-- API KEY MODAL --&gt;
+&lt;div id=&quot;apimodal&quot;&gt;
+  &lt;div id=&quot;apimodal-box&quot;&gt;
+    &lt;h2 style=&quot;color:#60a5fa&quot;&gt;🔑 Configurar API&lt;/h2&gt;
+    &lt;select id=&quot;api-provider&quot; style=&quot;width:100%;margin-bottom:12px&quot;&gt;
+      &lt;option value=&quot;gemini&quot;&gt;Google Gemini&lt;/option&gt;
+      &lt;option value=&quot;openai&quot;&gt;OpenAI (GPT)&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;input id=&quot;apikey-input&quot; type=&quot;password&quot; placeholder=&quot;Cole sua API Key&quot; style=&quot;width:100%;margin-bottom:12px&quot;&gt;
+    &lt;div style=&quot;display:flex;gap:8px&quot;&gt;
+      &lt;button class=&quot;btn btn-green&quot; style=&quot;flex:1&quot; onclick=&quot;saveApiKey()&quot;&gt;✅ Salvar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-gray&quot; style=&quot;flex:1&quot; onclick=&quot;closeApiModal()&quot;&gt;Cancelar&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+// ====================== CÓDIGO COMPLETO ======================
+let apiKey = localStorage.getItem('pg_apikey') || '';
+let apiProvider = localStorage.getItem('pg_provider') || 'gemini';
+let currentFile = 'sem_titulo.html';
+let previewOpen = false;
+
+const SYSTEM_PROMPT = `Você é uma assistente de código de altíssimo nível integrada a um editor.
+REGRAS ABSOLUTAS:
+- NUNCA peça desculpas.
+- NUNCA use frases de empatia.
+- Vá DIRETO ao ponto.
+- Quando for alterar código, mostre o trecho exato com comentário indicando onde inserir.
+- Ao final de respostas com código pergunte apenas: &quot;Quer que eu aplique mais alguma coisa?&quot;`;
+
+function updateCount() {
+  const code = document.getElementById('editor').value;
+  document.getElementById('char-count').textContent = code.length + ' chars';
+  if (previewOpen) updatePreview();
+}
+
+function importFile() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = e =&gt; {
+    const file = e.target.files[0];
+    if (!file) return;
+    currentFile = file.name;
+    document.getElementById('filename-display').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = ev =&gt; {
+      document.getElementById('editor').value = ev.target.result;
+      updateCount();
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function saveFile() {
+  const code = document.getElementById('editor').value;
+  localStorage.setItem('pg_code_' + currentFile, code);
+  localStorage.setItem('pg_lastfile', currentFile);
+  alert('Salvo no navegador: ' + currentFile);
+}
+
+function downloadFile() {
+  const code = document.getElementById('editor').value;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([code]));
+  a.download = currentFile;
+  a.click();
+}
+
+function togglePreview() {
+  const panel = document.getElementById('preview-panel');
+  previewOpen = !previewOpen;
+  panel.style.display = previewOpen ? 'flex' : 'none';
+  if (previewOpen) updatePreview();
+}
+
+function updatePreview() {
+  document.getElementById('preview-frame').srcdoc = document.getElementById('editor').value;
+}
+
+function openFullscreen() {
+  document.getElementById('modal-editor').value = document.getElementById('editor').value;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeFullscreen() {
+  document.getElementById('editor').value = document.getElementById('modal-editor').value;
+  document.getElementById('modal').classList.remove('open');
+  updateCount();
+}
+
+function openApiModal() {
+  document.getElementById('apikey-input').value = apiKey;
+  document.getElementById('api-provider').value = apiProvider;
+  document.getElementById('apimodal').classList.add('open');
+}
+
+function closeApiModal() {
+  document.getElementById('apimodal').classList.remove('open');
+}
+
+function saveApiKey() {
+  apiKey = document.getElementById('apikey-input').value.trim();
+  apiProvider = document.getElementById('api-provider').value;
+  localStorage.setItem('pg_apikey', apiKey);
+  localStorage.setItem('pg_provider', apiProvider);
+  document.getElementById('model-label').textContent = apiProvider === 'gemini' ? 'Gemini 1.5 Flash' : 'GPT-4o Mini';
+  closeApiModal();
+}
+
+function addMsg(role, content, codeBlock) {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + role;
+  div.textContent = content;
+  if (codeBlock) {
+    const btn = document.createElement('button');
+    btn.className = 'apply-btn';
+    btn.textContent = '✅ Aplicar no editor';
+    btn.onclick = () =&gt; {
+      document.getElementById('editor').value = codeBlock;
+      updateCount();
+    };
+    div.appendChild(btn);
+  }
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || !apiKey) return;
+  input.value = '';
+  addMsg('user', text);
+
+  const code = document.getElementById('editor').value;
+  const fullMsg = code ? `[CÓDIGO ATUAL]\n${code}\n\n[PEDIDO]\n${text}` : text;
+
+  addMsg('system', 'Pensando...');
+
+  try {
+    let reply = '';
+    if (apiProvider === 'gemini') {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({system_instruction:{parts:[{text:SYSTEM_PROMPT}]},contents:[{role:'user',parts:[{text:fullMsg}]}]})
+      });
+      const data = await res.json();
+      reply = data.candidates[0].content.parts[0].text;
+    } else {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json','Authorization':'Bearer '+apiKey},
+        body: JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:fullMsg}]})
+      });
+      const data = await res.json();
+      reply = data.choices[0].message.content;
+    }
+
+    const match = reply.match(/```[\s\S]*?\n([\s\S]*?)```/);
+    addMsg('ai', reply, match ? match[1] : null);
+  } catch (e) {
+    addMsg('system', 'Erro: ' + e.message);
+  }
+}
+
+window.onload = () =&gt; {
+  const saved = localStorage.getItem('pg_lastfile');
+  if (saved) {
+    const code = localStorage.getItem('pg_code_' + saved);
+    if (code) {
+      currentFile = saved;
+      document.getElementById('filename-display').textContent = saved;
+      document.getElementById('editor').value = code;
+      updateCount();
+    }
+  }
+  if (!apiKey) setTimeout(() =&gt; addMsg('system', 'Configure sua API Key clicando em &quot;🔑 API Key&quot;'), 800);
+};
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+<div class="project-container " id="projeto1">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Playground com IA&lt;/title&gt;
+&lt;style&gt;
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d0d0d; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* HEADER */
+  #header { background: #141414; border-bottom: 1px solid #2a2a2a; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0; }
+  #header h1 { font-size: 14px; font-weight: 700; color: #60a5fa; white-space: nowrap; }
+  .header-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn { padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+  .btn-blue { background: #2563eb; color: white; }
+  .btn-blue:hover { background: #1d4ed8; }
+  .btn-green { background: #16a34a; color: white; }
+  .btn-green:hover { background: #15803d; }
+  .btn-orange { background: #ea580c; color: white; }
+  .btn-orange:hover { background: #c2410c; }
+  .btn-gray { background: #374151; color: white; }
+  .btn-gray:hover { background: #4b5563; }
+  .btn-purple { background: #7c3aed; color: white; }
+  .btn-purple:hover { background: #6d28d9; }
+
+  /* MAIN */
+  #main { display: flex; flex: 1; overflow: hidden; }
+
+  /* EDITOR */
+  #editor-panel { display: flex; flex-direction: column; flex: 1; border-right: 2px solid #2a2a2a; min-width: 0; }
+  #editor-header { background: #141414; padding: 8px 12px; font-size: 12px; color: #9ca3af; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: space-between; }
+  #filename-display { font-weight: 600; color: #60a5fa; }
+  #editor { flex: 1; width: 100%; background: #0d0d0d; color: #e0e0e0; border: none; outline: none; padding: 16px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: none; tab-size: 2; }
+
+  /* PREVIEW */
+  #preview-panel { display: none; flex-direction: column; flex: 1; border-right: 2px solid #2a2a2a; }
+  #preview-header { background: #141414; padding: 8px 12px; font-size: 12px; color: #9ca3af; border-bottom: 1px solid #2a2a2a; }
+  #preview-frame { flex: 1; border: none; background: white; }
+
+  /* CHAT */
+  #chat-panel { display: flex; flex-direction: column; width: 380px; flex-shrink: 0; }
+  #chat-header { background: #141414; padding: 8px 12px; font-size: 12px; color: #9ca3af; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; }
+  #chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; max-width: 95%; word-break: break-word; }
+  .msg-user { background: #1e40af; color: white; align-self: flex-end; }
+  .msg-ai { background: #1a1a1a; border: 1px solid #2a2a2a; color: #e0e0e0; align-self: flex-start; white-space: pre-wrap; }
+  .msg-system { background: #1c1c1c; border: 1px solid #374151; color: #6b7280; font-size: 11px; align-self: center; text-align: center; padding: 6px 10px; }
+  .apply-btn { margin-top: 8px; padding: 6px 10px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; }
+  .apply-btn:hover { background: #15803d; }
+  #chat-input-area { padding: 10px; background: #141414; border-top: 1px solid #2a2a2a; display: flex; gap: 6px; }
+  #chat-input { flex: 1; background: #0d0d0d; border: 1px solid #374151; border-radius: 8px; padding: 8px 10px; color: #e0e0e0; font-size: 13px; outline: none; resize: none; font-family: inherit; }
+  #chat-input:focus { border-color: #2563eb; }
+  #send-btn { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 18px; transition: background 0.2s; }
+  #send-btn:hover { background: #1d4ed8; }
+  #send-btn:disabled { background: #374151; cursor: not-allowed; }
+
+  /* MODAL FULLSCREEN */
+  #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; }
+  #modal.open { display: flex; }
+  #modal-header { background: #141414; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a; }
+  #modal-editor { flex: 1; width: 100%; background: #0d0d0d; color: #e0e0e0; border: none; outline: none; padding: 20px; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.7; resize: none; }
+  #modal-close { background: #dc2626; color: white; border: none; border-radius: 8px; padding: 6px 14px; cursor: pointer; font-weight: 700; }
+
+  /* API KEY MODAL */
+  #apimodal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+  #apimodal.open { display: flex; }
+  #apimodal-box { background: #1a1a1a; border: 1px solid #374151; border-radius: 12px; padding: 24px; width: 400px; max-width: 90vw; }
+  #apimodal-box h2 { font-size: 16px; margin-bottom: 16px; color: #60a5fa; }
+  #apikey-input { width: 100%; background: #0d0d0d; border: 1px solid #374151; border-radius: 8px; padding: 10px; color: #e0e0e0; font-size: 13px; outline: none; margin-bottom: 12px; }
+  .api-select { width: 100%; background: #0d0d0d; border: 1px solid #374151; border-radius: 8px; padding: 10px; color: #e0e0e0; font-size: 13px; outline: none; margin-bottom: 12px; }
+
+  /* LOADING */
+  .loading { display: flex; gap: 4px; align-items: center; padding: 10px; }
+  .dot { width: 8px; height: 8px; background: #2563eb; border-radius: 50%; animation: bounce 0.8s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.15s; }
+  .dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0d0d0d; }
+  ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- HEADER --&gt;
+&lt;div id=&quot;header&quot;&gt;
+  &lt;h1&gt;⚡ Playground com IA&lt;/h1&gt;
+  &lt;div class=&quot;header-actions&quot;&gt;
+    &lt;button class=&quot;btn btn-gray&quot; onclick=&quot;importFile()&quot;&gt;📂 Importar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-green&quot; onclick=&quot;saveFile()&quot;&gt;💾 Salvar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-blue&quot; onclick=&quot;downloadFile()&quot;&gt;⬇️ Baixar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-orange&quot; onclick=&quot;togglePreview()&quot;&gt;👁️ Preview&lt;/button&gt;
+    &lt;button class=&quot;btn btn-purple&quot; onclick=&quot;openFullscreen()&quot;&gt;⛶ Ampliar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-gray&quot; onclick=&quot;openApiModal()&quot;&gt;🔑 API Key&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- MAIN --&gt;
+&lt;div id=&quot;main&quot;&gt;
+
+  &lt;!-- EDITOR --&gt;
+  &lt;div id=&quot;editor-panel&quot;&gt;
+    &lt;div id=&quot;editor-header&quot;&gt;
+      &lt;span id=&quot;filename-display&quot;&gt;sem_titulo.html&lt;/span&gt;
+      &lt;span id=&quot;char-count&quot;&gt;0 chars&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;textarea id=&quot;editor&quot; placeholder=&quot;Cole ou importe seu código aqui...&quot; spellcheck=&quot;false&quot; oninput=&quot;updateCount()&quot;&gt;&lt;/textarea&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PREVIEW (oculto por padrão) --&gt;
+  &lt;div id=&quot;preview-panel&quot;&gt;
+    &lt;div id=&quot;preview-header&quot;&gt;👁️ Preview ao vivo&lt;/div&gt;
+    &lt;iframe id=&quot;preview-frame&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+
+  &lt;!-- CHAT --&gt;
+  &lt;div id=&quot;chat-panel&quot;&gt;
+    &lt;div id=&quot;chat-header&quot;&gt;
+      &lt;span&gt;🤖 IA Integrada&lt;/span&gt;
+      &lt;span id=&quot;model-label&quot; style=&quot;color:#60a5fa;font-size:11px;&quot;&gt;Gemini 1.5 Flash&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;chat-messages&quot;&gt;
+      &lt;div class=&quot;msg msg-system&quot;&gt;IA conectada ao editor. Ela lê o código e aplica mudanças direto.&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;chat-input-area&quot;&gt;
+      &lt;textarea id=&quot;chat-input&quot; rows=&quot;2&quot; placeholder=&quot;O que precisa? (Enter = enviar)&quot; onkeydown=&quot;handleKey(event)&quot;&gt;&lt;/textarea&gt;
+      &lt;button id=&quot;send-btn&quot; onclick=&quot;sendMessage()&quot;&gt;➤&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;!-- MODAL FULLSCREEN --&gt;
+&lt;div id=&quot;modal&quot;&gt;
+  &lt;div id=&quot;modal-header&quot;&gt;
+    &lt;span style=&quot;font-size:14px;font-weight:700;color:#60a5fa;&quot;&gt;⛶ Editor Ampliado&lt;/span&gt;
+    &lt;button id=&quot;modal-close&quot; onclick=&quot;closeFullscreen()&quot;&gt;✕ Fechar&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;textarea id=&quot;modal-editor&quot; spellcheck=&quot;false&quot;&gt;&lt;/textarea&gt;
+&lt;/div&gt;
+
+&lt;!-- API KEY MODAL --&gt;
+&lt;div id=&quot;apimodal&quot;&gt;
+  &lt;div id=&quot;apimodal-box&quot;&gt;
+    &lt;h2&gt;🔑 Configurar API&lt;/h2&gt;
+    &lt;select class=&quot;api-select&quot; id=&quot;api-provider&quot; onchange=&quot;updateModelLabel()&quot;&gt;
+      &lt;option value=&quot;gemini&quot;&gt;Google Gemini&lt;/option&gt;
+      &lt;option value=&quot;openai&quot;&gt;OpenAI (GPT)&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;input id=&quot;apikey-input&quot; type=&quot;password&quot; placeholder=&quot;Cole sua API Key aqui...&quot; /&gt;
+    &lt;div style=&quot;display:flex;gap:8px;&quot;&gt;
+      &lt;button class=&quot;btn btn-green&quot; style=&quot;flex:1&quot; onclick=&quot;saveApiKey()&quot;&gt;✅ Salvar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-gray&quot; style=&quot;flex:1&quot; onclick=&quot;closeApiModal()&quot;&gt;Cancelar&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p style=&quot;font-size:11px;color:#6b7280;margin-top:12px;&quot;&gt;A chave fica salva só no seu navegador (localStorage). Não é enviada para nenhum servidor externo.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+// ============================================================
+// CONFIGURAÇÃO
+// ============================================================
+let apiKey = localStorage.getItem('pg_apikey') || '';
+let apiProvider = localStorage.getItem('pg_provider') || 'gemini';
+let currentFile = 'sem_titulo.html';
+let previewOpen = false;
+let lastAiCode = null;
+
+const SYSTEM_PROMPT = `Você é uma assistente de código e jurídica de altíssimo nível integrada a um editor de código.
+O usuário é o Saulo, advogado, muito focado. Ele odeia enrolação.
+
+REGRAS ABSOLUTAS:
+1. NUNCA peça desculpas.
+2. NUNCA diga &quot;Parece que você tem um problema&quot;, &quot;Eu entendo sua frustração&quot; ou qualquer frase de empatia.
+3. Vá DIRETO ao ponto. Só o que foi pedido.
+4. Se for alterar código: mostre o trecho alterado com comentário indicando EXATAMENTE onde inserir. Seja cirúrgico.
+5. Se for pergunta jurídica: responda como um colega advogado sênior. Direto, técnico, sem rodeios.
+6. Ao final de cada resposta com código, pergunte apenas: &quot;Quer que eu aplique mais alguma coisa?&quot;`;
+
+// ============================================================
+// EDITOR
+// ============================================================
+function updateCount() {
+  const code = document.getElementById('editor').value;
+  document.getElementById('char-count').textContent = code.length + ' chars';
+  if (previewOpen) updatePreview();
+}
+
+function importFile() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.html,.htm,.js,.ts,.tsx,.jsx,.css,.txt,.json';
+  input.onchange = e =&gt; {
+    const file = e.target.files[0];
+    if (!file) return;
+    currentFile = file.name;
+    document.getElementById('filename-display').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = ev =&gt; {
+      document.getElementById('editor').value = ev.target.result;
+      updateCount();
+      addMsg('system', '📂 Arquivo &quot;' + file.name + '&quot; importado. IA já pode lê-lo.');
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function saveFile() {
+  const code = document.getElementById('editor').value;
+  localStorage.setItem('pg_code_' + currentFile, code);
+  localStorage.setItem('pg_lastfile', currentFile);
+  addMsg('system', '💾 Salvo no navegador: &quot;' + currentFile + '&quot;');
+}
+
+function downloadFile() {
+  const code = document.getElementById('editor').value;
+  const blob = new Blob([code], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = currentFile;
+  a.click();
+  addMsg('system', '⬇️ Download iniciado: &quot;' + currentFile + '&quot;');
+}
+
+function togglePreview() {
+  const panel = document.getElementById('preview-panel');
+  previewOpen = !previewOpen;
+  panel.style.display = previewOpen ? 'flex' : 'none';
+  if (previewOpen) updatePreview();
+}
+
+function updatePreview() {
+  const code = document.getElementById('editor').value;
+  const frame = document.getElementById('preview-frame');
+  frame.srcdoc = code;
+}
+
+// ============================================================
+// FULLSCREEN
+// ============================================================
+function openFullscreen() {
+  const code = document.getElementById('editor').value;
+  document.getElementById('modal-editor').value = code;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeFullscreen() {
+  const code = document.getElementById('modal-editor').value;
+  document.getElementById('editor').value = code;
+  document.getElementById('modal').classList.remove('open');
+  updateCount();
+}
+
+// ============================================================
+// API KEY
+// ============================================================
+function openApiModal() {
+  document.getElementById('apikey-input').value = apiKey;
+  document.getElementById('api-provider').value = apiProvider;
+  document.getElementById('apimodal').classList.add('open');
+}
+
+function closeApiModal() {
+  document.getElementById('apimodal').classList.remove('open');
+}
+
+function saveApiKey() {
+  apiKey = document.getElementById('apikey-input').value.trim();
+  apiProvider = document.getElementById('api-provider').value;
+  localStorage.setItem('pg_apikey', apiKey);
+  localStorage.setItem('pg_provider', apiProvider);
+  updateModelLabel();
+  closeApiModal();
+  addMsg('system', '✅ API Key salva. Pronto para usar.');
+}
+
+function updateModelLabel() {
+  const p = document.getElementById('api-provider').value;
+  document.getElementById('model-label').textContent = p === 'gemini' ? 'Gemini 1.5 Flash' : 'GPT-4o Mini';
+}
+
+// ============================================================
+// CHAT
+// ============================================================
+function handleKey(e) {
+  if (e.key === 'Enter' &amp;&amp; !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function addMsg(role, content, hasCode) {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + role;
+  div.textContent = content;
+
+  if (hasCode &amp;&amp; role === 'ai') {
+    const btn = document.createElement('button');
+    btn.className = 'apply-btn';
+    btn.textContent = '✅ Aplicar este código no editor';
+    btn.onclick = () =&gt; {
+      document.getElementById('editor').value = hasCode;
+      updateCount();
+      addMsg('system', '✅ Código aplicado no editor.');
+    };
+    div.appendChild(btn);
+  }
+
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function showLoading() {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'loading';
+  div.id = 'loading-indicator';
+  div.innerHTML = '&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function hideLoading() {
+  const el = document.getElementById('loading-indicator');
+  if (el) el.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const userText = input.value.trim();
+  if (!userText) return;
+
+  if (!apiKey) {
+    addMsg('system', '⚠️ Configure sua API Key primeiro. Clique em &quot;🔑 API Key&quot; no topo.');
+    return;
+  }
+
+  input.value = '';
+  document.getElementById('send-btn').disabled = true;
+  addMsg('user', userText);
+
+  const editorCode = document.getElementById('editor').value;
+  const contextMsg = editorCode
+    ? `[CÓDIGO ATUAL NO EDITOR - arquivo: ${currentFile}]\n\`\`\`\n${editorCode.substring(0, 8000)}\n\`\`\`\n\n[PEDIDO DO USUÁRIO]\n${userText}`
+    : userText;
+
+  showLoading();
+
+  try {
+    let reply = '';
+
+    if (apiProvider === 'gemini') {
+      reply = await callGemini(contextMsg);
+    } else {
+      reply = await callOpenAI(contextMsg);
+    }
+
+    hideLoading();
+
+    // Detecta se tem bloco de código na resposta
+    const codeMatch = reply.match(/```(?:html|js|javascript|tsx|jsx|css)?\n([\s\S]*?)```/);
+    const extractedCode = codeMatch ? codeMatch[1] : null;
+
+    addMsg('ai', reply, extractedCode);
+
+  } catch (err) {
+    hideLoading();
+    addMsg('system', '❌ Erro: ' + err.message);
+  }
+
+  document.getElementById('send-btn').disabled = false;
+}
+
+// ============================================================
+// GEMINI
+// ============================================================
+async function callGemini(userMsg) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const body = {
+    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: [{ role: 'user', parts: [{ text: userMsg }] }],
+    generationConfig: { temperature: 0.3, maxOutputTokens: 4096 }
+  };
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erro Gemini'); }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+}
+
+// ============================================================
+// OPENAI
+// ============================================================
+async function callOpenAI(userMsg) {
+  const url = 'https://api.openai.com/v1/chat/completions';
+  const body = {
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: userMsg }
+    ],
+    temperature: 0.3,
+    max_tokens: 4096
+  };
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify(body) });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erro OpenAI'); }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || 'Sem resposta.';
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = () =&gt; {
+  updateModelLabel();
+  const saved = localStorage.getItem('pg_lastfile');
+  if (saved) {
+    const code = localStorage.getItem('pg_code_' + saved);
+    if (code) {
+      currentFile = saved;
+      document.getElementById('filename-display').textContent = saved;
+      document.getElementById('editor').value = code;
+      updateCount();
+    }
+  }
+  if (!apiKey) {
+    setTimeout(() =&gt; addMsg('system', '👆 Configure sua API Key clicando em &quot;🔑 API Key&quot; no topo para começar.'), 500);
+  }
+};
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+<div class="project-container " id="projeto2">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Playground IA — Saulo&lt;/title&gt;
+&lt;style&gt;
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',sans-serif; background:#0a0a0a; color:#e0e0e0; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+/* TOPBAR */
+#topbar { background:#111; border-bottom:1px solid #222; padding:6px 12px; display:flex; align-items:center; gap:8px; flex-shrink:0; flex-wrap:wrap; }
+#topbar h1 { font-size:13px; font-weight:700; color:#60a5fa; margin-right:4px; white-space:nowrap; }
+.btn { padding:5px 11px; border-radius:7px; border:none; cursor:pointer; font-size:11px; font-weight:700; transition:all .15s; white-space:nowrap; }
+.b-gray  { background:#2a2a2a; color:#ccc; } .b-gray:hover  { background:#3a3a3a; }
+.b-green { background:#15803d; color:#fff; } .b-green:hover { background:#16a34a; }
+.b-blue  { background:#1d4ed8; color:#fff; } .b-blue:hover  { background:#2563eb; }
+.b-red   { background:#991b1b; color:#fff; } .b-red:hover   { background:#dc2626; }
+.b-purple{ background:#6d28d9; color:#fff; } .b-purple:hover{ background:#7c3aed; }
+.b-orange{ background:#c2410c; color:#fff; } .b-orange:hover{ background:#ea580c; }
+#run-btn { background:#16a34a; color:#fff; font-size:13px; padding:6px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:800; }
+#run-btn:hover { background:#15803d; }
+
+/* WORKSPACE */
+#workspace { display:flex; flex:1; overflow:hidden; }
+
+/* PAINEIS */
+.panel { display:flex; flex-direction:column; overflow:hidden; }
+#editor-panel { flex:1; border-right:2px solid #1e1e1e; min-width:200px; }
+#preview-panel { flex:1; border-right:2px solid #1e1e1e; min-width:200px; background:#fff; }
+#chat-panel { width:320px; flex-shrink:0; }
+
+/* PANEL HEADERS */
+.panel-header { background:#111; padding:6px 10px; font-size:11px; color:#6b7280; border-bottom:1px solid #1e1e1e; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+.panel-header span { font-weight:700; color:#9ca3af; }
+
+/* EDITOR */
+#code-editor { flex:1; width:100%; background:#0d0d0d; color:#e2e8f0; border:none; outline:none; padding:14px; font-family:'Courier New',monospace; font-size:12.5px; line-height:1.65; resize:none; tab-size:2; }
+
+/* PREVIEW */
+#preview-frame { flex:1; border:none; width:100%; height:100%; }
+#preview-empty { flex:1; display:flex; align-items:center; justify-content:center; color:#374151; font-size:13px; flex-direction:column; gap:8px; }
+
+/* CHAT */
+#chat-messages { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
+.msg { padding:9px 11px; border-radius:9px; font-size:12px; line-height:1.55; word-break:break-word; }
+.msg-user   { background:#1e3a8a; color:#fff; align-self:flex-end; max-width:90%; }
+.msg-ai     { background:#1a1a1a; border:1px solid #2a2a2a; color:#e0e0e0; align-self:flex-start; max-width:98%; white-space:pre-wrap; }
+.msg-system { background:#111; border:1px solid #1e1e1e; color:#4b5563; font-size:10px; align-self:center; text-align:center; padding:5px 10px; border-radius:6px; }
+.apply-btn  { display:block; margin-top:8px; padding:6px 10px; background:#15803d; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:11px; font-weight:700; width:100%; }
+.apply-btn:hover { background:#16a34a; }
+
+/* CHAT INPUT */
+#chat-bottom { padding:8px; background:#111; border-top:1px solid #1e1e1e; display:flex; gap:6px; flex-shrink:0; }
+#chat-input { flex:1; background:#0d0d0d; border:1px solid #2a2a2a; border-radius:7px; padding:7px 9px; color:#e0e0e0; font-size:12px; outline:none; resize:none; font-family:inherit; }
+#chat-input:focus { border-color:#2563eb; }
+#chat-send { background:#1d4ed8; color:#fff; border:none; border-radius:7px; padding:7px 11px; cursor:pointer; font-size:16px; }
+#chat-send:hover { background:#2563eb; }
+#chat-send:disabled { background:#1e1e1e; cursor:not-allowed; }
+
+/* MODAL FULLSCREEN EDITOR */
+#fs-modal { display:none; position:fixed; inset:0; background:#0a0a0a; z-index:999; flex-direction:column; }
+#fs-modal.open { display:flex; }
+#fs-modal-bar { background:#111; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; }
+#fs-editor { flex:1; width:100%; background:#0a0a0a; color:#e2e8f0; border:none; outline:none; padding:20px; font-family:'Courier New',monospace; font-size:14px; line-height:1.7; resize:none; }
+
+/* MODAL PREVIEW FULLSCREEN */
+#fp-modal { display:none; position:fixed; inset:0; background:#fff; z-index:999; flex-direction:column; }
+#fp-modal.open { display:flex; }
+#fp-modal-bar { background:#111; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; }
+#fp-frame { flex:1; border:none; width:100%; }
+
+/* API MODAL */
+#api-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:1000; justify-content:center; align-items:center; }
+#api-modal.open { display:flex; }
+#api-box { background:#111; border:1px solid #2a2a2a; border-radius:12px; padding:22px; width:380px; max-width:92vw; }
+#api-box h2 { font-size:15px; color:#60a5fa; margin-bottom:14px; }
+.api-input { width:100%; background:#0a0a0a; border:1px solid #2a2a2a; border-radius:7px; padding:9px; color:#e0e0e0; font-size:12px; outline:none; margin-bottom:10px; }
+.api-select { width:100%; background:#0a0a0a; border:1px solid #2a2a2a; border-radius:7px; padding:9px; color:#e0e0e0; font-size:12px; outline:none; margin-bottom:10px; }
+
+/* LOADING */
+.dots { display:flex; gap:4px; padding:8px 10px; }
+.dot { width:7px; height:7px; background:#2563eb; border-radius:50%; animation:blink .8s infinite; }
+.dot:nth-child(2){animation-delay:.15s} .dot:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:#0a0a0a} ::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- TOPBAR --&gt;
+&lt;div id=&quot;topbar&quot;&gt;
+  &lt;h1&gt;⚡ Playground IA&lt;/h1&gt;
+  &lt;button id=&quot;run-btn&quot; onclick=&quot;runPreview()&quot;&gt;▶ Rodar&lt;/button&gt;
+  &lt;button class=&quot;btn b-gray&quot; onclick=&quot;importFile()&quot;&gt;📂 Abrir&lt;/button&gt;
+  &lt;button class=&quot;btn b-green&quot; onclick=&quot;saveLocal()&quot;&gt;💾 Salvar&lt;/button&gt;
+  &lt;button class=&quot;btn b-blue&quot; onclick=&quot;downloadFile()&quot;&gt;⬇ Baixar&lt;/button&gt;
+  &lt;button class=&quot;btn b-gray&quot; onclick=&quot;copyCode()&quot;&gt;📋 Copiar&lt;/button&gt;
+  &lt;button class=&quot;btn b-gray&quot; onclick=&quot;clearEditor()&quot;&gt;🗑 Limpar&lt;/button&gt;
+  &lt;button class=&quot;btn b-purple&quot; onclick=&quot;openFsEditor()&quot;&gt;⛶ Ampliar Editor&lt;/button&gt;
+  &lt;button class=&quot;btn b-orange&quot; onclick=&quot;openFsPreview()&quot;&gt;🔍 Ampliar Preview&lt;/button&gt;
+  &lt;button class=&quot;btn b-gray&quot; onclick=&quot;toggleAutoRun()&quot; id=&quot;auto-btn&quot;&gt;⚡ Auto: OFF&lt;/button&gt;
+  &lt;button class=&quot;btn b-gray&quot; onclick=&quot;openApiModal()&quot;&gt;🔑 API Key&lt;/button&gt;
+  &lt;span id=&quot;save-status&quot; style=&quot;font-size:10px;color:#4b5563;margin-left:4px;&quot;&gt;&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;!-- WORKSPACE --&gt;
+&lt;div id=&quot;workspace&quot;&gt;
+
+  &lt;!-- EDITOR --&gt;
+  &lt;div class=&quot;panel&quot; id=&quot;editor-panel&quot;&gt;
+    &lt;div class=&quot;panel-header&quot;&gt;
+      &lt;span&gt;📝 Editor&lt;/span&gt;
+      &lt;span id=&quot;file-name&quot;&gt;sem_titulo.html&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;textarea id=&quot;code-editor&quot; spellcheck=&quot;false&quot; placeholder=&quot;Cole ou importe seu código aqui...&quot; oninput=&quot;onEditorChange()&quot;&gt;&lt;/textarea&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PREVIEW --&gt;
+  &lt;div class=&quot;panel&quot; id=&quot;preview-panel&quot;&gt;
+    &lt;div class=&quot;panel-header&quot;&gt;
+      &lt;span&gt;👁 Preview&lt;/span&gt;
+      &lt;span id=&quot;preview-status&quot;&gt;aguardando...&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;preview-empty&quot;&gt;
+      &lt;span style=&quot;font-size:28px&quot;&gt;▶&lt;/span&gt;
+      &lt;span&gt;Clique em &lt;strong&gt;Rodar&lt;/strong&gt; para ver o resultado&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;iframe id=&quot;preview-frame&quot; style=&quot;display:none&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+
+  &lt;!-- CHAT --&gt;
+  &lt;div class=&quot;panel&quot; id=&quot;chat-panel&quot;&gt;
+    &lt;div class=&quot;panel-header&quot;&gt;
+      &lt;span&gt;🤖 IA Integrada&lt;/span&gt;
+      &lt;span id=&quot;model-tag&quot; style=&quot;color:#60a5fa&quot;&gt;Gemini Flash&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;chat-messages&quot;&gt;
+      &lt;div class=&quot;msg msg-system&quot;&gt;IA lê o código do editor em tempo real. Peça qualquer alteração.&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;chat-bottom&quot;&gt;
+      &lt;textarea id=&quot;chat-input&quot; rows=&quot;2&quot; placeholder=&quot;O que precisa? (Enter = enviar)&quot; onkeydown=&quot;handleKey(event)&quot;&gt;&lt;/textarea&gt;
+      &lt;button id=&quot;chat-send&quot; onclick=&quot;sendMsg()&quot;&gt;➤&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;!-- MODAL FULLSCREEN EDITOR --&gt;
+&lt;div id=&quot;fs-modal&quot;&gt;
+  &lt;div id=&quot;fs-modal-bar&quot;&gt;
+    &lt;span style=&quot;color:#60a5fa;font-weight:700;font-size:13px&quot;&gt;⛶ Editor Ampliado&lt;/span&gt;
+    &lt;button class=&quot;btn b-red&quot; onclick=&quot;closeFsEditor()&quot;&gt;✕ Fechar e Aplicar&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;textarea id=&quot;fs-editor&quot; spellcheck=&quot;false&quot;&gt;&lt;/textarea&gt;
+&lt;/div&gt;
+
+&lt;!-- MODAL FULLSCREEN PREVIEW --&gt;
+&lt;div id=&quot;fp-modal&quot;&gt;
+  &lt;div id=&quot;fp-modal-bar&quot;&gt;
+    &lt;span style=&quot;color:#60a5fa;font-weight:700;font-size:13px&quot;&gt;🔍 Preview Ampliado&lt;/span&gt;
+    &lt;button class=&quot;btn b-red&quot; onclick=&quot;closeFsPreview()&quot;&gt;✕ Fechar&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;iframe id=&quot;fp-frame&quot;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;!-- API MODAL --&gt;
+&lt;div id=&quot;api-modal&quot;&gt;
+  &lt;div id=&quot;api-box&quot;&gt;
+    &lt;h2&gt;🔑 Configurar API&lt;/h2&gt;
+    &lt;select class=&quot;api-select&quot; id=&quot;api-provider&quot; onchange=&quot;updateModelTag()&quot;&gt;
+      &lt;option value=&quot;gemini&quot;&gt;Google Gemini (recomendado — gratuito)&lt;/option&gt;
+      &lt;option value=&quot;openai&quot;&gt;OpenAI (GPT-4o Mini)&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;input class=&quot;api-input&quot; id=&quot;api-key-input&quot; type=&quot;password&quot; placeholder=&quot;Cole sua API Key aqui...&quot;/&gt;
+    &lt;div style=&quot;display:flex;gap:8px;margin-top:4px&quot;&gt;
+      &lt;button class=&quot;btn b-green&quot; style=&quot;flex:1;padding:9px&quot; onclick=&quot;saveApiKey()&quot;&gt;✅ Salvar&lt;/button&gt;
+      &lt;button class=&quot;btn b-gray&quot; style=&quot;flex:1;padding:9px&quot; onclick=&quot;closeApiModal()&quot;&gt;Cancelar&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p style=&quot;font-size:10px;color:#4b5563;margin-top:10px&quot;&gt;Chave salva só no seu navegador. Não vai para nenhum servidor.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+// ─── ESTADO ───────────────────────────────────────────────
+let apiKey      = localStorage.getItem('pg_key')      || '';
+let apiProvider = localStorage.getItem('pg_provider') || 'gemini';
+let fileName    = localStorage.getItem('pg_fname')    || 'sem_titulo.html';
+let autoRun     = false;
+let autoTimer   = null;
+let previewRan  = false;
+
+const SYSTEM = `Você é uma IA integrada a um playground de código. O usuário é Saulo, advogado, direto ao ponto.
+REGRAS ABSOLUTAS:
+1. NUNCA peça desculpas.
+2. NUNCA use frases de empatia (&quot;parece que&quot;, &quot;eu entendo&quot;, &quot;sinto muito&quot;).
+3. Vá DIRETO ao ponto. Só o que foi pedido.
+4. Ao alterar código: retorne o arquivo COMPLETO atualizado entre triple backticks para permitir aplicação automática.
+5. Seja cirúrgico. Indique o que mudou em uma linha antes do código.`;
+
+// ─── EDITOR ───────────────────────────────────────────────
+function onEditorChange() {
+  updateCharCount();
+  if (autoRun) {
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(runPreview, 900);
+  }
+  autoSave();
+}
+
+function updateCharCount() {
+  // silencioso
+}
+
+function autoSave() {
+  const code = document.getElementById('code-editor').value;
+  localStorage.setItem('pg_code', code);
+  localStorage.setItem('pg_fname', fileName);
+  showStatus('salvo ✓');
+}
+
+function showStatus(msg) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  setTimeout(() =&gt; el.textContent = '', 2000);
+}
+
+// ─── PREVIEW ──────────────────────────────────────────────
+function runPreview() {
+  const code = document.getElementById('code-editor').value.trim();
+  const empty = document.getElementById('preview-empty');
+  const frame = document.getElementById('preview-frame');
+  const status = document.getElementById('preview-status');
+
+  if (!code) {
+    empty.style.display = 'flex';
+    frame.style.display = 'none';
+    status.textContent = 'vazio';
+    return;
+  }
+
+  empty.style.display = 'none';
+  frame.style.display = 'block';
+  frame.srcdoc = code;
+  status.textContent = 'atualizado ✓';
+  previewRan = true;
+}
+
+function toggleAutoRun() {
+  autoRun = !autoRun;
+  document.getElementById('auto-btn').textContent = '⚡ Auto: ' + (autoRun ? 'ON' : 'OFF');
+  document.getElementById('auto-btn').style.background = autoRun ? '#15803d' : '';
+  if (autoRun) runPreview();
+}
+
+// ─── ARQUIVOS ─────────────────────────────────────────────
+function importFile() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.html,.htm,.js,.ts,.tsx,.jsx,.css,.txt,.json,.py';
+  inp.onchange = e =&gt; {
+    const f = e.target.files[0];
+    if (!f) return;
+    fileName = f.name;
+    document.getElementById('file-name').textContent = f.name;
+    const r = new FileReader();
+    r.onload = ev =&gt; {
+      document.getElementById('code-editor').value = ev.target.result;
+      onEditorChange();
+      addMsg('system', '📂 &quot;' + f.name + '&quot; importado. IA já pode lê-lo.');
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+function saveLocal() {
+  autoSave();
+  addMsg('system', '💾 Salvo no navegador.');
+}
+
+function downloadFile() {
+  const code = document.getElementById('code-editor').value;
+  const blob = new Blob([code], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName;
+  a.click();
+  showStatus('baixado ✓');
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('code-editor').value);
+  showStatus('copiado ✓');
+}
+
+function clearEditor() {
+  if (!confirm('Limpar o editor?')) return;
+  document.getElementById('code-editor').value = '';
+  onEditorChange();
+  runPreview();
+}
+
+// ─── FULLSCREEN EDITOR ────────────────────────────────────
+function openFsEditor() {
+  document.getElementById('fs-editor').value = document.getElementById('code-editor').value;
+  document.getElementById('fs-modal').classList.add('open');
+}
+function closeFsEditor() {
+  document.getElementById('code-editor').value = document.getElementById('fs-editor').value;
+  document.getElementById('fs-modal').classList.remove('open');
+  onEditorChange();
+}
+
+// ─── FULLSCREEN PREVIEW ───────────────────────────────────
+function openFsPreview() {
+  const code = document.getElementById('code-editor').value;
+  document.getElementById('fp-frame').srcdoc = code;
+  document.getElementById('fp-modal').classList.add('open');
+}
+function closeFsPreview() {
+  document.getElementById('fp-modal').classList.remove('open');
+}
+
+// ─── API MODAL ────────────────────────────────────────────
+function openApiModal() {
+  document.getElementById('api-key-input').value = apiKey;
+  document.getElementById('api-provider').value = apiProvider;
+  document.getElementById('api-modal').classList.add('open');
+}
+function closeApiModal() {
+  document.getElementById('api-modal').classList.remove('open');
+}
+function saveApiKey() {
+  apiKey = document.getElementById('api-key-input').value.trim();
+  apiProvider = document.getElementById('api-provider').value;
+  localStorage.setItem('pg_key', apiKey);
+  localStorage.setItem('pg_provider', apiProvider);
+  updateModelTag();
+  closeApiModal();
+  addMsg('system', '✅ API Key salva. Pronto.');
+}
+function updateModelTag() {
+  const p = document.getElementById('api-provider')?.value || apiProvider;
+  document.getElementById('model-tag').textContent = p === 'gemini' ? 'Gemini Flash' : 'GPT-4o Mini';
+}
+
+// ─── CHAT ─────────────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' &amp;&amp; !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function addMsg(role, text, codeToApply) {
+  const box = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className = 'msg msg-' + role;
+  d.textContent = text;
+
+  if (codeToApply) {
+    const btn = document.createElement('button');
+    btn.className = 'apply-btn';
+    btn.textContent = '✅ Aplicar código no editor';
+    btn.onclick = () =&gt; {
+      document.getElementById('code-editor').value = codeToApply;
+      onEditorChange();
+      runPreview();
+      addMsg('system', '✅ Código aplicado. Preview atualizado.');
+    };
+    d.appendChild(btn);
+  }
+
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+function showLoading() {
+  const box = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.id = 'loading-dots';
+  d.className = 'dots';
+  d.innerHTML = '&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;';
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+function hideLoading() {
+  const el = document.getElementById('loading-dots');
+  if (el) el.remove();
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+
+  if (!apiKey) {
+    addMsg('system', '⚠️ Configure a API Key primeiro. Clique em &quot;🔑 API Key&quot;.');
+    return;
+  }
+
+  inp.value = '';
+  document.getElementById('chat-send').disabled = true;
+  addMsg('user', text);
+
+  const code = document.getElementById('code-editor').value;
+  const fullMsg = code
+    ? `[CÓDIGO ATUAL NO EDITOR — arquivo: ${fileName}]\n\`\`\`\n${code.substring(0, 10000)}\n\`\`\`\n\n[PEDIDO]\n${text}`
+    : text;
+
+  showLoading();
+
+  try {
+    const reply = apiProvider === 'gemini'
+      ? await callGemini(fullMsg)
+      : await callOpenAI(fullMsg);
+
+    hideLoading();
+
+    // Extrai código completo se vier entre backticks
+    const match = reply.match(/```(?:html|js|javascript|css|jsx|tsx|python)?\n([\s\S]*?)```/);
+    const extracted = match ? match[1].trim() : null;
+
+    addMsg('ai', reply, extracted);
+
+  } catch(err) {
+    hideLoading();
+    addMsg('system', '❌ ' + err.message);
+  }
+
+  document.getElementById('chat-send').disabled = false;
+}
+
+// ─── GEMINI ───────────────────────────────────────────────
+async function callGemini(msg) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const body = {
+    system_instruction: { parts:[{ text: SYSTEM }] },
+    contents: [{ role:'user', parts:[{ text: msg }] }],
+    generationConfig: { temperature:0.2, maxOutputTokens:8192 }
+  };
+  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'Erro Gemini'); }
+  const d = await r.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+}
+
+// ─── OPENAI ───────────────────────────────────────────────
+async function callOpenAI(msg) {
+  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+    body: JSON.stringify({
+      model:'gpt-4o-mini',
+      messages:[{role:'system',content:SYSTEM},{role:'user',content:msg}],
+      temperature:0.2, max_tokens:8192
+    })
+  });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'Erro OpenAI'); }
+  const d = await r.json();
+  return d.choices?.[0]?.message?.content || 'Sem resposta.';
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+window.onload = () =&gt; {
+  updateModelTag();
+
+  // Restaura último código salvo
+  const saved = localStorage.getItem('pg_code');
+  const savedName = localStorage.getItem('pg_fname');
+  if (saved) {
+    document.getElementById('code-editor').value = saved;
+    if (savedName) {
+      fileName = savedName;
+      document.getElementById('file-name').textContent = savedName;
+    }
+    updateCharCount();
+    // Roda preview automaticamente se tinha código
+    runPreview();
+  }
+
+  if (!apiKey) {
+    setTimeout(() =&gt; addMsg('system', '👆 Configure a API Key clicando em &quot;🔑 API Key&quot; para ativar a IA.'), 600);
+  }
+};
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+
+<script>
+function trocarProjeto(index) {
+  // Esconde todos
+  document.querySelectorAll('.project-container').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  // Mostra o selecionado
+  document.getElementById('projeto' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+  
+  // Salva preferência
+  localStorage.setItem('ultimo-projeto', index);
+}
+
+// Restaura último projeto aberto
+window.onload = function() {
+  const ultimo = localStorage.getItem('ultimo-projeto');
+  if (ultimo !== null) trocarProjeto(parseInt(ultimo));
+};
+</script>
+</body>
+</html>

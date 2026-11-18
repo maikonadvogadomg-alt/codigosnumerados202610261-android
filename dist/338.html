@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rural Adjair </title>
+<style>
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Linha do Tempo - Maikon Caldeira</title>
+    <style>
+        /* PALETA PREMIUM: OLIVA E BRONZE */
+        :root {
+            --oliva: #5d5e53;
+            --bronze: #a3a082;
+            --fundo: #0a0a0a;
+            --painel: #161614;
+            --texto: #e5e7eb;
+            --branco: #ffffff;
+            --borda: #2d2d2a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--fundo); color: var(--texto); }
+
+        /* Interface do Sistema */
+        .no-print { padding: 20px; max-width: 1100px; margin: auto; }
+        
+        header { 
+            border-bottom: 2px solid var(--bronze); 
+            padding-bottom: 15px; 
+            margin-bottom: 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .logo-m { background: var(--bronze); color: var(--fundo); padding: 10px 18px; border-radius: 50%; font-weight: bold; font-size: 22px; border: 2px solid #fff; }
+
+        .config-card { background: var(--painel); padding: 20px; border-radius: 12px; border: 1px solid var(--oliva); margin-bottom: 20px; }
+        
+        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        
+        label { display: block; font-size: 11px; font-weight: bold; color: var(--bronze); margin-bottom: 5px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; background: #000; border: 1px solid var(--oliva); color: #fff; padding: 10px; border-radius: 6px; outline: none; }
+
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; transition: 0.3s; }
+        .btn-add { background: var(--oliva); color: white; }
+        .btn-print { background: var(--bronze); color: var(--fundo); width: 100%; font-size: 16px; margin-top: 20px; }
+        .btn-clear { background: #7f1d1d; color: white; font-size: 10px; padding: 5px 10px; }
+
+        /* Estilo do Relatório (O que será impresso) */
+        #relatorio-final { background: white; color: black; padding: 40px; width: 210mm; min-height: 297mm; margin: 20px auto; border-radius: 4px; display: none; }
+        
+        .cabecalho-doc { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 30px; }
+        .titulo-doc { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-top: 10px; }
+        
+        .timeline { position: relative; margin-left: 20px; border-left: 3px solid #5d5e53; padding: 10px 0 10px 30px; }
+        .period-item { position: relative; margin-bottom: 40px; page-break-inside: avoid; }
+        .period-item::before { content: ''; position: absolute; left: -38px; top: 0; width: 15px; height: 15px; background: #a3a082; border: 2px solid black; border-radius: 50%; }
+        
+        .intervalo-destaque { font-size: 24px; font-weight: bold; color: #1a1a1a; margin-bottom: 5px; }
+        .info-tag { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
+        .tag-rural { background: #d1fae5; color: #065f46; border: 1px solid #065f46; }
+        .tag-especial { background: #fee2e2; color: #991b1b; border: 1px solid #991b1b; }
+        .tag-indenizado { background: #fef3c7; color: #92400e; border: 1px solid #92400e; }
+        
+        .detalhes-texto { font-size: 14px; line-height: 1.5; text-align: justify; }
+        .base-legal { font-style: italic; font-size: 12px; color: #444; margin-top: 5px; }
+
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            #relatorio-final { display: block; margin: 0; border: none; width: 100%; }
+            .period-item::before { -webkit-print-color-adjust: exact; background-color: #a3a082 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <header>
+        <div style="display:flex; align-items:center;">
+            <div class="logo-m">M</div>
+            <div>
+                <h2 style="color:var(--bronze)">Maikon Caldeira</h2>
+                <p style="font-size: 10px; letter-spacing: 2px;">GERADOR DE CRONOGRAMA ESTRATÉGICO</p>
+            </div>
+        </div>
+        <button class="btn-clear" onclick="limparTudo()">Limpar Tudo</button>
+    </header>
+
+    <div class="config-card">
+        <label>Tipo de Cronograma</label>
+        <select id="tipo-geral" style="margin-bottom: 20px; font-size: 16px;">
+            <option value="RURAL">Cronograma de Atividade Rural</option>
+            <option value="ESPECIAL">Cronograma de Atividade Especial</option>
+        </select>
+
+        <div id="lista-periodos">
+            <!-- Os períodos serão adicionados aqui -->
+        </div>
+
+        <button class="btn btn-add" onclick="adicionarPeriodo()">+ Adicionar Novo Intervalo</button>
+    </div>
+
+    <button class="btn btn-print" onclick="gerarEImprimir()">Gerar Relatório & Imprimir (PDF)</button>
+</div>
+
+<!-- RELATÓRIO QUE SERÁ IMPRESSO -->
+<div id="relatorio-final">
+    <div class="cabecalho-doc">
+        <div style="font-weight:bold; font-size: 14px;">MAIKON CALDEIRA - ADVOCACIA E ESTRATÉGIA PREVIDENCIÁRIA</div>
+        <div class="titulo-doc" id="tit-relatorio">LINHA DO TEMPO: ATIVIDADE RURAL</div>
+    </div>
+
+    <div class="timeline" id="conteudo-timeline">
+        <!-- Itens da timeline injetados por JS -->
+    </div>
+
+    <div style="margin-top: 50px; text-align: center; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+        Documento gerado para auxílio na instrução de processo administrativo/judicial.
+    </div>
+</div>
+
+<script>
+    let contador = 0;
+
+    // Adiciona um novo bloco de inputs para um período
+    function adicionarPeriodo() {
+        contador++;
+        const tipo = document.getElementById('tipo-geral').value;
+        const div = document.createElement('div');
+        div.className = 'config-card';
+        div.id = `periodo-${contador}`;
+        
+        let camposExtras = "";
+        
+        if (tipo === "RURAL") {
+            camposExtras = `
+                <div>
+                    <label>Indenizado?</label>
+                    <select id="indenizado-${contador}">
+                        <option value="NÃO">Não (Tempo de Contribuição até 10/1991 ou Idade)</option>
+                        <option value="SIM">Sim (Período após 10/1991 para Contribuição)</option>
+                    </select>
+                </div>
+            `;
+        } else {
+            camposExtras = `
+                <div>
+                    <label>Agente Nocivo</label>
+                    <input type="text" id="agente-${contador}" placeholder="Ex: Ruído 92dB, Calor, Químico">
+                </div>
+            `;
+        }
+
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <h4 style="color:var(--bronze)">Intervalo #${contador}</h4>
+                <button onclick="removerPeriodo(${contador})" style="color:red; background:none; border:none; cursor:pointer;">Remover</button>
+            </div>
+            <div class="row">
+                <div><label>Início</label><input type="date" id="inicio-${contador}"></div>
+                <div><label>Fim</label><input type="date" id="fim-${contador}"></div>
+                ${camposExtras}
+            </div>
+            <div class="row">
+                <div><label>Documento de Prova</label><input type="text" id="doc-${contador}" placeholder="Ex: Certidão de Casamento, PPP, LTCAT..."></div>
+                <div><label>Previsão Legal</label><input type="text" id="lei-${contador}" value="${tipo === 'RURAL' ? 'Art. 55, § 2º Lei 8.213/91' : 'Art. 57, Lei 8.213/91'}"></div>
+            </div>
+            <div>
+                <label>Observações Estratégicas</label>
+                <textarea id="obs-${contador}" rows="2" placeholder="Destaque aqui o detalhe que faz a diferença..."></textarea>
+            </div>
+        `;
+        document.getElementById('lista-periodos').appendChild(div);
+    }
+
+    function removerPeriodo(id) {
+        document.getElementById(`periodo-${id}`).remove();
+    }
+
+    function formatarData(dataStr) {
+        const d = new Date(dataStr);
+        return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    }
+
+    function gerarEImprimir() {
+        const tipo = document.getElementById('tipo-geral').value;
+        const timeline = document.getElementById('conteudo-timeline');
+        timeline.innerHTML = '';
+        
+        document.getElementById('tit-relatorio').innerText = `LINHA DO TEMPO: ATIVIDADE ${tipo}`;
+
+        for (let i = 1; i <= contador; i++) {
+            const el = document.getElementById(`periodo-${i}`);
+            if (!el) continue;
+
+            const inicio = document.getElementById(`inicio-${i}`).value;
+            const fim = document.getElementById(`fim-${i}`).value;
+            const doc = document.getElementById(`doc-${i}`).value;
+            const lei = document.getElementById(`lei-${i}`).value;
+            const obs = document.getElementById(`obs-${i}`).value;
+            
+            let tagHTML = `<span class="info-tag ${tipo === 'RURAL' ? 'tag-rural' : 'tag-especial'}">${tipo}</span>`;
+            
+            if (tipo === "RURAL") {
+                const ind = document.getElementById(`indenizado-${i}`).value;
+                if (ind === "SIM") tagHTML += ` <span class="info-tag tag-indenizado">REQUER INDENIZAÇÃO</span>`;
+                else tagHTML += ` <span class="info-tag tag-rural">SEM INDENIZAÇÃO</span>`;
+            } else {
+                const agente = document.getElementById(`agente-${i}`).value;
+                tagHTML += ` <span class="info-tag tag-especial">AGENTE: ${agente}</span>`;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'period-item';
+            item.innerHTML = `
+                <div class="intervalo-destaque">${formatarData(inicio)} a ${formatarData(fim)}</div>
+                ${tagHTML}
+                <div class="detalhes-texto">
+                    <strong>Documento Comprobatório:</strong> ${doc}<br>
+                    <strong>Análise do Direito:</strong> ${obs || 'Período devidamente comprovado conforme documentação contemporânea anexa.'}
+                </div>
+                <div class="base-legal"><strong>Fundamentação:</strong> ${lei}</div>
+            `;
+            timeline.appendChild(item);
+        }
+
+        document.getElementById('relatorio-final').style.display = 'block';
+        window.print();
+    }
+
+    function limparTudo() {
+        if(confirm("Deseja apagar todos os intervalos?")) {
+            document.getElementById('lista-periodos').innerHTML = '';
+            contador = 0;
+            localStorage.clear();
+        }
+    }
+
+    // Inicializa com um período
+    window.onload = () => {
+        adicionarPeriodo();
+    };
+</script>
+
+</body>
+</html>
+
+
+<script>
+
+</script>
+</body>
+</html>

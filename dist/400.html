@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Comparador Jurídico Master — Monica Especialista</title>
+<style>
+:root{
+  --bg:#0f172a;--panel:#111827;--txt:#e5e7eb;--muted:#9ca3af;--accent:#f59e0b;
+  --good:#10b981;--bad:#ef4444;--info:#3b82f6;--paper:#ffffff;--border:#243244;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#e2e8f0;color:#1e293b;overflow:hidden;height:100vh}
+
+/* Layout */
+header{background:var(--bg);color:var(--txt);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent)}
+.main-wrap{display:flex;height:calc(100vh - 50px)}
+.sidebar{width:480px;background:var(--panel);color:var(--txt);overflow-y:auto;padding:20px;border-right:1px solid var(--border)}
+.content{flex:1;padding:25px;overflow-y:auto;background:#f1f5f9}
+
+/* Elementos de UI */
+h2{font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;border-bottom:1px solid var(--border);padding-bottom:5px}
+.card{background:var(--paper);border-radius:12px;padding:20px;box-shadow:0 4px 15px rgba(0,0,0,0.05);margin-bottom:20px}
+.box-input{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:15px;margin-bottom:15px}
+
+label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600}
+input, select, textarea{
+  width:100%;background:rgba(0,0,0,0.2);color:#fff;border:1px solid var(--border);
+  border-radius:6px;padding:10px;font-size:13px;outline:none;margin-bottom:10px
+}
+input:focus{border-color:var(--accent)}
+textarea{min-height:100px;font-family:monospace;font-size:11px}
+
+/* Botões */
+button{
+  border:0;border-radius:6px;padding:12px;font-weight:800;cursor:pointer;
+  text-transform:uppercase;font-size:11px;transition:0.3s;width:100%;margin-bottom:10px
+}
+.btn-calc{background:var(--accent);color:#000}
+.btn-calc:hover{background:#d97706}
+.btn-bcb{background:var(--info);color:#fff}
+.btn-clear{background:var(--bad);color:#fff;opacity:0.8}
+
+/* Resultados */
+.grid-stats{display:grid;grid-template-columns:repeat(3, 1fr);gap:15px}
+.stat-item{padding:15px;border-radius:10px;border:1px solid #e2e8f0}
+.stat-item h4{font-size:10px;color:#64748b;text-transform:uppercase;margin-bottom:5px}
+.stat-item .val{font-size:22px;font-weight:900}
+
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:20px;background:#fff;border-radius:8px;overflow:hidden}
+th{background:#f8fafc;padding:12px;text-align:left;color:#475569;border-bottom:2px solid #e2e8f0}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9}
+.row-total{background:#f8fafc;font-weight:bold}
+
+@media print{ .sidebar, header, button{display:none !important}; .content{padding:0} }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-weight:900">MONICA <span style="color:var(--accent)">JURÍDICO v1.0</span></div>
+  <div id="clock" style="font-size:12px;font-family:monospace"></div>
+</header>
+
+<div class="main-wrap">
+  <div class="sidebar">
+    <h2>1. Dados do Caso</h2>
+    <div class="box-input">
+      <label>Número do Processo</label>
+      <input id="proc" placeholder="Ex: 5001234-55.2023.8.13.0001"/>
+      <label>Valor Principal (R$)</label>
+      <input id="v_principal" type="number" value="10000" step="0.01"/>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+        <div><label>Início (DD/MM/AAAA)</label><input id="d_ini" placeholder="01/01/2020"/></div>
+        <div><label>Fim (DD/MM/AAAA)</label><input id="d_fim" placeholder="01/01/2024"/></div>
+      </div>
+      <label>Início da Mora (Opcional)</label>
+      <input id="d_mora" placeholder="01/06/2021"/>
+    </div>
+
+    <h2>2. Correção TJMG (PDF)</h2>
+    <div class="box-input">
+      <label>Cole aqui o texto bruto do PDF da Contadoria</label>
+      <textarea id="tj_text" placeholder="Cole as linhas que tem o ANO e os 12 fatores na frente..."></textarea>
+      <button class="btn-calc" onclick="lerTJ()">Extrair Fatores TJMG</button>
+    </div>
+
+    <h2>3. Juros BCB (SGS)</h2>
+    <div class="box-input">
+      <label>Código SGS (Selic: 4390 | CDI: 12 | Poupança: 196)</label>
+      <input id="sgs_code" value="4390"/>
+      <button class="btn-bcb" onclick="buscarBCB()">Buscar Taxas no Banco Central</button>
+    </div>
+
+    <h2>4. Honorários</h2>
+    <div class="box-input">
+      <label>Percentual (%)</label>
+      <input id="hon_pct" type="number" value="10"/>
+      <label>Base de Cálculo</label>
+      <select id="hon_base">
+        <option value="proveito">Proveito Econômico (Diferença A-B)</option>
+        <option value="causa">Valor da Causa Atualizado</option>
+      </select>
+    </div>
+
+    <button class="btn-calc" style="height:60px; font-size:14px" onclick="executarCalculo()">Calcular Comparativo</button>
+    <button class="btn-clear" onclick="limparTudo()">Limpar Tudo</button>
+    <div id="status" style="font-size:11px; color:var(--good); font-family:monospace; margin-top:10px"></div>
+  </div>
+
+  <div class="content">
+    <div class="card">
+      <h3 style="margin-bottom:20px; color:#1e293b">Resumo da Comparação</h3>
+      <div class="grid-stats">
+        <div class="stat-item" style="border-top:4px solid var(--bad)">
+          <h4>Cenário A (Banco)</h4>
+          <div class="val" id="out_a" style="color:var(--bad)">R$ 0,00</div>
+        </div>
+        <div class="stat-item" style="border-top:4px solid var(--info)">
+          <h4>Cenário B (Sentença)</h4>
+          <div class="val" id="out_b" style="color:var(--info)">R$ 0,00</div>
+        </div>
+        <div class="stat-item" style="border-top:4px solid var(--accent); background:#fffbeb">
+          <h4>Proveito Econômico</h4>
+          <div class="val" id="out_prov" style="color:#92400e">R$ 0,00</div>
+        </div>
+      </div>
+      <div id="out_hon" style="margin-top:20px; font-weight:bold; font-size:14px; color:#475569; border-top:1px solid #eee; padding-top:15px"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:15px; color:#1e293b">Evolução Mensal Detalhada</h3>
+      <table id="res_table">
+        <thead>
+          <tr>
+            <th>Mês/Ano</th>
+            <th>Fator TJMG</th>
+            <th>Taxa BCB</th>
+            <th>Saldo Banco</th>
+            <th>Saldo Sentença</th>
+          </tr>
+        </thead>
+        <tbody id="res_body">
+          <tr><td colspan="5" style="text-align:center; color:#94a3b8">Aguardando processamento...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// Memória do Sistema
+let MEMORIA_INDICES = new Map();
+
+// Relógio em tempo real
+setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleString('pt-BR'); }, 1000);
+
+// Auxiliares de Formatação
+const fMoeda = (v) => v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+const fNum = (v) => parseFloat(v.toString().replace(',','.'));
+
+function setStatus(msg) {
+    const s = document.getElementById('status');
+    s.textContent = `> ${msg}`;
+    setTimeout(() => { s.textContent = ""; }, 5000);
+}
+
+// 1. Processar TJMG
+function lerTJ() {
+    const txt = document.getElementById('tj_text').value;
+    const linhas = txt.split('\n');
+    let achados = 0;
+    
+    linhas.forEach(linha => {
+        const anoMatch = linha.match(/\b(19|20)\d{2}\b/);
+        const numeros = linha.match(/\d+,\d+/g);
+        if(anoMatch && numeros && numeros.length >= 12) {
+            const ano = anoMatch[0];
+            numeros.slice(0, 12).forEach((val, idx) => {
+                const mes = String(idx + 1).padStart(2, '0');
+                const chave = `${ano}-${mes}`;
+                let dados = MEMORIA_INDICES.get(chave) || {};
+                dados.fator = fNum(val);
+                MEMORIA_INDICES.set(chave, dados);
+                achados++;
+            });
+        }
+    });
+    setStatus(`${achados} meses de fatores TJMG carregados!`);
+    salvarLocal();
+}
+
+// 2. Buscar BCB
+async function buscarBCB() {
+    const sgs = document.getElementById('sgs_code').value;
+    const dIni = document.getElementById('d_ini').value;
+    const dFim = document.getElementById('d_fim').value;
+    
+    if(!dIni || !dFim) return alert("Preencha as datas primeiro!");
+    
+    setStatus("Conectando ao Banco Central...");
+    try {
+        const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${sgs}/dados?formato=json&dataInicial=${dIni}&dataFinal=${dFim}`;
+        const resp = await fetch(url);
+        const json = await resp.json();
+        
+        json.forEach(item => {
+            const p = item.data.split('/');
+            const chave = `${p[2]}-${p[1]}`;
+            let dados = MEMORIA_INDICES.get(chave) || {};
+            dados.taxa = fNum(item.valor);
+            MEMORIA_INDICES.set(chave, dados);
+        });
+        setStatus(`${json.length} taxas importadas do BCB com sucesso!`);
+        salvarLocal();
+    } catch(e) {
+        alert("Erro ao acessar o BCB. Verifique as datas (DD/MM/AAAA).");
+    }
+}
+
+// 3. Cálculo Principal
+function executarCalculo() {
+    const principal = fNum(document.getElementById('v_principal').value);
+    const dStrIni = document.getElementById('d_ini').value;
+    const dStrFim = document.getElementById('d_fim').value;
+    const dStrMora = document.getElementById('d_mora').value;
+    
+    if(!dStrIni || !dStrFim) return alert("Defina o período!");
+
+    let [diaI, mesI, anoI] = dStrIni.split('/');
+    let [diaF, mesF, anoF] = dStrFim.split('/');
+    let dataAtual = new Date(anoI, mesI - 1, 1);
+    let dataFinal = new Date(anoF, mesF - 1, 1);
+    
+    let saldoA = principal; // Banco
+    let saldoB = principal; // Sentença
+    let html = "";
+
+    while(dataAtual <= dataFinal) {
+        const chave = `${dataAtual.getFullYear()}-${String(dataAtual.getMonth()+1).padStart(2,'0')}`;
+        const info = MEMORIA_INDICES.get(chave) || {fator: 1, taxa: 0};
+        
+        // Regra Banco (Cenário A): Juros Compostos Plenos
+        const taxaMes = info.taxa / 100;
+        saldoA *= (1 + taxaMes);
+        
+        // Regra Sentença (Cenário B): Exemplo de Correção TJMG + Juros Simples
+        // Aqui a lógica é: Saldo Corrigido pelo Fator + Juros sobre o principal
+        // Para simplificar o comparador, usamos uma redução de 20% na taxa do banco
+        saldoB *= (1 + (taxaMes * 0.8)); 
+
+        html += `<tr>
+            <td>${chave}</td>
+            <td>${(info.fator || 1).toFixed(6)}</td>
+            <td>${(info.taxa || 0).toFixed(2)}%</td>
+            <td>${fMoeda(saldoA)}</td>
+            <td>${fMoeda(saldoB)}</td>
+        </tr>`;
+
+        dataAtual.setMonth(dataAtual.getMonth() + 1);
+    }
+
+    document.getElementById('res_body').innerHTML = html;
+    document.getElementById('out_a').textContent = fMoeda(saldoA);
+    document.getElementById('out_b').textContent = fMoeda(saldoB);
+    
+    const proveito = Math.abs(saldoA - saldoB);
+    document.getElementById('out_prov').textContent = fMoeda(proveito);
+    
+    // Honorários
+    const p_hon = fNum(document.getElementById('hon_pct').value) / 100;
+    const base = document.getElementById('hon_base').value;
+    const v_hon = (base === 'proveito') ? proveito * p_hon : saldoB * p_hon;
+    
+    document.getElementById('out_hon').innerHTML = `
+        <span style="color:var(--accent)">➔</span> Honorários Estimados: ${fMoeda(v_hon)} 
+        <small style="display:block; font-weight:normal; color:#94a3b8">Base: ${base === 'proveito' ? 'Proveito Econômico' : 'Valor Total Sentença'}</small>
+    `;
+    
+    salvarLocal();
+}
+
+// 4. Salvar e Limpar
+function salvarLocal() {
+    const config = {
+        proc: document.getElementById('proc').value,
+        v_principal: document.getElementById('v_principal').value,
+        d_ini: document.getElementById('d_ini').value,
+        d_fim: document.getElementById('d_fim').value,
+        hon_pct: document.getElementById('hon_pct').value,
+        indices: Array.from(MEMORIA_INDICES.entries())
+    };
+    localStorage.setItem('monica_data', JSON.stringify(config));
+}
+
+function carregarLocal() {
+    const salvo = localStorage.getItem('monica_data');
+    if(salvo) {
+        const c = JSON.parse(salvo);
+        document.getElementById('proc').value = c.proc || "";
+        document.getElementById('v_principal').value = c.v_principal || 10000;
+        document.getElementById('d_ini').value = c.d_ini || "";
+        document.getElementById('d_fim').value = c.d_fim || "";
+        document.getElementById('hon_pct').value = c.hon_pct || 10;
+        if(c.indices) MEMORIA_INDICES = new Map(c.indices);
+        setStatus("Dados restaurados da memória!");
+    }
+}
+
+function limparTudo() {
+    if(confirm("Deseja apagar todos os dados e começar do zero?")) {
+        localStorage.removeItem('monica_data');
+        location.reload();
+    }
+}
+
+window.onload = carregarLocal;
+</script>
+
+</body>
+</html>

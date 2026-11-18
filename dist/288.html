@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Editor de Cotejo Analítico - Proporcionalidade de Danos</title>
+    <style>
+        :root {
+            --bg: #0f172a; --panel: #111827; --panel2: #0b1220; --txt: #e5e7eb; --muted: #9ca3af;
+            --accent: #f59e0b; --good: #22c55e; --bad: #ef4444; --info: #60a5fa;
+            --paper: #ffffff;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial; background: #e5e7eb; }
+        .wrap { display: flex; height: 100vh; gap: 14px; padding: 14px; }
+        .left { width: 38%; min-width: 340px; background: var(--panel); color: var(--txt); border-radius: 12px; padding: 14px; overflow: auto; }
+        .right { flex: 1; background: #cbd5e1; border-radius: 12px; padding: 14px; overflow: auto; }
+        h1 { font-size: 14px; margin: 0 0 10px; color: var(--accent); letter-spacing: .5px; text-transform: uppercase; }
+        h2 { font-size: 12px; margin: 14px 0 8px; color: var(--txt); text-transform: uppercase; letter-spacing: .5px; }
+        .hint { font-size: 12px; color: var(--muted); line-height: 1.35; background: rgba(96,165,250,.08); border-left: 3px solid var(--info); padding: 10px; border-radius: 8px; }
+        textarea, input[type="text"] {
+            width: 100%; background: var(--panel2); color: var(--txt); border: 1px solid rgba(255,255,255,.14);
+            border-radius: 8px; padding: 10px; outline: none;
+        }
+        textarea { min-height: 120px; resize: vertical; font-family: system-ui; }
+        label { font-size: 12px; color: var(--muted); display: block; margin: 8px 0 6px; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btnrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        button {
+            border: 0; border-radius: 10px; padding: 11px 10px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; letter-spacing: .3px; font-size: 12px;
+        }
+        .b1 { background: var(--accent); color: #111827; }
+        .b2 { background: var(--bad); color: white; }
+        .b3 { background: var(--good); color: #052e16; }
+        .box { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+        .paper { background: var(--paper); border-radius: 12px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+        .out { white-space: pre-wrap; font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; }
+        .small { font-size: 11px; color: var(--muted); }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="left">
+            <h1>Editor de Cotejo Analítico - Danos</h1>
+            <div class="hint">
+                Objetivo: <b>organizar informações</b> de processos e danos (morais, materiais, emocionais) para demonstrar a proporcionalidade na punição e compensação.
+                <br><br>
+                Dica: Insira resumos ou trechos de cada processo e categorize os danos para análise judicial.
+            </div>
+
+            <h2>1) Processos Envolvidos</h2>
+            <div class="box">
+                <label>Processo 1 - Número e Localização</label>
+                <input type="text" id="proc1_num" placeholder="Ex.: 5000762-33.2024.8.13.0395, 2ª Vara Cível, Manhumirim/MG">
+                <label>Resumo ou Trecho Relevante</label>
+                <textarea id="proc1_text" placeholder="Insira resumo ou trecho importante (ex.: sentença favorável, reforma, má-fé da Ré)..."></textarea>
+            </div>
+            <div class="box">
+                <label>Processo 2 - Número e Localização</label>
+                <input type="text" id="proc2_num" placeholder="Ex.: Outro número, Juizado Especial">
+                <label>Resumo ou Trecho Relevante</label>
+                <textarea id="proc2_text" placeholder="Insira resumo ou trecho importante..."></textarea>
+            </div>
+            <div class="box">
+                <label>Processo 3 - Número e Localização</label>
+                <input type="text" id="proc3_num" placeholder="Ex.: Outro número, Justiça Federal">
+                <label>Resumo ou Trecho Relevante</label>
+                <textarea id="proc3_text" placeholder="Insira resumo ou trecho importante..."></textarea>
+            </div>
+            <div class="small">Adicione mais processos manualmente, se necessário, ou peça uma versão expandida.</div>
+
+            <h2>2) Danos Morais</h2>
+            <div class="box">
+                <label>Descrição dos Danos Morais</label>
+                <textarea id="dano_moral" placeholder="Descreva humilhações, luto, impacto emocional (ex.: humilhação por juíza, falecimento de familiar durante o processo)..."></textarea>
+                <label>Valor Sugerido (Proporcionalidade)</label>
+                <input type="text" id="valor_moral" placeholder="Ex.: R$ 15.000,00 (justifique pela gravidade e prática recorrente do banco)">
+            </div>
+
+            <h2>3) Danos Materiais</h2>
+            <div class="box">
+                <label>Descrição dos Danos Materiais</label>
+                <textarea id="dano_material" placeholder="Descreva custos com processos, perícias, descontos indevidos (ex.: R$ 1.406,34 descontados)..."></textarea>
+                <label>Valor Calculado ou Sugerido</label>
+                <input type="text" id="valor_material" placeholder="Ex.: R$ 1.406,34 (restituição em dobro)">
+            </div>
+
+            <h2>4) Contexto Emocional e Punição</h2>
+            <div class="box">
+                <label>Contexto Adicional (Luto, Humilhação)</label>
+                <textarea id="contexto_emocional" placeholder="Detalhe o impacto pessoal (ex.: falecimento da mãe, humilhação do pai, desrespeito judicial)..."></textarea>
+                <label>Justificativa para Punição (Prática Recorrente)</label>
+                <textarea id="justificativa_punicao" placeholder="Explique a necessidade de punição (ex.: banco com milhares de processos similares, custo compensa a prática)..."></textarea>
+            </div>
+
+            <div class="btnrow">
+                <button class="b1" id="btnGerarResumo">Gerar Resumo</button>
+                <button class="b3" id="btnExportarTxt">Exportar TXT</button>
+            </div>
+        </div>
+
+        <div class="right">
+            <div class="paper">
+                <h3>Resumo Analítico para Análise Judicial</h3>
+                <div class="small">Texto compilado para demonstrar proporcionalidade de danos e necessidade de punição.</div>
+                <hr />
+                <div id="out" class="out">[O resumo gerado aparecerá aqui]</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function gerarResumo() {
+            let resumo = "COTEJO ANALÍTICO PARA ANÁLISE DE DANOS E PROPORCIONALIDADE\n\n";
+            resumo += "1. PROCESSOS ENVOLVIDOS\n";
+            resumo += formatarProcesso(1, document.getElementById("proc1_num").value, document.getElementById("proc1_text").value);
+            resumo += formatarProcesso(2, document.getElementById("proc2_num").value, document.getElementById("proc2_text").value);
+            resumo += formatarProcesso(3, document.getElementById("proc3_num").value, document.getElementById("proc3_text").value);
+            
+            resumo += "\n2. DANOS MORAIS\n";
+            const moral = document.getElementById("dano_moral").value;
+            const valorMoral = document.getElementById("valor_moral").value;
+            resumo += moral ? `- Descrição: ${moral}\n` : "- Não informado.\n";
+            resumo += valorMoral ? `- Valor Sugerido: ${valorMoral}\n` : "- Valor não sugerido.\n";
+            
+            resumo += "\n3. DANOS MATERIAIS\n";
+            const material = document.getElementById("dano_material").value;
+            const valorMaterial = document.getElementById("valor_material").value;
+            resumo += material ? `- Descrição: ${material}\n` : "- Não informado.\n";
+            resumo += valorMaterial ? `- Valor Calculado: ${valorMaterial}\n` : "- Valor não calculado.\n";
+            
+            resumo += "\n4. CONTEXTO EMOCIONAL E JUSTIFICATIVA PARA PUNIÇÃO\n";
+            const emocional = document.getElementById("contexto_emocional").value;
+            const punicao = document.getElementById("justificativa_punicao").value;
+            resumo += emocional ? `- Contexto Emocional: ${emocional}\n` : "- Contexto não informado.\n";
+            resumo += punicao ? `- Justificativa para Punição: ${punicao}\n` : "- Justificativa não informada.\n";
+            
+            document.getElementById("out").textContent = resumo;
+        }
+        
+        function formatarProcesso(num, numero, texto) {
+            if (!numero && !texto) return `- Processo ${num}: Não informado.\n`;
+            return `- Processo ${num}: ${numero || "Número não informado"}\n  - Resumo: ${texto || "Não informado"}\n`;
+        }
+        
+        function download(filename, text, mime="text/plain") {
+            const blob = new Blob([text], { type: mime });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        }
+        
+        document.getElementById("btnGerarResumo").addEventListener("click", gerarResumo);
+        document.getElementById("btnExportarTxt").addEventListener("click", () => {
+            download("cotejo_analitico.txt", document.getElementById("out").textContent, "text/plain;charset=utf-8");
+        });
+    </script>
+</body>
+</html>

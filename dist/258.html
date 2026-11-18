@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Calculadora Judicial Manhumirim - Proveito Econômico</title>
+<style>
+  :root { --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --border: #334155; --gold: #fbbf24; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+  body { background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  
+  header { background: var(--panel); padding: 15px 25px; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+  h1 { font-size: 1rem; text-transform: uppercase; color: var(--accent); letter-spacing: 1px; }
+  
+  .container { display: flex; flex: 1; overflow: hidden; }
+  
+  /* Painel de Controles */
+  .controls { width: 430px; background: var(--panel); border-right: 1px solid var(--border); overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+  .section { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+  .section h2 { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+  
+  label { display: block; font-size: 0.7rem; color: #cbd5e1; margin-top: 8px; }
+  input, select, textarea { width: 100%; background: #0f172a; border: 1px solid var(--border); color: white; padding: 7px; border-radius: 4px; font-size: 0.85rem; margin-top: 3px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  
+  button { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.7rem; transition: 0.2s; }
+  .btn-primary { background: var(--accent); color: white; width: 100%; margin-top: 10px; font-size: 0.85rem; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-secondary { background: #475569; color: white; }
+  .btn-export { background: #6366f1; color: white; padding: 8px 15px; margin-left: 10px; }
+
+  /* Área de Resultados */
+  .results { flex: 1; padding: 25px; overflow-y: auto; background: #f1f5f9; color: #1e293b; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 20px; }
+  .card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-top: 4px solid var(--accent); }
+  .card h3 { font-size: 0.7rem; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
+  .card .value { font-size: 1.3rem; font-weight: 800; color: #0f172a; }
+  .card .sub { font-size: 0.75rem; color: #475569; margin-top: 5px; border-top: 1px solid #f1f5f9; padding-top: 5px; }
+
+  .table-box { background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; margin-top: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+  th { background: #f8fafc; padding: 10px; font-weight: 700; color: #475569; text-align: right; border-bottom: 2px solid #e2e8f0; }
+  td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #f1f5f9; }
+  tr:hover { background: #f1f5f9; }
+
+  #importStatus { font-size: 0.7rem; color: var(--success); margin-top: 5px; }
+
+  .export-buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+</style>
+<!-- Bibliotecas para exportações -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.3.0/docx.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>Calculadora Judicial Manhumirim - Híbrida</h1>
+  <div id="statusClock" style="font-size: 0.8rem; color: #94a3b8;">00:00:00</div>
+</header>
+
+<div class="container">
+  <div class="controls">
+    
+    <div class="section">
+      <h2>1. Dados do Cálculo</h2>
+      <label>Valor Principal (R$)</label>
+      <input type="number" id="inpValor" value="3512.10" step="0.01">
+      <div class="row">
+        <div>
+          <label>Data Inicial</label>
+          <input type="date" id="inpInicio" value="2017-09-01">
+        </div>
+        <div>
+          <label>Data Final</label>
+          <input type="date" id="inpFim">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2. Importar Índices (BCB ou Colar)</h2>
+      <div class="row" style="margin-bottom: 8px;">
+         <input type="text" id="inpSerieBCB" placeholder="Série BCB (ex: 25464)" value="25464" >
+         <button class="btn-secondary" onclick="buscarBacen()">Buscar BCB</button>
+      </div>
+      <textarea id="txtImport" placeholder="Cole aqui colunas do Excel (Data, Índice, Taxa...)"></textarea>
+      <button class="btn-success" style="width:100%; margin-top:5px;" onclick="processarImportacao()">Processar Colagem</button>
+      <div id="importStatus"></div>
+    </div>
+
+    <div class="section" style="border-left: 4px solid var(--accent);">
+      <h2 style="color: var(--accent);">3. Cenário A (Banco/Contrato)</h2>
+      <label>Taxa Juros (% ao mês - nome da coluna ou valor)</label>
+      <input type="text" id="cenA_taxa" value="9">
+      <div class="row">
+        <label><input type="checkbox" id="cenA_mora_check"> Juros Mora %</label>
+        <input type="number" id="cenA_mora_val" value="1.0" step="0.01">
+      </div>
+      <div class="row">
+        <label><input type="checkbox" id="cenA_multa_check"> Multa %</label>
+        <input type="number" id="cenA_multa_val" value="2.0" step="0.01">
+      </div>
+    </div>
+
+    <div class="section" style="border-left: 4px solid var(--success);">
+      <h2 style="color: var(--success);">4. Cenário B (Judicial/Juiz)</h2>
+      <label>Taxa Juros (% ao mês - nome da coluna ou valor)</label>
+      <input type="text" id="cenB_taxa" value="valor_bcb">
+      <label>Correção Monetária (Nome da coluna)</label>
+      <input type="text" id="cenB_corr" placeholder="Ex: ipca">
+      <div class="row">
+        <label><input type="checkbox" id="cenB_mora_check" checked> Juros Mora %</label>
+        <input type="number" id="cenB_mora_val" value="1.0" step="0.01">
+      </div>
+      <div class="row">
+        <label><input type="checkbox" id="cenB_multa_check"> Multa %</label>
+        <input type="number" id="cenB_multa_val" value="2.0" step="0.01">
+      </div>
+    </div>
+
+    <div class="section" style="border-left: 4px solid var(--gold);">
+      <h2 style="color: var(--gold);">5. Honorários Sucumbenciais</h2>
+      <label>Base de Cálculo</label>
+      <select id="hon_base">
+        <option value="diferenca">Sobre o Proveito Econômico (Diferença A - B)</option>
+        <option value="condenacao">Sobre o Valor da Condenação Atualizado (Total Cenário B)</option>
+        <option value="causa">Sobre o Valor da Causa Atualizado (Principal Cenário B)</option>
+      </select>
+      <div class="row">
+        <div>
+          <label>% Sucumbência</label>
+          <input type="number" id="hon_perc" value="10" step="0.5">
+        </div>
+        <div>
+          <label>% Recursal (+)</label>
+          <input type="number" id="hon_rec" value="0" step="0.5">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="calcularTudo()">CALCULAR E COMPARAR</button>
+  </div>
+
+  <div class="results">
+    <div id="resConteudo" style="display:none;">
+      <div class="card-grid">
+        <div class="card" style="border-color: var(--accent);">
+          <h3>Cenário A (Banco)</h3>
+          <div class="value" id="resTotalA">R$ 0,00</div>
+          <div class="sub">Total acumulado</div>
+        </div>
+        <div class="card" style="border-color: var(--success);">
+          <h3>Cenário B (Judicial)</h3>
+          <div class="value" id="resTotalB">R$ 0,00</div>
+          <div class="sub">Total acumulado</div>
+        </div>
+        <div class="card" style="border-color: var(--danger);">
+          <h3>Diferença (Proveito)</h3>
+          <div class="value" id="resDiff">R$ 0,00</div>
+          <div class="sub">Economia Gerada</div>
+        </div>
+        <div class="card" style="border-color: var(--gold);">
+          <h3>Honorários</h3>
+          <div class="value" id="resHon">R$ 0,00</div>
+          <div class="sub" id="resHonDet"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+        <h3 style="font-size: 0.9rem; color: #1e293b;">DETALHAMENTO MENSAL</h3>
+        <div class="export-buttons">
+          <button class="btn-export" onclick="exportarXLSX()">⬇ Baixar Planilha (XLSX)</button>
+          <button class="btn-export" onclick="exportarCSV()">⬇ Baixar CSV</button>
+          <button class="btn-export" onclick="exportarPDF()">⬇ Baixar PDF</button>
+          <button class="btn-export" onclick="exportarJSON()">⬇ Baixar JSON</button>
+          <button class="btn-export" onclick="exportarDOCX()">⬇ Baixar Word (DOCX)</button>
+        </div>
+      </div>
+
+      <div class="table-box">
+        <table id="tabelaFinal">
+          <thead>
+            <tr>
+              <th style="text-align:center">Mês/Ano</th>
+              <th>Total A (R$)</th>
+              <th>Principal B (R$)</th>
+              <th>Juros B (R$)</th>
+              <th>Total B (R$)</th>
+              <th>Diferença (R$)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div id="msgVazia" style="text-align:center; padding-top:100px; color:#64748b;">
+      <h3>Aguardando comandos, Doutor.</h3>
+      <p>Importe os índices e clique em calcular para gerar o proveito econômico.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let DADOS_IMPORTADOS = [];
+
+const toBRL = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+async function buscarBacen() {
+  const serie = document.getElementById('inpSerieBCB').value;
+  if(!serie) return alert("Digite o código da série (ex: 433 para IPCA).");
+  try {
+    const dIni = document.getElementById('inpInicio').value.split('-').reverse().join('/');
+    const dFim = document.getElementById('inpFim').value.split('-').reverse().join('/');
+    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.\( {serie}/dados?formato=json&dataInicial= \){dIni}&dataFinal=${dFim}`;
+    const r = await fetch(url);
+    const j = await r.json();
+    let txt = "data\tvalor_bcb\n";
+    j.forEach(i => { txt += `\( {i.data}\t \){i.valor}\n`; });
+    document.getElementById('txtImport').value = txt;
+    processarImportacao();
+    alert("Dados do BCB importados!");
+  } catch(e) { alert("Erro ao buscar no BCB."); }
+}
+
+function processarImportacao() {
+  const raw = document.getElementById('txtImport').value.trim();
+  const linhas = raw.split('\n');
+  if(linhas.length < 2) return;
+  const sep = raw.includes('\t') ? '\t' : (raw.includes(';') ? ';' : ',');
+  const headers = linhas[0].split(sep).map(h => h.trim().toLowerCase().replace(/[^\w]/g, '_'));
+  
+  DADOS_IMPORTADOS = [];
+  for(let i=1; i<linhas.length; i++) {
+    const cols = linhas[i].split(sep);
+    if(cols.length < headers.length) continue;
+    let obj = {};
+    headers.forEach((h, idx) => {
+      let val = cols[idx].trim();
+      if(val.includes('/')) {
+        const p = val.split('/');
+        obj.dataKey = `\( {p[2]}- \){p[1].padStart(2, '0')}`; // YYYY-MM, garantindo dois dígitos no mês
+      } else {
+        obj[h] = parseFloat(val.replace('.', '').replace(',', '.'));
+      }
+    });
+    if(obj.dataKey) DADOS_IMPORTADOS.push(obj);
+  }
+  document.getElementById('importStatus').innerText = `Colunas detectadas: ${headers.join(', ')}`;
+}
+
+function getValor(key, campo) {
+  const fixo = parseFloat(campo.toString().replace(',', '.'));
+  if(!isNaN(fixo)) return fixo;
+  const d = DADOS_IMPORTADOS.find(x => x.dataKey === key);
+  return d ? (d[campo] || 0) : 0;
+}
+
+function calcularTudo() {
+  const vPrincipal = parseFloat(document.getElementById('inpValor').value);
+  const dIni = new Date(document.getElementById('inpInicio').value + "T12:00:00");
+  const dFim = new Date(document.getElementById('inpFim').value + "T12:00:00");
+  
+  if(isNaN(dIni) || isNaN(dFim)) return alert("Datas inválidas.");
+
+  let curr = new Date(dIni.getFullYear(), dIni.getMonth(), 1);
+  let fim = new Date(dFim.getFullYear(), dFim.getMonth(), 1);
+  
+  let saldoA = vPrincipal;
+  let principalB = vPrincipal;
+  let jurosAcumB = 0;
+  let html = "";
+  let dataMensal = []; // Para exportações
+  let seguranca = 0;
+
+  while(curr <= fim && seguranca < 600) {
+    seguranca++;
+    const key = `\( {curr.getFullYear()}- \){String(curr.getMonth()+1).padStart(2, '0')}`;
+    
+    // Cenário A
+    const tA = getValor(key, document.getElementById('cenA_taxa').value) / 100;
+    const tAMora = document.getElementById('cenA_mora_check').checked ? (parseFloat(document.getElementById('cenA_mora_val').value)/100) : 0;
+    saldoA *= (1 + tA + tAMora);
+
+    // Cenário B
+    const tB = getValor(key, document.getElementById('cenB_taxa').value) / 100;
+    const tBCorr = getValor(key, document.getElementById('cenB_corr').value) / 100;
+    const tBMora = document.getElementById('cenB_mora_check').checked ? (parseFloat(document.getElementById('cenB_mora_val').value)/100) : 0;
+    
+    if(tBCorr !== 0) principalB *= (1 + tBCorr);
+    const jMesB = principalB * (tB + tBMora);
+    jurosAcumB += jMesB;
+    
+    const totalB_Mes = principalB + jurosAcumB;
+
+    html += `<tr>
+      <td style="text-align:center">${key}</td>
+      <td>${toBRL(saldoA)}</td>
+      <td>${toBRL(principalB)}</td>
+      <td>${toBRL(jMesB)}</td>
+      <td>${toBRL(totalB_Mes)}</td>
+      <td style="color:var(--danger)">${toBRL(saldoA - totalB_Mes)}</td>
+    </tr>`;
+    
+    dataMensal.push({
+      mesAno: key,
+      totalA: saldoA,
+      principalB: principalB,
+      jurosB: jMesB,
+      totalB: totalB_Mes,
+      diferenca: saldoA - totalB_Mes
+    });
+    
+    curr.setMonth(curr.getMonth() + 1);
+  }
+
+  // Multas Finais
+  if(document.getElementById('cenA_multa_check').checked) {
+    saldoA += (vPrincipal * (parseFloat(document.getElementById('cenA_multa_val').value)/100));
+  }
+  if(document.getElementById('cenB_multa_check').checked) {
+    jurosAcumB += (principalB + jurosAcumB) * (parseFloat(document.getElementById('cenB_multa_val').value)/100);
+  }
+
+  const totalB = principalB + jurosAcumB;
+  const diferenca = saldoA - totalB;
+
+  // Honorários (corrigido com labels mais claras: proveito = diferença, valor causa atualizado = totalB, principal = principalB)
+  const hBase = document.getElementById('hon_base').value;
+  let baseCalc = 0;
+  if(hBase === 'diferenca') baseCalc = Math.abs(diferenca); // Sobre a diferença (proveito)
+  else if(hBase === 'condenacao') baseCalc = totalB; // Sobre o valor da condenação atualizado (total Cenário B)
+  else baseCalc = principalB; // Sobre o principal da causa atualizado (principal Cenário B)
+
+  const pSuc = parseFloat(document.getElementById('hon_perc').value) / 100;
+  const pRec = parseFloat(document.getElementById('hon_rec').value) / 100;
+  const vHon = baseCalc * (pSuc + pRec);
+
+  // UI
+  document.getElementById('resTotalA').innerText = toBRL(saldoA);
+  document.getElementById('resTotalB').innerText = toBRL(totalB);
+  document.getElementById('resDiff').innerText = toBRL(diferenca);
+  document.getElementById('resHon').innerText = toBRL(vHon);
+  document.getElementById('resHonDet').innerText = `Base: \( {toBRL(baseCalc)} ( \){((pSuc+pRec)*100).toFixed(1)}%)`;
+
+  document.querySelector('#tabelaFinal tbody').innerHTML = html;
+  document.getElementById('msgVazia').style.display = 'none';
+  document.getElementById('resConteudo').style.display = 'block';
+
+  // Armazenar dados para exportação
+  window.calculoData = {
+    totalA: saldoA,
+    totalB: totalB,
+    diferenca: diferenca,
+    honorarios: vHon,
+    baseHonorarios: baseCalc,
+    percentualHonorarios: (pSuc + pRec) * 100,
+    mensal: dataMensal
+  };
+}
+
+function exportarCSV() {
+  let csv = "\ufeffMês/Ano;Total A;Principal B;Juros B;Total B;Diferença\n";
+  document.querySelectorAll("#tabelaFinal tbody tr").forEach(row => {
+    const cols = row.querySelectorAll("td");
+    csv += Array.from(cols).map(c => c.innerText.replace('R$', '').trim()).join(';') + "\n";
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "calculo_proveito_economico.csv";
+  link.click();
+}
+
+function exportarXLSX() {
+  const wb = XLSX.utils.book_new();
+  const wsData = [["Mês/Ano", "Total A", "Principal B", "Juros B", "Total B", "Diferença"]];
+  window.calculoData.mensal.forEach(row => {
+    wsData.push([row.mesAno, row.totalA, row.principalB, row.jurosB, row.totalB, row.diferenca]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  XLSX.utils.book_append_sheet(wb, ws, "Detalhamento");
+  XLSX.writeFile(wb, "calculo_proveito_economico.xlsx");
+}
+
+function exportarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Calculadora Judicial Manhumirim - Proveito Econômico", 10, 10);
+  doc.text(`Total A: ${toBRL(window.calculoData.totalA)}`, 10, 20);
+  doc.text(`Total B: ${toBRL(window.calculoData.totalB)}`, 10, 30);
+  doc.text(`Diferença: ${toBRL(window.calculoData.diferenca)}`, 10, 40);
+  doc.text(`Honorários: ${toBRL(window.calculoData.honorarios)}`, 10, 50);
+  
+  const tableData = window.calculoData.mensal.map(row => [
+    row.mesAno,
+    toBRL(row.totalA),
+    toBRL(row.principalB),
+    toBRL(row.jurosB),
+    toBRL(row.totalB),
+    toBRL(row.diferenca)
+  ]);
+  doc.autoTable({
+    head: [["Mês/Ano", "Total A", "Principal B", "Juros B", "Total B", "Diferença"]],
+    body: tableData,
+    startY: 60
+  });
+  doc.save("calculo_proveito_economico.pdf");
+}
+
+function exportarJSON() {
+  const json = JSON.stringify(window.calculoData, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "calculo_proveito_economico.json";
+  link.click();
+}
+
+function exportarDOCX() {
+  const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun } = docx;
+  
+  const doc = new Document({
+    sections: [{
+      properties: {},
+      children: [
+        new Paragraph({ children: [new TextRun("Calculadora Judicial Manhumirim - Proveito Econômico")] }),
+        new Paragraph({ children: [new TextRun(`Total A: ${toBRL(window.calculoData.totalA)}`)] }),
+        new Paragraph({ children: [new TextRun(`Total B: ${toBRL(window.calculoData.totalB)}`)] }),
+        new Paragraph({ children: [new TextRun(`Diferença: ${toBRL(window.calculoData.diferenca)}`)] }),
+        new Paragraph({ children: [new TextRun(`Honorários: ${toBRL(window.calculoData.honorarios)}`)] }),
+        new Table({
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({ children: [new Paragraph("Mês/Ano")] }),
+                new TableCell({ children: [new Paragraph("Total A")] }),
+                new TableCell({ children: [new Paragraph("Principal B")] }),
+                new TableCell({ children: [new Paragraph("Juros B")] }),
+                new TableCell({ children: [new Paragraph("Total B")] }),
+                new TableCell({ children: [new Paragraph("Diferença")] }),
+              ],
+            }),
+            ...window.calculoData.mensal.map(row => new TableRow({
+              children: [
+                new TableCell({ children: [new Paragraph(row.mesAno)] }),
+                new TableCell({ children: [new Paragraph(toBRL(row.totalA))] }),
+                new TableCell({ children: [new Paragraph(toBRL(row.principalB))] }),
+                new TableCell({ children: [new Paragraph(toBRL(row.jurosB))] }),
+                new TableCell({ children: [new Paragraph(toBRL(row.totalB))] }),
+                new TableCell({ children: [new Paragraph(toBRL(row.diferenca))] }),
+              ],
+            }))
+          ],
+        }),
+      ],
+    }],
+  });
+
+  Packer.toBlob(doc).then(blob => {
+    saveAs(blob, "calculo_proveito_economico.docx");
+  });
+}
+
+setInterval(() => {
+  document.getElementById('statusClock').innerText = new Date().toLocaleTimeString();
+}, 1000);
+</script>
+</body>
+</html>

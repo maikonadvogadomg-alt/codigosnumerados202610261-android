@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Iara Mapper Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;overflow:hidden}
+.container{display:flex;flex-direction:column;height:100vh}
+.header{background:#1e293b;border-bottom:1px solid #334155;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;z-index:100}
+.header-title{font-size:14px;font-weight:600;color:#58a6ff}
+.header-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:8px 14px;background:#6366f1;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;white-space:nowrap}
+.btn:hover:not(:disabled){background:#4f46e5;transform:translateY(-1px)}
+.btn:disabled{background:#475569;cursor:not-allowed;opacity:0.5}
+.btn.sec{background:#475569}
+.btn.sec:hover:not(:disabled){background:#64748b}
+.btn.danger{background:#ff6b6b}
+.btn.danger:hover:not(:disabled){background:#ff5252}
+.btn.ok{background:#3fb950}
+.btn.ok:hover:not(:disabled){background:#2d8659}
+.header-status{margin-left:auto;font-size:11px;color:#94a3b8;text-align:right}
+.file-input-hidden{position:absolute;left:-9999px}
+.content{flex:1;display:flex;overflow:hidden}
+.sidebar{width:280px;min-width:280px;background:#1e293b;border-right:1px solid #334155;display:flex;flex-direction:column;overflow:hidden;transition:width 0.3s,min-width 0.3s}
+.sidebar.collapsed{width:0;min-width:0;border-right:none}
+.sidebar-header{padding:10px 12px;background:#0f172a;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;white-space:nowrap;overflow:hidden}
+.sidebar-header h3{font-size:12px;color:#58a6ff;font-weight:600}
+.icon-btn{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:13px;padding:2px 6px}
+.icon-btn:hover{color:#e2e8f0}
+.sidebar-search{padding:8px;border-bottom:1px solid #334155;overflow:hidden}
+.sidebar-search input{width:100%;padding:6px 8px;background:#0f172a;border:1px solid #334155;border-radius:4px;color:#e2e8f0;font-size:11px}
+.sidebar-search input:focus{outline:none;border-color:#58a6ff}
+.files-list{flex:1;overflow-y:auto;padding:8px}
+.files-list::-webkit-scrollbar{width:4px}
+.files-list::-webkit-scrollbar-thumb{background:#334155;border-radius:2px}
+.file-item{padding:8px;margin-bottom:5px;background:#0f172a;border:1px solid #334155;border-radius:4px;cursor:pointer;transition:all 0.15s;font-size:11px;word-break:break-word}
+.file-item:hover{background:#1e293b;border-color:#58a6ff}
+.file-item.active{background:#162032;border-color:#3fb950;box-shadow:0 0 6px rgba(63,185,80,0.25)}
+.file-item-name{color:#58a6ff;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:4px}
+.file-item-info{color:#94a3b8;font-size:10px}
+.badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;background:#334155;color:#94a3b8;margin-left:4px}
+.badge.mod{background:rgba(255,193,7,0.2);color:#ffc107}
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.editor-row{flex:1;display:flex;overflow:hidden}
+.editor-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.panel-header{padding:7px 12px;background:#0f172a;border-bottom:1px solid #334155;font-size:11px;color:#94a3b8;display:flex;justify-content:space-between;align-items:center;white-space:nowrap;gap:8px}
+.panel-title{font-weight:600;color:#58a6ff;overflow:hidden;text-overflow:ellipsis}
+.panel-meta{font-size:10px;color:#64748b;flex-shrink:0}
+.editor-wrapper{flex:1;display:flex;overflow:hidden}
+.line-numbers{background:#0a1020;color:#475569;padding:8px 10px;font-family:'Courier New',monospace;font-size:11px;line-height:1.6;border-right:1px solid #1e293b;overflow:hidden;user-select:none;text-align:right;min-width:40px;white-space:pre}
+.code-area{flex:1;padding:8px 12px;background:#0a1020;color:#e2e8f0;border:none;font-family:'Courier New',monospace;font-size:11px;line-height:1.6;resize:none;outline:none;overflow:auto;white-space:pre;tab-size:2}
+.code-area::-webkit-scrollbar{width:6px;height:6px}
+.code-area::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+.preview-panel{width:45%;min-width:200px;display:flex;flex-direction:column;border-left:1px solid #334155;overflow:hidden}
+.preview-panel.collapsed{width:0;min-width:0;border-left:none}
+.preview-body{flex:1;overflow:auto;background:#0a1020;padding:0}
+.preview-body::-webkit-scrollbar{width:6px}
+.preview-body::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+.preview-code-block{padding:12px;font-family:'Courier New',monospace;font-size:11px;line-height:1.6;color:#e2e8f0;white-space:pre-wrap;word-break:break-word}
+.preview-iframe{width:100%;height:100%;border:none;background:#fff}
+.bottom-panel{height:180px;min-height:180px;background:#1e293b;border-top:1px solid #334155;display:flex;flex-direction:column;overflow:hidden;transition:height 0.3s,min-height 0.3s}
+.bottom-panel.collapsed{height:0;min-height:0;border-top:none}
+.bottom-header{padding:7px 12px;background:#0f172a;border-bottom:1px solid #334155;font-size:11px;display:flex;justify-content:space-between;align-items:center}
+.bottom-title{font-weight:600;color:#58a6ff}
+.bottom-body{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.bottom-body::-webkit-scrollbar{width:4px}
+.bottom-body::-webkit-scrollbar-thumb{background:#334155;border-radius:2px}
+.info-card{padding:6px 10px;background:#0f172a;border-left:3px solid #58a6ff;border-radius:2px;min-width:120px;flex:1}
+.info-card.green{border-left-color:#3fb950}
+.info-card.yellow{border-left-color:#ffc107}
+.info-card.red{border-left-color:#ff6b6b}
+.info-label{color:#64748b;font-size:9px;text-transform:uppercase;letter-spacing:0.5px}
+.info-value{color:#e2e8f0;font-size:11px;font-weight:600;margin-top:1px;word-break:break-all}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#1e293b;padding:20px;border-radius:10px;width:90%;max-width:560px;max-height:85vh;overflow-y:auto;border:1px solid #334155;display:flex;flex-direction:column;gap:12px}
+.modal-box::-webkit-scrollbar{width:4px}
+.modal-box::-webkit-scrollbar-thumb{background:#334155;border-radius:2px}
+.modal-heading{font-size:14px;font-weight:600;color:#58a6ff}
+.modal-label{font-size:11px;color:#94a3b8;margin-bottom:4px}
+.modal-input{width:100%;padding:8px 10px;background:#0f172a;border:1px solid #334155;border-radius:4px;color:#e2e8f0;font-size:11px;font-family:'Courier New',monospace}
+.modal-input:focus{outline:none;border-color:#58a6ff}
+.modal-result{background:#0f172a;border:1px solid #334155;border-radius:4px;padding:10px;max-height:260px;overflow-y:auto;font-size:11px;font-family:monospace;color:#94a3b8;line-height:1.5}
+.modal-result::-webkit-scrollbar{width:4px}
+.modal-result::-webkit-scrollbar-thumb{background:#334155;border-radius:2px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end}
+.hit-item{padding:6px 8px;background:#1e293b;border-radius:3px;margin-bottom:5px;border-left:3px solid #58a6ff}
+.hit-line{color:#64748b;font-size:10px;margin-bottom:2px}
+.hit-ctx{color:#e2e8f0;word-break:break-word}
+.hit-ctx mark{background:rgba(88,166,255,0.3);color:#58a6ff;border-radius:2px;padding:0 2px}
+.diff-old{background:rgba(255,107,107,0.15);color:#ff6b6b;text-decoration:line-through;border-radius:2px;padding:0 2px}
+.diff-new{background:rgba(63,185,80,0.15);color:#3fb950;font-weight:600;border-radius:2px;padding:0 2px}
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:8px;font-size:11px;font-weight:600;z-index:99999;animation:toastIn 0.25s ease;max-width:280px;line-height:1.4;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
+.toast.ok{background:#3fb950;color:#fff}
+.toast.err{background:#ff6b6b;color:#fff}
+.toast.warn{background:#ffc107;color:#000}
+@keyframes toastIn{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.drop-zone{border:2px dashed #334155;border-radius:8px;padding:20px;text-align:center;color:#64748b;font-size:12px;transition:all 0.2s;margin:8px}
+.drop-zone.over{border-color:#58a6ff;background:rgba(88,166,255,0.05);color:#58a6ff}
+@media(max-width:768px){
+  .content{flex-direction:column}
+  .sidebar{width:100%;min-width:100%;height:140px;border-right:none;border-bottom:1px solid #334155}
+  .sidebar.collapsed{height:0;min-height:0}
+  .editor-row{flex-direction:column}
+  .preview-panel{width:100%;min-width:100%;border-left:none;border-top:1px solid #334155;height:200px}
+  .preview-panel.collapsed{height:0}
+  .bottom-panel{height:140px;min-height:140px}
+  .header{gap:8px}
+  .header-status{margin-left:0;width:100%}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <span class="header-title">🔍 Iara Mapper Pro</span>
+    <div class="header-buttons">
+      <button class="btn" id="btn-import">📁 Importar</button>
+      <input type="file" id="file-input" class="file-input-hidden" multiple accept="*/*,.zip,.html,.htm,.css,.js,.ts,.jsx,.tsx,.json,.xml,.yaml,.yml,.md,.txt,.py,.java,.kt,.cs,.cpp,.c,.rb,.go,.rs,.php,.sh,.bat,.sql,.env,.toml,.prisma,.graphql,.r,.lua,.perl,.swift,.scala">
+      <button class="btn sec" id="btn-sidebar-toggle">☰ Arquivos</button>
+      <button class="btn sec" id="btn-buscar">🔍 Buscar</button>
+      <button class="btn sec" id="btn-substituir">🔄 Substituir</button>
+      <button class="btn sec" id="btn-preview-toggle">👁 Preview</button>
+      <button class="btn danger" id="btn-clear">🗑 Limpar</button>
+      <button class="btn ok" id="btn-export">💾 Exportar</button>
+    </div>
+    <div class="header-status" id="status-text">Pronto — nenhum arquivo</div>
+  </div>
+
+  <div class="content">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3>📂 Arquivos (<span id="file-count">0</span>)</h3>
+        <button class="icon-btn" onclick="toggleSidebar()">✕</button>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="search-files" placeholder="🔍 Filtrar arquivos...">
+      </div>
+      <div class="files-list" id="files-list">
+        <div class="drop-zone" id="drop-zone">
+          ⬆️ Arraste arquivos aqui<br>ou clique em Importar
+        </div>
+      </div>
+    </div>
+
+    <div class="main-area">
+      <div class="editor-row">
+        <div class="editor-panel">
+          <div class="panel-header">
+            <span class="panel-title" id="editor-title">📄 Nenhum arquivo</span>
+            <span class="panel-meta" id="editor-meta"></span>
+          </div>
+          <div class="editor-wrapper">
+            <div class="line-numbers" id="line-numbers">1</div>
+            <textarea class="code-area" id="code-area" placeholder="Importe ou arraste um arquivo..." readonly spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <div class="preview-panel" id="preview-panel">
+          <div class="panel-header">
+            <span class="panel-title">👁 Preview</span>
+            <button class="icon-btn" onclick="togglePreview()">✕</button>
+          </div>
+          <div class="preview-body" id="preview-body">
+            <div style="padding:20px;color:#64748b;font-size:12px;text-align:center">
+              Selecione um arquivo para ver o preview
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-panel" id="bottom-panel">
+        <div class="bottom-header">
+          <span class="bottom-title">ℹ️ Informações do Arquivo</span>
+          <button class="icon-btn" onclick="toggleBottom()">−</button>
+        </div>
+        <div class="bottom-body" id="bottom-body">
+          <div class="info-card">
+            <div class="info-label">Status</div>
+            <div class="info-value">Aguardando...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BUSCAR -->
+<div class="modal-overlay" id="modal-buscar">
+  <div class="modal-box">
+    <div class="modal-heading">🔍 Buscar no Arquivo</div>
+    <div>
+      <div class="modal-label">Texto para buscar:</div>
+      <input type="text" class="modal-input" id="input-buscar" placeholder="Digite o texto...">
+    </div>
+    <div class="modal-result" id="result-buscar">Digite algo para buscar...</div>
+    <div class="modal-footer">
+      <button class="btn sec" onclick="fecharModal('modal-buscar')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUBSTITUIR -->
+<div class="modal-overlay" id="modal-substituir">
+  <div class="modal-box">
+    <div class="modal-heading">🔄 Buscar e Substituir</div>
+    <div>
+      <div class="modal-label">Buscar:</div>
+      <input type="text" class="modal-input" id="input-sub-buscar" placeholder="Texto original...">
+    </div>
+    <div>
+      <div class="modal-label">Substituir por:</div>
+      <input type="text" class="modal-input" id="input-sub-novo" placeholder="Novo texto...">
+    </div>
+    <div class="modal-result" id="result-sub">Preencha os campos acima para ver o preview...</div>
+    <div class="modal-footer">
+      <button class="btn sec" onclick="fecharModal('modal-substituir')">Cancelar</button>
+      <button class="btn ok" id="btn-confirmar-sub">✅ Substituir Tudo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════
+const STATE = {
+  files: [],
+  current: null,
+  subPending: { buscar: '', novo: '' }
+};
+
+// ═══════════════════════════════════════════════════════
+// MAPA DE LINGUAGENS
+// ═══════════════════════════════════════════════════════
+const LANG = {
+  js:'JavaScript',jsx:'React/JSX',ts:'TypeScript',tsx:'React/TSX',
+  py:'Python',java:'Java',kt:'Kotlin',cs:'C#',cpp:'C++',c:'C',
+  rb:'Ruby',go:'Go',rs:'Rust',php:'PHP',html:'HTML',htm:'HTML',
+  css:'CSS',scss:'SCSS',sass:'SASS',less:'LESS',json:'JSON',
+  yaml:'YAML',yml:'YAML',xml:'XML',sql:'SQL',md:'Markdown',
+  txt:'Texto',sh:'Bash/Shell',bat:'Batch',graphql:'GraphQL',
+  r:'R',lua:'Lua',perl:'Perl',swift:'Swift',scala:'Scala',
+  env:'Environment',toml:'TOML',prisma:'Prisma',vue:'Vue',
+  svelte:'Svelte',astro:'Astro',dart:'Dart',ex:'Elixir',
+  exs:'Elixir',hs:'Haskell',ml:'OCaml',fs:'F#',clj:'Clojure',
+  coffee:'CoffeeScript',elm:'Elm',nim:'Nim',zig:'Zig',
+  tf:'Terraform',dockerfile:'Docker',makefile:'Makefile',
+  gitignore:'GitIgnore',htaccess:'Apache',nginx:'Nginx',
+  csv:'CSV',tsv:'TSV',log:'Log',ini:'INI',cfg:'Config',
+  conf:'Config',properties:'Properties',lock:'Lockfile'
+};
+
+const ICONS = {
+  html:'🌐',htm:'🌐',css:'🎨',scss:'🎨',sass:'🎨',less:'🎨',
+  js:'📜',jsx:'⚛️',ts:'📘',tsx:'⚛️',json:'📋',xml:'📋',
+  yaml:'📋',yml:'📋',py:'🐍',java:'☕',kt:'🎯',cs:'🔷',
+  cpp:'⚙️',c:'⚙️',rb:'💎',go:'🐹',rs:'🦀',php:'🐘',
+  sh:'🖥️',bat:'🖥️',sql:'🗄️',md:'📝',txt:'📄',
+  zip:'📦',env:'🔐',toml:'⚙️',prisma:'🔺',graphql:'🔗',
+  vue:'💚',svelte:'🔥',dart:'🎯',swift:'🍎',dockerfile:'🐳'
+};
+
+// ═══════════════════════════════════════════════════════
+// UTILITÁRIOS
+// ═══════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const esc = t => t.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+
+function toast(msg, type='ok', dur=3000) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toastIn 0.25s ease reverse';
+    setTimeout(() => el.remove(), 250);
+  }, dur);
+}
+
+function setStatus(msg) {
+  $('status-text').textContent = msg;
+}
+
+function getExt(name) {
+  const parts = name.toLowerCase().split('.');
+  if (parts.length < 2) return '';
+  return parts.pop();
+}
+
+function getLang(name) {
+  const base = name.toLowerCase().split('/').pop();
+  if (base === 'dockerfile') return 'Docker';
+  if (base === 'makefile') return 'Makefile';
+  if (base === '.gitignore') return 'GitIgnore';
+  if (base === '.htaccess') return 'Apache';
+  return LANG[getExt(name)] || 'Texto';
+}
+
+function getIcon(name) {
+  return ICONS[getExt(name)] || '📄';
+}
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(2) + ' MB';
+}
+
+function countLines(text) {
+  return text.split('\n').length;
+}
+
+function detectEncoding(text) {
+  const hasNonAscii = /[^\x00-\x7F]/.test(text);
+  const hasLatin = /[À-ÿ]/.test(text);
+  if (!hasNonAscii) return 'ASCII';
+  if (hasLatin) return 'UTF-8 (Latin)';
+  return 'UTF-8';
+}
+
+// ═══════════════════════════════════════════════════════
+// LEITURA DE ARQUIVOS
+// ═══════════════════════════════════════════════════════
+async function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('Erro ao ler: ' + file.name));
+    reader.readAsText(file, 'UTF-8');
+  });
+}
+
+async function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('Erro ao ler: ' + file.name));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function processarZIP(file) {
+  try {
+    const buf = await readFileAsArrayBuffer(file);
+    const zip = await JSZip.loadAsync(buf);
+    const resultados = [];
+    const entradas = Object.entries(zip.files).filter(([,f]) => !f.dir);
+    for (const [nome, entrada] of entradas) {
+      try {
+        const conteudo = await entrada.async('string');
+        resultados.push({
+          name: nome,
+          content: conteudo,
+          size: conteudo.length,
+          modified: false,
+          fromZip: file.name
+        });
+      } catch(e) {
+        resultados.push({
+          name: nome,
+          content: '[Arquivo binário — não pode ser exibido como texto]',
+          size: 0,
+          modified: false,
+          fromZip: file.name,
+          binary: true
+        });
+      }
+    }
+    return resultados;
+  } catch(e) {
+    throw new Error('Erro ao abrir ZIP: ' + e.message);
+  }
+}
+
+async function handleImport(fileList) {
+  if (!fileList || !fileList.length) return;
+  setStatus('⏳ Processando...');
+  let adicionados = 0;
+  let erros = 0;
+
+  for (const file of fileList) {
+    const ext = getExt(file.name);
+    try {
+      if (ext === 'zip') {
+        if (typeof JSZip === 'undefined') {
+          toast('⚠️ JSZip não carregou. Aguarde e tente novamente.', 'warn');
+          continue;
+        }
+        const arquivos = await processarZIP(file);
+        for (const a of arquivos) {
+          STATE.files.push(a);
+          adicionados++;
+        }
+      } else {
+        const conteudo = await readFileAsText(file);
+        STATE.files.push({
+          name: file.name,
+          content: conteudo,
+          size: file.size,
+          modified: false,
+          fromZip: null,
+          binary: false
+        });
+        adicionados++;
+      }
+    } catch(e) {
+      erros++;
+      toast('❌ ' + e.message, 'err');
+    }
+  }
+
+  renderSidebar();
+  $('file-count').textContent = STATE.files.length;
+
+  if (adicionados > 0) {
+    toast(`✅ ${adicionados} arquivo(s) carregado(s)!`);
+    if (STATE.current === null && STATE.files.length > 0) {
+      selectFile(0);
+    }
+  }
+  if (erros > 0) {
+    toast(`⚠️ ${erros} erro(s) ao carregar`, 'warn');
+  }
+
+  setStatus(`${STATE.files.length} arquivo(s) carregado(s)`);
+  $('file-input').value = '';
+}
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR / LISTA DE ARQUIVOS
+// ═══════════════════════════════════════════════════════
+function renderSidebar() {
+  const query = $('search-files').value.toLowerCase().trim();
+  const lista = $('files-list');
+
+  const filtrados = STATE.files.filter(f =>
+    f.name.toLowerCase().includes(query)
+  );
+
+  if (filtrados.length === 0) {
+    lista.innerHTML = `
+      <div class="drop-zone" id="drop-zone">
+        ${STATE.files.length === 0
+          ? '⬆️ Arraste arquivos aqui<br>ou clique em Importar'
+          : '🔍 Nenhum arquivo encontrado'}
+      </div>`;
+    setupDropZone();
+    return;
+  }
+
+  lista.innerHTML = filtrados.map((f, i) => {
+    const realIdx = STATE.files.indexOf(f);
+    const shortName = f.name.split('/').pop();
+    const ext = getExt(f.name).toUpperCase() || 'FILE';
+    const icon = getIcon(f.name);
+    return `
+      <div class="file-item ${STATE.current === realIdx ? 'active' : ''}"
+           onclick="selectFile(${realIdx})">
+        <div class="file-item-name">
+          ${icon} ${esc(shortName)}
+          ${f.modified ? '<span class="badge mod">MOD</span>' : ''}
+          ${f.fromZip ? '<span class="badge">ZIP</span>' : ''}
+        </div>
+        <div class="file-item-info">
+          ${ext} · ${fmtSize(f.size)}
+          ${f.fromZip ? ' · ' + esc(f.fromZip) : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// SELECIONAR ARQUIVO
+// ═══════════════════════════════════════════════════════
+function selectFile(idx) {
+  if (idx < 0 || idx >= STATE.files.length) return;
+  STATE.current = idx;
+  const f = STATE.files[idx];
+
+  const editor = $('code-area');
+  editor.value = f.content;
+  editor.readOnly = false;
+
+  $('editor-title').textContent = getIcon(f.name) + ' ' + f.name;
+  $('editor-meta').textContent = getLang(f.name) + ' · ' + detectEncoding(f.content);
+
+  updateLineNumbers();
+  updateInfoPanel(f);
+  updatePreviewPanel(f);
+  renderSidebar();
+}
+
+// ═══════════════════════════════════════════════════════
+// NÚMEROS DE LINHA
+// ═══════════════════════════════════════════════════════
+function updateLineNumbers() {
+  const editor = $('code-area');
+  const ln = $('line-numbers');
+  const n = editor.value.split('\n').length;
+  ln.textContent = Array.from({length: n}, (_, i) => i + 1).join('\n');
+}
+
+function syncScroll() {
+  $('line-numbers').scrollTop = $('code-area').scrollTop;
+}
+
+// ═══════════════════════════════════════════════════════
+// PAINEL DE INFORMAÇÕES
+// ═══════════════════════════════════════════════════════
+function updateInfoPanel(f) {
+  const linhas = countLines(f.content);
+  const chars = f.content.length;
+  const palavras = f.content.trim().split(/\s+/).filter(Boolean).length;
+  const enc = detectEncoding(f.content);
+  const lang = getLang(f.name);
+
+  $('bottom-body').innerHTML = `
+    <div class="info-card"><div class="info-label">Arquivo</div><div class="info-value">${esc(f.name.split('/').pop())}</div></div>
+    <div class="info-card green"><div class="info-label">Linguagem</div><div class="info-value">${lang}</div></div>
+    <div class="info-card"><div class="info-label">Codificação</div><div class="info-value">${enc}</div></div>
+    <div class="info-card"><div class="info-label">Linhas</div><div class="info-value">${linhas.toLocaleString()}</div></div>
+    <div class="info-card"><div class="info-label">Caracteres</div><div class="info-value">${chars.toLocaleString()}</div></div>
+    <div class="info-card"><div class="info-label">Palavras</div><div class="info-value">${palavras.toLocaleString()}</div></div>
+    <div class="info-card"><div class="info-label">Tamanho</div><div class="info-value">${fmtSize(f.size)}</div></div>
+    <div class="info-card ${f.modified ? 'yellow' : 'green'}"><div class="info-label">Status</div><div class="info-value">${f.modified ? '✏️ Modificado' : '✅ Original'}</div></div>
+    ${f.fromZip ? `<div class="info-card"><div class="info-label">Origem ZIP</div><div class="info-value">${esc(f.fromZip)}</div></div>` : ''}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════════════════════════
+function updatePreviewPanel(f) {
+  const body = $('preview-body');
+  const ext = getExt(f.name);
+
+  if (f.binary) {
+    body.innerHTML = '<div style="padding:20px;color:#ff6b6b;font-size:12px">⚠️ Arquivo binário — preview não disponível</div>';
+    return;
+  }
+
+  if (ext === 'html' || ext === 'htm') {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'preview-iframe';
+    iframe.sandbox = 'allow-scripts allow-same-origin';
+    body.innerHTML = '';
+    body.appendChild(iframe);
+    iframe.srcdoc = f.content;
+    return;
+  }
+
+  body.innerHTML = `<div class="preview-code-block">${esc(f.content)}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// BUSCAR
+// ═══════════════════════════════════════════════════════
+function abrirBuscar() {
+  if (STATE.current === null) { toast('❌ Selecione um arquivo', 'err'); return; }
+  $('modal-buscar').classList.add('open');
+  $('input-buscar').value = '';
+  $('result-buscar').innerHTML = 'Digite algo para buscar...';
+  setTimeout(() => $('input-buscar').focus(), 100);
+}
+
+function executarBusca(termo) {
+  if (!termo) {
+    $('result-buscar').innerHTML = 'Digite algo para buscar...';
+    return;
+  }
+
+  const f = STATE.files[STATE.current];
+  const linhas = f.content.split('\n');
+  let hits = [];
+
+  linhas.forEach((linha, i) => {
+    const idx = linha.toLowerCase().indexOf(termo.toLowerCase());
+    if (idx !== -1) {
+      const antes = esc(linha.slice(0, idx));
+      const match = esc(linha.slice(idx, idx + termo.length));
+      const depois = esc(linha.slice(idx + termo.length));
+      hits.push(`
+        <div class="hit-item">
+          <div class="hit-line">Linha ${i + 1}</div>
+          <div class="hit-ctx">${antes}<mark>${match}</mark>${depois}</div>
+        </div>`);
+    }
+  });
+
+  if (hits.length === 0) {
+    $('result-buscar').innerHTML = '<span style="color:#ff6b6b">❌ Nenhum resultado encontrado</span>';
+  } else {
+    $('result-buscar').innerHTML = `<div style="color:#3fb950;margin-bottom:8px">✅ ${hits.length} ocorrência(s) encontrada(s)</div>${hits.join('')}`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// SUBSTITUIR
+// ═══════════════════════════════════════════════════════
+function abrirSubstituir() {
+  if (STATE.current === null) { toast('❌ Selecione um arquivo', 'err'); return; }
+  $('modal-substituir').classList.add('open');
+  $('input-sub-buscar').value = '';
+  $('input-sub-novo').value = '';
+  $('result-sub').innerHTML = 'Preencha os campos acima para ver o preview...';
+  setTimeout(() => $('input-sub-buscar').focus(), 100);
+}
+
+function previewSubstituicao() {
+  const buscar = $('input-sub-buscar').value;
+  const novo = $('input-sub-novo').value;
+
+  if (!buscar) {
+    $('result-sub').innerHTML = 'Preencha os campos acima para ver o preview...';
+    return;
+  }
+
+  const f = STATE.files[STATE.current];
+  const regex = new RegExp(esc(buscar).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+  const matches = f.content.match(regex);
+
+  if (!matches) {
+    $('result-sub').innerHTML = '<span style="color:#ff6b6b">❌ Nenhuma ocorrência encontrada</span>';
+    STATE.subPending = { buscar: '', novo: '' };
+    return;
+  }
+
+  STATE.subPending = { buscar, novo };
+
+  const preview = f.content
+    .replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))
+    .replace(new RegExp(buscar.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'),
+      m => `<span class="diff-old">${m}</span><span class="diff-new">${esc(novo)}</span>`);
+
+  const trecho = preview.length > 2000 ? preview.slice(0, 2000) + '\n...' : preview;
+
+  $('result-sub').innerHTML = `
+    <div style="color:#3fb950;margin-bottom:8px">✅ ${matches.length} ocorrência(s) serão substituídas</div>
+    <pre style="white-space:pre-wrap;word-break:break-word">${trecho}</pre>`;
+}
+
+function confirmarSubstituicao() {
+  const { buscar, novo } = STATE.subPending;
+  if (!buscar) { toast('❌ Nada para substituir', 'err'); return; }
+
+  const f = STATE.files[STATE.current];
+  const regex = new RegExp(buscar.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+  const matches = f.content.match(regex);
+
+  if (!matches) { toast('❌ Nenhuma ocorrência encontrada', 'err'); return; }
+
+  f.content = f.content.replace(regex, novo);
+  f.modified = true;
+  f.size = f.content.length;
+
+  selectFile(STATE.current);
+  fecharModal('modal-substituir');
+  toast(`✅ ${matches.length} substituição(ões) feita(s)!`);
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORTAR
+// ═══════════════════════════════════════════════════════
+function exportarArquivo() {
+  if (STATE.current === null) { toast('❌ Selecione um arquivo', 'err'); return; }
+  const f = STATE.files[STATE.current];
+  const blob = new Blob([f.content], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = f.name.split('/').pop();
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ Arquivo exportado!');
+}
+
+// ═══════════════════════════════════════════════════════
+// LIMPAR
+// ═══════════════════════════════════════════════════════
+function limparTudo() {
+  if (!STATE.files.length) { toast('⚠️ Nada para limpar', 'warn'); return; }
+  if (!confirm(`🗑️ Remover todos os ${STATE.files.length} arquivo(s)?`)) return;
+  STATE.files = [];
+  STATE.current = null;
+  $('code-area').value = '';
+  $('code-area').readOnly = true;
+  $('editor-title').textContent = '📄 Nenhum arquivo';
+  $('editor-meta').textContent = '';
+  $('line-numbers').textContent = '1';
+  $('preview-body').innerHTML = '<div style="padding:20px;color:#64748b;font-size:12px;text-align:center">Selecione um arquivo para ver o preview</div>';
+  $('bottom-body').innerHTML = '<div class="info-card"><div class="info-label">Status</div><div class="info-value">Aguardando...</div></div>';
+  $('file-count').textContent = '0';
+  setStatus('Pronto — nenhum arquivo');
+  renderSidebar();
+  toast('🗑️ Tudo limpo!');
+}
+
+// ═══════════════════════════════════════════════════════
+// TOGGLE PAINÉIS
+// ═══════════════════════════════════════════════════════
+function toggleSidebar() {
+  $('sidebar').classList.toggle('collapsed');
+}
+
+function togglePreview() {
+  $('preview-panel').classList.toggle('collapsed');
+}
+
+function toggleBottom() {
+  $('bottom-panel').classList.toggle('collapsed');
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAIS
+// ═══════════════════════════════════════════════════════
+function fecharModal(id) {
+  $(id).classList.remove('open');
+}
+
+// Fechar modal clicando fora
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => {
+    if (e.target === m) m.classList.remove('open');
+  });
+});
+
+// ═══════════════════════════════════════════════════════
+// DRAG AND DROP
+// ═══════════════════════════════════════════════════════
+function setupDropZone() {
+  const dz = $('drop-zone');
+  if (!dz) return;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('over');
+    handleImport(e.dataTransfer.files);
+  });
+}
+
+// Drag and drop na janela inteira
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files.length) handleImport(e.dataTransfer.files);
+});
+
+// ═══════════════════════════════════════════════════════
+// EVENTOS
+// ═══════════════════════════════════════════════════════
+$('btn-import').addEventListener('click', () => $('file-input').click());
+$('file-input').addEventListener('change', e => handleImport(e.target.files));
+$('btn-sidebar-toggle').addEventListener('click', toggleSidebar);
+$('btn-buscar').addEventListener('click', abrirBuscar);
+$('btn-substituir').addEventListener('click', abrirSubstituir);
+$('btn-preview-toggle').addEventListener('click', togglePreview);
+$('btn-clear').addEventListener('click', limparTudo);
+$('btn-export').addEventListener('click', exportarArquivo);
+$('btn-confirmar-sub').addEventListener('click', confirmarSubstituicao);
+$('search-files').addEventListener('input', renderSidebar);
+
+$('code-area').addEventListener('input', () => {
+  if (STATE.current !== null) {
+    STATE.files[STATE.current].content = $('code-area').value;
+    STATE.files[STATE.current].modified = true;
+    STATE.files[STATE.current].size = $('code-area').value.length;
+  }
+  updateLineNumbers();
+});
+
+$('code-area').addEventListener('scroll', syncScroll);
+$('code-area').addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = e.target.selectionStart;
+    const v = e.target.value;
+    e.target.value = v.slice(0, s) + '  ' + v.slice(e.target.selectionEnd);
+    e.target.selectionStart = e.target.selectionEnd = s + 2;
+    updateLineNumbers();
+  }
+});
+
+$('input-buscar').addEventListener('input', e => executarBusca(e.target.value));
+$('input-sub-buscar').addEventListener('input', previewSubstituicao);
+$('input-sub-novo').addEventListener('input', previewSubstituicao);
+
+// JSZip via CDN
+const jszipScript = document.createElement('script');
+jszipScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+jszipScript.onerror = () => toast('⚠️ JSZip offline — ZIP desativado', 'warn');
+document.head.appendChild(jszipScript);
+
+setupDropZone();
+renderSidebar();
+</script>
+</body>
+</html>

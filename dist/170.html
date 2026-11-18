@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Code Analyzer v2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #1a1a1a; color: #e0e0e0; height: 100vh; display: flex; }
+    .container { display: flex; width: 100%; height: 100%; }
+    .sidebar { width: 300px; background: #222; border-right: 1px solid #444; overflow-y: auto; padding: 12px; }
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .header { padding: 12px; background: #222; border-bottom: 1px solid #444; }
+    .content { flex: 1; display: flex; overflow: hidden; }
+    .graph { flex: 1; background: #1a1a1a; border-right: 1px solid #444; overflow: auto; position: relative; }
+    .details { width: 300px; background: #222; overflow-y: auto; padding: 12px; border-left: 1px solid #444; }
+    
+    button { padding: 8px 12px; background: #333; border: 1px solid #555; color: #e0e0e0; cursor: pointer; border-radius: 4px; margin: 4px 0; width: 100%; }
+    button:hover { background: #444; }
+    input { padding: 8px; background: #333; border: 1px solid #555; color: #e0e0e0; border-radius: 4px; width: 100%; margin: 4px 0; }
+    
+    .file-item { padding: 8px; background: #333; margin: 4px 0; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .file-item:hover { background: #444; }
+    .file-item.active { background: #0066cc; }
+    
+    .node { position: absolute; padding: 8px 12px; background: #333; border: 1px solid #555; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+    .node:hover { background: #444; }
+    .node.active { background: #0066cc; border-color: #0088ff; }
+    
+    .detail-block { margin: 12px 0; padding: 8px; background: #333; border-radius: 4px; }
+    .detail-label { font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 4px; }
+    .detail-item { font-size: 11px; padding: 4px; margin: 2px 0; background: #1a1a1a; border-radius: 3px; cursor: pointer; }
+    .detail-item:hover { background: #0066cc; }
+    
+    .stats { font-size: 11px; color: #999; margin: 8px 0; }
+    
+    textarea { width: 100%; height: 300px; padding: 8px; background: #333; border: 1px solid #555; color: #e0e0e0; font-family: monospace; border-radius: 4px; }
+    
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100; }
+    .modal.open { display: flex; }
+    .modal-content { background: #222; border: 1px solid #555; border-radius: 8px; padding: 20px; max-width: 600px; width: 90%; }
+    .modal-title { font-size: 14px; margin-bottom: 12px; }
+    .modal-buttons { display: flex; gap: 8px; margin-top: 12px; }
+    .modal-buttons button { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <h3 style="margin-bottom: 12px;">📁 Arquivos</h3>
+      <button onclick="document.getElementById('zipInput').click()">📤 Importar ZIP</button>
+      <button onclick="openPasteModal()">📋 Colar Código</button>
+      <button onclick="clearAll()">🗑️ Limpar</button>
+      
+      <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filterFiles()">
+      <div class="stats" id="stats">0 arquivos</div>
+      <div id="filesList"></div>
+      
+      <input type="file" id="zipInput" accept=".zip" onchange="handleZipUpload(event)" style="display: none;">
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="header">
+        <h2>🔍 Code Analyzer</h2>
+      </div>
+
+      <div class="content">
+        <!-- GRAPH -->
+        <div class="graph" id="graphCanvas"></div>
+
+        <!-- DETAILS -->
+        <div class="details">
+          <h3 style="margin-bottom: 12px;">📊 Detalhes</h3>
+          <div id="detailsContent">Selecione um arquivo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="pasteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">📋 Colar Código</div>
+      <textarea id="pasteInput" placeholder="Cole seu código aqui..."></textarea>
+      <div class="modal-buttons">
+        <button onclick="closePasteModal()">Cancelar</button>
+        <button onclick="handlePasteCode()">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════
+    
+    let files = {};
+    let dependencies = {};
+    let selectedFile = null;
+
+    // ═══════════════════════════════════════════════════════════════
+    // CORE LOGIC
+    // ═══════════════════════════════════════════════════════════════
+
+    function extractImports(code) {
+      const imports = [];
+      const patterns = [
+        /import\s+(?:{[^}]*}|[\w\s,]*)\s+from\s+['"]([^'"]+)['"]/g,
+        /require\(['"]([^'"]+)['"]\)/g,
+        /import\(['"]([^'"]+)['"]\)/g,
+      ];
+
+      patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(code)) !== null) {
+          imports.push(match[1]);
+        }
+      });
+
+      return [...new Set(imports)];
+    }
+
+    function buildDependencyGraph() {
+      dependencies = {};
+      const fileNames = Object.keys(files);
+
+      fileNames.forEach(file => {
+        dependencies[file] = [];
+        const imports = files[file].imports;
+
+        imports.forEach(imp => {
+          fileNames.forEach(f => {
+            const baseName = f.split('.')[0];
+            const impBase = imp.split('/').pop().split('.')[0];
+            
+            if (f !== file && (baseName === impBase || imp.includes(baseName))) {
+              if (!dependencies[file].includes(f)) {
+                dependencies[file].push(f);
+              }
+            }
+          });
+        });
+      });
+    }
+
+    function findDependents(filename) {
+      return Object.keys(dependencies).filter(f => dependencies[f].includes(filename));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FILE HANDLING
+    // ═══════════════════════════════════════════════════════════════
+
+    async function handleZipUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const zip = new JSZip();
+        const loaded = await zip.loadAsync(file);
+        files = {};
+
+        for (const [path, zipFile] of Object.entries(loaded.files)) {
+          if (!zipFile.dir && !path.includes('node_modules')) {
+            const content = await zipFile.async("text");
+            const filename = path.split('/').pop();
+            files[filename] = {
+              path,
+              content,
+              imports: extractImports(content)
+            };
+          }
+        }
+
+        buildDependencyGraph();
+        render();
+      } catch (e) {
+        alert("❌ Erro: " + e.message);
+      }
+
+      event.target.value = '';
+    }
+
+    function handlePasteCode() {
+      const code = document.getElementById("pasteInput").value;
+      if (!code.trim()) {
+        alert("Cole algum código!");
+        return;
+      }
+
+      const filename = `pasted-${Date.now()}.js`;
+      files[filename] = {
+        path: filename,
+        content: code,
+        imports: extractImports(code)
+      };
+
+      buildDependencyGraph();
+      render();
+      closePasteModal();
+      document.getElementById("pasteInput").value = "";
+    }
+
+    function filterFiles() {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      document.querySelectorAll(".file-item").forEach(item => {
+        const name = item.textContent.toLowerCase();
+        item.style.display = name.includes(search) ? "block" : "none";
+      });
+    }
+
+    function selectFile(filename) {
+      selectedFile = filename;
+      render();
+    }
+
+    function clearAll() {
+      if (!confirm("Limpar tudo?")) return;
+      files = {};
+      dependencies = {};
+      selectedFile = null;
+      render();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // RENDERING
+    // ═══════════════════════════════════════════════════════════════
+
+    function renderFilesList() {
+      const list = document.getElementById("filesList");
+      const fileArray = Object.keys(files).sort();
+
+      list.innerHTML = fileArray.map(filename => `
+        <div class="file-item ${selectedFile === filename ? 'active' : ''}" onclick="selectFile('${filename}')">
+          ${filename} (${dependencies[filename]?.length || 0})
+        </div>
+      `).join("");
+
+      document.getElementById("stats").textContent = `${fileArray.length} arquivo(s)`;
+    }
+
+    function renderGraph() {
+      const canvas = document.getElementById("graphCanvas");
+      const fileArray = Object.keys(files);
+
+      if (fileArray.length === 0) {
+        canvas.innerHTML = "<p style='padding: 20px;'>Importe um arquivo para começar</p>";
+        return;
+      }
+
+      canvas.innerHTML = "";
+      const nodeSize = 100;
+      const padding = 30;
+      const cols = Math.ceil(Math.sqrt(fileArray.length));
+
+      // Criar SVG para linhas
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.style.position = "absolute";
+      svg.style.top = "0";
+      svg.style.left = "0";
+      svg.style.width = "100%";
+      svg.style.height = "100%";
+      svg.style.pointerEvents = "none";
+      canvas.appendChild(svg);
+
+      // Calcular posições
+      const positions = {};
+      fileArray.forEach((file, i) => {
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        positions[file] = {
+          x: col * nodeSize + padding,
+          y: row * nodeSize + padding
+        };
+      });
+
+      // Desenhar linhas
+      Object.keys(dependencies).forEach(file => {
+        dependencies[file].forEach(dep => {
+          const from = positions[file];
+          const to = positions[dep];
+          if (from && to) {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", from.x + 50);
+            line.setAttribute("y1", from.y + 15);
+            line.setAttribute("x2", to.x + 50);
+            line.setAttribute("y2", to.y + 15);
+            line.setAttribute("stroke", "#555");
+            line.setAttribute("stroke-width", "1");
+            svg.appendChild(line);
+          }
+        });
+      });
+
+      // Desenhar nós
+      fileArray.forEach(file => {
+        const pos = positions[file];
+        const node = document.createElement("div");
+        node.className = `node ${selectedFile === file ? 'active' : ''}`;
+        node.style.left = pos.x + "px";
+        node.style.top = pos.y + "px";
+        node.textContent = file.split('.')[0];
+        node.onclick = () => selectFile(file);
+        canvas.appendChild(node);
+      });
+
+      // Ajustar tamanho
+      const maxX = Math.max(...Object.values(positions).map(p => p.x)) + nodeSize;
+      const maxY = Math.max(...Object.values(positions).map(p => p.y)) + nodeSize;
+      svg.setAttribute("width", maxX);
+      svg.setAttribute("height", maxY);
+      canvas.style.minHeight = maxY + "px";
+    }
+
+    function renderDetails() {
+      const details = document.getElementById("detailsContent");
+
+      if (!selectedFile || !files[selectedFile]) {
+        details.innerHTML = "Selecione um arquivo";
+        return;
+      }
+
+      const file = files[selectedFile];
+      const deps = dependencies[selectedFile] || [];
+      const dependents = findDependents(selectedFile);
+
+      let html = `
+        <div class="detail-block">
+          <div class="detail-label">📄 Arquivo</div>
+          <div>${selectedFile}</div>
+        </div>
+
+        <div class="detail-block">
+          <div class="detail-label">📦 Importações (${file.imports.length})</div>
+          <div>
+            ${file.imports.map(imp => `<div class="detail-item">→ ${imp}</div>`).join("") || "Nenhuma"}
+          </div>
+        </div>
+
+        <div class="detail-block">
+          <div class="detail-label">🔗 Depende de (${deps.length})</div>
+          <div>
+            ${deps.map(dep => `<div class="detail-item" onclick="selectFile('${dep}')">⬇️ ${dep}</div>`).join("") || "Nenhuma"}
+          </div>
+        </div>
+
+        <div class="detail-block">
+          <div class="detail-label">🔄 Usado por (${dependents.length})</div>
+          <div>
+            ${dependents.map(dep => `<div class="detail-item" onclick="selectFile('${dep}')">⬆️ ${dep}</div>`).join("") || "Nenhum"}
+          </div>
+        </div>
+
+        <div class="detail-block">
+          <div class="detail-label">📝 Preview</div>
+          <div style="font-size: 10px; max-height: 150px; overflow-y: auto; background: #1a1a1a; padding: 6px; border-radius: 3px;">
+            <pre>${file.content.slice(0, 500)}${file.content.length > 500 ? '...' : ''}</pre>
+          </div>
+        </div>
+
+        <button onclick="downloadFile('${selectedFile}')">💾 Baixar</button>
+      `;
+
+      details.innerHTML = html;
+    }
+
+    function downloadFile(filename) {
+      const file = files[filename];
+      const blob = new Blob([file.content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+    }
+
+    function render() {
+      renderFilesList();
+      renderGraph();
+      renderDetails();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL
+    // ═══════════════════════════════════════════════════════════════
+
+    function openPasteModal() {
+      document.getElementById("pasteModal").classList.add("open");
+    }
+
+    function closePasteModal() {
+      document.getElementById("pasteModal").classList.remove("open");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener("DOMContentLoaded", () => {
+      render();
+    });
+  </script>
+</body>
+</html>

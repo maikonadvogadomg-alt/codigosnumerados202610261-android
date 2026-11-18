@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Diagnóstico + Correção de Executáveis</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+  background: #0d1117; 
+  color: #e6edf3; 
+  font-family: system-ui, sans-serif; 
+  padding: 16px;
+}
+
+h1 { color: #58a6ff; font-size: 20px; margin-bottom: 4px; }
+.sub { color: #8b949e; font-size: 13px; margin-bottom: 20px; }
+
+.card { 
+  background: #161b22; 
+  border: 1px solid #30363d; 
+  border-radius: 8px; 
+  margin-bottom: 14px;
+}
+.card-hdr { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  padding: 12px 14px; 
+  border-bottom: 1px solid #30363d;
+}
+.card-hdr h3 { font-size: 14px; font-weight: 600; }
+.card-body { padding: 14px; }
+
+.btn { 
+  padding: 6px 12px; 
+  border-radius: 6px; 
+  font-size: 12px; 
+  font-weight: 600; 
+  border: none; 
+  cursor: pointer; 
+  transition: .2s;
+}
+.btn-blue { background: #1f6feb; color: #fff; }
+.btn-green { background: #238636; color: #fff; }
+.btn-gray { background: #21262d; color: #e6edf3; border: 1px solid #30363d; }
+.btn:hover { opacity: .85; }
+
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab-btn { 
+  padding: 6px 12px; 
+  border-radius: 6px; 
+  font-size: 12px; 
+  font-weight: 600; 
+  border: 1px solid #30363d; 
+  background: #0a0e14; 
+  color: #8b949e; 
+  cursor: pointer; 
+  transition: .2s;
+}
+.tab-btn.active { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.success { 
+  background: #1f2a1f; 
+  border-left: 4px solid #3fb950; 
+  padding: 10px; 
+  border-radius: 4px; 
+  margin: 10px 0; 
+  font-size: 12px; 
+  color: #3fb950;
+}
+
+.warning { 
+  background: #3d2817; 
+  border-left: 4px solid #d29922; 
+  padding: 10px; 
+  border-radius: 4px; 
+  margin: 10px 0; 
+  font-size: 12px; 
+  color: #d29922;
+}
+
+.error { 
+  background: #3d1f1f; 
+  border-left: 4px solid #f85149; 
+  padding: 10px; 
+  border-radius: 4px; 
+  margin: 10px 0; 
+  font-size: 12px; 
+  color: #f85149;
+}
+
+.info-box { 
+  background: #0d1f40; 
+  border-left: 4px solid #58a6ff; 
+  padding: 10px; 
+  border-radius: 4px; 
+  margin: 10px 0; 
+  font-size: 11px; 
+  color: #58a6ff;
+}
+
+.section { 
+  background: #0a0e14; 
+  border: 1px solid #30363d; 
+  border-radius: 6px; 
+  padding: 12px; 
+  margin: 8px 0;
+}
+
+.section-title { 
+  color: #58a6ff; 
+  font-weight: 600; 
+  margin-bottom: 8px; 
+  font-size: 13px;
+}
+
+.comando { 
+  background: #0a0e14; 
+  border-left: 3px solid #3fb950; 
+  padding: 10px; 
+  margin: 6px 0; 
+  border-radius: 4px; 
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+.comando-titulo { 
+  color: #3fb950; 
+  font-weight: 600;
+}
+
+pre { 
+  background: #0a0e14; 
+  border: 1px solid #30363d; 
+  border-radius: 6px; 
+  padding: 12px; 
+  overflow-x: auto; 
+  font-size: 11px; 
+  color: #e6edf3;
+}
+
+textarea { 
+  width: 100%; 
+  background: #0a0e14; 
+  color: #e6edf3; 
+  border: 1px solid #30363d; 
+  border-radius: 6px; 
+  padding: 12px; 
+  font-family: 'Courier New', monospace; 
+  font-size: 12px; 
+  resize: vertical;
+}
+
+.toast { 
+  position: fixed; 
+  bottom: 20px; 
+  right: 20px; 
+  padding: 8px 16px; 
+  border-radius: 6px; 
+  font-size: 13px; 
+  color: #fff; 
+  background: #238636; 
+  z-index: 99; 
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<h1>🔧 Diagnóstico + Correção de Executáveis</h1>
+<p class="sub">Entende o problema, mostra a solução, gera scripts de correção</p>
+
+<div class="warning">
+⚠️ Erro comum: EADDRINUSE porta 5000 = Processo anterior não fechou
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="mudarAba('diagnostico')">🔍 Diagnóstico</button>
+  <button class="tab-btn" onclick="mudarAba('solucoes')">✅ Soluções</button>
+  <button class="tab-btn" onclick="mudarAba('scripts')">📝 Scripts</button>
+  <button class="tab-btn" onclick="mudarAba('alternativas')">🚀 Alternativas</button>
+  <button class="tab-btn" onclick="mudarAba('entender')">📚 Entender</button>
+</div>
+
+<!-- ABA 1: Diagnóstico -->
+<div id="diagnostico" class="tab-content active">
+  <div class="card">
+    <div class="card-hdr"><h3>🔍 O Que Está Acontecendo</h3></div>
+    <div class="card-body">
+      <div class="section">
+        <div class="section-title">❌ Erro: EADDRINUSE porta 5000</div>
+        <p style="font-size:12px;color:#8b949e;margin-bottom:8px;">
+          Significa que a porta 5000 já está sendo usada por outro processo.
+        </p>
+        <div class="error">
+          Causas comuns:
+          <ul style="margin-left:16px;margin-top:8px;font-size:11px;">
+            <li>Processo anterior não fechou direito</li>
+            <li>Você abriu 2 vezes o mesmo projeto</li>
+            <li>Outro programa está usando a porta 5000</li>
+            <li>Computador não reiniciou desde ontem</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🤔 Por Que Só Funcionou 2 Dias?</div>
+        <p style="font-size:12px;color:#8b949e;">
+          O executável que o Optimus gera é um <strong>servidor Node.js</strong> que:
+        </p>
+        <ul style="margin-left:16px;margin-top:8px;font-size:11px;color:#8b949e;">
+          <li>Abre um terminal</li>
+          <li>Roda <code>npm start</code> ou <code>node server.js</code></li>
+          <li>Fica escutando na porta 5000</li>
+          <li>Abre o navegador automaticamente</li>
+        </ul>
+        <p style="font-size:12px;color:#8b949e;margin-top:8px;">
+          <strong>Problema:</strong> Se você fechar o navegador mas não o terminal, a porta fica ocupada!
+        </p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📊 Tipo de Executável</div>
+        <div class="info-box">
+          ✅ É um <strong>Node.js Server + Navegador</strong> (não é Electron)
+        </div>
+        <p style="font-size:12px;color:#8b949e;margin-top:8px;">
+          Diferente de:
+        </p>
+        <ul style="margin-left:16px;margin-top:8px;font-size:11px;color:#8b949e;">
+          <li>❌ Electron (aplicativo nativo)</li>
+          <li>❌ PyInstaller (Python compilado)</li>
+          <li>❌ APK (Android)</li>
+          <li>✅ Node.js Server (o que você tem)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABA 2: Soluções -->
+<div id="solucoes" class="tab-content">
+  <div class="card">
+    <div class="card-hdr"><h3>✅ Como Corrigir Agora</h3></div>
+    <div class="card-body">
+      <div class="section">
+        <div class="section-title">🔧 Solução 1: Liberar a Porta (RÁPIDO)</div>
+        <p style="font-size:12px;color:#8b949e;margin-bottom:8px;">
+          Feche o terminal que está rodando o servidor:
+        </p>
+        <div class="comando">
+          <div class="comando-titulo">Windows:</div>
+          <pre>netstat -ano | findstr :5000
+taskkill /PID [PID] /F</pre>
+        </div>
+        <div class="comando">
+          <div class="comando-titulo">Mac/Linux:</div>
+          <pre>lsof -i :5000
+kill -9 [PID]</pre>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🔄 Solução 2: Usar Porta Diferente</div>
+        <p style="font-size:12px;color:#8b949e;margin-bottom:8px;">
+          Edite o arquivo que inicia o servidor:
+        </p>
+        <div class="comando">
+          <div class="comando-titulo">Procure por:</div>
+          <pre>const PORT = 5000;</pre>
+        </div>
+        <div class="comando">
+          <div class="comando-titulo">Mude para:</div>
+          <pre>const PORT = process.env.PORT || 3000;</pre>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">💻 Solução 3: Reiniciar Computador</div>
+        <p style="font-size:12px;color:#8b949e;">
+          Às vezes é o mais simples! Reinicia que resolve.
+        </p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🎯 Solução 4: Melhor - Usar Script Automático</div>
+        <p style="font-size:12px;color:#8b949e;margin-bottom:8px;">
+          Vá para a aba "Scripts" e copie o script que libera a porta automaticamente.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABA 3: Scripts -->
+<div id="scripts" class="tab-content">
+  <div class="card">
+    <div class="card-hdr">
+      <h3>📝 Scripts Automáticos</h3>
+      <button class="btn btn-green" onclick="copiarScript('script-windows')">📋 Copiar Windows</button>
+    </div>
+    <div class="card-body">
+      <div class="section">
+        <div class="section-title">🪟 Script Windows (liberar-porta.bat)</div>
+        <textarea id="script-windows" style="height:200px;">@echo off
+echo Liberando porta 5000...
+netstat -ano | findstr :5000 > temp.txt
+for /f "tokens=5" %%a in (temp.txt) do (
+  echo Matando processo %%a...
+  taskkill /PID %%a /F
+)
+del temp.txt
+echo Porta 5000 liberada!
+echo Iniciando servidor...
+npm start
+pause</textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🐧 Script Linux/Mac (liberar-porta.sh)</div>
+        <textarea id="script-linux" style="height:200px;">#!/bin/bash
+echo "Liberando porta 5000..."
+PID=$(lsof -i :5000 | grep LISTEN | awk '{print $2}')
+if [ ! -z "$PID" ]; then
+  echo "Matando processo $PID..."
+  kill -9 $PID
+else
+  echo "Nenhum processo na porta 5000"
+fi
+echo "Porta 5000 liberada!"
+echo "Iniciando servidor..."
+npm start</textarea>
+        <button class="btn btn-gray" onclick="copiarScript('script-linux')" style="margin-top:8px;">📋 Copiar Linux</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📦 Package.json Melhorado</div>
+        <textarea id="script-package" style="height:250px;">{
+  "name": "seu-projeto",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "kill-port": "lsof -i :5000 | grep LISTEN | awk '{print $2}' | xargs kill -9",
+    "clean-start": "npm run kill-port && npm start",
+    "port-3000": "PORT=3000 npm start",
+    "port-8000": "PORT=8000 npm start"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  }
+}
+</textarea>
+        <button class="btn btn-gray" onclick="copiarScript('script-package')" style="margin-top:8px;">📋 Copiar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABA 4: Alternativas -->
+<div id="alternativas" class="tab-content">
+  <div class="card">
+    <div class="card-hdr"><h3>🚀 Alternativas Melhores (Sem Erro de Porta)</h3></div>
+    <div class="card-body">
+      <div class="section">
+        <div class="section-title">1️⃣ Electron (Melhor para Desktop)</div>
+        <div class="info-box">
+          ✅ Aplicativo nativo, sem terminal, sem erro de porta
+        </div>
+        <p style="font-size:12px;color:#8b949e;margin-top:8px;">
+          <strong>Vantagens:</strong>
+        </p>
+        <ul style="margin-left:16px;margin-top:4px;font-size:11px;color:#8b949e;">
+          <li>✅ Sem erro de porta</li>
+          <li>✅ Sem terminal visível</li>
+          <li>✅ Funciona offline</li>
+          <li>✅ Ícone no desktop</li>
+        </ul>
+        <textarea style="height:200px;margin-top:8px;">// main.js (Electron)
+const { app, BrowserWindow } = require('electron');
+const path = require('path');
+
+let mainWindow;
+
+app.on('ready', () => {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
+  });
+
+  mainWindow.loadFile('index.html');
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+</textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">2️⃣ Tauri (Ainda Melhor - Mais Leve)</div>
+        <div class="info-box">
+          ✅ Mais rápido que Electron, sem erro de porta
+        </div>
+        <p style="font-size:12px;color:#8b949e;margin-top:8px;">
+          <strong>Vantagens:</strong>
+        </p>
+        <ul style="margin-left:16px;margin-top:4px;font-size:11px;color:#8b949e;">
+          <li>✅ Executável muito menor (5-10MB)</li>
+          <li>✅ Sem erro de porta</li>
+          <li>✅ Melhor performance</li>
+          <li>✅ Suporta React, Vue, Svelte</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <div class="section-title">3️⃣ PWA (Web App Progressivo)</div>
+        <div class="info-box">
+          ✅ Funciona no navegador, sem instalação
+        </div>
+        <p style="font-size:12px;color:#8b949e;margin-top:8px;">
+          <strong>Vantagens:</strong>
+        </p>
+        <ul style="margin-left:16px;margin-top:4px;font-size:11px;color:#8b949e;">
+          <li>✅ Sem erro de porta</li>
+          <li>✅ Funciona offline</li>
+          <li>✅ Instala como app</li>
+          <li>✅ Funciona em qualquer dispositivo</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <div class="section-title">4️⃣ NW.js (Alternativa ao Electron)</div>
+        <div class="info-box">
+          ✅ Semelhante ao Electron, mas mais simples
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABA 5: Entender -->
+<div id="entender" class="tab-content">
+  <div class="card">
+    <div class="card-hdr"><h3>📚 Entender a Lógica do Optimus</h3></div>
+    <div class="card-body">
+      <div class="section">
+        <div class="section-title">🔍 Como o Optimus Funciona</div>
+        <p style="font-size:12px;color:#8b949e;margin-bottom:8px;">
+          O Optimus faz isso:
+        </p>
+        <div class="comando">
+          <div class="comando-titulo">1. Você importa um projeto ZIP</div>
+          <pre>projeto.zip → Extrai arquivos</pre>
+        </div>
+        <div class="comando">
+          <div class="comando-titulo">2. Analisa a estrutura</div>
+          <pre>Detecta: package.json, src/, componentes, etc</pre>
+        </div>
+        <div class="comando">
+          <div class="comando-titulo">3. Cria um servidor Node.js</div>
+          <pre>server.js → Express na porta 5000</pre>
+        </div>
+        <div class="comando">
+          <div class="comando-titulo">4. Gera executável</div>
+          <pre>Cria um .bat (Windows) ou .sh (Linux)
+Que abre terminal + npm start</pre>
+        </div>
+        <div class="comando">
+          <div class="comando-titulo">5. Abre no navegador</div>
+          <pre>http://localhost:5000</pre>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📊 Comparação: Optimus vs Alternatives</div>
+        <table style="width:100%;font-size:11px;color:#8b949e;">
+          <tr style="border-bottom:1px solid #30363d;">
+            <td style="padding:6px;"><strong>Tipo</strong></td>
+            <td style="padding:6px;"><strong>Erro Porta</strong></td>
+            <td style="padding:6px;"><strong>Terminal</strong></td>
+            <td style="padding:6px;"><strong>Tamanho</strong></td>
+          </tr>
+          <tr style="border-bottom:1px solid #30363d;">
+            <td style="padding:6px;">Optimus (Node.js)</td>
+            <td style="padding:6px;color:#f85149;">❌ Sim</td>
+            <td style="padding:6px;color:#f85149;">❌ Visível</td>
+            <td style="padding:6px;">20-50MB</td>
+          </tr>
+          <tr style="border-bottom:1px solid #30363d;">
+            <td style="padding:6px;">Electron</td>
+            <td style="padding:6px;color:#3fb950;">✅ Não</td>
+            <td style="padding:6px;color:#3fb950;">✅ Não</td>
+            <td style="padding:6px;">150-200MB</td>
+          </tr>
+          <tr style="border-bottom:1px solid #30363d;">
+            <td style="padding:6px;">Tauri</td>
+            <td style="padding:6px;color:#3fb950;">✅ Não</td>
+            <td style="padding:6px;color:#3fb950;">✅ Não</td>
+            <td style="padding:6px;">5-10MB</td>
+          </tr>
+          <tr>
+            <td style="padding:6px;">PWA</td>
+            <td style="padding:6px;color:#3fb950;">✅ Não</td>
+            <td style="padding:6px;color:#3fb950;">✅ Não</td>
+            <td style="padding:6px;">Depende</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🎯 Por Que o Seu Jurídico Parou</div>
+        <div class="warning">
+          Possíveis causas:
+          <ul style="margin-left:16px;margin-top:8px;font-size:11px;">
+            <li>Porta 5000 ficou ocupada</li>
+            <li>Arquivo server.js foi deletado</li>
+            <li>Node.js não está instalado</li>
+            <li>Dependências não foram instaladas (npm install)</li>
+            <li>Firewall bloqueou a porta</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">💡 Dica: CodeLens (Mini VS Code)</div>
+        <p style="font-size:12px;color:#8b949e;">
+          O CodeLens que o outro fez é um <strong>editor web</strong> que:
+        </p>
+        <ul style="margin-left:16px;margin-top:8px;font-size:11px;color:#8b949e;">
+          <li>Roda no navegador (sem terminal)</li>
+          <li>Conecta ao computador via Node.js</li>
+          <li>Permite editar arquivos</li>
+          <li>Tem preview ao vivo</li>
+        </ul>
+        <p style="font-size:12px;color:#8b949e;margin-top:8px;">
+          <strong>Problema:</strong> Se a porta ficar ocupada, ele também dá erro!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tabs -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+function mudarAba(aba) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(aba).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function copiarScript(id) {
+  const textarea = document.getElementById(id);
+  navigator.clipboard.writeText(textarea.value).then(() => {
+    notificacao('✅ Script copiado!');
+  });
+}
+
+function notificacao(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.style.display = 'none', 2500);
+}
+</script>
+
+</body>
+</html>

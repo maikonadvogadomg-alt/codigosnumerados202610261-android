@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sem titulo</title>
+  <style>
+
+  </style>
+</head>
+<body>
+<div style="max-width: 600px; margin: 40px auto; padding: 20px; font-family: sans-serif;">
+  <h1 style="color: #333;">Bem-vindo ao HTML Playground</h1>
+  <p style="color: #666; margin: 16px 0;">Cole seu codigo HTML aqui e veja o resultado ao vivo!</p>
+  <button onclick="alert('Funcionou!')" style="padding: 10px 24px; font-size: 16px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer;">Clique aqui</button>
+</div>
+<script>
+// Exemplo de consulta ao Mock do CNJ (SwaggerHub)
+async function testarAPI() {
+  const baseUrl = "https://virtserver.swaggerhub.com/MAIKONMG1_12/CNJ/1.0.0";
+  const endpoint = "/domicilio-eletronico/api/v1/representados";
+  
+  try {
+    const response = await fetch(baseUrl + endpoint, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer SEUTOKENAQUI"
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error("Erro HTTP: " + response.status);
+    }
+    
+    const data = await response.json();
+    console.log("Dados recebidos do SwaggerHub:", data);
+    alert("Sucesso! Verifique os dados no console do navegador (F12).");
+  } catch (error) {
+    console.error("Erro na requisição:", error);
+    alert("Erro na requisição: " + error.message);
+  }
+}
+
+// Para testar, descomente a linha abaixo e clique em 'Executar'
+// testarAPI();
+</script>
+</body>
+</html>

@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navegador PWA com Proxys</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── BARRA DE NAVEGAÇÃO ── */
+    .navbar {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 8px;
+      flex-shrink: 0;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .nav-line-1 {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn:hover {
+      background: #30363d;
+      border-color: #58a6ff;
+    }
+
+    .btn-primary {
+      background: #238636;
+      border: none;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      background: #2ea043;
+    }
+
+    .btn-active {
+      background: #1f6feb;
+      border-color: #58a6ff;
+      color: #fff;
+    }
+
+    .url-bar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      padding: 4px 12px;
+      gap: 6px;
+      min-width: 150px;
+    }
+
+    .url-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #e6edf3;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .url-bar input::placeholder {
+      color: #8b949e;
+    }
+
+    .btn-clear {
+      background: none;
+      border: none;
+      color: #8b949e;
+      cursor: pointer;
+      padding: 0;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ── PROXY SELECTOR ── */
+    .proxy-section {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 6px;
+      background: #21262d;
+      border-radius: 6px;
+    }
+
+    .proxy-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      white-space: nowrap;
+    }
+
+    .proxy-select {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .proxy-status {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #238636;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .proxy-status.error {
+      background: #f85149;
+    }
+
+    .proxy-status.loading {
+      background: #1f6feb;
+    }
+
+    /* ── FAVORITOS ── */
+    .favorites-line {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      flex-wrap: wrap;
+    }
+
+    .fav-item {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .fav-btn {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #8b949e;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .fav-btn:hover {
+      border-color: #58a6ff;
+    }
+
+    .fav-btn.active {
+      background: #1f6feb;
+      color: #fff;
+      border-color: #58a6ff;
+    }
+
+    .btn-remove-fav {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #f85149;
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .fav-item:hover .btn-remove-fav {
+      opacity: 1;
+    }
+
+    /* ── MODAL SALVAR FAVORITO ── */
+    .modal-save-fav {
+      display: none;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 8px;
+      background: #21262d;
+      border-radius: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .modal-save-fav.active {
+      display: flex;
+    }
+
+    .modal-save-fav input {
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      outline: none;
+      min-width: 150px;
+    }
+
+    /* ── CONTEÚDO ── */
+    .content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .error-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 24px;
+      text-align: center;
+      height: 100%;
+    }
+
+    .error-icon {
+      font-size: 48px;
+      opacity: 0.4;
+    }
+
+    .error-text {
+      color: #f85149;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .error-hint {
+      color: #8b949e;
+      font-size: 12px;
+    }
+
+    .loading-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #1f6feb, #58a6ff);
+      z-index: 10;
+      animation: progress 1.5s ease infinite;
+      display: none;
+    }
+
+    .loading-bar.active {
+      display: block;
+    }
+
+    @keyframes progress {
+      0% { width: 10%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #58a6ff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- BARRA DE NAVEGAÇÃO -->
+  <div class="navbar">
+    <!-- Linha 1: Botões + URL Bar -->
+    <div class="nav-line-1">
+      <button class="btn" id="btnVoltar">← Voltar</button>
+      <button class="btn" id="btnGoBack" title="Voltar">←</button>
+      <button class="btn" id="btnGoForward" title="Avançar">→</button>
+      <button class="btn" id="btnReload" title="Recarregar">🔄</button>
+
+      <div class="url-bar">
+        <span style="color: #58a6ff; font-size: 12px;">🌐</span>
+        <input 
+          type="text" 
+          id="urlInput" 
+          placeholder="Digite URL ou pesquise no Google..."
+          value="https://www.google.com/search?igu=1"
+        >
+        <button class="btn-clear" id="btnClearInput" style="display: none;">✕</button>
+      </div>
+
+      <button class="btn btn-primary" id="btnGo">IR</button>
+      <button class="btn" id="btnToggleTranslate" title="Alternar tradução">🌐 PT</button>
+      <button class="btn" id="btnSaveFav" title="Salvar favorito">⭐</button>
+    </div>
+
+    <!-- Seção de Proxys em Cascata -->
+    <div class="proxy-section">
+      <span class="proxy-label">🔗 Proxy:</span>
+      <select class="proxy-select" id="proxySelect">
+        <option value="none">Nenhum (Direto)</option>
+        <option value="cascade">🔄 Cascata Automática</option>
+        <option value="cors-anywhere">CORS Anywhere</option>
+        <option value="allorigins">AllOrigins</option>
+        <option value="api-allorigins">API AllOrigins</option>
+        <option value="thingproxy">ThingProxy</option>
+      </select>
+      <span class="proxy-status" id="proxyStatus">Pronto</span>
+    </div>
+
+    <!-- Modal Salvar Favorito -->
+    <div class="modal-save-fav" id="modalSaveFav">
+      <input 
+        type="text" 
+        id="favLabel" 
+        placeholder="Nome do favorito..."
+      >
+      <button class="btn btn-primary" id="btnConfirmSave">Salvar</button>
+      <button class="btn" id="btnCancelSave">Cancelar</button>
+    </div>
+
+    <!-- Linha 2: Favoritos -->
+    <div class="favorites-line" id="favoritesList"></div>
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div class="content">
+    <div class="loading-bar" id="loadingBar"></div>
+    <div class="error-container" id="errorContainer" style="display: none;">
+      <div class="error-icon">🌐</div>
+      <p class="error-text" id="errorText"></p>
+      <p class="error-hint" id="errorHint">Alguns sites bloqueiam a exibição incorporada por segurança.</p>
+      <button class="btn btn-primary" id="btnTryProxy">🔄 Tentar com Proxy</button>
+      <button class="btn btn-primary" id="btnSearchGoogle">🔍 Pesquisar no Google</button>
+      <button class="btn" id="btnHome">🏠 Início</button>
+    </div>
+    <iframe id="mainIframe" allow="geolocation; microphone; camera" title="Navegador Interno"></iframe>
+  </div>
+</div>
+
+<script>
+  // ── CONFIGURAÇÃO DE PROXYS EM CASCATA ──
+  const PROXYS = {
+    "cors-anywhere": "https://cors-anywhere.herokuapp.com/",
+    "allorigins": "https://api.allorigins.win/raw?url=",
+    "api-allorigins": "https://api.allorigins.win/get?url=",
+    "thingproxy": "https://thingproxy.freehostingonline.com/fetch/",
+  };
+
+  const FAVORITOS_PADRAO = [
+    { id: "google", label: "Google", url: "https://www.google.com/search?igu=1" },
+    { id: "tjmg", label: "TJMG", url: "https://www.tjmg.jus.br" },
+    { id: "stj", label: "STJ", url: "https://www.stj.jus.br" },
+    { id: "stf", label: "STF", url: "https://www.stf.jus.br" },
+    { id: "trt3", label: "TRT-3", url: "https://www.trt3.jus.br" },
+    { id: "jusbrasil", label: "JusBrasil", url: "https://www.jusbrasil.com.br" },
+    { id: "pje", label: "PJe", url: "https://pje.trt3.jus.br" },
+    { id: "youtube", label: "YouTube", url: "https://m.youtube.com" },
+  ];
+
+  const TRADUCOES = {
+    "Sign in": "Entrar",
+    "Search": "Pesquisar",
+    "Images": "Imagens",
+    "Videos": "Vídeos",
+    "News": "Notícias",
+    "Maps": "Mapas",
+    "Shopping": "Compras",
+    "Settings": "Configurações",
+    "Tools": "Ferramentas",
+    "About": "Sobre",
+    "Privacy": "Privacidade",
+    "Terms": "Termos",
+  };
+
+  // ── ESTADO ──
+  let currentUrl = "https://www.google.com/search?igu=1";
+  let favoritos = [];
+  let traducaoAtiva = true;
+  let proxyAtual = "none";
+  let ultimoProxy = null;
+
+  // ── ELEMENTOS ──
+  const urlInput = document.getElementById("urlInput");
+  const mainIframe = document.getElementById("mainIframe");
+  const loadingBar = document.getElementById("loadingBar");
+  const errorContainer = document.getElementById("errorContainer");
+  const errorText = document.getElementById("errorText");
+  const errorHint = document.getElementById("errorHint");
+  const favoritesList = document.getElementById("favoritesList");
+  const modalSaveFav = document.getElementById("modalSaveFav");
+  const favLabel = document.getElementById("favLabel");
+  const proxySelect = document.getElementById("proxySelect");
+  const proxyStatus = document.getElementById("proxyStatus");
+  const btnToggleTranslate = document.getElementById("btnToggleTranslate");
+  const btnSaveFav = document.getElementById("btnSaveFav");
+
+  // ── INICIALIZAÇÃO ──
+  function init() {
+    carregarFavoritos();
+    renderizarFavoritos();
+    navigate(currentUrl);
+    setupEventListeners();
+  }
+
+  // ── EVENT LISTENERS ──
+  function setupEventListeners() {
+    document.getElementById("btnVoltar").addEventListener("click", () => window.history.back());
+    document.getElementById("btnGoBack").addEventListener("click", goBack);
+    document.getElementById("btnGoForward").addEventListener("click", goForward);
+    document.getElementById("btnReload").addEventListener("click", reload);
+    document.getElementById("btnGo").addEventListener("click", () => navigate(urlInput.value));
+    document.getElementById("btnClearInput").addEventListener("click", () => {
+      urlInput.value = "";
+      document.getElementById("btnClearInput").style.display = "none";
+    });
+
+    urlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") navigate(urlInput.value);
+    });
+
+    urlInput.addEventListener("input", () => {
+      document.getElementById("btnClearInput").style.display = urlInput.value ? "flex" : "none";
+    });
+
+    proxySelect.addEventListener("change", (e) => {
+      proxyAtual = e.target.value;
+      if (proxyAtual === "cascade") {
+        proxyStatus.textContent = "🔄 Cascata";
+        proxyStatus.classList.remove("error", "loading");
+      }
+    });
+
+    btnToggleTranslate.addEventListener("click", () => {
+      traducaoAtiva = !traducaoAtiva;
+      btnToggleTranslate.textContent = traducaoAtiva ? "🌐 PT" : "🌐 EN";
+      if (!loadingBar.classList.contains("active")) {
+        traduzirConteudo();
+      }
+    });
+
+    btnSaveFav.addEventListener("click", () => {
+      modalSaveFav.classList.toggle("active");
+      if (modalSaveFav.classList.contains("active")) {
+        favLabel.focus();
+      }
+    });
+
+    document.getElementById("btnConfirmSave").addEventListener("click", adicionarFavorito);
+    document.getElementById("btnCancelSave").addEventListener("click", () => {
+      modalSaveFav.classList.remove("active");
+      favLabel.value = "";
+    });
+
+    favLabel.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") adicionarFavorito();
+    });
+
+    mainIframe.addEventListener("load", () => {
+      loadingBar.classList.remove("active");
+      proxyStatus.textContent = "✓ Carregado";
+      proxyStatus.classList.remove("loading", "error");
+      proxyStatus.classList.add("success");
+      traduzirConteudo();
+    });
+
+    mainIframe.addEventListener("error", () => {
+      loadingBar.classList.remove("active");
+      if (proxyAtual === "cascade") {
+        tentarProxyCascata();
+      } else {
+        mostrarErro("Este site não permite exibição incorporada. Tente com Proxy!");
+      }
+    });
+
+    document.getElementById("btnTryProxy").addEventListener("click", () => {
+      proxySelect.value = "cascade";
+      proxyAtual = "cascade";
+      navigate(currentUrl);
+    });
+
+    document.getElementById("btnSearchGoogle").addEventListener("click", () => {
+      const termo = currentUrl.replace(/^https?:\/\//, "");
+      navigate(`https://www.google.com/search?q=${encodeURIComponent(termo)}&igu=1`);
+    });
+
+    document.getElementById("btnHome").addEventListener("click", () => {
+      errorContainer.style.display = "none";
+      navigate("https://www.google.com/search?igu=1");
+    });
+  }
+
+  // ── NAVEGAÇÃO COM PROXY ──
+  function navigate(target) {
+    let url = target.trim();
+    if (!url) return;
+
+    if (!/^https?:\/\//i.test(url)) {
+      url = url.includes(".") && !url.includes(" ")
+        ? "https://" + url
+        : `https://www.google.com/search?q=${encodeURIComponent(url)}&igu=1`;
+    }
+
+    currentUrl = url;
+    urlInput.value = url;
+    errorContainer.style.display = "none";
+    loadingBar.classList.add("active");
+    proxyStatus.textContent = "⏳ Carregando...";
+    proxyStatus.classList.add("loading");
+    proxyStatus.classList.remove("error");
+
+    if (proxyAtual === "cascade") {
+      tentarProxyCascata();
+    } else if (proxyAtual === "none") {
+      mainIframe.src = url;
+    } else {
+      const proxyUrl = PROXYS[proxyAtual];
+      if (proxyUrl) {
+        mainIframe.src = proxyUrl + encodeURIComponent(url);
+        ultimoProxy = proxyAtual;
+      }
+    }
+
+    atualizarBotaoFavorito();
+  }
+
+  // ── CASCATA DE PROXYS ──
+  async function tentarProxyCascata() {
+    const proxysOrdenados = ["cors-anywhere", "allorigins", "thingproxy", "api-allorigins"];
+    
+    for (let i = 0; i < proxysOrdenados.length; i++) {
+      const proxyKey = proxysOrdenados[i];
+      const proxyUrl = PROXYS[proxyKey];
+      
+      try {
+        proxyStatus.textContent = `🔄 Tentando ${i + 1}/${proxysOrdenados.length}...`;
+        
+        const urlComProxy = proxyUrl + encodeURIComponent(currentUrl);
+        
+        // Testa se o proxy responde
+        const response = await fetch(urlComProxy, {
+          method: "HEAD",
+          mode: "no-cors",
+          timeout: 5000
+        }).catch(() => null);
+
+        if (response) {
+          mainIframe.src = urlComProxy;
+          ultimoProxy = proxyKey;
+          proxyStatus.textContent = `✓ ${proxyKey}`;
+          proxyStatus.classList.remove("error", "loading");
+          return;
+        }
+      } catch (e) {
+        console.log(`Proxy ${proxyKey} falhou:`, e.message);
+      }
+    }
+
+    // Se nenhum proxy funcionou
+    loadingBar.classList.remove("active");
+    proxyStatus.textContent = "✗ Todos os proxys falharam";
+    proxyStatus.classList.add("error");
+    mostrarErro("Nenhum proxy disponível no momento. Tente novamente mais tarde.");
+    errorHint.textContent = "Todos os proxys gratuitos falharam. Considere usar um proxy pago ou acesso direto.";
+  }
+
+  function goBack() {
+    try {
+      mainIframe.contentWindow.history.back();
+    } catch (e) {
+      console.log("Não foi possível voltar");
+    }
+  }
+
+  function goForward() {
+    try {
+      mainIframe.contentWindow.history.forward();
+    } catch (e) {
+      console.log("Não foi possível avançar");
+    }
+  }
+
+  function reload() {
+    loadingBar.classList.add("active");
+    errorContainer.style.display = "none";
+    proxyStatus.textContent = "⏳ Recarregando...";
+    proxyStatus.classList.add("loading");
+    
+    if (proxyAtual === "cascade") {
+      tentarProxyCascata();
+    } else if (proxyAtual === "none") {
+      mainIframe.src = currentUrl;
+    } else {
+      const proxyUrl = PROXYS[proxyAtual];
+      if (proxyUrl) {
+        mainIframe.src = proxyUrl + encodeURIComponent(currentUrl);
+      }
+    }
+  }
+
+  // ── FAVORITOS ──
+  function carregarFavoritos() {
+    const favSalvos = localStorage.getItem("favoritos_pwa");
+    if (favSalvos) {
+      try {
+        favoritos = JSON.parse(favSalvos);
+      } catch (e) {
+        console.error("Erro ao carregar favoritos:", e);
+        favoritos = FAVORITOS_PADRAO;
+      }
+    } else {
+      favoritos = FAVORITOS_PADRAO;
+    }
+  }
+
+  function salvarFavoritosLocal() {
+    localStorage.setItem("favoritos_pwa", JSON.stringify(favoritos));
+  }
+
+  function renderizarFavoritos() {
+    favoritesList.innerHTML = "";
+    favoritos.forEach((fav) => {
+      const div = document.createElement("div");
+      div.className = "fav-item";
+
+      const btn = document.createElement("button");
+      btn.className = "fav-btn";
+      if (currentUrl === fav.url) btn.classList.add("active");
+      btn.textContent = fav.label;
+      btn.addEventListener("click", () => navigate(fav.url));
+
+      const btnRemove = document.createElement("button");
+      btnRemove.className = "btn-remove-fav";
+      btnRemove.textContent = "×";
+      btnRemove.addEventListener("click", (e) => {
+        e.stopPropagation();
+        removerFavorito(fav.id);
+      });
+
+      div.appendChild(btn);
+      div.appendChild(btnRemove);
+      favoritesList.appendChild(div);
+    });
+  }
+
+  function adicionarFavorito() {
+    const label = favLabel.value.trim();
+    if (!label) {
+      alert("Digite um nome para o favorito");
+      return;
+    }
+
+    const novoFav = {
+      id: Date.now().toString(),
+      label: label,
+      url: currentUrl,
+    };
+
+    favoritos.push(novoFav);
+    salvarFavoritosLocal();
+    renderizarFavoritos();
+    modalSaveFav.classList.remove("active");
+    favLabel.value = "";
+    atualizarBotaoFavorito();
+  }
+
+  function removerFavorito(id) {
+    favoritos = favoritos.filter((f) => f.id !== id);
+    salvarFavoritosLocal();
+    renderizarFavoritos();
+    atualizarBotaoFavorito();
+  }
+
+  function atualizarBotaoFavorito() {
+    const isFav = favoritos.some((f) => f.url === currentUrl);
+    btnSaveFav.classList.toggle("btn-active", isFav);
+  }
+
+  // ── TRADUÇÃO ──
+  function traduzirConteudo() {
+    if (!traducaoAtiva) return;
+
+    try {
+      const doc = mainIframe.contentDocument;
+      if (!doc) return;
+
+      const walker = doc.createTreeWalker(
+        doc.body,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+
+      let node;
+      while ((node = walker.nextNode())) {
+        const texto = node.textContent || "";
+        let novoTexto = texto;
+
+        for (const [en, pt] of Object.entries(TRADUCOES)) {
+          const regex = new RegExp(`\\b${en}\\b`, "gi");
+          novoTexto = novoTexto.replace(regex, pt);
+        }
+
+        if (novoTexto !== texto) {
+          node.textContent = novoTexto;
+        }
+      }
+    } catch (e) {
+      console.log("Tradução limitada por CORS");
+    }
+  }
+
+  // ── ERROS ──
+  function mostrarErro(mensagem) {
+    errorText.textContent = mensagem;
+    errorContainer.style.display = "flex";
+  }
+
+  // ── INICIAR ──
+  init();
+</script>
+
+</body>
+</html>

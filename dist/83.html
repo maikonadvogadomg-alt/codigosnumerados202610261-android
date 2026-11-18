@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-HTML Magic Editor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ EDITOR ═══ */
+    .editor-panel {
+      width: 350px;
+      background: #222;
+      border-right: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .editor-header {
+      padding: 12px;
+      background: #333;
+      border-bottom: 1px solid #444;
+    }
+
+    .editor-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .editor-buttons {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 8px 10px;
+      background: #0066cc;
+      border: 1px solid #0088ff;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #0077dd;
+    }
+
+    .btn.secondary {
+      background: #333;
+      border-color: #555;
+      color: #e0e0e0;
+    }
+
+    .btn.secondary:hover {
+      background: #444;
+    }
+
+    .editor-textarea {
+      flex: 1;
+      padding: 12px;
+      background: #1a1a1a;
+      border: none;
+      color: #e0e0e0;
+      font-family: monospace;
+      font-size: 12px;
+      resize: none;
+      outline: none;
+    }
+
+    /* ═══ PREVIEW ═══ */
+    .preview-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      border-right: 1px solid #333;
+    }
+
+    .preview-header {
+      padding: 12px;
+      background: #222;
+      border-bottom: 1px solid #333;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .preview-content {
+      flex: 1;
+      overflow: auto;
+      padding: 20px;
+      background: white;
+      position: relative;
+    }
+
+    .preview-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    /* ═══ INSPECTOR ═══ */
+    .inspector-panel {
+      width: 320px;
+      background: #222;
+      border-left: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .inspector-header {
+      padding: 12px;
+      background: #333;
+      border-bottom: 1px solid #444;
+    }
+
+    .inspector-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .inspector-element {
+      padding: 8px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #88ff88;
+      font-family: monospace;
+    }
+
+    .inspector-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .property-group {
+      background: #333;
+      border-radius: 4px;
+      padding: 10px;
+    }
+
+    .property-label {
+      font-size: 10px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .property-input {
+      width: 100%;
+      padding: 6px 8px;
+      background: #1a1a1a;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      border-radius: 3px;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .property-input:focus {
+      outline: none;
+      border-color: #0088ff;
+      box-shadow: 0 0 0 2px rgba(0, 136, 255, 0.2);
+    }
+
+    .property-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .color-picker {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #555;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .slider-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .slider-group input[type="range"] {
+      flex: 1;
+    }
+
+    .slider-value {
+      min-width: 40px;
+      text-align: right;
+      font-size: 10px;
+      color: #0088ff;
+    }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* ═══ MODAL ═══ */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #222;
+      border: 1px solid #555;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    textarea.modal-textarea {
+      width: 100%;
+      height: 300px;
+      padding: 10px;
+      background: #333;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      font-family: monospace;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      justify-content: flex-end;
+    }
+
+    .modal-buttons .btn {
+      flex: 0 1 auto;
+      min-width: 80px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .element-highlight {
+      outline: 2px solid #0088ff !important;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- EDITOR -->
+    <div class="editor-panel">
+      <div class="editor-header">
+        <div class="editor-title">📝 HTML Editor</div>
+        <div class="editor-buttons">
+          <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Importar</button>
+          <button class="btn" onclick="openPasteModal()">📋 Colar</button>
+          <button class="btn secondary" onclick="downloadHTML()">💾 Baixar</button>
+        </div>
+      </div>
+      <textarea id="htmlEditor" class="editor-textarea" placeholder="Cole seu HTML aqui..." oninput="updatePreview()"></textarea>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="preview-panel">
+      <div class="preview-header">👁️ Preview ao Vivo</div>
+      <div class="preview-content" id="previewContent">
+        <div class="empty-state">Cole ou importe HTML para começar</div>
+      </div>
+    </div>
+
+    <!-- INSPECTOR -->
+    <div class="inspector-panel">
+      <div class="inspector-header">
+        <div class="inspector-title">🔍 Inspector</div>
+        <div class="inspector-element" id="selectedElement">Clique em um elemento</div>
+      </div>
+      <div class="inspector-content" id="inspectorContent">
+        <div class="empty-state">Selecione um elemento no preview</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PASTE -->
+  <div id="pasteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">📋 Colar HTML</div>
+      <textarea id="pasteInput" class="modal-textarea" placeholder="Cole seu HTML aqui..."></textarea>
+      <div class="modal-buttons">
+        <button class="btn secondary" onclick="closePasteModal()">Cancelar</button>
+        <button class="btn" onclick="handlePaste()">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept=".html,.txt" onchange="handleFileImport(event)">
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════
+
+    let htmlCode = '';
+    let selectedElement = null;
+    let iframeDoc = null;
+
+    // ═══════════════════════════════════════════════════════════════
+    // PREVIEW UPDATE
+    // ═══════════════════════════════════════════════════════════════
+
+    function updatePreview() {
+      htmlCode = document.getElementById('htmlEditor').value;
+
+      if (!htmlCode.trim()) {
+        document.getElementById('previewContent').innerHTML = '<div class="empty-state">Cole ou importe HTML para começar</div>';
+        return;
+      }
+
+      const previewContent = document.getElementById('previewContent');
+
+      // Criar iframe
+      let iframe = previewContent.querySelector('iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        previewContent.innerHTML = '';
+        previewContent.appendChild(iframe);
+      }
+
+      try {
+        iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: Arial, sans-serif; }
+              [data-clickable] { cursor: pointer; }
+              [data-clickable]:hover { outline: 2px solid #0088ff; outline-offset: 2px; }
+            </style>
+          </head>
+          <body>
+            ${htmlCode}
+          </body>
+          </html>
+        `);
+        iframeDoc.close();
+
+        // Adicionar listeners aos elementos
+        setTimeout(() => {
+          addClickListeners();
+        }, 100);
+      } catch (e) {
+        previewContent.innerHTML = `<div class="empty-state" style="color: #ff6b6b;">❌ Erro no HTML: ${e.message}</div>`;
+      }
+    }
+
+    function addClickListeners() {
+      if (!iframeDoc) return;
+
+      const elements = iframeDoc.querySelectorAll('*');
+      elements.forEach(el => {
+        el.setAttribute('data-clickable', 'true');
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectElement(el);
+        });
+      });
+    }
+
+    function selectElement(el) {
+      // Remove highlight anterior
+      if (selectedElement) {
+        selectedElement.classList.remove('element-highlight');
+      }
+
+      selectedElement = el;
+      el.classList.add('element-highlight');
+
+      // Atualizar inspector
+      updateInspector(el);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INSPECTOR
+    // ═══════════════════════════════════════════════════════════════
+
+    function updateInspector(el) {
+      const elementName = el.tagName.toLowerCase();
+      const elementId = el.id ? `#${el.id}` : '';
+      const elementClass = el.className ? `.${el.className.replace(/ /g, '.')}` : '';
+
+      document.getElementById('selectedElement').textContent = `<${elementName}${elementId}${elementClass}>`;
+
+      // Pegar estilos computados
+      const styles = window.getComputedStyle(el);
+      const attrs = el.attributes;
+
+      let html = '';
+
+      // Atributos
+      if (attrs.length > 0) {
+        html += `
+          <div class="property-group">
+            <div class="property-label">📋 Atributos</div>
+            ${Array.from(attrs).map(attr => `
+              <div class="property-row">
+                <span style="font-size: 10px; color: #999;">${attr.name}</span>
+                <input type="text" class="property-input" value="${attr.value}" onchange="updateAttribute('${attr.name}', this.value)">
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      // Tamanho
+      html += `
+        <div class="property-group">
+          <div class="property-label">📏 Tamanho</div>
+          <div class="property-row">
+            <div>
+              <label style="font-size: 10px; color: #999;">Width</label>
+              <input type="text" class="property-input" value="${el.style.width || 'auto'}" onchange="updateStyle('width', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 10px; color: #999;">Height</label>
+              <input type="text" class="property-input" value="${el.style.height || 'auto'}" onchange="updateStyle('height', this.value)">
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Espaçamento
+      html += `
+        <div class="property-group">
+          <div class="property-label">📦 Espaçamento</div>
+          <div class="property-row">
+            <div>
+              <label style="font-size: 10px; color: #999;">Padding</label>
+              <input type="text" class="property-input" value="${el.style.padding || '0'}" onchange="updateStyle('padding', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 10px; color: #999;">Margin</label>
+              <input type="text" class="property-input" value="${el.style.margin || '0'}" onchange="updateStyle('margin', this.value)">
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Cores
+      html += `
+        <div class="property-group">
+          <div class="property-label">🎨 Cores</div>
+          <label style="font-size: 10px; color: #999;">Background</label>
+          <input type="color" class="color-picker" value="${hexToColor(el.style.backgroundColor) || '#ffffff'}" onchange="updateStyle('backgroundColor', this.value)">
+          <label style="font-size: 10px; color: #999; margin-top: 6px;">Cor do Texto</label>
+          <input type="color" class="color-picker" value="${hexToColor(el.style.color) || '#000000'}" onchange="updateStyle('color', this.value)">
+        </div>
+      `;
+
+      // Border
+      html += `
+        <div class="property-group">
+          <div class="property-label">🔲 Borda</div>
+          <div class="property-row">
+            <div>
+              <label style="font-size: 10px; color: #999;">Espessura</label>
+              <input type="text" class="property-input" value="${el.style.borderWidth || '0'}" onchange="updateStyle('borderWidth', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 10px; color: #999;">Radius</label>
+              <input type="text" class="property-input" value="${el.style.borderRadius || '0'}" onchange="updateStyle('borderRadius', this.value)">
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Display
+      html += `
+        <div class="property-group">
+          <div class="property-label">📐 Display</div>
+          <input type="text" class="property-input" value="${el.style.display || 'block'}" onchange="updateStyle('display', this.value)" placeholder="block, flex, grid, inline, etc">
+        </div>
+      `;
+
+      // Fonte
+      html += `
+        <div class="property-group">
+          <div class="property-label">🔤 Fonte</div>
+          <div class="property-row">
+            <div>
+              <label style="font-size: 10px; color: #999;">Size</label>
+              <input type="text" class="property-input" value="${el.style.fontSize || '16px'}" onchange="updateStyle('fontSize', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 10px; color: #999;">Weight</label>
+              <input type="text" class="property-input" value="${el.style.fontWeight || 'normal'}" onchange="updateStyle('fontWeight', this.value)">
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('inspectorContent').innerHTML = html;
+    }
+
+    function updateStyle(prop, value) {
+      if (selectedElement) {
+        selectedElement.style[prop] = value;
+        updateHTMLCode();
+      }
+    }
+
+    function updateAttribute(attr, value) {
+      if (selectedElement) {
+        selectedElement.setAttribute(attr, value);
+        updateHTMLCode();
+      }
+    }
+
+    function updateHTMLCode() {
+      if (iframeDoc && iframeDoc.body) {
+        const newHTML = iframeDoc.body.innerHTML;
+        document.getElementById('htmlEditor').value = newHTML;
+      }
+    }
+
+    function hexToColor(hex) {
+      if (!hex) return '#ffffff';
+      if (hex.startsWith('rgb')) {
+        const match = hex.match(/\d+/g);
+        if (match) {
+          return '#' + match.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+        }
+      }
+      return hex;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FILE HANDLING
+    // ═══════════════════════════════════════════════════════════════
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('htmlEditor').value = e.target.result;
+        updatePreview();
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function downloadHTML() {
+      const html = document.getElementById('htmlEditor').value;
+      if (!html.trim()) {
+        alert('Nada para baixar!');
+        return;
+      }
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `page-${Date.now()}.html`;
+      a.click();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL
+    // ═══════════════════════════════════════════════════════════════
+
+    function openPasteModal() {
+      document.getElementById('pasteModal').classList.add('open');
+    }
+
+    function closePasteModal() {
+      document.getElementById('pasteModal').classList.remove('open');
+    }
+
+    function handlePaste() {
+      const html = document.getElementById('pasteInput').value;
+      if (!html.trim()) {
+        alert('Cole algum HTML!');
+        return;
+      }
+
+      document.getElementById('htmlEditor').value = html;
+      updatePreview();
+      closePasteModal();
+      document.getElementById('pasteInput').value = '';
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Exemplo inicial
+      document.getElementById('htmlEditor').value = `<div style="padding: 20px; background: #f0f0f0; border-radius: 8px;">
+  <h1 style="color: #333; margin-bottom: 10px;">Bem-vindo!</h1>
+  <p style="color: #666; margin-bottom: 15px;">Clique em qualquer elemento para editar</p>
+  <button style="padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer;">Clique aqui</button>
+</div>`;
+      updatePreview();
+    });
+  </script>
+</body>
+</html>

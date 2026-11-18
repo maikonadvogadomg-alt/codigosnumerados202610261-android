@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Chat — Regras + Tokens</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d1117;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ PAINEL ESQUERDO: REGRAS ═══ */
+    .rules-panel {
+      width: 380px;
+      background: #161b22;
+      border-right: 2px solid #30363d;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .rules-header {
+      padding: 16px;
+      background: #0d1117;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .rules-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #c9d1d9;
+    }
+
+    .add-rule-btn {
+      width: 32px;
+      height: 32px;
+      background: #238636;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .add-rule-btn:hover {
+      background: #2ea043;
+    }
+
+    .rules-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rule-item {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .rule-item:hover {
+      border-color: #3b82f6;
+      background: #161b22;
+    }
+
+    .rule-type {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .rule-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .rule-badge.proibido {
+      background: #da3633;
+      color: white;
+    }
+
+    .rule-badge.obrigado {
+      background: #238636;
+      color: white;
+    }
+
+    .rule-badge.importante {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .rule-text {
+      font-size: 12px;
+      color: #c9d1d9;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .rule-actions {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .rule-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: #8b949e;
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 12px;
+    }
+
+    .rule-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #c9d1d9;
+    }
+
+    .rule-btn.delete:hover {
+      background: #da3633;
+      color: white;
+    }
+
+    /* ═══ PAINEL DIREITO: CHAT ═══ */
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #0d1117;
+    }
+
+    .chat-header {
+      padding: 16px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .rule-count {
+      font-size: 11px;
+      color: #8b949e;
+      background: #0d1117;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      display: flex;
+      gap: 8px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message-content {
+      max-width: 65%;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .message.assistant .message-content {
+      background: #161b22;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+    }
+
+    .message.user .message-content {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .message-meta {
+      font-size: 10px;
+      color: #6e7681;
+      margin-top: 4px;
+    }
+
+    .message.user .message-meta {
+      text-align: right;
+    }
+
+    .chat-input-area {
+      padding: 16px;
+      background: #161b22;
+      border-top: 1px solid #30363d;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .token-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .token-slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .token-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .token-slider {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      accent-color: #3b82f6;
+    }
+
+    .token-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    .token-bar {
+      width: 100%;
+      height: 8px;
+      background: #0d1117;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .token-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      transition: width 0.3s;
+    }
+
+    .token-fill.warning {
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+    }
+
+    .token-fill.danger {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 10px 12px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 13px;
+      font-family: inherit;
+      resize: none;
+      max-height: 100px;
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      background: #3b82f6;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .send-btn:hover {
+      background: #2563eb;
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c9d1d9;
+    }
+
+    .modal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-select,
+    .form-textarea {
+      padding: 10px 12px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 12px;
+      font-family: inherit;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-btn.primary {
+      background: #238636;
+      color: white;
+    }
+
+    .modal-btn.primary:hover {
+      background: #2ea043;
+    }
+
+    .modal-btn.secondary {
+      background: transparent;
+      border: 1px solid #30363d;
+      color: #8b949e;
+    }
+
+    .modal-btn.secondary:hover {
+      border-color: #3b82f6;
+      color: #c9d1d9;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #484f58;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- PAINEL DE REGRAS -->
+    <div class="rules-panel">
+      <div class="rules-header">
+        <div class="rules-title">
+          <span>⚙️</span>
+          <span>Regras</span>
+        </div>
+        <button class="add-rule-btn" onclick="openAddRuleModal()">+</button>
+      </div>
+      <div class="rules-content" id="rulesList"></div>
+    </div>
+
+    <!-- PAINEL DE CHAT -->
+    <div class="chat-panel">
+      <div class="chat-header">
+        <div class="chat-title">
+          <span>🤖</span>
+          <span>SK-Chat</span>
+        </div>
+        <div class="rule-count" id="ruleCount">0 regras</div>
+      </div>
+
+      <div class="messages" id="messagesList"></div>
+
+      <div class="chat-input-area">
+        <div class="token-controls">
+          <div class="token-slider-group">
+            <label class="token-label">Máximo de Tokens</label>
+            <input 
+              type="range" 
+              id="maxTokens" 
+              class="token-slider"
+              min="500" 
+              max="128000" 
+              value="4000" 
+              step="100"
+              onchange="updateTokenDisplay()"
+            />
+            <div class="token-info">
+              <span>Usando:</span>
+              <span id="tokenCount">0 / 4000</span>
+            </div>
+            <div class="token-bar">
+              <div class="token-fill" id="tokenFill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-row">
+          <textarea
+            id="messageInput"
+            class="chat-input"
+            placeholder="Digite sua mensagem..."
+            rows="2"
+          ></textarea>
+          <button class="send-btn" onclick="sendMessage()">📤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR REGRA -->
+  <div class="modal" id="addRuleModal">
+    <div class="modal-content">
+      <div class="modal-title">Adicionar Regra</div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Tipo de Regra</label>
+          <select id="ruleType" class="form-select">
+            <option value="proibido">🚫 Proibido (não fazer)</option>
+            <option value="obrigado">✅ Obrigado (fazer sempre)</option>
+            <option value="importante">⭐ Importante (lembrar)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição da Regra</label>
+          <textarea id="ruleText" class="form-textarea" placeholder="Ex: Proibido escrever código incompleto"></textarea>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn secondary" onclick="closeAddRuleModal()">Cancelar</button>
+        <button class="modal-btn primary" onclick="addRule()">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY_RULES = "sk-chat-rules";
+    const STORAGE_KEY_CHAT = "sk-chat-messages";
+    const TOKENS_PER_CHAR = 0.25;
+
+    let rules = [];
+    let messages = [];
+
+    // ═══════════════════════════════════════════════════════════════
+    // REGRAS
+    // ═══════════════════════════════════════════════════════════════
+
+    function loadRules() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_RULES);
+        rules = saved ? JSON.parse(saved) : [];
+      } catch {
+        rules = [];
+      }
+      renderRules();
+    }
+
+    function saveRules() {
+      localStorage.setItem(STORAGE_KEY_RULES, JSON.stringify(rules));
+    }
+
+    function addRule() {
+      const type = document.getElementById("ruleType").value;
+      const text = document.getElementById("ruleText").value.trim();
+
+      if (!text) {
+        alert("Digite a regra!");
+        return;
+      }
+
+      rules.push({
+        id: Date.now(),
+        type,
+        text,
+        createdAt: new Date().toLocaleString("pt-BR"),
+      });
+
+      saveRules();
+      renderRules();
+      closeAddRuleModal();
+      document.getElementById("ruleText").value = "";
+    }
+
+    function deleteRule(id) {
+      if (confirm("Deletar essa regra?")) {
+        rules = rules.filter(r => r.id !== id);
+        saveRules();
+        renderRules();
+      }
+    }
+
+    function renderRules() {
+      const container = document.getElementById("rulesList");
+      const count = document.getElementById("ruleCount");
+
+      count.textContent = `${rules.length} regra${rules.length !== 1 ? "s" : ""}`;
+
+      container.innerHTML = rules
+        .map(
+          (rule) => `
+        <div class="rule-item">
+          <div class="rule-type">
+            <span class="rule-badge ${rule.type}">${rule.type}</span>
+          </div>
+          <div class="rule-text">${rule.text}</div>
+          <div class="rule-actions">
+            <button class="rule-btn delete" onclick="deleteRule(${rule.id})">🗑️</button>
+          </div>
+        </div>
+      `
+        )
+        .join("");
+    }
+
+    function openAddRuleModal() {
+      document.getElementById("addRuleModal").classList.add("open");
+    }
+
+    function closeAddRuleModal() {
+      document.getElementById("addRuleModal").classList.remove("open");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHAT E TOKENS
+    // ═══════════════════════════════════════════════════════════════
+
+    function loadMessages() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_CHAT);
+        messages = saved ? JSON.parse(saved) : [];
+      } catch {
+        messages = [];
+      }
+      renderMessages();
+    }
+
+    function saveMessages() {
+      localStorage.setItem(STORAGE_KEY_CHAT, JSON.stringify(messages));
+    }
+
+    function calculateTokens(text) {
+      return Math.ceil(text.length * TOKENS_PER_CHAR);
+    }
+
+    function getTotalTokens() {
+      return messages.reduce((sum, msg) => sum + calculateTokens(msg.content), 0);
+    }
+
+    function getMaxTokens() {
+      return parseInt(document.getElementById("maxTokens").value);
+    }
+
+    function updateTokenDisplay() {
+      const total = getTotalTokens();
+      const max = getMaxTokens();
+      const percentage = Math.min((total / max) * 100, 100);
+
+      const fill = document.getElementById("tokenFill");
+      const count = document.getElementById("tokenCount");
+
+      fill.style.width = percentage + "%";
+
+      if (percentage > 90) {
+        fill.classList.add("danger");
+        fill.classList.remove("warning");
+      } else if (percentage > 70) {
+        fill.classList.add("warning");
+        fill.classList.remove("danger");
+      } else {
+        fill.classList.remove("warning", "danger");
+      }
+
+      count.textContent = `${total} / ${max}`;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      messages.push({
+        role: "user",
+        content: text,
+        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      });
+
+      input.value = "";
+      saveMessages();
+      renderMessages();
+
+      setTimeout(() => {
+        const rulesList = rules.map(r => `• [${r.type.toUpperCase()}] ${r.text}`).join("\n");
+        const response = `Entendi! Seguindo essas regras:\n\n${rulesList || "Nenhuma regra."}\n\nVocê disse: "${text}"\n\nResposta simulada.`;
+
+        messages.push({
+          role: "assistant",
+          content: response,
+          timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        });
+
+        saveMessages();
+        renderMessages();
+      }, 500);
+    }
+
+    function renderMessages() {
+      const container = document.getElementById("messagesList");
+      container.innerHTML = messages
+        .map(
+          (msg) => `
+        <div class="message ${msg.role}">
+          <div>
+            <div class="message-content">${msg.content.replace(/\n/g, "<br>")}</div>
+            <div class="message-meta">${msg.timestamp} • ${calculateTokens(msg.content)} tokens</div>
+          </div>
+        </div>
+      `
+        )
+        .join("");
+      container.scrollTop = container.scrollHeight;
+      updateTokenDisplay();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // EVENTOS
+    // ═══════════════════════════════════════════════════════════════
+
+    document.getElementById("messageInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    document.getElementById("messageInput").addEventListener("input", (e) => {
+      e.target.style.height = "auto";
+      e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // INICIALIZAÇÃO
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadRules();
+      loadMessages();
+    });
+  </script>
+</body>
+</html>

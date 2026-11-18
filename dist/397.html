@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Filtrador Universal de Documentos</title>
+    <style>
+        /* ESTILO GERAL - Focado em limpeza e leitura */
+        body { background-color: #2c3e50; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; color: white; }
+        
+        .main-container { display: flex; height: 100vh; }
+
+        /* LADO ESQUERDO: CONTROLES */
+        .painel-input {
+            width: 30%;
+            background: #1a252f;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #f39c12;
+            overflow-y: auto;
+        }
+
+        h2 { color: #f39c12; border-bottom: 1px solid #555; padding-bottom: 10px; font-size: 18px; }
+        label { font-size: 12px; font-weight: bold; color: #bdc3c7; margin-top: 15px; display: block; }
+        
+        /* Áreas de texto e inputs */
+        textarea {
+            flex-grow: 1; background: #34495e; color: white; border: 1px solid #7f8c8d; padding: 10px;
+            font-family: monospace; font-size: 10pt; resize: none; margin-bottom: 10px; min-height: 150px;
+        }
+        
+        input[type="text"] {
+            width: 100%; padding: 8px; background: #34495e; border: 1px solid #7f8c8d; color: white; box-sizing: border-box;
+        }
+
+        /* Botões */
+        .btn {
+            padding: 12px; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; 
+            margin-top: 10px; width: 100%; text-transform: uppercase; font-size: 13px; transition: 0.3s;
+        }
+        .btn-processar { background-color: #f39c12; color: #2c3e50; }
+        .btn-processar:hover { background-color: #d68910; }
+        .btn-arquivo { background-color: #3498db; color: white; }
+        .btn-copiar { background-color: #27ae60; color: white; }
+        .btn-limpar { background-color: #c0392b; color: white; }
+
+        /* LADO DIREITO: RESULTADO */
+        .painel-output {
+            width: 70%;
+            background: #ecf0f1;
+            padding: 30px;
+            overflow-y: auto;
+            color: black;
+        }
+
+        /* O documento limpo */
+        .documento-final {
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            text-align: justify;
+            white-space: pre-wrap; /* Mantém parágrafos */
+        }
+
+        .stats { font-size: 12px; color: #7f8c8d; margin-bottom: 10px; text-align: right; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    
+    <!-- PAINEL DE CONTROLE (ESQUERDA) -->
+    <div class="painel-input">
+        <h2>1. ENTRADA DE DADOS</h2>
+        
+        <label>IMPORTAR MÚLTIPLOS ARQUIVOS (.txt, .json):</label>
+        <input type="file" id="fileInput" multiple accept=".txt,.json,.md" style="display:none" onchange="lerArquivos()">
+        <button class="btn btn-arquivo" onclick="document.getElementById('fileInput').click()">📂 ESCOLHER ARQUIVOS</button>
+
+        <label>OU COLE O TEXTO SUJO AQUI:</label>
+        <textarea id="textoBruto" placeholder="Cole o texto cheio de asteriscos e repetições aqui..."></textarea>
+
+        <h2>2. CONFIGURAÇÃO DE LIMPEZA</h2>
+        
+        <label>CARACTERES PARA REMOVER (Separe por espaço):</label>
+        <!-- Aqui você controla o que é lixo sem mexer no código -->
+        <input type="text" id="charsRemover" value="* # _ • >" placeholder="Ex: * # @">
+        <small style="color:#95a5a6">O código vai apagar tudo que você colocar acima.</small>
+
+        <label>SENSIBILIDADE DO FILTRO:</label>
+        <select id="sensibilidade" style="width:100%; padding:8px; background:#34495e; color:white; border:1px solid #7f8c8d;">
+            <option value="alta">Alta (Remove qualquer frase parecida)</option>
+            <option value="media" selected>Média (Padrão)</option>
+            <option value="baixa">Baixa (Só remove se for idêntico)</option>
+        </select>
+
+        <button class="btn btn-processar" onclick="processar()">⚡ FILTRAR E LIMPAR</button>
+        <button class="btn btn-limpar" onclick="limparTudo()">🗑️ LIMPAR TUDO</button>
+    </div>
+
+    <!-- PAINEL DE RESULTADO (DIREITA) -->
+    <div class="painel-output">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>RESULTADO FINAL</h2>
+            <button class="btn btn-copiar" style="width:auto; margin:0;" onclick="copiarResultado()">📋 COPIAR TEXTO</button>
+        </div>
+        
+        <div class="stats" id="statusMsg">Aguardando processamento...</div>
+
+        <div class="documento-final" id="saidaTexto" contenteditable="true">
+            O texto limpo e sem repetições aparecerá aqui...
+        </div>
+    </div>
+</div>
+
+<script>
+    // FUNÇÃO PARA LER MÚLTIPLOS ARQUIVOS
+    function lerArquivos() {
+        const input = document.getElementById('fileInput');
+        const textarea = document.getElementById('textoBruto');
+        
+        if (input.files.length > 0) {
+            textarea.value = "Lendo arquivos... aguarde.";
+            let textoAcumulado = "";
+            let arquivosLidos = 0;
+
+            for (let i = 0; i < input.files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    textoAcumulado += "\n" + e.target.result;
+                    arquivosLidos++;
+                    if (arquivosLidos === input.files.length) {
+                        textarea.value = textoAcumulado;
+                        alert(arquivosLidos + " arquivos carregados com sucesso!");
+                    }
+                }
+                reader.readAsText(input.files[i]);
+            }
+        }
+    }
+
+    // FUNÇÃO PRINCIPAL
+    function processar() {
+        let texto = document.getElementById('textoBruto').value;
+        if (!texto) { alert("Sem texto para processar!"); return; }
+
+        // 1. LIMPEZA DE CARACTERES "SUJOS" (ASTERISCOS, ETC)
+        const charsParaRemover = document.getElementById('charsRemover').value.split(' ').filter(c => c !== '');
+        
+        // Cria uma expressão regular dinâmica baseada no que você digitou no input
+        charsParaRemover.forEach(char => {
+            // Escapa caracteres especiais do regex se necessário
+            let safeChar = char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            let regex = new RegExp(safeChar, 'g');
+            texto = texto.replace(regex, ''); // Substitui por vazio
+        });
+
+        // 2. QUEBRAR EM PARÁGRAFOS
+        let paragrafos = texto.split(/\n+/);
+        
+        let unicos = [];
+        let memoria = new Set();
+        let contadorOriginal = paragrafos.length;
+
+        // Configuração de sensibilidade
+        const sensibilidade = document.getElementById('sensibilidade').value;
+        let limiteCorte = 0; // Tamanho mínimo para considerar um parágrafo
+        if (sensibilidade === 'alta') limiteCorte = 10;
+        if (sensibilidade === 'media') limiteCorte = 20;
+        if (sensibilidade === 'baixa') limiteCorte = 5;
+
+        // 3. FILTRAGEM DE REPETIÇÕES
+        paragrafos.forEach(p => {
+            let pLimpo = p.trim();
+            
+            if (pLimpo.length < limiteCorte) return; // Ignora linhas muito curtas (lixo)
+
+            // Cria uma "assinatura" do texto para comparação (tira espaços, pontuação e deixa minúsculo)
+            // Isso faz com que "Olá mundo." e "ola mundo" sejam considerados iguais.
+            let assinatura = pLimpo.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+            // Se a sensibilidade for ALTA, cortamos apenas os primeiros 50 caracteres para comparar o início das frases
+            if (sensibilidade === 'alta') {
+                assinatura = assinatura.substring(0, 50);
+            }
+
+            // Verifica se já vimos essa assinatura antes
+            let duplicado = false;
+            
+            // Verificação simples: se a assinatura já está na memória
+            if (memoria.has(assinatura)) {
+                duplicado = true;
+            } else {
+                // Verificação extra para sensibilidade alta (busca parcial)
+                if (sensibilidade === 'alta') {
+                    for (let item of memoria) {
+                        if (item.includes(assinatura) || assinatura.includes(item)) {
+                            duplicado = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!duplicado) {
+                memoria.add(assinatura);
+                unicos.push(`<p>${pLimpo}</p>`);
+            }
+        });
+
+        // 4. EXIBIR RESULTADO
+        const divSaida = document.getElementById('saidaTexto');
+        if (unicos.length > 0) {
+            divSaida.innerHTML = unicos.join("");
+            document.getElementById('statusMsg').innerText = 
+                `Processado: De ${contadorOriginal} parágrafos originais para ${unicos.length} únicos.`;
+        } else {
+            divSaida.innerHTML = "<p>Nenhum texto válido encontrado após a filtragem.</p>";
+        }
+    }
+
+    function copiarResultado() {
+        const range = document.createRange();
+        range.selectNode(document.getElementById('saidaTexto'));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        alert("Texto copiado para a área de transferência!");
+    }
+
+    function limparTudo() {
+        document.getElementById('textoBruto').value = '';
+        document.getElementById('saidaTexto').innerHTML = 'O texto limpo aparecerá aqui...';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('statusMsg').innerText = 'Aguardando...';
+    }
+</script>
+
+</body>
+</html>

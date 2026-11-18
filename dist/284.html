@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>200+ Códigos Jurídicos</title>
+  <link rel="manifest" href="manifest.json">
+  <style> /* Mesmo style anterior */ body { font-family: Arial, sans-serif; background: #f0f2f5; text-align: center; padding: 20px; margin: 0; } h1 { background: #0077ff; color: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; } ul { list-style: none; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 400px; margin: 0 auto; } li a { display: block; width: 100%; text-decoration: none; background: #28a745; color: #fff; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; position: relative; } li a:hover { background: #218838; } .preview { font-size: 12px; color: #666; margin-top: 5px; } button { background: #ffc107; color: #000; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 10px; } @media (min-width: 600px) { ul { flex-direction: row; flex-wrap: wrap; justify-content: center; } li { flex: 1 1 45%; } } </style>
+</head>
+<body>
+  <h1>📂 200+ Códigos Auto-Listados</h1>
+  <p>Zero renomeio | Lista tudo + preview nome:</p>
+  <button onclick="carregar200()">🔄 Listar 200+</button>
+  <ul id="lista-codigos"></ul>
+
+  <script>
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+    const lista = document.getElementById("lista-codigos");
+
+    // Fixos prioritários (adicione seus BPC/JWT aqui, opcional)
+    const fixos = [
+      {nome: '🔑 JWT PDJUD', arquivo: 'jwt.html'},
+      {nome: '📄 BPC LOAS', arquivo: 'bpc-loas.html'}
+    ];
+
+    async function carregar200() {
+      lista.innerHTML = '';
+      // Fixos
+      fixos.forEach(item => adicionarLink(item.nome, item.arquivo));
+      // Auto 200+ padrões (sem renomear!)
+      const padroes = ['codigo', 'ferramenta', 'arquivo', 'pagina', 'tool'];
+      for (let i = 1; i <= 200; i++) {
+        padroes.forEach(padrao => {
+          const arq1 = `${padrao}${i}.html`;
+          const arq2 = `tool-${i}.html`;
+          const arq3 = `${i}.html`;
+          if (!temLink(arq1)) adicionarLink(`🤖 ${padrao.charAt(0).toUpperCase()}${padrao.slice(1)} ${i}`, arq1);
+          if (!temLink(arq2)) adicionarLink(`🔧 Tool ${i}`, arq2);
+          if (!temLink(arq3)) adicionarLink(`📄 Arquivo ${i}`, arq3);
+        });
+      }
+      // Preview nomes reais
+      setTimeout(() => {
+        document.querySelectorAll('a').forEach(a => {
+          const preview = document.createElement('div');
+          preview.className = 'preview';
+          preview.textContent = `Nome real: ${a.href.split('/').pop()}`;
+          if (a.parentNode.querySelector('.preview')) return;
+          a.parentNode.appendChild(preview);
+        });
+      }, 500);
+    }
+
+    function adicionarLink(nome, arquivo) {
+      if (temLink(arquivo)) return;
+      const li = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = arquivo;
+      link.textContent = nome;
+      link.onclick = () => {
+        localStorage.setItem('ultimo', arquivo);
+        document.title = `Aberto: ${nome}`;
+      };
+      li.appendChild(link);
+      lista.appendChild(li);
+    }
+
+    function temLink(arq) {
+      return Array.from(document.querySelectorAll('a')).some(a => a.href.includes(arq));
+    }
+
+    // Auto carrega + último
+    window.onload = () => {
+      const ultimo = localStorage.getItem('ultimo');
+      if (ultimo) {
+        adicionarLink('⭐ Último: ' + ultimo.split('/').pop(), ultimo);
+        setTimeout(carregar200, 1000);
+      } else {
+        carregar200();
+      }
+    };
+  </script>
+</body>
+</html>

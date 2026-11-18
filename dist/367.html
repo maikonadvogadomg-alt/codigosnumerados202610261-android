@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Custos de IA Avançada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #0056b3;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"], select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #28a745;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 4px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .warning {
+            color: #dc3545;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .model-info {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-left: 5px solid #007bff;
+            border-radius: 4px;
+        }
+        .model-info p {
+            margin: 5px 0;
+        }
+        .replit-cost-highlight {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .replit-row {
+            background-color: #f8d7da; /* Light red for Replit */
+            color: #721c24;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Custos de IA Avançada</h1>
+        <p>Use esta ferramenta para estimar o custo de uso de diferentes modelos de IA, comparando com os valores absurdos da Replit.</p>
+
+        <div class="model-info">
+            <h2>Preços de Referência (API Direta - Aprox. por Milhão de Tokens)</h2>
+            <p><strong>OpenAI GPT-4o-mini:</strong> Entrada: US$ 0.15 / Saída: US$ 0.60</p>
+            <p><strong>OpenAI GPT-4 Turbo:</strong> Entrada: US$ 10.00 / Saída: US$ 30.00</p>
+            <p><strong>Google Gemini 1.5 Flash:</strong> Entrada: US$ 0.35 / Saída: US$ 0.45</p>
+            <p><strong>Google Gemini 1.5 Pro:</strong> Entrada: US$ 0.50 / Saída: US$ 1.50</p>
+            <p class="replit-cost-highlight"><strong>Custo Replit (todos os modelos): US$ 1.00 por token (Entrada ou Saída)</strong></p>
+            <p class="warning">**Atenção:** Os preços de API direta são por MILHÃO de tokens. A Replit cobrava US$ 1.00 por CADA token.</p>
+        </div>
+
+        <label for="inputTokens">Tokens de Entrada:</label>
+        <input type="number" id="inputTokens" value="100000" min="0">
+
+        <label for="outputTokens">Tokens de Saída:</label>
+        <input type="number" id="outputTokens" value="100000" min="0">
+
+        <label for="modelSelect">Selecione o Modelo para Cálculo Principal:</label>
+        <select id="modelSelect">
+            <option value="gpt4o-mini">OpenAI GPT-4o-mini</option>
+            <option value="gpt4-turbo">OpenAI GPT-4 Turbo (a "GPT cara")</option>
+            <option value="gemini-flash">Google Gemini 1.5 Flash (a "Gemini barata")</option>
+            <option value="gemini-pro">Google Gemini 1.5 Pro</option>
+            <option value="replit">Custo Replit (US$ 1.00/token)</option>
+            <option value="custom">Personalizado</option>
+        </select>
+
+        <div id="customCosts" style="display: none; margin-top: 10px;">
+            <label for="customInputCost">Custo de Entrada Personalizado (por MILHÃO de tokens):</label>
+            <input type="number" id="customInputCost" value="0.50" step="0.01" min="0">
+
+            <label for="customOutputCost">Custo de Saída Personalizado (por MILHÃO de tokens):</label>
+            <input type="number" id="customOutputCost" value="1.50" step="0.01" min="0">
+        </div>
+
+        <button onclick="calculateCost()">Calcular Custos e Comparar</button>
+
+        <div id="result" style="display: none;">
+            <div class="result">
+                <p>Custo Estimado para o Modelo Selecionado: <span id="estimatedCost"></span></p>
+            </div>
+            <h2>Comparação de Custos para os Mesmos Tokens</h2>
+            <table id="comparisonTable">
+                <thead>
+                    <tr>
+                        <th>Modelo de IA</th>
+                        <th>Custo de Entrada</th>
+                        <th>Custo de Saída</th>
+                        <th>Custo Total Estimado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const prices = {
+            'gpt4o-mini': { name: 'OpenAI GPT-4o-mini', input: 0.15, output: 0.60 }, // por milhão de tokens
+            'gpt4-turbo': { name: 'OpenAI GPT-4 Turbo', input: 10.00, output: 30.00 }, // por milhão de tokens
+            'gemini-flash': { name: 'Google Gemini 1.5 Flash', input: 0.35, output: 0.45 }, // por milhão de tokens
+            'gemini-pro': { name: 'Google Gemini 1.5 Pro', input: 0.50, output: 1.50 },   // por milhão de tokens
+            'replit': { name: 'Custo Replit (US$ 1.00/token)', input: 1000000, output: 1000000 } // US$ 1.00 por token, então 1 milhão de tokens custa 1 milhão de dólares
+        };
+
+        const modelSelect = document.getElementById('modelSelect');
+        const customCostsDiv = document.getElementById('customCosts');
+        const customInputCost = document.getElementById('customInputCost');
+        const customOutputCost = document.getElementById('customOutputCost');
+        const comparisonTableBody = document.querySelector('#comparisonTable tbody');
+
+        modelSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customCostsDiv.style.display = 'block';
+            } else {
+                customCostsDiv.style.display = 'none';
+            }
+        });
+
+        function calculateCost() {
+            const inputTokens = parseFloat(document.getElementById('inputTokens').value);
+            const outputTokens = parseFloat(document.getElementById('outputTokens').value);
+            const selectedModelKey = document.getElementById('modelSelect').value;
+
+            if (isNaN(inputTokens) || isNaN(outputTokens) || inputTokens < 0 || outputTokens < 0) {
+                alert("Por favor, insira valores válidos para os tokens.");
+                return;
+            }
+
+            let mainInputCostPerMillion, mainOutputCostPerMillion;
+            let mainModelName = "";
+
+            if (selectedModelKey === 'custom') {
+                mainInputCostPerMillion = parseFloat(customInputCost.value);
+                mainOutputCostPerMillion = parseFloat(customOutputCost.value);
+                mainModelName = "Personalizado";
+                if (isNaN(mainInputCostPerMillion) || isNaN(mainOutputCostPerMillion) || mainInputCostPerMillion < 0 || mainOutputCostPerMillion < 0) {
+                    alert("Por favor, insira valores válidos para os custos personalizados.");
+                    return;
+                }
+            } else {
+                mainInputCostPerMillion = prices[selectedModelKey].input;
+                mainOutputCostPerMillion = prices[selectedModelKey].output;
+                mainModelName = prices[selectedModelKey].name;
+            }
+
+            let mainTotalCost;
+            if (selectedModelKey === 'replit') {
+                mainTotalCost = (inputTokens * 1) + (outputTokens * 1);
+            } else {
+                mainTotalCost = (inputTokens / 1000000) * mainInputCostPerMillion + (outputTokens / 1000000) * mainOutputCostPerMillion;
+            }
+            
+            document.getElementById('estimatedCost').innerText = `US$ ${mainTotalCost.toFixed(6)}`;
+            document.getElementById('result').style.display = 'block';
+
+            // Build comparison table
+            comparisonTableBody.innerHTML = ''; // Clear previous rows
+
+            for (const key in prices) {
+                if (prices.hasOwnProperty(key)) {
+                    const model = prices[key];
+                    let currentInputCostPerMillion = model.input;
+                    let currentOutputCostPerMillion = model.output;
+
+                    let currentTotalCost;
+                    if (key === 'replit') {
+                        currentTotalCost = (inputTokens * 1) + (outputTokens * 1);
+                    } else {
+                        currentTotalCost = (inputTokens / 1000000) * currentInputCostPerMillion + (outputTokens / 1000000) * currentOutputCostPerMillion;
+                    }
+
+                    const row = comparisonTableBody.insertRow();
+                    if (key === 'replit') {
+                        row.classList.add('replit-row');
+                    }
+                    
+                    row.insertCell().innerText = model.name;
+                    row.insertCell().innerText = key === 'replit' ? `US$ ${currentInputCostPerMillion.toFixed(2)} / token` : `US$ ${currentInputCostPerMillion.toFixed(2)} / 1M tokens`;
+                    row.insertCell().innerText = key === 'replit' ? `US$ ${currentOutputCostPerMillion.toFixed(2)} / token` : `US$ ${currentOutputCostPerMillion.toFixed(2)} / 1M tokens`;
+                    row.insertCell().innerText = `US$ ${currentTotalCost.toFixed(6)}`;
+                }
+            }
+
+            // Add custom model to table if selected
+            if (selectedModelKey === 'custom') {
+                const row = comparisonTableBody.insertRow();
+                row.insertCell().innerText = mainModelName;
+                row.insertCell().innerText = `US$ ${mainInputCostPerMillion.toFixed(2)} / 1M tokens`;
+                row.insertCell().innerText = `US$ ${mainOutputCostPerMillion.toFixed(2)} / 1M tokens`;
+                row.insertCell().innerText = `US$ ${mainTotalCost.toFixed(6)}`;
+            }
+        }
+    </script>
+</body>
+</html>

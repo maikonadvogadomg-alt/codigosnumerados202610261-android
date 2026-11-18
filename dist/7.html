@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corretor de Projetos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #e0e0e0; font-family: sans-serif; padding: 16px; }
+
+  h1 { text-align: center; color: #7c9fff; margin-bottom: 4px; font-size: 1.2rem; }
+  .sub { text-align: center; color: #555; font-size: 0.8rem; margin-bottom: 20px; }
+
+  .card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3e;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .card.verde   { border-left: 4px solid #7fff7f; }
+  .card.azul    { border-left: 4px solid #7c9fff; }
+  .card.amarelo { border-left: 4px solid #ffcc44; }
+  .card.vermelho{ border-left: 4px solid #ff7c7c; }
+  .card.roxo    { border-left: 4px solid #c87cff; }
+
+  .card-titulo {
+    font-weight: bold;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Área de drop */
+  .drop-area {
+    border: 2px dashed #2a2d3e;
+    border-radius: 10px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    max-width: 860px;
+    margin: 0 auto 14px;
+  }
+  .drop-area:hover, .drop-area.dragover {
+    border-color: #7c9fff;
+    background: #1a1d27;
+  }
+  .drop-area .icone { font-size: 2.5rem; margin-bottom: 8px; }
+  .drop-area .texto { color: #888; font-size: 0.85rem; }
+  .drop-area .texto span { color: #7c9fff; }
+  input[type="file"] { display: none; }
+
+  /* Botões */
+  .btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-azul    { background: #7c9fff; color: #0f1117; }
+  .btn-azul:hover { background: #a0b8ff; }
+  .btn-verde   { background: transparent; color: #7fff7f; border: 1px solid #7fff7f; }
+  .btn-verde:hover { background: #7fff7f; color: #0f1117; }
+  .btn-roxo    { background: transparent; color: #c87cff; border: 1px solid #c87cff; }
+  .btn-roxo:hover { background: #c87cff; color: #0f1117; }
+
+  .acoes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  /* Arquivo item */
+  .arquivo-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #0a0c12;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    font-size: 0.8rem;
+    font-family: monospace;
+    flex-wrap: wrap;
+  }
+  .arquivo-nome { flex: 1; color: #c8f0a0; }
+  .arquivo-tamanho { color: #555; font-size: 0.72rem; }
+  .arquivo-tipo {
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-family: sans-serif;
+  }
+  .tipo-json    { background: #2a2000; color: #ffcc44; }
+  .tipo-html    { background: #2a1500; color: #ff9f7c; }
+  .tipo-js      { background: #1a1a00; color: #ffff7c; }
+  .tipo-ts      { background: #001a2a; color: #7cb8ff; }
+  .tipo-css     { background: #001a2a; color: #7c9fff; }
+  .tipo-py      { background: #001a1a; color: #7fffff; }
+  .tipo-outro   { background: #1a1a1a; color: #888; }
+
+  /* Script item */
+  .script-item {
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .script-nome {
+    color: #c87cff;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  .script-cmd {
+    color: #c8f0a0;
+    font-family: monospace;
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+  }
+  .script-problema { color: #ff7c7c; font-size: 0.78rem; margin-bottom: 4px; }
+  .script-ok       { color: #7fff7f; font-size: 0.78rem; }
+
+  /* Código gerado */
+  textarea {
+    width: 100%;
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-radius: 6px;
+    color: #c8f0a0;
+    padding: 10px;
+    font-size: 0.78rem;
+    font-family: monospace;
+    resize: vertical;
+    min-height: 200px;
+    margin-top: 10px;
+  }
+
+  .tag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-right: 4px;
+  }
+  .tag-replit  { background: #2a0000; color: #ff7c7c; }
+  .tag-ok      { background: #002a00; color: #7fff7f; }
+  .tag-aviso   { background: #2a2000; color: #ffcc44; }
+
+  .linha-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.83rem;
+    flex-wrap: wrap;
+  }
+  .linha-label { color: #888; min-width: 110px; flex-shrink: 0; }
+  .linha-valor { color: #e0e0e0; }
+
+  .separador { border: none; border-top: 1px solid #2a2d3e; margin: 12px 0; }
+
+  .msg-ok    { color: #7fff7f; font-size: 0.82rem; margin-top: 6px; }
+  .msg-aviso { color: #ffcc44; font-size: 0.82rem; margin-top: 6px; }
+
+  .lista-arquivos-scroll {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+
+  /* Porta */
+  .porta-input {
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-radius: 6px;
+    color: #c8f0a0;
+    padding: 6px 12px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    width: 100px;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🔧 Corretor de Projetos</h1>
+<p class="sub">Importe o ZIP, veja o que tem dentro e gere o package.json corrigido</p>
+
+<!-- DROP AREA -->
+<div class="drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+  <div class="icone">📦</div>
+  <div class="texto">
+    Clique ou arraste o <span>arquivo ZIP</span> do projeto aqui<br>
+    <small style="color:#444;margin-top:4px;display:block">Também aceita package.json solto</small>
+  </div>
+</div>
+<input type="file" id="fileInput" accept=".zip,.json" onchange="carregarArquivo(this)"/>
+
+<!-- RESULTADO -->
+<div id="resultado"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+// ============================================================
+// ESTADO
+// ============================================================
+const ESTADO = {
+  arquivos: {},
+  packageJson: null,
+  nomeZip: ''
+};
+
+// ============================================================
+// DRAG AND DROP
+// ============================================================
+const dropArea = document.getElementById('dropArea');
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
+dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+dropArea.addEventListener('drop', e => {
+  e.preventDefault();
+  dropArea.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) processarArquivo(f);
+});
+
+function carregarArquivo(input) {
+  if (input.files[0]) processarArquivo(input.files[0]);
+}
+
+// ============================================================
+// PROCESSAR ARQUIVO
+// ============================================================
+async function processarArquivo(arquivo) {
+  const res = document.getElementById('resultado');
+  res.innerHTML = '<div class="card azul" style="max-width:860px;margin:0 auto;text-align:center;color:#7c9fff">⏳ Lendo arquivo...</div>';
+
+  ESTADO.nomeZip = arquivo.name;
+
+  if (arquivo.name.endsWith('.json')) {
+    const txt = await arquivo.text();
+    try {
+      ESTADO.packageJson = JSON.parse(txt);
+      ESTADO.arquivos = { 'package.json': txt };
+      mostrarResultado();
+    } catch(e) {
+      res.innerHTML = `<div class="card vermelho" style="max-width:860px;margin:0 auto">❌ JSON inválido: ${e.message}</div>`;
+    }
+    return;
+  }
+
+  if (!arquivo.name.endsWith('.zip')) {
+    res.innerHTML = '<div class="card vermelho" style="max-width:860px;margin:0 auto">❌ Envie um arquivo .zip ou .json</div>';
+    return;
+  }
+
+  try {
+    const zip = await JSZip.loadAsync(arquivo);
+    ESTADO.arquivos = {};
+    ESTADO.packageJson = null;
+
+    const promessas = [];
+    zip.forEach((caminho, entry) => {
+      if (!entry.dir) {
+        promessas.push(
+          entry.async('string').then(conteudo => {
+            ESTADO.arquivos[caminho] = conteudo;
+            if (caminho.endsWith('package.json') && !caminho.includes('node_modules')) {
+              try { ESTADO.packageJson = JSON.parse(conteudo); } catch(e) {}
+            }
+          }).catch(() => {
+            ESTADO.arquivos[caminho] = '[binário]';
+          })
+        );
+      }
+    });
+
+    await Promise.all(promessas);
+    mostrarResultado();
+
+  } catch(e) {
+    res.innerHTML = `<div class="card vermelho" style="max-width:860px;margin:0 auto">❌ Erro ao ler ZIP: ${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// MOSTRAR RESULTADO
+// ============================================================
+function mostrarResultado() {
+  const res = document.getElementById('resultado');
+  res.innerHTML = '';
+
+  const arquivos = ESTADO.arquivos;
+  const pkg = ESTADO.packageJson;
+
+  // --- RESUMO DO PROJETO ---
+  const nomes = Object.keys(arquivos).filter(n => !n.includes('node_modules'));
+  const temPkg = !!pkg;
+  const temReplit = nomes.some(n => n.includes('.replit') || n.includes('replit.nix'));
+  const temVite = nomes.some(n => n.includes('vite.config'));
+  const temNext = nomes.some(n => n.includes('next.config'));
+  const temExpress = pkg && JSON.stringify(pkg).includes('express');
+  const temReact = pkg && JSON.stringify(pkg).includes('react');
+  const temTs = nomes.some(n => n.endsWith('.ts') || n.endsWith('.tsx'));
+
+  const cardResumo = criarCard('azul');
+  cardResumo.innerHTML = `
+    <div class="card-titulo">📋 Resumo do Projeto — ${ESTADO.nomeZip}</div>
+    <div class="linha-info">
+      <span class="linha-label">Total de arquivos:</span>
+      <span class="linha-valor">${nomes.length} arquivos</span>
+    </div>
+    <div class="linha-info">
+      <span class="linha-label">package.json:</span>
+      <span class="linha-valor">${temPkg
+        ? '<span class="tag tag-ok">✅ Encontrado</span>'
+        : '<span class="tag tag-aviso">⚠️ Não encontrado — vou gerar um</span>'}</span>
+    </div>
+    <div class="linha-info">
+      <span class="linha-label">Origem Replit:</span>
+      <span class="linha-valor">${temReplit
+        ? '<span class="tag tag-replit">⚠️ Arquivos Replit detectados</span>'
+        : '<span class="tag tag-ok">✅ Sem arquivos Replit</span>'}</span>
+    </div>
+    <div class="linha-info">
+      <span class="linha-label">Tecnologias:</span>
+      <span class="linha-valor">
+        ${temReact ? '<span class="tag" style="background:#001a2a;color:#7cb8ff">React</span>' : ''}
+        ${temTs    ? '<span class="tag" style="background:#001a2a;color:#7c9fff">TypeScript</span>' : ''}
+        ${temVite  ? '<span class="tag" style="background:#2a1a00;color:#ffcc44">Vite</span>' : ''}
+        ${temNext  ? '<span class="tag" style="background:#1a1a1a;color:#e0e0e0">Next.js</span>' : ''}
+        ${temExpress ? '<span class="tag" style="background:#001a00;color:#7fff7f">Express</span>' : ''}
+      </span>
+    </div>
+  `;
+  res.appendChild(cardResumo);
+
+  // --- LISTA DE ARQUIVOS ---
+  const cardArquivos = criarCard('roxo');
+  let listaHtml = '<div class="lista-arquivos-scroll">';
+  nomes.slice(0, 60).forEach(nome => {
+    const ext = nome.split('.').pop().toLowerCase();
+    const tipo = {
+      json:'tipo-json', html:'tipo-html', js:'tipo-js',
+      ts:'tipo-ts', tsx:'tipo-ts', jsx:'tipo-js',
+      css:'tipo-css', scss:'tipo-css', py:'tipo-py'
+    }[ext] || 'tipo-outro';
+    const tamanho = arquivos[nome] !== '[binário]'
+      ? formatarTamanho(arquivos[nome].length) : 'binário';
+    listaHtml += `
+      <div class="arquivo-item">
+        <span class="arquivo-tipo ${tipo}">.${ext}</span>
+        <span class="arquivo-nome">${nome}</span>
+        <span class="arquivo-tamanho">${tamanho}</span>
+      </div>`;
+  });
+  if (nomes.length > 60) {
+    listaHtml += `<div style="color:#555;font-size:0.75rem;padding:6px 10px">... e mais ${nomes.length - 60} arquivos</div>`;
+  }
+  listaHtml += '</div>';
+  cardArquivos.innerHTML = `<div class="card-titulo">📁 Arquivos no projeto (${nomes.length})</div>${listaHtml}`;
+  res.appendChild(cardArquivos);
+
+  // --- ANÁLISE DO PACKAGE.JSON ---
+  if (pkg) {
+    analisarPackageJson(pkg, res, temReplit);
+  } else {
+    gerarPackageJsonNovo(res, nomes, temReact, temTs, temVite, temExpress);
+  }
+}
+
+// ============================================================
+// ANALISAR PACKAGE.JSON EXISTENTE
+// ============================================================
+function analisarPackageJson(pkg, res, temReplit) {
+  const scripts = pkg.scripts || {};
+  const problemas = [];
+  const scriptKeys = Object.keys(scripts);
+
+  const cardScripts = criarCard('amarelo');
+  let html = `<div class="card-titulo">⚙️ Scripts encontrados no package.json</div>`;
+
+  if (!scriptKeys.length) {
+    html += `<div style="color:#ff7c7c;font-size:0.85rem">⚠️ Nenhum script encontrado — por isso não aparecem botões no terminal</div>`;
+    problemas.push('sem_scripts');
+  } else {
+    scriptKeys.forEach(key => {
+      const cmd = scripts[key];
+      const probs = detectarProblemas(key, cmd);
+      html += `
+        <div class="script-item">
+          <div class="script-nome">▶ ${key}</div>
+          <div class="script-cmd">${cmd}</div>
+          ${probs.length
+            ? probs.map(p => `<div class="script-problema">⚠️ ${p}</div>`).join('')
+            : '<div class="script-ok">✅ Parece ok</div>'}
+        </div>`;
+      if (probs.length) problemas.push(...probs);
+    });
+  }
+
+  // Porta
+  const porta = detectarPorta(pkg);
+  html += `
+    <hr class="separador">
+    <div class="linha-info">
+      <span class="linha-label">Porta detectada:</span>
+      <span class="linha-valor">${porta
+        ? `<span style="color:#7fff7f">✅ ${porta}</span>`
+        : '<span style="color:#ffcc44">⚠️ Não detectada — pode precisar definir</span>'}</span>
+    </div>
+  `;
+
+  cardScripts.innerHTML = html;
+  res.appendChild(cardScripts);
+
+  // --- GERAR CORRIGIDO ---
+  gerarPackageCorrigido(pkg, res, problemas, porta);
+}
+
+// ============================================================
+// DETECTAR PROBLEMAS NOS SCRIPTS
+// ============================================================
+function detectarProblemas(key, cmd) {
+  const probs = [];
+  if (cmd.includes('replit')) probs.push('Comando específico da Replit — não vai funcionar fora dela');
+  if (cmd.includes('$REPL_')) probs.push('Variável de ambiente da Replit ($REPL_...) — precisa substituir');
+  if (cmd.includes('run -')) probs.push('Sintaxe de run da Replit detectada');
+  if (cmd.includes('bash -c') && cmd.includes('replit')) probs.push('Script bash com referência à Replit');
+  if (!cmd.trim()) probs.push('Script vazio');
+  return probs;
+}
+
+// ============================================================
+// DETECTAR PORTA
+// ============================================================
+function detectarPorta(pkg) {
+  const txt = JSON.stringify(pkg);
+  const match = txt.match(/PORT["\s:]+(\d{4,5})/i)
+    || txt.match(/:(\d{4,5})/);
+  if (match) return match[1];
+  if (txt.includes('3000')) return '3000';
+  if (txt.includes('5000')) return '5000';
+  if (txt.includes('8080')) return '8080';
+  if (txt.includes('4173')) return '4173';
+  return null;
+}
+
+// ============================================================
+// GERAR PACKAGE.JSON CORRIGIDO
+// ============================================================
+function gerarPackageCorrigido(pkg, res, problemas, porta) {
+  const pkgCorrigido = JSON.parse(JSON.stringify(pkg));
+
+  // Remove referências Replit
+  if (pkgCorrigido.scripts) {
+    Object.keys(pkgCorrigido.scripts).forEach(key => {
+      let cmd = pkgCorrigido.scripts[key];
+      cmd = cmd.replace(/\$REPL_\w+/g, '');
+      cmd = cmd.replace(/replit/gi, '');
+      pkgCorrigido.scripts[key] = cmd.trim();
+    });
+  }
+
+  // Garante scripts essenciais
+  if (!pkgCorrigido.scripts) pkgCorrigido.scripts = {};
+  if (!pkgCorrigido.scripts.start && !pkgCorrigido.scripts.dev) {
+    pkgCorrigido.scripts.start = 'node index.js';
+  }
+  if (!pkgCorrigido.scripts.install && !pkgCorrigido.scripts.setup) {
+    pkgCorrigido.scripts.setup = 'npm install';
+  }
+
+  // Remove campos Replit
+  delete pkgCorrigido.replit;
+  delete pkgCorrigido['replit-nix'];
+
+  const json = JSON.stringify(pkgCorrigido, null, 2);
+
+  const cardCorrigido = criarCard('verde');
+  cardCorrigido.innerHTML = `
+    <div class="card-titulo">✅ package.json Corrigido — pronto para usar</div>
+    ${problemas.length
+      ? `<div class="msg-aviso">⚠️ ${problemas.length} problema(s) corrigido(s) automaticamente</div>`
+      : '<div class="msg-ok">✅ Nenhum problema grave encontrado</div>'}
+    <textarea id="jsonCorrigido" readonly>${json}</textarea>
+    <div class="acoes">
+      <button class="btn btn-azul" onclick="copiarJson()">📋 Copiar</button>
+      <button class="btn btn-verde" onclick="baixarJson()">⬇️ Baixar package.json</button>
+    </div>
+    <div id="msgCopia" style="color:#7fff7f;font-size:0.8rem;margin-top:6px;min-height:18px"></div>
+    <hr class="separador">
+    <div style="color:#888;font-size:0.8rem;line-height:1.7">
+      <strong style="color:#ffcc44">Como usar:</strong><br>
+      1. Baixe o arquivo acima<br>
+      2. Coloque na pasta raiz do projeto (substitui o antigo)<br>
+      3. No terminal do projeto, rode: <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm install</code><br>
+      4. Depois: <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm run dev</code> ou <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm start</code>
+    </div>
+  `;
+  res.appendChild(cardCorrigido);
+}
+
+// ============================================================
+// GERAR PACKAGE.JSON DO ZERO
+// ============================================================
+function gerarPackageJsonNovo(res, nomes, temReact, temTs, temVite, temExpress) {
+  const cardNovo = criarCard('amarelo');
+
+  const temIndex = nomes.find(n => n.endsWith('index.js') && !n.includes('node_modules'));
+  const temServer = nomes.find(n => n.match(/server\.(js|ts)$/) && !n.includes('node_modules'));
+  const temApp = nomes.find(n => n.match(/app\.(js|ts)$/) && !n.includes('node_modules'));
+  const entrada = temServer || temApp || temIndex || 'index.js';
+
+  let scripts = {};
+  if (temVite) {
+    scripts = { dev: 'vite', build: 'vite build', preview: 'vite preview', setup: 'npm install' };
+  } else if (temReact && temTs) {
+    scripts = { dev: 'react-scripts start', build: 'react-scripts build', setup: 'npm install' };
+  } else if (temExpress) {
+    scripts = { start: `node ${entrada}`, dev: `nodemon ${entrada}`, setup: 'npm install' };
+  } else {
+    scripts = { start: `node ${entrada}`, dev: `node ${entrada}`, setup: 'npm install' };
+  }
+
+  const pkgNovo = {
+    name: 'projeto',
+    version: '1.0.0',
+    description: 'Projeto importado',
+    main: entrada,
+    scripts,
+    keywords: [],
+    author: '',
+    license: 'ISC'
+  };
+
+  const json = JSON.stringify(pkgNovo, null, 2);
+
+  cardNovo.innerHTML = `
+    <div class="card-titulo">⚠️ package.json não encontrado — gerando um novo</div>
+    <div style="color:#888;font-size:0.83rem;margin-bottom:10px">
+      Baseado nos arquivos encontrados no projeto, gerei um package.json básico.<br>
+      Arquivo de entrada detectado: <span style="color:#c8f0a0;font-family:monospace">${entrada}</span>
+    </div>
+    <textarea id="jsonCorrigido" readonly>${json}</textarea>
+    <div class="acoes">
+      <button class="btn btn-azul" onclick="copiarJson()">📋 Copiar</button>
+      <button class="btn btn-verde" onclick="baixarJson()">⬇️ Baixar package.json</button>
+    </div>
+    <div id="msgCopia" style="color:#7fff7f;font-size:0.8rem;margin-top:6px;min-height:18px"></div>
+    <hr class="separador">
+    <div style="color:#888;font-size:0.8rem;line-height:1.7">
+      <strong style="color:#ffcc44">Como usar:</strong><br>
+      1. Baixe e coloque na pasta raiz do projeto<br>
+      2. No terminal: <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm install</code><br>
+      3. Depois: <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm start</code> ou <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm run dev</code>
+    </div>
+  `;
+  res.appendChild(cardNovo);
+}
+
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
+function criarCard(cor) {
+  const div = document.createElement('div');
+  div.className = `card ${cor}`;
+  document.getElementById('resultado').appendChild(div);
+  return div;
+}
+
+function formatarTamanho(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function copiarJson() {
+  const txt = document.getElementById('jsonCorrigido').value;
+  navigator.clipboard.writeText(txt).then(() => {
+    const el = document.getElementById('msgCopia');
+    if (el) { el.textContent = '✅ Copiado!'; setTimeout(()=>el.textContent='',2500); }
+  });
+}
+
+function baixarJson() {
+  const txt = document.getElementById('jsonCorrigido').value;
+  const blob = new Blob([txt], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'package.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

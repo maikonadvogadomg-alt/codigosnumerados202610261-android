@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Combinar Apps — Unir Projetos</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1a0a;
+      color: #a8d5a2;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+    }
+
+    /* ═══ HEADER ═══ */
+    .header {
+      padding: 16px;
+      border-bottom: 1px solid #2d4a1e;
+      background: #0f1a0a;
+      shrink: 0;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #7ec87a;
+    }
+
+    .header-desc {
+      font-size: 12px;
+      color: #6b8f68;
+      line-height: 1.5;
+    }
+
+    .btn-clear {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #3d6e2a;
+      background: transparent;
+      color: #5aab56;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-clear:hover:not(:disabled) {
+      background: #1a2d10;
+      color: #7ec87a;
+    }
+
+    .btn-clear:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* ═══ CONTENT ═══ */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ═══ FORM ELEMENTS ═══ */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #5aab56;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      background: #0d0d0d;
+      border: 1px solid #3d6e2a;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #a8d5a2;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: #3d6e2a;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: #5aab56;
+      box-shadow: 0 0 0 2px rgba(90, 171, 86, 0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* ═══ GOAL SECTION ═══ */
+    .goal-section {
+      background: #0d1309;
+      border: 1px solid #2d4a1e;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    /* ═══ APPS LIST ═══ */
+    .apps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .app-card {
+      background: #0d1309;
+      border: 1px solid #2d4a1e;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .app-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #7ec87a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-remove {
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: none;
+      color: #5a3a3a;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+
+    .btn-remove:hover {
+      color: #d47070;
+      background: #2d0d0d;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .app-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .repo-input-group {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .repo-input-group .form-input {
+      flex: 1;
+    }
+
+    .btn-fetch {
+      padding: 8px 12px;
+      background: #2d4a1e;
+      border: 1px solid #3d6e2a;
+      border-radius: 6px;
+      color: #5aab56;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-fetch:hover {
+      background: #3d5e2a;
+      border-color: #5aab56;
+    }
+
+    .repo-files {
+      background: #0d1309;
+      border: 1px solid #2d4a1e;
+      border-radius: 6px;
+      padding: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+
+    .repo-files-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #5aab56;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .repo-file-item {
+      font-size: 10px;
+      font-family: "Monaco", "Courier New", monospace;
+      color: #6b8f68;
+      padding: 2px 0;
+      line-height: 1.4;
+    }
+
+    .repo-error {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #d47070;
+      margin-top: 6px;
+    }
+
+    .loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #5aab56;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #3d6e2a;
+      border-top-color: #5aab56;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ═══ BUTTONS ═══ */
+    .btn-add-app {
+      width: 100%;
+      padding: 12px;
+      border: 2px dashed #3d6e2a;
+      border-radius: 8px;
+      background: transparent;
+      color: #5aab56;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-add-app:hover {
+      border-color: #5aab56;
+      background: #0d2210;
+    }
+
+    .btn-generate {
+      width: 100%;
+      padding: 12px;
+      background: #2d4a1e;
+      border: none;
+      border-radius: 8px;
+      color: #7ec87a;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      background: #3d5e2a;
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ═══ PROMPT OUTPUT ═══ */
+    .prompt-output {
+      background: #0d1309;
+      border: 1px solid #2d5a1e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .prompt-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #1a3d14;
+      border-bottom: 1px solid #2d5a1e;
+    }
+
+    .prompt-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #7ec87a;
+    }
+
+    .btn-copy {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 6px 10px;
+      background: #2d4a1e;
+      border: none;
+      border-radius: 4px;
+      color: #7ec87a;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-copy:hover {
+      background: #3d5e2a;
+    }
+
+    .btn-copy.copied {
+      background: #1e5c3d;
+      color: #5aab56;
+    }
+
+    .prompt-content {
+      padding: 12px;
+      font-size: 12px;
+      color: #8cba89;
+      font-family: "Monaco", "Courier New", monospace;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .prompt-footer {
+      padding: 10px 12px;
+      border-top: 1px solid #2d5a1e;
+    }
+
+    .btn-send {
+      width: 100%;
+      padding: 10px;
+      background: #1e5c9e;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-send:hover {
+      background: #2a73c5;
+    }
+
+    .btn-send.sent {
+      background: rgba(34, 197, 94, 0.3);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    /* ═══ TIPS ═══ */
+    .tips-section {
+      background: #0d1a0a;
+      border: 1px solid #2d4a1e;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .tips-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #5aab56;
+      margin-bottom: 8px;
+    }
+
+    .tips-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .tip-item {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      color: #6b8f68;
+      line-height: 1.4;
+    }
+
+    .tip-bullet {
+      color: #3d6e2a;
+      flex-shrink: 0;
+    }
+
+    /* ═══ SCROLLBAR ═══ */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #2d4a1e;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3d6e2a;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-top">
+        <div class="header-title">
+          <span>🔗</span>
+          <span>Combinar Apps</span>
+        </div>
+        <button class="btn-clear" id="btnClear" onclick="clearAll()" disabled>
+          🗑️ Limpar tudo
+        </button>
+      </div>
+      <div class="header-desc">
+        Preencha os apps que você quer unir. O assistente monta o prompt ideal para combinar tudo num projeto só.
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <!-- GOAL SECTION -->
+      <div class="goal-section">
+        <div class="form-group">
+          <label class="form-label">🎯 Objetivo do app final (opcional)</label>
+          <textarea
+            id="goalInput"
+            class="form-textarea"
+            placeholder="Ex: Um app de gestão de processos jurídicos com login, dashboard e relatórios em PDF"
+            rows="2"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- APPS LIST -->
+      <div class="apps-list" id="appsList"></div>
+
+      <!-- ADD APP BUTTON -->
+      <button class="btn-add-app" onclick="addApp()">
+        ➕ Adicionar outro app
+      </button>
+
+      <!-- GENERATE BUTTON -->
+      <button class="btn-generate" id="btnGenerate" onclick="generatePrompt()" disabled>
+        ✨ Gerar Prompt
+      </button>
+
+      <!-- PROMPT OUTPUT -->
+      <div class="prompt-output hidden" id="promptOutput">
+        <div class="prompt-header">
+          <span class="prompt-title">✨ Prompt gerado</span>
+          <button class="btn-copy" id="btnCopy" onclick="copyPrompt()">
+            📋 Copiar
+          </button>
+        </div>
+        <div class="prompt-content" id="promptContent"></div>
+        <div class="prompt-footer">
+          <button class="btn-send" id="btnSend" onclick="sendPrompt()">
+            📤 Copiar para usar no Claude
+          </button>
+        </div>
+      </div>
+
+      <!-- TIPS -->
+      <div class="tips-section">
+        <div class="tips-title">💡 Dicas</div>
+        <div class="tips-list">
+          <div class="tip-item">
+            <span class="tip-bullet">›</span>
+            <span>Seja específico sobre o que funciona — mencione nomes de arquivos ou módulos se souber</span>
+          </div>
+          <div class="tip-item">
+            <span class="tip-bullet">›</span>
+            <span>Você pode adicionar quantos apps precisar</span>
+          </div>
+          <div class="tip-item">
+            <span class="tip-bullet">›</span>
+            <span>Depois de gerar o prompt, copie e leve pro Claude</span>
+          </div>
+          <div class="tip-item">
+            <span class="tip-bullet">›</span>
+            <span>Se quiser ajustar, edite os campos e clique em Gerar novamente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "sk-combinar-apps:v1";
+
+    let apps = [];
+    let goal = "";
+    let generatedPrompt = "";
+    let copied = false;
+    let sent = false;
+
+    // ═══════════════════════════════════════════════════════════════
+    // UTILS
+    // ═══════════════════════════════════════════════════════════════
+
+    function uid() {
+      return Math.random().toString(36).slice(2, 9);
+    }
+
+    function emptyApp() {
+      return {
+        id: uid(),
+        name: "",
+        url: "",
+        works: "",
+        broken: "",
+        repoFiles: [],
+        repoError: ""
+      };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // STORAGE
+    // ═══════════════════════════════════════════════════════════════
+
+    function loadData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          apps = data.apps || [emptyApp()];
+          goal = data.goal || "";
+          generatedPrompt = data.generatedPrompt || "";
+        } else {
+          apps = [emptyApp()];
+        }
+      } catch (e) {
+        console.error("Erro ao carregar:", e);
+        apps = [emptyApp()];
+      }
+    }
+
+    function saveData() {
+      try {
+        const hasMeaningfulData =
+          goal.trim().length > 0 ||
+          generatedPrompt.length > 0 ||
+          apps.some(a => a.name.trim() || a.url.trim() || a.works.trim() || a.broken.trim());
+
+        if (hasMeaningfulData) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ apps, goal, generatedPrompt }));
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      } catch (e) {
+        console.error("Erro ao salvar:", e);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // APP MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════
+
+    function addApp() {
+      apps.push(emptyApp());
+      generatedPrompt = "";
+      saveData();
+      render();
+    }
+
+    function removeApp(id) {
+      apps = apps.filter(a => a.id !== id);
+      generatedPrompt = "";
+      saveData();
+      render();
+    }
+
+    function updateApp(id, field, value) {
+      const app = apps.find(a => a.id === id);
+      if (app) {
+        app[field] = value;
+        generatedPrompt = "";
+        saveData();
+        updateButtonStates();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // GITHUB INTEGRATION
+    // ═══════════════════════════════════════════════════════════════
+
+    async function fetchRepoFiles(appId, url) {
+      if (!url.trim()) return;
+
+      const match = url.replace(/\.git$/, "").match(/github\.com\/([^/\s]+)\/([^/\s?#]+)/);
+      if (!match) {
+        const app = apps.find(a => a.id === appId);
+        if (app) {
+          app.repoError = "URL inválida. Use: https://github.com/user/repo";
+          app.repoFiles = [];
+        }
+        render();
+        return;
+      }
+
+      const [, owner, repo] = match;
+      const app = apps.find(a => a.id === appId);
+      if (!app) return;
+
+      app.repoError = "";
+      render();
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`);
+        if (!res.ok) throw new Error(`GitHub API: ${res.status}`);
+
+        const data = await res.json();
+        const files = (data.tree || [])
+          .filter(t => t.type === "blob")
+          .map(t => t.path)
+          .slice(0, 60);
+
+        app.repoFiles = files;
+        app.repoError = "";
+        generatedPrompt = "";
+        saveData();
+        render();
+      } catch (e) {
+        app.repoError = e.message || "Erro ao buscar repositório";
+        app.repoFiles = [];
+        saveData();
+        render();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PROMPT GENERATION
+    // ═══════════════════════════════════════════════════════════════
+
+    function generatePrompt() {
+      const filledApps = apps.filter(a => a.name.trim() || a.url.trim() || a.works.trim() || a.broken.trim());
+      if (filledApps.length === 0) return;
+
+      const appDescriptions = filledApps.map((a, i) => {
+        const lines = [];
+        lines.push(`App ${i + 1}${a.name ? ` — ${a.name}` : ""}:`);
+        if (a.url.trim()) lines.push(`  URL/Repositório: ${a.url.trim()}`);
+        if (a.works.trim()) lines.push(`  ✅ O que funciona bem: ${a.works.trim()}`);
+        if (a.broken.trim()) lines.push(`  ❌ O que não funciona: ${a.broken.trim()}`);
+        if (a.repoFiles && a.repoFiles.length > 0) {
+          lines.push(`  📁 Estrutura de arquivos (${a.repoFiles.length} arquivos):`);
+          a.repoFiles.slice(0, 30).forEach(f => lines.push(`     ${f}`));
+          if (a.repoFiles.length > 30) lines.push(`     ... e mais ${a.repoFiles.length - 30} arquivo(s)`);
+        }
+        return lines.join("\n");
+      }).join("\n\n");
+
+      const goalSection = goal.trim() ? `\nObjetivo do app final: ${goal.trim()}\n` : "";
+
+      const prompt = `Tenho ${filledApps.length} app${filledApps.length > 1 ? "s" : ""} no Replit e quero combiná-los num único projeto que aproveite o que já funciona em cada um.
+${goalSection}
+Aqui estão os apps e o que funciona em cada um:
+
+${appDescriptions}
+
+Por favor:
+1. Analise o que cada app tem de melhor
+2. Crie um único projeto unificado aproveitando o código que já funciona
+3. Não reescreva do zero o que já está funcionando — aproveite o código existente
+4. Para cada parte que for unir, explique de qual app está vindo
+5. Ao final, mostre como rodar o projeto unificado (npm install && npm start ou equivalente)
+
+Comece me dizendo qual será a estrutura do projeto unificado e como você vai organizar os arquivos.`;
+
+      generatedPrompt = prompt;
+      sent = false;
+      copied = false;
+      saveData();
+      render();
+    }
+
+    function copyPrompt() {
+      if (!generatedPrompt) return;
+      navigator.clipboard.writeText(generatedPrompt).then(() => {
+        copied = true;
+        document.getElementById("btnCopy").classList.add("copied");
+        document.getElementById("btnCopy").textContent = "✅ Copiado!";
+        setTimeout(() => {
+          copied = false;
+          document.getElementById("btnCopy").classList.remove("copied");
+          document.getElementById("btnCopy").textContent = "📋 Copiar";
+        }, 2000);
+      });
+    }
+
+    function sendPrompt() {
+      if (!generatedPrompt) return;
+      navigator.clipboard.writeText(generatedPrompt).then(() => {
+        sent = true;
+        document.getElementById("btnSend").classList.add("sent");
+        document.getElementById("btnSend").textContent = "✅ Copiado! Leve pro Claude";
+        setTimeout(() => {
+          sent = false;
+          document.getElementById("btnSend").classList.remove("sent");
+          document.getElementById("btnSend").textContent = "📤 Copiar para usar no Claude";
+        }, 3000);
+      });
+    }
+
+    function clearAll() {
+      if (!confirm("Limpar todos os apps, objetivo e prompt gerado?")) return;
+      apps = [emptyApp()];
+      goal = "";
+      generatedPrompt = "";
+      copied = false;
+      sent = false;
+      localStorage.removeItem(STORAGE_KEY);
+      render();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // UI UPDATES
+    // ═══════════════════════════════════════════════════════════════
+
+    function updateButtonStates() {
+      const filledCount = apps.filter(a => a.name.trim() || a.url.trim() || a.works.trim() || a.broken.trim()).length;
+      const hasAnyData = filledCount > 0 || goal.trim().length > 0 || generatedPrompt.length > 0 || apps.length > 1;
+
+      document.getElementById("btnGenerate").disabled = filledCount === 0;
+      document.getElementById("btnClear").disabled = !hasAnyData;
+    }
+
+    function renderAppCard(app) {
+      return `
+        <div class="app-card">
+          <div class="app-header">
+            <div class="app-title">App ${apps.findIndex(a => a.id === app.id) + 1}</div>
+            ${apps.length > 1 ? `
+              <button class="btn-remove" onclick="removeApp('${app.id}')" title="Remover app">
+                🗑️
+              </button>
+            ` : ""}
+          </div>
+
+          <div class="app-grid">
+            <div class="app-field">
+              <label class="form-label">Nome do app</label>
+              <input
+                type="text"
+                class="form-input"
+                value="${app.name}"
+                placeholder="Ex: app-login"
+                onchange="updateApp('${app.id}', 'name', this.value)"
+              />
+            </div>
+            <div class="app-field">
+              <label class="form-label">URL no Replit (opcional)</label>
+              <input
+                type="url"
+                class="form-input"
+                value="${app.url}"
+                placeholder="https://replit.com/@..."
+                onchange="updateApp('${app.id}', 'url', this.value)"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">🔗 Repositório GitHub (opcional)</label>
+            <div class="repo-input-group">
+              <input
+                type="url"
+                class="form-input"
+                placeholder="https://github.com/usuario/repositorio"
+                onblur="if(this.value.includes('github.com')) fetchRepoFiles('${app.id}', this.value)"
+                onkeydown="if(event.key === 'Enter' && this.value) fetchRepoFiles('${app.id}', this.value)"
+              />
+              <button class="btn-fetch" onclick="fetchRepoFiles('${app.id}', this.previousElementSibling.value)">
+                Buscar
+              </button>
+            </div>
+            ${app.repoError ? `
+              <div class="repo-error">
+                ⚠️ ${app.repoError}
+              </div>
+            ` : ""}
+            ${app.repoFiles && app.repoFiles.length > 0 ? `
+              <div class="repo-files">
+                <div class="repo-files-title">📁 ${app.repoFiles.length} arquivos encontrados</div>
+                ${app.repoFiles.slice(0, 20).map(f => `
+                  <div class="repo-file-item">${f}</div>
+                `).join("")}
+                ${app.repoFiles.length > 20 ? `
+                  <div class="repo-file-item" style="color: #3d6e2a;">...e mais ${app.repoFiles.length - 20} arquivos</div>
+                ` : ""}
+              </div>
+            ` : ""}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">✅ O que funciona bem</label>
+            <textarea
+              class="form-textarea"
+              value="${app.works}"
+              placeholder="Ex: O login com Google funciona. O sistema de autenticação está completo."
+              rows="2"
+              onchange="updateApp('${app.id}', 'works', this.value)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">❌ O que não funciona (opcional)</label>
+            <textarea
+              class="form-textarea"
+              value="${app.broken}"
+              placeholder="Ex: Os relatórios em PDF não geram. O painel de admin está incompleto."
+              rows="2"
+              onchange="updateApp('${app.id}', 'broken', this.value)"
+            ></textarea>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      // Render apps
+      const appsList = document.getElementById("appsList");
+      appsList.innerHTML = apps.map(app => renderAppCard(app)).join("");
+
+      // Render prompt output
+      const promptOutputDiv = document.getElementById("promptOutput");
+      if (generatedPrompt) {
+        promptOutputDiv.classList.remove("hidden");
+        document.getElementById("promptContent").textContent = generatedPrompt;
+      } else {
+        promptOutputDiv.classList.add("hidden");
+      }
+
+      // Update goal
+      document.getElementById("goalInput").value = goal;
+      document.getElementById("goalInput").onchange = (e) => {
+        goal = e.target.value;
+        generatedPrompt = "";
+        saveData();
+        updateButtonStates();
+      };
+
+      updateButtonStates();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadData();
+      render();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meus Projetos</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0a0a0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-bottom: 1px solid #2a2a4a;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #4f8ef7, #a855f7);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #888;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #3fb950;
+    box-shadow: 0 0 6px #3fb950;
+  }
+
+  /* ── ABAS ── */
+  .tabs-bar {
+    background: #111118;
+    border-bottom: 1px solid #1e1e2e;
+    padding: 0 32px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .tabs-bar::-webkit-scrollbar { height: 3px; }
+  .tabs-bar::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab:hover { color: #bbb; background: #1a1a2e; }
+  .tab.active {
+    color: #fff;
+    border-bottom-color: #4f8ef7;
+    background: #1a1a2e;
+  }
+  .tab-icon { font-size: 16px; }
+  .tab-badge {
+    background: #4f8ef7;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 8px;
+  }
+  .tab-badge.green { background: #3fb950; }
+  .tab-badge.red   { background: #f85149; }
+
+  /* ── CONTEÚDO DAS ABAS ── */
+  .tab-content { display: none; padding: 28px 32px; }
+  .tab-content.active { display: block; }
+
+  /* ── GRID DE PROJETOS ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .project-card {
+    background: #111118;
+    border: 1px solid #1e1e2e;
+    border-radius: 14px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-color, #4f8ef7);
+  }
+  .project-card:hover {
+    border-color: var(--card-color, #4f8ef7);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-icon-wrap {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+  }
+  .card-status-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tag-ok     { background: #0d2818; color: #3fb950; border: 1px solid #3fb950; }
+  .tag-broken { background: #2d0f0f; color: #f85149; border: 1px solid #f85149; }
+  .tag-wip    { background: #2d1f00; color: #d29922; border: 1px solid #d29922; }
+  .tag-new    { background: #0d1f2d; color: #79c0ff; border: 1px solid #79c0ff; }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .card-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 14px;
+  }
+  .card-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    color: #888;
+    font-family: monospace;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid #1e1e2e;
+  }
+  .card-path {
+    font-size: 10px;
+    color: #444;
+    font-family: monospace;
+  }
+  .card-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--card-color, #4f8ef7);
+    background: none;
+    border: 1px solid var(--card-color, #4f8ef7);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .card-btn:hover {
+    background: var(--card-color, #4f8ef7);
+    color: #fff;
+  }
+
+  /* ── PAINEL VAZIO ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #444;
+  }
+  .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state-title { font-size: 16px; font-weight: 600; color: #666; margin-bottom: 6px; }
+  .empty-state-desc  { font-size: 13px; line-height: 1.6; }
+
+  /* ── SEÇÃO DE TÍTULO ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #1e1e2e;
+  }
+
+  /* ── IFRAME VIEWER ── */
+  .iframe-wrap {
+    background: #111118;
+    border: 1px solid #1e1e2e;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .iframe-bar {
+    background: #1a1a2e;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #1e1e2e;
+  }
+  .iframe-dots { display: flex; gap: 5px; }
+  .iframe-dot  { width: 10px; height: 10px; border-radius: 50%; }
+  .iframe-url  {
+    flex: 1;
+    background: #0a0a0f;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #888;
+    font-family: monospace;
+  }
+  iframe {
+    width: 100%;
+    height: 600px;
+    border: none;
+    background: #fff;
+  }
+
+  /* ── RESPONSIVO ── */
+  @media (max-width: 600px) {
+    .header { padding: 14px 16px; }
+    .tabs-bar { padding: 0 16px; }
+    .tab-content { padding: 20px 16px; }
+    .projects-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <div class="header-icon">⚖️</div>
+    <div>
+      <div class="header-title">Meus Projetos</div>
+      <div class="header-sub">Painel central — todos os projetos em um lugar</div>
+    </div>
+  </div>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    <span id="clock">--:--:--</span>
+  </div>
+</div>
+
+<!-- ABAS -->
+<div class="tabs-bar">
+  <div class="tab active" onclick="showTab('projetos')">
+    <span class="tab-icon">🗂️</span> Projetos
+    <span class="tab-badge">4</span>
+  </div>
+  <div class="tab" onclick="showTab('juridico')">
+    <span class="tab-icon">⚖️</span> Jurídico
+    <span class="tab-badge red">!</span>
+  </div>
+  <div class="tab" onclick="showTab('ferramentas')">
+    <span class="tab-icon">🔧</span> Ferramentas
+  </div>
+  <div class="tab" onclick="showTab('visualizar')">
+    <span class="tab-icon">👁️</span> Visualizar
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  ABA 1 — TODOS OS PROJETOS                 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-projetos">
+
+  <div class="section-title">⭐ Projetos Principais</div>
+  <div class="projects-grid">
+
+    <!-- CARD 1 — Jurídico -->
+    <div class="project-card" style="--card-color:#f85149;">
+      <div class="card-header">
+        <div class="card-icon-wrap">⚖️</div>
+        <span class="card-status-tag tag-broken">Corrigindo</span>
+      </div>
+      <div class="card-title">Sistema Jurídico</div>
+      <div class="card-desc">
+        Gestão de processos, clientes e prazos. PWA com banco de dados local.
+      </div>
+      <div class="card-tags">
+        <span class="card-tag">PWA</span>
+        <span class="card-tag">IndexedDB</span>
+        <span class="card-tag">React</span>
+      </div>
+      <div class="card-footer">
+        <span class="card-path">./juridico/index.html</span>
+        <a href="./juridico/index.html" class="card-btn" style="--card-color:#f85149;">
+          Abrir ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- CARD 2 — ProjetoLens -->
+    <div class="project-card" style="--card-color:#4f8ef7;">
+      <div class="card-header">
+        <div class="card-icon-wrap">🔬</div>
+        <span class="card-status-tag tag-wip">Em construção</span>
+      </div>
+      <div class="card-title">ProjetoLens</div>
+      <div class="card-desc">
+        Analisador de projetos — importa ZIP, analisa código, gera plano e exporta.
+      </div>
+      <div class="card-tags">
+        <span class="card-tag">HTML</span>
+        <span class="card-tag">Análise</span>
+        <span class="card-tag">Exportador</span>
+      </div>
+      <div class="card-footer">
+        <span class="card-path">./projetolens/index.html</span>
+        <a href="./projetolens/index.html" class="card-btn">
+          Abrir ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- CARD 3 — Cirurgião -->
+    <div class="project-card" style="--card-color:#a855f7;">
+      <div class="card-header">
+        <div class="card-icon-wrap">🩺</div>
+        <span class="card-status-tag tag-wip">Em construção</span>
+      </div>
+      <div class="card-title">Cirurgião de Código</div>
+      <div class="card-desc">
+        Detecta, corrige e melhora projetos quebrados. Remove dependências da Replit.
+      </div>
+      <div class="card-tags">
+        <span class="card-tag">HTML</span>
+        <span class="card-tag">Correção</span>
+        <span class="card-tag">IA</span>
+      </div>
+      <div class="card-footer">
+        <span class="card-path">./cirurgiao/index.html</span>
+        <a href="./cirurgiao/index.html" class="card-btn" style="--card-color:#a855f7;">
+          Abrir ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- CARD 4 — Novo Projeto -->
+    <div class="project-card" style="--card-color:#3fb950; cursor:default;">
+      <div class="card-header">
+        <div class="card-icon-wrap">➕</div>
+        <span class="card-status-tag tag-new">Novo</span>
+      </div>
+      <div class="card-title">Adicionar Projeto</div>
+      <div class="card-desc">
+        Crie uma pasta nova aqui ao lado e adicione o index.html dela neste painel.
+      </div>
+      <div class="card-tags">
+        <span class="card-tag">pasta/index.html</span>
+      </div>
+      <div class="card-footer">
+        <span class="card-path">./novo-projeto/</span>
+        <button class="card-btn" style="--card-color:#3fb950;"
+                onclick="alert('Crie a pasta e edite este card!')">
+          + Criar
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  ABA 2 — JURÍDICO (detalhes)               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-juridico">
+
+  <div class="section-title">⚖️ Sistema Jurídico — Status</div>
+  <div class="projects-grid">
+
+    <div class="project-card" style="--card-color:#3fb950;">
+      <div class="card-header">
+        <div class="card-icon-wrap">📁</div>
+        <span class="card-status-tag tag-ok">Pronto</span>
+      </div>
+      <div class="card-title">Abrir Projeto</div>
+      <div class="card-desc">Abre o sistema jurídico direto no navegador.</div>
+      <div class="card-footer">
+        <span class="card-path">./juridico/index.html</span>
+        <a href="./juridico/index.html" class="card-btn" style="--card-color:#3fb950;">
+          Abrir ↗
+        </a>
+      </div>
+    </div>
+
+    <div class="project-card" style="--card-color:#f85149; cursor:default;">
+      <div class="card-header">
+        <div class="card-icon-wrap">🐛</div>
+        <span class="card-status-tag tag-broken">Problema</span>
+      </div>
+      <div class="card-title">Banco de Dados</div>
+      <div class="card-desc">
+        Problema de conexão com banco. Precisa migrar para IndexedDB local ou SQLite via WASM.
+      </div>
+      <div class="card-footer">
+        <span class="card-path">banco de dados</span>
+        <button class="card-btn" style="--card-color:#f85149;"
+                onclick="showTab('ferramentas')">
+          Corrigir
+        </button>
+      </div>
+    </div>
+
+    <div class="project-card" style="--card-color:#d29922; cursor:default;">
+      <div class="card-header">
+        <div class="card-icon-wrap">📋</div>
+        <span class="card-status-tag tag-wip">Pendente</span>
+      </div>
+      <div class="card-title">Processos Ativos</div>
+      <div class="card-desc">
+        Você ainda tem processos para finalizar. Prioridade alta.
+      </div>
+      <div class="card-footer">
+        <span class="card-path">processos</span>
+        <button class="card-btn" style="--card-color:#d29922;"
+                onclick="alert('Abra o sistema jurídico para ver os processos')">
+          Ver
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  ABA 3 — FERRAMENTAS                       -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-ferramentas">
+
+  <div class="section-title">🔧 Ferramentas Disponíveis</div>
+  <div class="projects-grid">
+
+    <div class="project-card" style="--card-color:#4f8ef7;">
+      <div class="card-header">
+        <div class="card-icon-wrap">🔬</div>
+        <span class="card-status-tag tag-wip">Em construção</span>
+      </div>
+      <div class="card-title">ProjetoLens</div>
+      <div class="card-desc">Analisa projetos ZIP, detecta bugs, gera plano de correção.</div>
+      <div class="card-footer">
+        <span class="card-path">./projetolens/</span>
+        <a href="./projetolens/index.html" class="card-btn">Abrir ↗</a>
+      </div>
+    </div>
+
+    <div class="project-card" style="--card-color:#a855f7;">
+      <div class="card-header">
+        <div class="card-icon-wrap">🩺</div>
+        <span class="card-status-tag tag-wip">Em construção</span>
+      </div>
+      <div class="card-title">Cirurgião de Código</div>
+      <div class="card-desc">Remove dependências Replit, corrige imports quebrados.</div>
+      <div class="card-footer">
+        <span class="card-path">./cirurgiao/</span>
+        <a href="./cirurgiao/index.html" class="card-btn" style="--card-color:#a855f7;">Abrir ↗</a>
+      </div>
+    </div>
+
+    <div class="project-card" style="--card-color:#39d0d0;">
+      <div class="card-header">
+        <div class="card-icon-wrap">📋</div>
+        <span class="card-status-tag tag-new">Novo</span>
+      </div>
+      <div class="card-title">Gerador de Plano</div>
+      <div class="card-desc">Cola o código, ele destrincha e gera plano modular para consertar.</div>
+      <div class="card-footer">
+        <span class="card-path">./plano/</span>
+        <button class="card-btn" style="--card-color:#39d0d0;"
+                onclick="alert('Em breve!')">Em breve</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  ABA 4 — VISUALIZAR (iframe)               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-visualizar">
+
+  <div class="section-title">👁️ Visualizar Projeto</div>
+
+  <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+    <button class="card-btn" style="--card-color:#4f8ef7;"
+            onclick="loadFrame('./juridico/index.html')">
+      ⚖️ Jurídico
+    </button>
+    <button class="card-btn" style="--card-color:#4f8ef7;"
+            onclick="loadFrame('./projetolens/index.html')">
+      🔬 ProjetoLens
+    </button>
+    <button class="card-btn" style="--card-color:#4f8ef7;"
+            onclick="loadFrame('./cirurgiao/index.html')">
+      🩺 Cirurgião
+    </button>
+    <input id="frame-url-input" type="text" placeholder="Ou cole o caminho aqui..."
+           style="flex:1; min-width:200px; background:#111118; border:1px solid #2a2a4a;
+                  color:#e0e0e0; padding:6px 12px; border-radius:6px; font-size:12px;"
+           onkeydown="if(event.key==='Enter') loadFrame(this.value)">
+    <button class="card-btn" style="--card-color:#3fb950;"
+            onclick="loadFrame(document.getElementById('frame-url-input').value)">
+      ▶ Carregar
+    </button>
+  </div>
+
+  <div class="iframe-wrap">
+    <div class="iframe-bar">
+      <div class="iframe-dots">
+        <div class="iframe-dot" style="background:#f85149;"></div>
+        <div class="iframe-dot" style="background:#febc2e;"></div>
+        <div class="iframe-dot" style="background:#28c840;"></div>
+      </div>
+      <div class="iframe-url" id="frame-url-display">Nenhum projeto carregado</div>
+    </div>
+    <iframe id="project-frame" src="about:blank"></iframe>
+  </div>
+
+</div>
+
+<script>
+  // ── Abas ──────────────────────────────────────────────────
+  function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id)?.classList.add('active');
+    event?.currentTarget?.classList.add('active');
+  }
+
+  // ── Iframe ────────────────────────────────────────────────
+  function loadFrame(url) {
+    if (!url || url.trim() === '') return;
+    document.getElementById('project-frame').src = url;
+    document.getElementById('frame-url-display').textContent = url;
+    showTab('visualizar');
+  }
+
+  // ── Relógio ───────────────────────────────────────────────
+  function updateClock() {
+    document.getElementById('clock').textContent =
+      new Date().toLocaleTimeString('pt-BR');
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+
+</body>
+</html>

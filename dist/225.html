@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Petição: Vinculação e Enquadramento - Caso Adjair</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        .input-group { margin-bottom: 1rem; }
+        .input-label { display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.25rem; }
+        .input-field { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; rounded: 0.375rem; font-size: 0.875rem; transition: all 0.2s; }
+        .input-field:focus { outline: none; border-color: #2563eb; ring: 2px solid rgba(37, 99, 235, 0.1); }
+        .section-header { font-size: 1.1rem; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #bfdbfe; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; }
+        .preview-content { font-family: 'Times New Roman', Times, serif; white-space: pre-wrap; line-height: 1.6; font-size: 1rem; color: #000; }
+        .btn-action { background-color: #2563eb; color: white; padding: 0.5rem 1rem; rounded: 0.375rem; font-weight: 600; transition: background-color 0.2s; cursor: pointer; }
+        .btn-action:hover { background-color: #1d4ed8; }
+        .chart-wrapper { position: relative; height: 180px; width: 100%; }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; rounded: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+    <!-- Chosen Palette: Professional Legal Blue (#1e3a8a) and Slate Gray. -->
+    <!-- Application Structure Plan: 
+         Split-screen layout.
+         Left Panel: Input Form divided into 3 logical blocks: 
+            1. Client Data (Qualificação).
+            2. "Fatos Antigos" (Períodos já reconhecidos + NBs anteriores).
+            3. "Fatos Novos" (Motorista/Enquadramento + PPPs recentes).
+         Right Panel: Live Document Preview. The text updates instantly using JS template literals.
+         Logic: The JS functions concatenate the inputs into a formal legal structure, applying standard legal phrasing (e.g., "Data Venia", "Inaudita altera pars" logic for administrative binding). -->
+    <!-- Visualization & Content Choices: 
+         - Doughnut Chart: Visually represents the "Completeness" of the petition requirements (Data + Proof + Law).
+         - Live Text Generation: To solve the user's problem of needing a specific text for specific documents. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="flex flex-col md:flex-row h-screen overflow-hidden">
+
+    <!-- Left Sidebar: Data Input -->
+    <aside class="w-full md:w-2/5 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-xl">
+        <div class="p-5 bg-slate-800 text-white shadow-md">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <span>⚖️</span> Gerador de Petição Previdenciária
+            </h1>
+            <p class="text-xs text-slate-300 mt-1">Foco: Vinculação de Decisão (Enunciado 10 CRPS) & Enquadramento</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div class="mb-4 bg-blue-50 border-l-4 border-blue-500 p-3 text-sm text-blue-800">
+                <strong>Instrução:</strong> Preencha os campos com os dados exatos dos documentos em sua mesa. A petição será gerada automaticamente ao lado.
+            </div>
+
+            <!-- Block 1: Segurado -->
+            <h2 class="section-header mt-0">1. Qualificação do Segurado</h2>
+            <div class="input-group">
+                <label class="input-label">Nome Completo</label>
+                <input type="text" id="nome" value="ADJAIR CAMARA" class="input-field" oninput="updateDoc()">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="input-group">
+                    <label class="input-label">CPF</label>
+                    <input type="text" id="cpf" placeholder="000.000.000-00" class="input-field" oninput="updateDoc()">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">NIT / PIS</label>
+                    <input type="text" id="nit" placeholder="123.45678.90-0" class="input-field" oninput="updateDoc()">
+                </div>
+            </div>
+
+            <!-- Block 2: Coisa Julgada Administrativa -->
+            <h2 class="section-header">2. Períodos Já Reconhecidos (Vinculação)</h2>
+            <p class="text-xs text-gray-500 mb-3 text-justify">
+                Liste aqui os NBs (números de benefícios) anteriores onde o INSS já considerou atividade especial, mas não implantou o benefício na época.
+            </p>
+            
+            <div class="input-group">
+                <label class="input-label">Número(s) do(s) NB(s) Anterior(es)</label>
+                <input type="text" id="nbAnterior" placeholder="Ex: 42/155.234.987-0 e 42/180..." class="input-field" oninput="updateDoc()">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Quais períodos foram reconhecidos nesses NBs?</label>
+                <textarea id="periodosReconhecidos" rows="4" class="input-field" placeholder="Ex: 
+- Empresa Metalúrgica Aço Forte: 01/02/1990 a 10/10/1995 (Ruído)
+- Indústria Química Beta: 1996 a 2000" oninput="updateDoc()"></textarea>
+            </div>
+
+            <!-- Block 3: Enquadramento Motorista -->
+            <h2 class="section-header">3. Período Motorista (Enquadramento)</h2>
+            <div class="input-group">
+                <label class="input-label">Nome da Empresa (Transportadora)</label>
+                <input type="text" id="empresaMotorista" placeholder="Ex: Transportadora Rodoviária Silva" class="input-field" oninput="updateDoc()">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="input-group">
+                    <label class="input-label">Data Início</label>
+                    <input type="text" id="dataIniMot" placeholder="DD/MM/AAAA" class="input-field" oninput="updateDoc()">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Data Fim</label>
+                    <input type="text" id="dataFimMot" placeholder="DD/MM/AAAA (até 28/04/95)" class="input-field" oninput="updateDoc()">
+                </div>
+            </div>
+
+            <!-- Chart Indicator -->
+            <div class="mt-6 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <h3 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Força da Argumentação</h3>
+                <div class="chart-wrapper mx-auto" style="height: 120px; width: 120px;">
+                    <canvas id="strengthChart"></canvas>
+                </div>
+                <p class="text-center text-xs text-green-600 font-bold mt-2" id="strengthText">Preencha os dados...</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Right Panel: Document Preview -->
+    <main class="flex-1 flex flex-col bg-gray-100 h-full overflow-hidden relative">
+        <!-- Toolbar -->
+        <div class="bg-white border-b border-gray-200 p-3 flex justify-between items-center shadow-sm z-20">
+            <span class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Pré-visualização do Documento</span>
+            <button onclick="copyToClipboard()" class="btn-action flex items-center gap-2 shadow-sm">
+                <span>📄</span> Copiar Texto Completo
+            </button>
+        </div>
+
+        <!-- Paper Container -->
+        <div class="flex-1 overflow-y-auto p-8" id="docContainer">
+            <div class="max-w-3xl mx-auto bg-white shadow-lg border border-gray-300 p-12 min-h-[1000px]">
+                <div id="documentContent" class="preview-content">
+                    <!-- Text injected by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- Variables ---
+        let chartInstance = null;
+
+        // --- Chart Logic ---
+        function initChart() {
+            const ctx = document.getElementById('strengthChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Preenchido', 'Pendente'],
+                    datasets: [{
+                        data: [10, 90],
+                        backgroundColor: ['#2563eb', '#e2e8f0'],
+                        borderWidth: 0,
+                        cutout: '70%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    animation: { animateScale: true, animateRotate: true }
+                }
+            });
+        }
+
+        // --- Document Generation Logic ---
+        function updateDoc() {
+            // Get Values
+            const nome = document.getElementById('nome').value.toUpperCase() || "[NOME DO SEGURADO]";
+            const cpf = document.getElementById('cpf').value || "[CPF]";
+            const nit = document.getElementById('nit').value || "[NIT]";
+            
+            const nbAnterior = document.getElementById('nbAnterior').value || "[INSERIR Nº NB ANTIGO]";
+            const periodosRec = document.getElementById('periodosReconhecidos').value;
+            
+            const empMot = document.getElementById('empresaMotorista').value.toUpperCase();
+            const iniMot = document.getElementById('dataIniMot').value;
+            const fimMot = document.getElementById('dataFimMot').value;
+
+            // Calculate "Strength" based on fields filled
+            let strength = 20; // Base
+            if (nbAnterior !== "[INSERIR Nº NB ANTIGO]") strength += 30;
+            if (periodosRec && periodosRec.length > 10) strength += 20;
+            if (empMot && empMot.length > 2) strength += 30;
+
+            // Update Chart
+            chartInstance.data.datasets[0].data = [strength, 100 - strength];
+            chartInstance.update();
+            document.getElementById('strengthText').innerText = strength >= 80 ? "Argumentação Robusta" : "Preencha mais dados";
+
+            // Build Dynamic Sections
+            
+            // 1. Section: Coisa Julgada
+            let sectionVinculacao = "";
+            if (nbAnterior !== "[INSERIR Nº NB ANTIGO]" || (periodosRec && periodosRec.length > 5)) {
+                sectionVinculacao = `
+II. DA OBRIGATORIEDADE DE MANUTENÇÃO DOS PERÍODOS JÁ RECONHECIDOS (COISA JULGADA ADMINISTRATIVA)
+
+O Segurado já submeteu suas atividades à análise desta Autarquia em requerimento(s) pretérito(s), especificamente no(s) Processo(s) Administrativo(s) de Benefício NB ${nbAnterior}.
+
+Naquela oportunidade, após análise técnica da Perícia Médica Federal e do setor administrativo, foram RECONHECIDOS COMO ESPECIAIS os seguintes vínculos:
+
+${periodosRec || "[LISTE OS PERÍODOS NO FORMULÁRIO AO LADO PARA APARECER AQUI]"}
+
+Ocorre que, no presente requerimento, tais períodos não foram automaticamente computados ou estão sob exigência desnecessária.
+
+Tal conduta viola o ENUNCIADO Nº 10 DO CRPS (Conselho de Recursos da Previdência Social), que pacifica:
+
+"A decisão administrativa definitiva irrecorrida pela Administração vincula o INSS na concessão de benefícios posteriores, salvo se eivada de ilegalidade..."
+
+Ademais, a Portaria DIRBEN/INSS nº 993/2022 (Livro IV) e o Art. 556 da IN 128/2022 consagram o princípio da eficiência e o uso da PROVA EMPRESTADA. Não há razão legal para reabrir discussão sobre fatos já decididos favoravelmente ao segurado, gerando insegurança jurídica e retrabalho.
+
+Requer-se, portanto, a averbação imediata desses períodos com o marcador de atividade especial, conforme já decidido no NB ${nbAnterior}.`;
+            } else {
+                sectionVinculacao = `[PREENCHA O CAMPO "PERÍODOS JÁ RECONHECIDOS" NO FORMULÁRIO PARA GERAR ESTA FUNDAMENTAÇÃO]`;
+            }
+
+            // 2. Section: Motorista
+            let sectionMotorista = "";
+            if (empMot && iniMot && fimMot) {
+                sectionMotorista = `
+III. DO ENQUADRAMENTO POR CATEGORIA PROFISSIONAL - MOTORISTA (${empMot})
+
+O Segurado exerceu a atividade de MOTORISTA DE CAMINHÃO na empresa ${empMot} no período de ${iniMot} a ${fimMot}.
+
+Trata-se de período anterior a 28/04/1995. A legislação vigente à época (Decreto 53.831/64, item 2.4.4 e Decreto 83.080/79, item 2.4.2) estabelecia a PRESUNÇÃO LEGAL DE NOCIVIDADE para a categoria de motorista de caminhão de carga.
+
+Para o reconhecimento, basta a comprovação da atividade (anotação em CTPS ou Registro de Empregado), dispensando-se a apresentação de PPP ou laudo técnico para períodos até 28/04/1995 (Lei 9.032/95).
+
+O documento comprobatório já consta nos autos. Requer-se o enquadramento deste período pelo código 2.4.4/2.4.2, somando-se ao tempo especial total.`;
+            }
+
+            // Template Literal Construction
+            const template = `ILMO(A). SR(A). GERENTE DA AGÊNCIA DA PREVIDÊNCIA SOCIAL (CEAB - RECONHECIMENTO DE DIREITOS)
+
+REQUERENTE: ${nome}
+CPF: ${cpf}
+NIT: ${nit}
+ASSUNTO: APOSENTADORIA ESPECIAL - MANUTENÇÃO DE PERÍODOS JÁ RECONHECIDOS E ENQUADRAMENTO
+
+${nome}, qualificado nos autos, vem respeitosamente apresentar REQUERIMENTO ESPECÍFICO DE ANÁLISE, pelos fatos e fundamentos a seguir:
+
+I. SÍNTESE DO PEDIDO
+
+O Segurado pleiteia a concessão de Aposentadoria Especial (Espécie 46), uma vez que o somatório de seus períodos laborados em condições nocivas ultrapassa 25 anos.
+Para tanto, é imprescindível que sejam considerados os períodos já reconhecidos administrativamente em processos anteriores e o enquadramento por categoria profissional pendente.
+
+${sectionVinculacao}
+
+${sectionMotorista}
+
+IV. DO DIREITO ADQUIRIDO E DA REAFIRMAÇÃO DA DER
+
+Caso o tempo especial, após as correções acima, atinja 25 anos em data diversa da entrada do requerimento, requer-se a Reafirmação da DER para a data exata do implemento dos requisitos (IN 128/2022, Art. 577).
+
+V. PEDIDOS
+
+Diante do exposto, REQUER:
+
+1. A observância estrita do ENUNCIADO 10 DO CRPS, mantendo-se o reconhecimento da especialidade dos períodos já validados no NB ${nbAnterior};
+2. O enquadramento por categoria profissional do período de Motorista (${empMot}), conforme Decretos 53.831/64 e 83.080/79;
+3. A concessão da APOSENTADORIA ESPECIAL (B46);
+4. Subsidiariamente, caso não atinja os 25 anos especiais, a CONVERSÃO de todo o tempo especial em comum (fator 1.4) até 13/11/2019 e a concessão de Aposentadoria por Tempo de Contribuição, optando-se pelo cálculo mais vantajoso.
+
+Nestes termos,
+Pede Deferimento.
+
+Local e Data: ______________________, ${new Date().toLocaleDateString('pt-BR')}
+
+___________________________________________________
+${nome}
+`;
+            document.getElementById('documentContent').innerText = template;
+        }
+
+        // --- Utils ---
+        function copyToClipboard() {
+            const text = document.getElementById('documentContent').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.btn-action');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<span>✅</span> Copiado com Sucesso!';
+                btn.style.backgroundColor = '#059669';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.backgroundColor = '#2563eb';
+                }, 2000);
+            });
+        }
+
+        // --- Init ---
+        window.addEventListener('load', () => {
+            initChart();
+            updateDoc();
+        });
+    </script>
+</body>
+</html>

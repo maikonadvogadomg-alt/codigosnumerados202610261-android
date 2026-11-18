@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extrator de Vínculos Previdenciários - Análise Processual</title>
+    
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';</script>
+    
+    <!-- XLSX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- jsPDF e autoTable para exportação PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Mammoth.js para leitura de Word -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 11px;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .rural-pre-91 { background-color: #dcfce7; border-left: 4px solid #16a34a; }
+        .rural-pos-91 { background-color: #fef3c7; border-left: 4px solid #d97706; }
+        .especial { background-color: #fecaca; border-left: 4px solid #dc2626; }
+        .urbano { background-color: #dbeafe; border-left: 4px solid #2563eb; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- HEADER -->
+    <header class="bg-green-900 text-white p-4 shadow-lg flex justify-between items-center z-10">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-tractor text-2xl"></i>
+            <div>
+                <h1 class="text-xl font-bold">Extrator de Vínculos Previdenciários</h1>
+                <p class="text-xs text-green-200">Análise Rural/Urbano/Especial - Múltiplos Requerimentos</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-2">
+            <!-- Botão Importar -->
+            <div class="relative">
+                <button onclick="document.getElementById('fileInput').click()" 
+                        class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded font-bold transition flex items-center gap-2">
+                    <i class="fas fa-folder-open"></i> Importar Processo + PPPs
+                </button>
+                <input type="file" id="fileInput" multiple 
+                       accept="application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
+                       class="hidden">
+            </div>
+            
+            <!-- Menu Exportar -->
+            <div class="relative group">
+                <button class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded font-bold transition flex items-center gap-2">
+                    <i class="fas fa-file-export"></i> Exportar <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-20">
+                    <button onclick="exportarMinutaWord()" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                        <i class="fas fa-file-word text-blue-600"></i> Minuta Word (.docx)
+                    </button>
+                    <button onclick="exportarResumoTXT()" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                        <i class="fas fa-file-alt text-gray-600"></i> Resumo TXT
+                    </button>
+                    <button onclick="exportarExcel()" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                        <i class="fas fa-file-excel text-green-600"></i> Planilha Excel (.xlsx)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR - VARIÁVEIS -->
+        <aside class="w-1/4 bg-white border-r border-gray-200 flex flex-col">
+            <div class="p-4 bg-gradient-to-r from-green-50 to-blue-50 border-b">
+                <h2 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="fas fa-cogs text-green-600"></i> Filtros Previdenciários
+                </h2>
+                <p class="text-xs text-gray-500 mb-4">Configure padrões para vínculos rurais, urbanos e especiais</p>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-green-700">Nome do Filtro</label>
+                        <input type="text" id="varNome" placeholder="Ex: Período Rural Específico" 
+                               class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-green-400">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-green-700">Padrão de Busca (Regex)</label>
+                        <div class="flex gap-1">
+                            <input type="text" id="varRegex" placeholder="Ex: (\d{2}\/\d{2}\/\d{4})\s*a\s*(\d{2}\/\d{2}\/\d{4})" 
+                                   class="w-full text-sm p-2 border rounded font-mono bg-yellow-50 focus:ring-2 focus:ring-green-400">
+                            <button onclick="adicionarVariavel()" 
+                                    class="bg-green-600 text-white px-3 rounded hover:bg-green-700 transition">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <button onclick="mostrarManualRegex()" 
+                                class="text-[10px] text-blue-500 underline mt-1 hover:text-blue-700">
+                            <i class="fas fa-question-circle"></i> Manual de Regex Previdenciário
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LISTA DE VARIÁVEIS PRÉ-CONFIGURADAS PARA PREVIDENCIÁRIO -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-2" id="listaVariaveis">
+                <!-- Geradas via JavaScript -->
+            </div>
+            
+            <div class="p-4 border-t bg-gray-50">
+                <button onclick="reprocessar()" 
+                        class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white font-bold py-2 rounded hover:from-green-700 hover:to-blue-700 transition shadow-md">
+                    <i class="fas fa-sync-alt"></i> Aplicar Filtros
+                </button>
+            </div>
+        </aside>
+
+        <!-- ÁREA PRINCIPAL -->
+        <main class="w-3/4 flex flex-col">
+            
+            <!-- RESUMO ESTRATÉGICO PARA MINUTA -->
+            <div class="h-1/3 overflow-auto p-4 border-b border-gray-200 bg-white">
+                <div class="flex justify-between items-center mb-2 sticky top-0 bg-white z-10 pb-2">
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-clipboard-list text-green-600"></i> Resumo para Nova Petição Administrativa
+                    </h3>
+                    <button onclick="copiarResumo()" class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded hover:bg-green-200">
+                        <i class="fas fa-copy"></i> Copiar Resumo
+                    </button>
+                </div>
+                <div id="resumoMinuta" class="text-sm font-serif leading-relaxed bg-gray-50 p-4 rounded border">
+                    Importe os documentos (processo + novos PPPs) para gerar o resumo estratégico...
+                </div>
+            </div>
+            
+            <!-- TABELA DE RESULTADOS -->
+            <div class="h-1/3 overflow-auto p-4 border-b border-gray-200 bg-white">
+                <div class="flex justify-between items-center mb-2 sticky top-0 bg-white z-10 pb-2">
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-table text-green-600"></i> Vínculos Extraídos
+                    </h3>
+                    <div class="text-xs text-gray-500">
+                        <span id="contadorArquivos">0 arquivos processados</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 sticky top-8 z-10" id="tabelaHeader">
+                            <tr><th class="p-2 border border-gray-300">Arquivo</th></tr>
+                        </thead>
+                        <tbody id="tabelaBody">
+                            <tr>
+                                <td class="p-8 text-center text-gray-400 italic">
+                                    <i class="fas fa-file-upload text-4xl mb-2 block"></i>
+                                    Carregue o processo e os novos PPPs para começar a análise...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- INSPETOR DE TEXTO -->
+            <div class="h-1/3 flex flex-col bg-gray-900 text-green-400 font-mono text-xs p-4 overflow-hidden">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold flex items-center gap-2">
+                        <i class="fas fa-terminal"></i> Inspetor de Texto Bruto
+                        <span class="text-[10px] text-gray-500">(Visualização do conteúdo extraído)</span>
+                    </span>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="copiarTexto()" 
+                                class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs transition">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                        <select id="seletorArquivoTexto" 
+                                class="bg-gray-800 text-white border border-gray-600 rounded p-1 text-xs" 
+                                onchange="mostrarTextoBruto()">
+                            <option>Nenhum arquivo</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea id="textoBrutoArea" 
+                          class="flex-1 w-full bg-gray-950 border border-gray-700 p-4 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 rounded" 
+                          readonly 
+                          spellcheck="false"
+                          placeholder="Aqui aparecerá o texto extraído dos arquivos. Use este texto para testar e ajustar suas expressões regulares (Regex)."></textarea>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE MANUAL REGEX PREVIDENCIÁRIO -->
+    <div id="modalManual" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full m-4 max-h-[90vh] overflow-y-auto">
+            <div class="bg-green-900 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h3 class="font-bold text-lg"><i class="fas fa-book"></i> Manual de Regex para Vínculos Previdenciários</h3>
+                <button onclick="fecharManual()" class="text-white hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                    <h4 class="font-bold text-green-900 mb-2">🚜 Padrões para Vínculos Rurais</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?i)(?:rural|rurícola|segurado especial).*?(\d{2}\/\d{2}\/\d{4}).*?(\d{2}\/\d{2}\/\d{4})</code> - Períodos rurais</li>
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?i)(?:incra|certidão.*casamento|escritura.*rural).*?(\d{4})</code> - Documentos rurais por ano</li>
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?i)(?:atividade.*rural|trabalho.*campo).*?(\d{2}\/\d{2}\/\d{4})\s*(?:a|até)\s*(\d{2}\/\d{2}\/\d{4})</code> - Reconhecimento rural</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                    <h4 class="font-bold text-blue-900 mb-2">🏢 Padrões para Vínculos Urbanos Comuns</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?i)(?:emprego|vínculo|ctps).*?(\d{2}\/\d{2}\/\d{4})\s*(?:a|até)\s*(\d{2}\/\d{2}\/\d{4})</code> - Vínculos urbanos</li>
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?i)(?:contribuição|recolhimento).*?(\d{2}\/\d{2}\/\d{4})\s*(?:a|até)\s*(\d{2}\/\d{2}\/\d{4})</code> - Contribuições</li>
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?:NIT|PIS|PASEP)[:\s]*(\d{10,11})</code> - Números de identificação</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                    <h4 class="font-bold text-red-900 mb-2">⚡ Padrões para Períodos Especiais</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?i)(?:especial|insalubre|periculoso|ruído).*?(\d{2}\/\d{2}\/\d{4})\s*(?:a|até)\s*(\d{2}\/\d{2}\/\d{4})</code> - Períodos especiais</li>
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?i)(?:ppp|perfil.*profissiográfico).*?(\d{2}\/\d{2}\/\d{4})\s*(?:a|até)\s*(\d{2}\/\d{2}\/\d{4})</code> - PPPs</li>
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?i)(?:enquadramento|reconhec.*especial).*?(\d{2}\/\d{2}\/\d{4})\s*(?:a|até)\s*(\d{2}\/\d{2}\/\d{4})</code> - Reconhecimentos</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4">
+                    <h4 class="font-bold text-amber-900 mb-2">📋 Padrões para Múltiplos Requerimentos</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?:NB|Benefício|Protocolo)[:\s]*(\d{10}|\d{3}\.\d{3}\.\d{3}-\d)</code> - Números de benefício</li>
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?:Requerimento|Pedido).*?(\d{1,2})</code> - Identificar requerimentos</li>
+                        <li><code class="bg-gray-200 px-2 py-1 rounded">(?:DER|DIB)[:\s]*(\d{2}\/\d{2}\/\d{4})</code> - Datas de entrada/início</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gray-50 border-l-4 border-gray-500 p-4">
+                    <h4 class="font-bold text-gray-900 mb-2">🔧 Explicação dos Símbolos</h4>
+                    <ul class="space-y-1 text-sm">
+                        <li><code>(?i)</code> - Ignora maiúsculas/minúsculas</li>
+                        <li><code>\d{2}</code> - Exatamente 2 dígitos</li>
+                        <li><code>\s*</code> - Zero ou mais espaços</li>
+                        <li><code>(?:a|até)</code> - Palavra "a" OU "até" (sem capturar)</li>
+                        <li><code>(\d{2}\/\d{2}\/\d{4})</code> - Captura data DD/MM/AAAA</li>
+                        <li><code>.*?</code> - Qualquer texto (não ganancioso)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ARQUIVOS_CACHE = [];
+        let VARIAVEIS = [
+            {nome: "NB/Protocolo", regex: "(?:NB|Benefício|Protocolo)[:\\s]*(\\d{10}|\\d{3}\\.\\d{3}\\.\\d{3}-\\d)"},
+            {nome: "Períodos Rurais", regex: "(?i)(?:rural|rurícola|segurado especial).*?(\\d{2}\\/\\d{2}\\/\\d{4})\\s*(?:a|até)\\s*(\\d{2}\\/\\d{2}\\/\\d{4})"},
+            {nome: "Vínculos Urbanos", regex: "(?i)(?:emprego|vínculo|ctps).*?(\\d{2}\\/\\d{2}\\/\\d{4})\\s*(?:a|até)\\s*(\\d{2}\\/\\d{2}\\/\\d{4})"},
+            {nome: "Períodos Especiais", regex: "(?i)(?:especial|insalubre|periculoso|ruído).*?(\\d{2}\\/\\d{2}\\/\\d{4})\\s*(?:a|até)\\s*(\\d{2}\\/\\d{2}\\/\\d{4})"},
+            {nome: "PPPs Novos", regex: "(?i)(?:ppp|perfil.*profissiográfico).*?(\\d{2}\\/\\d{2}\\/\\d{4})\\s*(?:a|até)\\s*(\\d{2}\\/\\d{2}\\/\\d{4})"},
+            {nome: "DER/DIB", regex: "(?:DER|DIB)[:\\s]*(\\d{2}\\/\\d{2}\\/\\d{4})"},
+            {nome: "Qualificação", regex: "(?i)(?:nome|segurado|requerente)[:\\s]+([A-Z\\s]{10,})"},
+            {nome: "CPF", regex: "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}"}
+        ];
+
+        // ==================== CARREGAMENTO DE ARQUIVOS ====================
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            ARQUIVOS_CACHE = [];
+            document.getElementById('seletorArquivoTexto').innerHTML = '<option>Carregando...</option>';
+            
+            let contador = 0;
+            for(let file of files){
+                let texto = "";
+                
+                // Detectar tipo de arquivo
+                if(file.type === 'application/pdf'){
+                    texto = await extrairTextoPDF(file);
+                } else if(file.type.includes('word') || file.name.endsWith('.docx') || file.name.endsWith('.doc')){
+                    texto = await extrairTextoWord(file);
+                } else {
+                    alert(`Formato não suportado: ${file.name}`);
+                    continue;
+                }
+                
+                ARQUIVOS_CACHE.push({
+                    nome: file.name, 
+                    texto: texto,
+                    tipo: file.type.includes('pdf') ? 'PDF' : 'Word'
+                });
+                contador++;
+            }
+            
+            // Atualizar interface
+            document.getElementById('seletorArquivoTexto').innerHTML = '';
+            ARQUIVOS_CACHE.forEach((arq, idx) => {
+                let opt = document.createElement('option');
+                opt.value = idx;
+                opt.text = `${arq.tipo} - ${arq.nome}`;
+                document.getElementById('seletorArquivoTexto').appendChild(opt);
+            });
+            
+            document.getElementById('contadorArquivos').textContent = `${contador} arquivo(s) processado(s)`;
+            
+            if(ARQUIVOS_CACHE.length > 0) {
+                document.getElementById('seletorArquivoTexto').selectedIndex = 0;
+                mostrarTextoBruto();
+                reprocessar();
+                gerarResumoMinuta();
+            }
+        });
+
+        // ==================== EXTRAÇÃO DE TEXTO PDF ====================
+        async function extrairTextoPDF(file) {
+            try {
+                const buffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(buffer).promise;
+                let fullText = "";
+                
+                for(let i=1; i<=pdf.numPages; i++){
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const pageText = content.items.map(item => item.str).join(" ");
+                    fullText += `\n--- PÁGINA ${i} ---\n${pageText}\n`;
+                }
+                return fullText;
+            } catch(error) {
+                console.error('Erro ao extrair PDF:', error);
+                return `ERRO ao processar PDF: ${error.message}`;
+            }
+        }
+
+        // ==================== EXTRAÇÃO DE TEXTO WORD ====================
+        async function extrairTextoWord(file) {
+            try {
+                const buffer = await file.arrayBuffer();
+                const result = await mammoth.extractRawText({arrayBuffer: buffer});
+                return result.value || "Nenhum texto encontrado no documento Word.";
+            } catch(error) {
+                console.error('Erro ao extrair Word:', error);
+                return `ERRO ao processar Word: ${error.message}`;
+            }
+        }
+
+        // ==================== PROCESSAMENTO DE VARIÁVEIS ====================
+        function reprocessar() {
+            renderizarVariaveis();
+            const thead = document.getElementById('tabelaHeader');
+            const tbody = document.getElementById('tabelaBody');
+            
+            if(ARQUIVOS_CACHE.length === 0) {
+                tbody.innerHTML = `<tr><td class="p-8 text-center text-gray-400 italic">
+                    <i class="fas fa-file-upload text-4xl mb-2 block"></i>
+                    Carregue o processo e os novos PPPs para começar a análise...
+                </td></tr>`;
+                return;
+            }
+            
+            // Montar Cabeçalho
+            let headerHTML = `<tr><th class="p-2 border border-gray-300 bg-gray-200">Arquivo</th>`;
+            VARIAVEIS.forEach(v => {
+                headerHTML += `<th class="p-2 border border-gray-300 bg-green-100 text-green-900 font-semibold">${v.nome}</th>`;
+            });
+            headerHTML += `</tr>`;
+            thead.innerHTML = headerHTML;
+
+            // Montar Linhas
+            let bodyHTML = "";
+            ARQUIVOS_CACHE.forEach((arq, idx) => {
+                let row = `<tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-green-50 transition">`;
+                row += `<td class="p-2 border border-gray-300 font-bold text-xs" title="${arq.nome}">
+                    <div class="flex items-center gap-2">
+                        <i class="fas ${arq.tipo === 'PDF' ? 'fa-file-pdf text-red-500' : 'fa-file-word text-blue-500'}"></i>
+                        <span class="truncate max-w-[150px]">${arq.nome}</span>
+                    </div>
+                </td>`;
+                
+                VARIAVEIS.forEach(v => {
+                    try {
+                        const regex = new RegExp(v.regex, "gi");
+                        const matches = [...arq.texto.matchAll(regex)];
+                        
+                        if(matches && matches.length > 0) {
+                            const resultados = matches.map(m => m.slice(1).join(' a ')).slice(0, 3);
+                            const display = resultados.join(" | ");
+                            const count = matches.length;
+                            
+                            row += `<td class="p-2 border border-gray-300 text-xs text-gray-700" title="${count} ocorrência(s)">
+                                <div class="flex items-center gap-1">
+                                    <span class="bg-green-100 text-green-800 px-1 rounded text-[10px] font-bold">${count}</span>
+                                    <span class="truncate">${display}</span>
+                                </div>
+                            </td>`;
+                        } else {
+                            row += `<td class="p-2 border border-gray-300 text-center text-gray-300">
+                                <i class="fas fa-minus text-xs"></i>
+                            </td>`;
+                        }
+                    } catch(e) {
+                        row += `<td class="p-2 border border-gray-300 text-red-500 text-xs" title="${e.message}">
+                            <i class="fas fa-exclamation-triangle"></i> Erro
+                        </td>`;
+                    }
+                });
+                row += `</tr>`;
+                bodyHTML += row;
+            });
+            tbody.innerHTML = bodyHTML;
+        }
+
+        // ==================== GERAÇÃO DO RESUMO PARA MINUTA ====================
+        function gerarResumoMinuta() {
+            if(ARQUIVOS_CACHE.length === 0) return;
+            
+            let resumo = "RESUMO ESTRATÉGICO PARA NOVA PETIÇÃO ADMINISTRATIVA\n";
+            resumo += "APOSENTADORIA POR TEMPO DE CONTRIBUIÇÃO\n\n";
+            resumo += `Data da Análise: ${new Date().toLocaleDateString('pt-BR')}\n`;
+            resumo += `Documentos Analisados: ${ARQUIVOS_CACHE.length}\n\n`;
+            
+            resumo += "DOS VÍNCULOS IDENTIFICADOS:\n\n";
+            
+            let todosTextos = ARQUIVOS_CACHE.map(a => a.texto).join('\n');
+            
+            VARIAVEIS.forEach(v => {
+                const regex = new RegExp(v.regex, "gi");
+                const matches = [...todosTextos.matchAll(regex)];
+                
+                if(matches.length > 0) {
+                    resumo += `${v.nome.toUpperCase()}:\n`;
+                    matches.slice(0, 5).forEach(m => {
+                        const resultado = m.slice(1).join(' a ');
+                        resumo += `• ${resultado}\n`;
+                    });
+                    if(matches.length > 5) {
+                        resumo += `• ... e mais ${matches.length - 5} ocorrência(s)\n`;
+                    }
+                    resumo += "\n";
+                }
+            });
+            
+            resumo += "ESTRATÉGIA SUGERIDA:\n";
+            resumo += "1. Confrontar os períodos do processo anterior com os novos PPPs;\n";
+            resumo += "2. Destacar os períodos especiais não reconhecidos anteriormente;\n";
+            resumo += "3. Demonstrar a evolução da prova documental;\n";
+            resumo += "4. Requerer a conversão dos períodos especiais em comum.\n\n";
+            
+            resumo += "Este resumo deve ser adaptado conforme a estratégia específica do caso.";
+            
+            document.getElementById('resumoMinuta').innerText = resumo;
+        }
+
+        // ==================== FUNÇÕES DE INTERFACE ====================
+        function renderizarVariaveis() {
+            const container = document.getElementById('listaVariaveis');
+            container.innerHTML = '';
+            
+            VARIAVEIS.forEach((v, idx) => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-gradient-to-r from-green-50 to-blue-50 p-2 rounded border border-green-200 text-sm group';
+                div.innerHTML = `
+                    <div>
+                        <strong class="text-green-800">${v.nome}</strong>
+                        <br><code class="text-xs text-gray-600">${v.regex}</code>
+                    </div>
+                    <button onclick="removerVar(${idx})" 
+                            class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function mostrarTextoBruto() {
+            const idx = document.getElementById('seletorArquivoTexto').value;
+            if(ARQUIVOS_CACHE[idx]) {
+                document.getElementById('textoBrutoArea').value = ARQUIVOS_CACHE[idx].texto;
+            }
+        }
+
+        function copiarTexto() {
+            const textarea = document.getElementById('textoBrutoArea');
+            textarea.select();
+            document.execCommand('copy');
+            
+            // Feedback visual
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            setTimeout(() => btn.innerHTML = originalHTML, 2000);
+        }
+
+        function copiarResumo() {
+            const resumo = document.getElementById('resumoMinuta');
+            const textarea = document.createElement('textarea');
+            textarea.value = resumo.innerText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            // Feedback visual
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            setTimeout(() => btn.innerHTML = originalHTML, 2000);
+        }
+
+        function adicionarVariavel() {
+            const nome = document.getElementById('varNome').value.trim();
+            const regex = document.getElementById('varRegex').value.trim();
+            
+            if(!nome || !regex) {
+                alert("⚠️ Preencha o nome do filtro e o padrão de busca.");
+                return;
+            }
+            
+            // Validar regex
+            try {
+                new RegExp(regex);
+            } catch(e) {
+                alert(`❌ Regex inválido: ${e.message}`);
+                return;
+            }
+            
+            VARIAVEIS.push({nome, regex});
+            document.getElementById('varNome').value = "";
+            document.getElementById('varRegex').value = "";
+            
+            reprocessar();
+            gerarResumoMinuta();
+        }
+
+        function removerVar(idx) {
+            if(confirm(`Deseja remover o filtro "${VARIAVEIS[idx].nome}"?`)) {
+                VARIAVEIS.splice(idx, 1);
+                reprocessar();
+                gerarResumoMinuta();
+            }
+        }
+
+        function mostrarManualRegex() {
+            document.getElementById('modalManual').classList.remove('hidden');
+        }
+
+        function fecharManual() {
+            document.getElementById('modalManual').classList.add('hidden');
+        }
+
+        // ==================== EXPORTAÇÕES ====================
+        function exportarMinutaWord() {
+            const resumo = document.getElementById('resumoMinuta').innerText;
+            const html = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+                <head><meta charset='utf-8'><title>Minuta Previdenciária</title></head>
+                <body>
+                    <h1>REQUERIMENTO ADMINISTRATIVO</h1>
+                    <h2>APOSENTADORIA POR TEMPO DE CONTRIBUIÇÃO</h2>
+                    <hr>
+                    <pre style="font-family: Arial; font-size: 12pt; line-height: 1.5;">${resumo}</pre>
+                </body>
+                </html>`;
+            
+            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Minuta_Previdenciaria_${new Date().toISOString().split('T')[0]}.doc`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportarResumoTXT() {
+            const resumo = document.getElementById('resumoMinuta').innerText;
+            const blob = new Blob([resumo], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Resumo_Previdenciario_${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportarExcel() {
+            if(ARQUIVOS_CACHE.length === 0) {
+                alert("⚠️ Nenhum dado para exportar. Carregue arquivos primeiro.");
+                return;
+            }
+            
+            try {
+                const dados = [];
+                const header = ['Arquivo'];
+                VARIAVEIS.forEach(v => header.push(v.nome));
+                dados.push(header);
+                
+                ARQUIVOS_CACHE.forEach(arq => {
+                    const row = [arq.nome];
+                    VARIAVEIS.forEach(v => {
+                        try {
+                            const regex = new RegExp(v.regex, "gi");
+                            const matches = [...arq.texto.matchAll(regex)];
+                            if(matches.length > 0) {
+                                const resultados = matches.map(m => m.slice(1).join(' a ')).join(" | ");
+                                row.push(resultados);
+                            } else {
+                                row.push("-");
+                            }
+                        } catch(e) {
+                            row.push("ERRO");
+                        }
+                    });
+                    dados.push(row);
+                });
+                
+                const ws = XLSX.utils.aoa_to_sheet(dados);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Vínculos Previdenciários");
+                XLSX.writeFile(wb, `Vinculos_Previdenciarios_${new Date().toISOString().split('T')[0]}.xlsx`);
+                
+                alert("✅ Excel exportado com sucesso!");
+            } catch(error) {
+                alert(`❌ Erro ao exportar Excel: ${error.message}`);
+            }
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modalManual').addEventListener('click', function(e) {
+            if(e.target === this) {
+                fecharManual();
+            }
+        });
+
+        // Inicialização
+        window.onload = () => {
+            renderizarVariaveis();
+        };
+    </script>
+</body>
+</html>

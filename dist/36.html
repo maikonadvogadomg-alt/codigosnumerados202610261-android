@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Principal</title>
+  
+  <!-- Font Awesome (ícones) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2rem;
+    }
+    
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+    }
+    
+    .menu-item {
+      background: white;
+      border-radius: 15px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .menu-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+    
+    .menu-item i {
+      font-size: 3rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+    
+    .menu-item span {
+      display: block;
+      font-size: 1rem;
+      color: #333;
+      font-weight: 600;
+    }
+    
+    .menu-item:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Menu Principal</h1>
+    
+    <div class="menu-grid" id="menuGrid">
+      <!-- Itens serão gerados aqui -->
+    </div>
+  </div>
+
+  <script>
+    // Lista de páginas HTML com seus ícones
+    const paginas = [
+      { nome: 'Chat IA', arquivo: 'chat.html', icone: 'fa-comments' },
+      { nome: 'Terminal', arquivo: 'terminal.html', icone: 'fa-terminal' },
+      { nome: 'Preview', arquivo: 'preview.html', icone: 'fa-eye' },
+      { nome: 'Editor', arquivo: 'editor.html', icone: 'fa-code' },
+      { nome: 'Banco de Dados', arquivo: 'database.html', icone: 'fa-database' },
+      { nome: 'Configurações', arquivo: 'config.html', icone: 'fa-cog' },
+      { nome: 'Arquivos', arquivo: 'files.html', icone: 'fa-folder' },
+      { nome: 'API', arquivo: 'api.html', icone: 'fa-plug' },
+    ];
+    
+    // Gerar menu automaticamente
+    const menuGrid = document.getElementById('menuGrid');
+    
+    paginas.forEach(pagina => {
+      const item = document.createElement('div');
+      item.className = 'menu-item';
+      item.onclick = () => abrirPagina(pagina.arquivo);
+      
+      item.innerHTML = `
+        <i class="fas ${pagina.icone}"></i>
+        <span>${pagina.nome}</span>
+      `;
+      
+      menuGrid.appendChild(item);
+    });
+    
+    function abrirPagina(arquivo) {
+      window.location.href = arquivo;
+    }
+  </script>
+</body>
+</html>
+
+
+<!-- Adicionar Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Usar ícones: -->
+<i class="fas fa-home"></i>
+<i class="fas fa-cog"></i>
+<i class="fas fa-terminal"></i>
+
+
+<!-- Adicionar Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Usar ícones: -->
+<i class="fas fa-home"></i>
+<i class="fas fa-cog"></i>
+<i class="fas fa-terminal"></i>
+
+
+<style>
+  .menu-item img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+  }
+</style>
+
+<script>
+const paginas = [
+  { nome: 'Chat', arquivo: 'chat.html', icone: 'icons/chat.png' },
+  { nome: 'Terminal', arquivo: 'terminal.html', icone: 'icons/terminal.png' },
+];
+
+// Gerar com imagem:
+item.innerHTML = `
+  <img src="${pagina.icone}" alt="${pagina.nome}">
+  <span>${pagina.nome}</span>
+`;
+</script>

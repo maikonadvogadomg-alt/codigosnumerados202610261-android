@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PWA Jurídico — Maikon Caldeira</title>
+<style>
+/* === CSS BASE === */
+
+
+/* === MÓDULOS CSS === */
+
+</style>
+</head>
+<body>
+
+
+<!-- === MÓDULO: Montador 4 === -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛠️ Workstation Completa — Maikon Caldeira</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12121a;
+  --bg3: #1a1a2e;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --accent: #a3a082;
+  --accent2: #d4d0a8;
+  --green: #4ade80;
+  --blue: #60a5fa;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --border: #2d2d3a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* === NAVEGAÇÃO PRINCIPAL === */
+.main-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg2);
+  border-bottom: 2px solid var(--accent);
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.main-nav .logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-tab {
+  padding: 10px 18px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-tab:hover {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.nav-tab.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent2);
+}
+
+/* === WORKSPACES === */
+.workspace {
+  display: none;
+  padding: 80px 20px 20px;
+  min-height: 100vh;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.workspace.active {
+  display: block;
+}
+
+/* === COMPONENTES === */
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-success { background: var(--green); color: #000; }
+.btn-success:hover { opacity: 0.9; }
+.btn-danger { background: rgba(248,113,113,0.2); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 10px; }
+
+.input, .textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  margin-bottom: 12px;
+}
+
+.input:focus, .textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.textarea {
+  font-family: 'Consolas', 'Fira Code', monospace;
+  min-height: 200px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.code-display {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .split-view { grid-template-columns: 1fr; }
+}
+
+.preview-frame {
+  width: 100%;
+  height: 500px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+}
+
+.status {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-info { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+.status-success { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.status-warning { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+
+.file-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-item:hover {
+  border-color: var(--accent);
+  background: var(--bg2);
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tag-html { background: rgba(239,68,68,0.2); color: var(--red); }
+.tag-css { background: rgba(59,130,246,0.2); color: var(--blue); }
+.tag-js { background: rgba(251,191,36,0.2); color: var(--yellow); }
+.tag-func { background: rgba(74,222,128,0.2); color: var(--green); }
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--bg2);
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent2);
+  z-index: 2000;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.action-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+</style>
+</head>
+<body>
+
+<!-- NAVEGAÇÃO PRINCIPAL -->
+<div class="main-nav">
+  <div class="logo">
+    <span>🛠️</span>
+    <span>WORKSTATION</span>
+  </div>
+  <button class="nav-tab active" onclick="trocarAba('scanner')">
+    🔍 Scanner
+  </button>
+  <button class="nav-tab" onclick="trocarAba('montador')">
+    🧩 Montador
+  </button>
+  <button class="nav-tab" onclick="trocarAba('playground')">
+    ⚡ Playground
+  </button>
+  <button class="nav-tab" onclick="trocarAba('arquivos')">
+    📂 Arquivos
+  </button>
+</div>
+
+<!-- ========================================
+     WORKSPACE 1: SCANNER
+     ======================================== -->
+<div id="ws-scanner" class="workspace active">
+  <div class="status status-info">
+    🔍 <strong>Scanner:</strong> Cole um código HTML completo para analisar sua estrutura, extrair funções, estilos e elementos.
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">📄 Código para Analisar</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="importarParaScanner()">📂 Importar</button>
+        <button class="btn btn-ghost btn-sm" onclick="limparScanner()">🗑️ Limpar</button>
+      </div>
+    </div>
+    <textarea class="textarea" id="scannerInput" placeholder="Cole aqui o código HTML completo..." style="min-height:300px;"></textarea>
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="analisarCodigo()">🔍 Analisar Código</button>
+      <button class="btn btn-success" onclick="extrairTudo()">📦 Extrair Tudo</button>
+    </div>
+  </div>
+
+  <div id="scannerResults"></div>
+</div>
+
+<!-- ========================================
+     WORKSPACE 2: MONTADOR
+     ======================================== -->
+<div id="ws-montador" class="workspace">
+  <div class="status status-info">
+    🧩 <strong>Montador:</strong> Adicione pedaços de código como módulos e monte seu projeto final.
+  </div>
+
+  <div class="split-view">
+    <!-- Adicionar Módulo -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">➕ Adicionar Módulo</div>
+      </div>
+      <input type="text" class="input" id="modNome" placeholder="Nome do módulo (ex: Botão Exportar PDF)" />
+      <select class="input" id="modTipo">
+        <option value="html">📄 HTML</option>
+        <option value="css">💅 CSS</option>
+        <option value="js">⚡ JavaScript</option>
+        <option value="funcao">🔧 Função</option>
+      </select>
+      <textarea class="textarea" id="modCodigo" placeholder="Cole o código do módulo..."></textarea>
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="salvarModulo()">💾 Salvar Módulo</button>
+        <button class="btn btn-ghost" onclick="limparModulo()">🗑️ Limpar</button>
+      </div>
+    </div>
+
+    <!-- Lista de Módulos -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">📦 Módulos Salvos (<span id="modCount">0</span>)</div>
+        <button class="btn btn-ghost btn-sm" onclick="renderModulos()">🔄</button>
+      </div>
+      <div id="modulosList"></div>
+    </div>
+  </div>
+
+  <!-- Gerar Projeto -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">🔨 Montar Projeto Final</div>
+    </div>
+    <input type="text" class="input" id="projetoNome" placeholder="Nome do projeto" value="Meu Projeto PWA" />
+    <div id="montadorChecklist"></div>
+    <div class="action-bar">
+      <button class="btn btn-success" onclick="gerarProjetoFinal()">📦 Gerar HTML Final</button>
+      <button class="btn btn-ghost" onclick="selecionarTodos()">✅ Selecionar Todos</button>
+      <button class="btn btn-ghost" onclick="desselecionarTodos()">⬜ Desmarcar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================
+     WORKSPACE 3: PLAYGROUND
+     ======================================== -->
+<div id="ws-playground" class="workspace">
+  <div class="status status-info">
+    ⚡ <strong>Playground:</strong> Teste código em tempo real. Edite e veja o resultado instantaneamente.
+  </div>
+
+  <div class="split-view">
+    <!-- Editor -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">✏️ Editor</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="importarParaPlayground()">📂 Importar</button>
+          <button class="btn btn-ghost btn-sm" onclick="limparPlayground()">🗑️ Limpar</button>
+        </div>
+      </div>
+      <textarea class="textarea" id="playgroundCode" placeholder="Cole ou escreva código HTML aqui..." style="min-height:400px;"></textarea>
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="executarPlayground()">▶️ Executar</button>
+        <button class="btn btn-success" onclick="salvarDePlayground()">💾 Salvar como Módulo</button>
+        <button class="btn btn-ghost" onclick="copiarPlayground()">📋 Copiar</button>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">👁️ Preview</div>
+        <button class="btn btn-ghost btn-sm" onclick="abrirPreviewNovo()">🔳 Nova Aba</button>
+      </div>
+      <iframe class="preview-frame" id="playgroundPreview"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================
+     WORKSPACE 4: ARQUIVOS
+     ======================================== -->
+<div id="ws-arquivos" class="workspace">
+  <div class="status status-info">
+    📂 <strong>Arquivos:</strong> Gerencie todos os códigos salvos. Exporte, importe e organize.
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">💾 Backup & Importação</div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="exportarTudo()">📥 Exportar Tudo (JSON)</button>
+      <button class="btn btn-ghost" onclick="importarTudo()">📤 Importar Backup</button>
+      <button class="btn btn-danger" onclick="limparTudo()">🗑️ Limpar Tudo</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">📋 Módulos Salvos</div>
+      <input type="text" class="input" style="width:200px;margin:0;" placeholder="🔍 Buscar..." oninput="filtrarArquivos(this.value)" />
+    </div>
+    <div id="arquivosList"></div>
+  </div>
+</div>
+
+<!-- Hidden inputs -->
+<input type="file" id="fileInput" style="display:none" accept=".html,.htm,.js,.css,.txt" />
+<input type="file" id="backupInput" style="display:none" accept=".json" />
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== STORAGE ==========
+const LS_MODULOS = 'workstation-modulos-v1';
+const LS_SELECTED = 'workstation-selected-v1';
+
+function getModulos() {
+  try { return JSON.parse(localStorage.getItem(LS_MODULOS) || '[]'); }
+  catch { return []; }
+}
+
+function setModulos(list) {
+  localStorage.setItem(LS_MODULOS, JSON.stringify(list));
+  atualizarContador();
+}
+
+function getSelected() {
+  try { return JSON.parse(localStorage.getItem(LS_SELECTED) || '[]'); }
+  catch { return []; }
+}
+
+function setSelected(list) {
+  localStorage.setItem(LS_SELECTED, JSON.stringify(list));
+}
+
+// ========== NAVEGAÇÃO ==========
+function trocarAba(nome) {
+  // Esconde todas
+  document.querySelectorAll('.workspace').forEach(w => w.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  
+  // Mostra a selecionada
+  document.getElementById('ws-' + nome).classList.add('active');
+  event.target.classList.add('active');
+  
+  // Atualiza conteúdo
+  if (nome === 'montador') renderModulos();
+  if (nome === 'arquivos') renderArquivos();
+}
+
+// ========== SCANNER ==========
+function analisarCodigo() {
+  const codigo = document.getElementById('scannerInput').value;
+  if (!codigo.trim()) {
+    toast('❌ Cole um código primeiro!');
+    return;
+  }
+
+  const analise = {
+    funcoes: extrairFuncoes(codigo),
+    estilos: extrairEstilos(codigo),
+    elementos: extrairElementos(codigo),
+    scripts: extrairScripts(codigo)
+  };
+
+  renderAnalise(analise);
+}
+
+function extrairFuncoes(codigo) {
+  const regex = /function\s+(\w+)\s*\([^)]*\)\s*\{/g;
+  const funcoes = [];
+  let match;
+  while ((match = regex.exec(codigo)) !== null) {
+    const inicio = match.index;
+    const fim = encontrarFimFuncao(codigo, inicio);
+    funcoes.push({
+      nome: match[1],
+      codigo: codigo.substring(inicio, fim)
+    });
+  }
+  return funcoes;
+}
+
+function encontrarFimFuncao(codigo, inicio) {
+  let nivel = 0;
+  for (let i = inicio; i < codigo.length; i++) {
+    if (codigo[i] === '{') nivel++;
+    if (codigo[i] === '}') {
+      nivel--;
+      if (nivel === 0) return i + 1;
+    }
+  }
+  return codigo.length;
+}
+
+function extrairEstilos(codigo) {
+  const regex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+  const estilos = [];
+  let match;
+  while ((match = regex.exec(codigo)) !== null) {
+    estilos.push(match[1].trim());
+  }
+  return estilos;
+}
+
+function extrairElementos(codigo) {
+  const regex = /<(\w+)[^>]*id=["']([^"']+)["'][^>]*>/g;
+  const elementos = [];
+  let match;
+  while ((match = regex.exec(codigo)) !== null) {
+    elementos.push({ tag: match[1], id: match[2] });
+  }
+  return elementos;
+}
+
+function extrairScripts(codigo) {
+  const regex = /<script[^>]*>([\s\S]*?)<\/script>/gi;
+  const scripts = [];
+  let match;
+  while ((match = regex.exec(codigo)) !== null) {
+    scripts.push(match[1].trim());
+  }
+  return scripts;
+}
+
+function renderAnalise(analise) {
+  const container = document.getElementById('scannerResults');
+  
+  let html = '';
+  
+  // Funções
+  if (analise.funcoes.length > 0) {
+    html += `
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🔧 Funções Encontradas (${analise.funcoes.length})</div>
+        </div>
+        ${analise.funcoes.map((f, i) => `
+          <div class="file-item">
+            <div>
+              <strong style="color:var(--green);">${escHtml(f.nome)}()</strong>
+              <span class="tag tag-func">função</span>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <button class="btn btn-ghost btn-sm" onclick="verCodigo(${i}, 'funcao')">👁️</button>
+              <button class="btn btn-ghost btn-sm" onclick="copiarParaPlayground('${escHtml(f.codigo).replace(/'/g, "\\'")}')">⚡ Playground</button>
+              <button class="btn btn-ghost btn-sm" onclick="salvarComoModulo('${escHtml(f.nome)}', 'funcao', \`${f.codigo.replace(/`/g, '\\`')}\`)">💾 Salvar</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  
+  // Estilos
+  if (analise.estilos.length > 0) {
+    html += `
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">💅 Estilos CSS (${analise.estilos.length})</div>
+        </div>
+        ${analise.estilos.map((css, i) => `
+          <div class="file-item">
+            <div>
+              <strong style="color:var(--blue);">Bloco CSS ${i + 1}</strong>
+              <span class="tag tag-css">css</span>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <button class="btn btn-ghost btn-sm" onclick="copiarParaPlayground(\`${css.replace(/`/g, '\\`')}\`)">⚡ Playground</button>
+              <button class="btn btn-ghost btn-sm" onclick="salvarComoModulo('CSS_${i + 1}', 'css', \`${css.replace(/`/g, '\\`')}\`)">💾 Salvar</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html || '<div class="status status-warning">⚠️ Nenhum elemento extraível encontrado</div>';
+  toast('✅ Análise concluída!');
+}
+
+function extrairTudo() {
+  const codigo = document.getElementById('scannerInput').value;
+  if (!codigo.trim()) {
+    toast('❌ Cole um código primeiro!');
+    return;
+  }
+
+  const analise = {
+    funcoes: extrairFuncoes(codigo),
+    estilos: extrairEstilos(codigo)
+  };
+
+  let contador = 0;
+  
+  analise.funcoes.forEach(f => {
+    salvarComoModulo(f.nome, 'funcao', f.codigo);
+    contador++;
+  });
+  
+  analise.estilos.forEach((css, i) => {
+    salvarComoModulo(`CSS_${i + 1}`, 'css', css);
+    contador++;
+  });
+
+  toast(`✅ ${contador} módulos extraídos e salvos!`);
+  renderModulos();
+}
+
+function copiarParaPlayground(codigo) {
+  document.getElementById('playgroundCode').value = codigo;
+  trocarAba('playground');
+  document.querySelectorAll('.nav-tab')[2].classList.add('active');
+  toast('✅ Código copiado para o Playground!');
+}
+
+function salvarComoModulo(nome, tipo, codigo) {
+  const modulos = getModulos();
+  modulos.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    nome,
+    tipo,
+    codigo,
+    data: new Date().toISOString()
+  });
+  setModulos(modulos);
+}
+
+// ========== MONTADOR ==========
+function salvarModulo() {
+  const nome = document.getElementById('modNome').value.trim();
+  const tipo = document.getElementById('modTipo').value;
+  const codigo = document.getElementById('modCodigo').value;
+
+  if (!nome || !codigo.trim()) {
+    toast('❌ Preencha nome e código!');
+    return;
+  }
+
+  salvarComoModulo(nome, tipo, codigo);
+  limparModulo();
+  renderModulos();
+  toast('✅ Módulo salvo!');
+}
+
+function limparModulo() {
+  document.getElementById('modNome').value = '';
+  document.getElementById('modCodigo').value = '';
+}
+
+function renderModulos() {
+  const modulos = getModulos();
+  const selected = getSelected();
+  const container = document.getElementById('modulosList');
+  const checklist = document.getElementById('montadorChecklist');
+
+  if (modulos.length === 0) {
+    container.innerHTML = '<p style="color:var(--text2);font-size:12px;text-align:center;padding:20px;">Nenhum módulo salvo</p>';
+    if (checklist) checklist.innerHTML = '';
+    return;
+  }
+
+  // Lista de módulos
+  container.innerHTML = modulos.slice(-10).reverse().map(m => `
+    <div class="file-item">
+      <div>
+        <strong>${escHtml(m.nome)}</strong>
+        <span class="tag tag-${m.tipo}">${m.tipo}</span>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button class="btn btn-ghost btn-sm" onclick="editarModulo('${m.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deletarModulo('${m.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Checklist para montagem
+  if (checklist) {
+    checklist.innerHTML = '<div style="max-height:300px;overflow-y:auto;">' + modulos.map(m => `
+      <label style="display:flex;align-items:center;gap:8px;padding:8px;cursor:pointer;border-bottom:1px solid var(--border);">
+        <input type="checkbox" ${selected.includes(m.id) ? 'checked' : ''} onchange="toggleModulo('${m.id}')" />
+        <strong style="font-size:12px;">${escHtml(m.nome)}</strong>
+        <span class="tag tag-${m.tipo}">${m.tipo}</span>
+      </label>
+    `).join('') + '</div>';
+  }
+}
+
+function toggleModulo(id) {
+  let selected = getSelected();
+  if (selected.includes(id)) {
+    selected = selected.filter(x => x !== id);
+  } else {
+    selected.push(id);
+  }
+  setSelected(selected);
+}
+
+function selecionarTodos() {
+  setSelected(getModulos().map(m => m.id));
+  renderModulos();
+}
+
+function desselecionarTodos() {
+  setSelected([]);
+  renderModulos();
+}
+
+function deletarModulo(id) {
+  if (!confirm('Deletar este módulo?')) return;
+  setModulos(getModulos().filter(m => m.id !== id));
+  renderModulos();
+  toast('🗑️ Módulo deletado!');
+}
+
+function editarModulo(id) {
+  const modulo = getModulos().find(m => m.id === id);
+  if (!modulo) return;
+  
+  document.getElementById('modNome').value = modulo.nome;
+  document.getElementById('modTipo').value = modulo.tipo;
+  document.getElementById('modCodigo').value = modulo.codigo;
+  
+  deletarModulo(id);
+  toast('✏️ Editando módulo...');
+}
+
+function gerarProjetoFinal() {
+  const modulos = getModulos();
+  const selected = getSelected();
+  const escolhidos = modulos.filter(m => selected.includes(m.id));
+
+  if (escolhidos.length === 0) {
+    toast('❌ Selecione pelo menos um módulo!');
+    return;
+  }
+
+  const nome = document.getElementById('projetoNome').value || 'Projeto';
+  
+  const html = escolhidos.filter(m => m.tipo === 'html').map(m => m.codigo).join('\n\n');
+  const css = escolhidos.filter(m => m.tipo === 'css').map(m => m.codigo).join('\n\n');
+  const js = escolhidos.filter(m => m.tipo === 'js' || m.tipo === 'funcao').map(m => m.codigo).join('\n\n');
+
+  const projeto = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(nome)}</title>
+<style>
+${css}
+</style>
+</head>
+<body>
+
+${html}
+
+<script>
+${js}
+<\/script>
+</body>
+</html>`;
+
+  baixarArquivo(projeto, nome.replace(/[^a-z0-9]/gi, '_') + '.html', 'text/html');
+  toast('✅ Projeto gerado!');
+}
+
+// ========== PLAYGROUND ==========
+function executarPlayground() {
+  const codigo = document.getElementById('playgroundCode').value;
+  const iframe = document.getElementById('playgroundPreview');
+  
+  const blob = new Blob([codigo], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  iframe.src = url;
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  
+  toast('▶️ Executando...');
+}
+
+function salvarDePlayground() {
+  const codigo = document.getElementById('playgroundCode').value;
+  if (!codigo.trim()) {
+    toast('❌ Nada para salvar!');
+    return;
+  }
+  
+  const nome = prompt('Nome do módulo:');
+  if (!nome) return;
+  
+  salvarComoModulo(nome, 'html', codigo);
+  toast('✅ Salvo como módulo!');
+}
+
+function copiarPlayground() {
+  const codigo = document.getElementById('playgroundCode').value;
+  navigator.clipboard.writeText(codigo);
+  toast('📋 Código copiado!');
+}
+
+function abrirPreviewNovo() {
+  const codigo = document.getElementById('playgroundCode').value;
+  const blob = new Blob([codigo], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+}
+
+function limparPlayground() {
+  document.getElementById('playgroundCode').value = '';
+  document.getElementById('playgroundPreview').src = '';
+}
+
+// ========== ARQUIVOS ==========
+function renderArquivos() {
+  const modulos = getModulos();
+  const container = document.getElementById('arquivosList');
+
+  if (modulos.length === 0) {
+    container.innerHTML = '<p style="color:var(--text2);text-align:center;padding:40px;">Nenhum arquivo salvo</p>';
+    return;
+  }
+
+  container.innerHTML = modulos.map(m => `
+    <div class="file-item">
+      <div>
+        <strong>${escHtml(m.nome)}</strong>
+        <span class="tag tag-${m.tipo}">${m.tipo}</span>
+        <span style="font-size:10px;color:var(--text2);margin-left:8px;">${new Date(m.data).toLocaleDateString('pt-BR')}</span>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button class="btn btn-ghost btn-sm" onclick="copiarParaPlayground(\`${m.codigo.replace(/`/g, '\\`')}\`)">⚡</button>
+        <button class="btn btn-ghost btn-sm" onclick="baixarModulo('${m.id}')">📥</button>
+        <button class="btn btn-danger btn-sm" onclick="deletarModulo('${m.id}'); renderArquivos();">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filtrarArquivos(busca) {
+  const modulos = getModulos().filter(m => 
+    m.nome.toLowerCase().includes(busca.toLowerCase())
+  );
+  
+  const container = document.getElementById('arquivosList');
+  container.innerHTML = modulos.map(m => `
+    <div class="file-item">
+      <div>
+        <strong>${escHtml(m.nome)}</strong>
+        <span class="tag tag-${m.tipo}">${m.tipo}</span>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button class="btn btn-ghost btn-sm" onclick="copiarParaPlayground(\`${m.codigo.replace(/`/g, '\\`')}\`)">⚡</button>
+        <button class="btn btn-ghost btn-sm" onclick="baixarModulo('${m.id}')">📥</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function baixarModulo(id) {
+  const modulo = getModulos().find(m => m.id === id);
+  if (!modulo) return;
+  
+  const ext = { html: '.html', css: '.css', js: '.js', funcao: '.js' }[modulo.tipo] || '.txt';
+  baixarArquivo(modulo.codigo, modulo.nome + ext, 'text/plain');
+}
+
+function exportarTudo() {
+  const data = {
+    modulos: getModulos(),
+    selected: getSelected(),
+    data: new Date().toISOString()
+  };
+  
+  baixarArquivo(JSON.stringify(data, null, 2), 'backup-workstation-' + new Date().toISOString().slice(0, 10) + '.json', 'application/json');
+  toast('💾 Backup exportado!');
+}
+
+function importarTudo() {
+  document.getElementById('backupInput').click();
+}
+
+document.getElementById('backupInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.modulos) {
+        setModulos(data.modulos);
+        if (data.selected) setSelected(data.selected);
+        toast('✅ Backup importado!');
+        renderModulos();
+        renderArquivos();
+      }
+    } catch (err) {
+      toast('❌ Arquivo inválido!');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+function limparTudo() {
+  if (!confirm('⚠️ ATENÇÃO: Isso vai apagar TUDO! Tem certeza?')) return;
+  if (!confirm('Última chance! Realmente deseja apagar tudo?')) return;
+  
+  localStorage.clear();
+  toast('🗑️ Tudo limpo!');
+  renderModulos();
+  renderArquivos();
+}
+
+// ========== IMPORT ==========
+function importarParaScanner() {
+  document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('scannerInput').value = ev.target.result;
+      toast('📂 Arquivo importado!');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+}
+
+function importarParaPlayground() {
+  document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('playgroundCode').value = ev.target.result;
+      executarPlayground();
+      toast('📂 Arquivo importado!');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+}
+
+function limparScanner() {
+  document.getElementById('scannerInput').value = '';
+  document.getElementById('scannerResults').innerHTML = '';
+}
+
+// ========== UTILS ==========
+function escHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.transform = 'translateY(0)';
+  t.style.opacity = '1';
+  setTimeout(() => {
+    t.style.transform = 'translateY(100px)';
+    t.style.opacity = '0';
+  }, 2500);
+}
+
+function baixarArquivo(conteudo, nome, tipo) {
+  const blob = new Blob([conteudo], { type: tipo });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function atualizarContador() {
+  const count = getModulos().length;
+  const el = document.getElementById('modCount');
+  if (el) el.textContent = count;
+}
+
+// Init
+atualizarContador();
+renderModulos();
+</script>
+</body>
+</html>
+
+
+<!-- === MÓDULO: multiprojetos-pwa-2026-07-08 === -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Projetos PWA — Maikon Caldeira</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+.project-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #12121a;
+  border-bottom: 2px solid #a3a082;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  background: #1a1a2e;
+  border: 1px solid #2d2d3a;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #a3a082;
+  color: #000;
+  border-color: #a3a082;
+}
+
+.nav-btn.active {
+  background: #a3a082;
+  color: #000;
+  border-color: #d4d0a8;
+}
+
+.project-container {
+  display: none;
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+.project-container.active {
+  display: block;
+}
+
+/* Isola estilos de cada projeto */
+.project-container iframe {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Navegação -->
+<div class="project-nav">
+  <span style="font-size:14px;font-weight:700;color:#a3a082;margin-right:10px;">📂</span>
+  <button class="nav-btn active" onclick="trocarProjeto(0)">Projeto 2</button>
+</div>
+
+<!-- Projetos (cada um em iframe isolado) -->
+
+<div class="project-container active" id="projeto0">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;🧩 Montador Multi-Projetos — PWA Jurídico&lt;/title&gt;
+&lt;style&gt;
+:root { --bg:#0a0a0f; --bg2:#12121a; --bg3:#1a1a2e; --text:#e2e8f0; --text2:#94a3b8; --accent:#a3a082; --accent2:#d4d0a8; --green:#4ade80; --blue:#60a5fa; --red:#f87171; --border:#2d2d3a; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+.header { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.header h1 { font-size:18px; color:var(--accent); }
+.header h1 small { display:block; font-size:10px; color:var(--text2); font-weight:400; letter-spacing:2px; }
+
+.container { max-width:1400px; margin:0 auto; padding:20px; }
+
+.workspace { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
+.workspace h2 { font-size:14px; color:var(--accent); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+
+.btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:none; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+.btn-sm { padding:5px 10px; font-size:10px; }
+.btn-primary { background:var(--accent); color:#000; }
+.btn-primary:hover { background:var(--accent2); }
+.btn-success { background:var(--green); color:#000; }
+.btn-danger { background:rgba(239,68,68,0.2); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+.btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); }
+.btn-ghost:hover { background:var(--bg3); color:var(--text); }
+
+.input { width:100%; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px; margin-bottom:12px; }
+.input:focus { outline:none; border-color:var(--accent); }
+
+.code-area { width:100%; min-height:300px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:'Consolas','Fira Code',monospace; font-size:12px; color:var(--text); resize:vertical; line-height:1.6; }
+.code-area:focus { outline:none; border-color:var(--accent); }
+
+.project-card { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+.project-card h3 { color:var(--accent2); font-size:14px; margin-bottom:8px; }
+.project-card .actions { display:flex; gap:6px; margin-top:10px; }
+
+.tabs { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; background:var(--bg2); padding:4px; border-radius:10px; }
+.tab-btn { padding:10px 20px; border:none; background:transparent; color:var(--text2); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.tab-btn.active { background:var(--accent); color:#000; }
+.tab-btn:hover:not(.active) { background:var(--bg3); }
+
+/* NOVO: Navegação entre projetos no HTML final */
+.project-nav { position:fixed; top:0; left:0; right:0; background:var(--bg2); border-bottom:2px solid var(--accent); padding:12px 20px; display:flex; gap:8px; align-items:center; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.3); }
+.project-nav .nav-btn { padding:8px 16px; background:var(--bg3); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.project-nav .nav-btn:hover { background:var(--accent); color:#000; }
+.project-nav .nav-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
+
+.project-container { display:none; padding-top:60px; }
+.project-container.active { display:block; }
+
+.status { padding:10px 14px; border-radius:8px; font-size:11px; font-weight:600; margin-bottom:12px; }
+.status-info { background:rgba(96,165,250,0.1); color:var(--blue); border:1px solid rgba(96,165,250,0.2); }
+.status-success { background:rgba(74,222,128,0.1); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+
+.toast { position:fixed; bottom:20px; right:20px; background:var(--bg2); border:1px solid var(--accent); border-radius:10px; padding:12px 20px; font-size:12px; font-weight:600; color:var(--accent2); z-index:2000; transform:translateY(100px); opacity:0; transition:all 0.3s; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div class=&quot;header&quot;&gt;
+  &lt;h1&gt;🧩 Montador Multi-Projetos &lt;small&gt;PWA JURÍDICO — MAIKON CALDEIRA&lt;/small&gt;&lt;/h1&gt;
+  &lt;div style=&quot;display:flex;gap:6px;flex-wrap:wrap;&quot;&gt;
+    &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;gerarHtmlFinal()&quot;&gt;📦 Gerar HTML com Todos os Projetos&lt;/button&gt;
+    &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;exportarBackup()&quot;&gt;💾 Backup&lt;/button&gt;
+    &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;importarBackup()&quot;&gt;📂 Importar&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;container&quot;&gt;
+
+  &lt;div class=&quot;status status-info&quot;&gt;
+    💡 &lt;strong&gt;Como funciona:&lt;/strong&gt; Cole até 3 códigos HTML completos abaixo. Cada um será um &quot;projeto&quot; independente. 
+    Quando gerar o HTML final, você terá um arquivo com abas no topo para alternar entre os projetos — cada um isolado do outro!
+  &lt;/div&gt;
+
+  &lt;!-- PROJETO 1 --&gt;
+  &lt;div class=&quot;workspace&quot;&gt;
+    &lt;h2&gt;🔷 Projeto 1&lt;/h2&gt;
+    &lt;input type=&quot;text&quot; class=&quot;input&quot; id=&quot;nome1&quot; placeholder=&quot;Nome do projeto (ex: Sistema de Processos)&quot; /&gt;
+    &lt;textarea class=&quot;code-area&quot; id=&quot;codigo1&quot; placeholder=&quot;Cole aqui o código HTML COMPLETO do projeto 1...&quot;&gt;&lt;/textarea&gt;
+    &lt;div style=&quot;display:flex;gap:8px;margin-top:10px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;testarProjeto(1)&quot;&gt;👁️ Testar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;limparProjeto(1)&quot;&gt;🗑️ Limpar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;importarArquivo(1)&quot;&gt;📂 Importar Arquivo&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PROJETO 2 --&gt;
+  &lt;div class=&quot;workspace&quot;&gt;
+    &lt;h2&gt;🔶 Projeto 2&lt;/h2&gt;
+    &lt;input type=&quot;text&quot; class=&quot;input&quot; id=&quot;nome2&quot; placeholder=&quot;Nome do projeto (ex: Gerador de Documentos)&quot; /&gt;
+    &lt;textarea class=&quot;code-area&quot; id=&quot;codigo2&quot; placeholder=&quot;Cole aqui o código HTML COMPLETO do projeto 2...&quot;&gt;&lt;/textarea&gt;
+    &lt;div style=&quot;display:flex;gap:8px;margin-top:10px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;testarProjeto(2)&quot;&gt;👁️ Testar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;limparProjeto(2)&quot;&gt;🗑️ Limpar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;importarArquivo(2)&quot;&gt;📂 Importar Arquivo&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PROJETO 3 --&gt;
+  &lt;div class=&quot;workspace&quot;&gt;
+    &lt;h2&gt;🔸 Projeto 3&lt;/h2&gt;
+    &lt;input type=&quot;text&quot; class=&quot;input&quot; id=&quot;nome3&quot; placeholder=&quot;Nome do projeto (ex: Consulta Jurisprudência)&quot; /&gt;
+    &lt;textarea class=&quot;code-area&quot; id=&quot;codigo3&quot; placeholder=&quot;Cole aqui o código HTML COMPLETO do projeto 3...&quot;&gt;&lt;/textarea&gt;
+    &lt;div style=&quot;display:flex;gap:8px;margin-top:10px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;testarProjeto(3)&quot;&gt;👁️ Testar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;limparProjeto(3)&quot;&gt;🗑️ Limpar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;importarArquivo(3)&quot;&gt;📂 Importar Arquivo&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PROJETOS SALVOS --&gt;
+  &lt;div class=&quot;workspace&quot;&gt;
+    &lt;h2&gt;💾 Projetos Salvos&lt;/h2&gt;
+    &lt;div id=&quot;projetosSalvos&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;!-- Hidden inputs --&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput1&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm&quot; /&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput2&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm&quot; /&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput3&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm&quot; /&gt;
+&lt;input type=&quot;file&quot; id=&quot;backupInput&quot; style=&quot;display:none&quot; accept=&quot;.json&quot; /&gt;
+
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+const LS_KEY = 'multiprojetos-v1';
+
+// ========== STORAGE ==========
+function salvarProjetos() {
+  const projetos = {
+    p1: { nome: document.getElementById('nome1').value, codigo: document.getElementById('codigo1').value },
+    p2: { nome: document.getElementById('nome2').value, codigo: document.getElementById('codigo2').value },
+    p3: { nome: document.getElementById('nome3').value, codigo: document.getElementById('codigo3').value }
+  };
+  localStorage.setItem(LS_KEY, JSON.stringify(projetos));
+  mostrarToast('💾 Projetos salvos automaticamente!');
+  renderizarSalvos();
+}
+
+function carregarProjetos() {
+  try {
+    const data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (data.p1) { document.getElementById('nome1').value = data.p1.nome || ''; document.getElementById('codigo1').value = data.p1.codigo || ''; }
+    if (data.p2) { document.getElementById('nome2').value = data.p2.nome || ''; document.getElementById('codigo2').value = data.p2.codigo || ''; }
+    if (data.p3) { document.getElementById('nome3').value = data.p3.nome || ''; document.getElementById('codigo3').value = data.p3.codigo || ''; }
+    renderizarSalvos();
+  } catch(e) {}
+}
+
+function renderizarSalvos() {
+  const data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+  const container = document.getElementById('projetosSalvos');
+  const projetos = [
+    { n: 1, nome: data.p1?.nome, codigo: data.p1?.codigo },
+    { n: 2, nome: data.p2?.nome, codigo: data.p2?.codigo },
+    { n: 3, nome: data.p3?.nome, codigo: data.p3?.codigo }
+  ].filter(p =&gt; p.codigo &amp;&amp; p.codigo.trim());
+
+  if (projetos.length === 0) {
+    container.innerHTML = '&lt;p style=&quot;color:var(--text2);font-size:12px;&quot;&gt;Nenhum projeto salvo ainda.&lt;/p&gt;';
+    return;
+  }
+
+  container.innerHTML = projetos.map(p =&gt; `
+    &lt;div class=&quot;project-card&quot;&gt;
+      &lt;h3&gt;🔷 ${escHtml(p.nome || 'Projeto ' + p.n)}&lt;/h3&gt;
+      &lt;div style=&quot;font-size:11px;color:var(--text2);&quot;&gt;${p.codigo.length} caracteres&lt;/div&gt;
+      &lt;div class=&quot;actions&quot;&gt;
+        &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;testarProjeto(${p.n})&quot;&gt;👁️ Testar&lt;/button&gt;
+        &lt;button class=&quot;btn btn-ghost btn-sm&quot; onclick=&quot;copiarCodigo(${p.n})&quot;&gt;📋 Copiar&lt;/button&gt;
+        &lt;button class=&quot;btn btn-danger btn-sm&quot; onclick=&quot;limparProjeto(${p.n})&quot;&gt;🗑️ Limpar&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `).join('');
+}
+
+// ========== AÇÕES ==========
+function testarProjeto(n) {
+  const codigo = document.getElementById('codigo' + n).value;
+  if (!codigo.trim()) { mostrarToast('❌ Projeto ' + n + ' está vazio!'); return; }
+  
+  const blob = new Blob([codigo], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function limparProjeto(n) {
+  if (!confirm('Limpar projeto ' + n + '?')) return;
+  document.getElementById('nome' + n).value = '';
+  document.getElementById('codigo' + n).value = '';
+  salvarProjetos();
+}
+
+function copiarCodigo(n) {
+  const codigo = document.getElementById('codigo' + n).value;
+  navigator.clipboard.writeText(codigo);
+  mostrarToast('📋 Código do projeto ' + n + ' copiado!');
+}
+
+function importarArquivo(n) {
+  document.getElementById('fileInput' + n).click();
+}
+
+[1,2,3].forEach(n =&gt; {
+  document.getElementById('fileInput' + n).addEventListener('change', (e) =&gt; {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) =&gt; {
+      document.getElementById('codigo' + n).value = ev.target.result;
+      if (!document.getElementById('nome' + n).value) {
+        document.getElementById('nome' + n).value = file.name.replace(/\.[^.]+$/, '');
+      }
+      salvarProjetos();
+      mostrarToast('📂 Projeto ' + n + ' importado!');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+});
+
+// ========== GERAR HTML FINAL ==========
+function gerarHtmlFinal() {
+  const projetos = [
+    { nome: document.getElementById('nome1').value || 'Projeto 1', codigo: document.getElementById('codigo1').value },
+    { nome: document.getElementById('nome2').value || 'Projeto 2', codigo: document.getElementById('codigo2').value },
+    { nome: document.getElementById('nome3').value || 'Projeto 3', codigo: document.getElementById('codigo3').value }
+  ].filter(p =&gt; p.codigo.trim());
+
+  if (projetos.length === 0) {
+    mostrarToast('❌ Adicione pelo menos um projeto!');
+    return;
+  }
+
+  // Extrai só o conteúdo do &lt;body&gt; de cada projeto (se tiver)
+  const extrairConteudo = (html) =&gt; {
+    const match = html.match(/&lt;body[^&gt;]*&gt;([\s\S]*)&lt;\/body&gt;/i);
+    return match ? match[1] : html;
+  };
+
+  const htmlFinal = `&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Multi-Projetos PWA — Maikon Caldeira&lt;/title&gt;
+&lt;style&gt;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+.project-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #12121a;
+  border-bottom: 2px solid #a3a082;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  background: #1a1a2e;
+  border: 1px solid #2d2d3a;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #a3a082;
+  color: #000;
+  border-color: #a3a082;
+}
+
+.nav-btn.active {
+  background: #a3a082;
+  color: #000;
+  border-color: #d4d0a8;
+}
+
+.project-container {
+  display: none;
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+.project-container.active {
+  display: block;
+}
+
+/* Isola estilos de cada projeto */
+.project-container iframe {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  border: none;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- Navegação --&gt;
+&lt;div class=&quot;project-nav&quot;&gt;
+  &lt;span style=&quot;font-size:14px;font-weight:700;color:#a3a082;margin-right:10px;&quot;&gt;📂&lt;/span&gt;
+  ${projetos.map((p, i) =&gt; `&lt;button class=&quot;nav-btn ${i === 0 ? 'active' : ''}&quot; onclick=&quot;trocarProjeto(${i})&quot;&gt;${escHtml(p.nome)}&lt;/button&gt;`).join('')}
+&lt;/div&gt;
+
+&lt;!-- Projetos (cada um em iframe isolado) --&gt;
+${projetos.map((p, i) =&gt; `
+&lt;div class=&quot;project-container ${i === 0 ? 'active' : ''}&quot; id=&quot;projeto${i}&quot;&gt;
+  &lt;iframe srcdoc=&quot;${escHtml(p.codigo).replace(/&quot;/g, '&amp;quot;')}&quot;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+`).join('')}
+
+&lt;script&gt;
+function trocarProjeto(index) {
+  // Esconde todos
+  document.querySelectorAll('.project-container').forEach(c =&gt; c.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b =&gt; b.classList.remove('active'));
+  
+  // Mostra o selecionado
+  document.getElementById('projeto' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+  
+  // Salva preferência
+  localStorage.setItem('ultimo-projeto', index);
+}
+
+// Restaura último projeto aberto
+window.onload = function() {
+  const ultimo = localStorage.getItem('ultimo-projeto');
+  if (ultimo !== null) trocarProjeto(parseInt(ultimo));
+};
+&lt;\/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;`;
+
+  // Download
+  const blob = new Blob([htmlFinal], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'multiprojetos-pwa-' + new Date().toISOString().slice(0,10) + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast('✅ HTML com ' + projetos.length + ' projetos gerado!');
+}
+
+// ========== BACKUP ==========
+function exportarBackup() {
+  const data = localStorage.getItem(LS_KEY);
+  if (!data) { mostrarToast('❌ Nada para exportar!'); return; }
+  
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'backup-projetos-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast('💾 Backup exportado!');
+}
+
+function importarBackup() {
+  document.getElementById('backupInput').click();
+}
+
+document.getElementById('backupInput').addEventListener('change', (e) =&gt; {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) =&gt; {
+    try {
+      localStorage.setItem(LS_KEY, ev.target.result);
+      carregarProjetos();
+      mostrarToast('📂 Backup importado!');
+    } catch(err) {
+      mostrarToast('❌ Arquivo inválido!');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// ========== UTILS ==========
+function escHtml(s) { return String(s).replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(/&gt;/g,'&amp;gt;'); }
+
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.transform = 'translateY(0)';
+  t.style.opacity = '1';
+  setTimeout(() =&gt; { t.style.transform = 'translateY(100px)'; t.style.opacity = '0'; }, 2500);
+}
+
+// Auto-save
+['nome1','codigo1','nome2','codigo2','nome3','codigo3'].forEach(id =&gt; {
+  document.getElementById(id).addEventListener('input', () =&gt; {
+    clearTimeout(window.autoSaveTimer);
+    window.autoSaveTimer = setTimeout(salvarProjetos, 1000);
+  });
+});
+
+// Init
+carregarProjetos();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+
+<script>
+function trocarProjeto(index) {
+  // Esconde todos
+  document.querySelectorAll('.project-container').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  // Mostra o selecionado
+  document.getElementById('projeto' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+  
+  // Salva preferência
+  localStorage.setItem('ultimo-projeto', index);
+}
+
+// Restaura último projeto aberto
+window.onload = function() {
+  const ultimo = localStorage.getItem('ultimo-projeto');
+  if (ultimo !== null) trocarProjeto(parseInt(ultimo));
+};
+</script>
+</body>
+</html>
+
+<script>
+
+</script>
+</body>
+</html>

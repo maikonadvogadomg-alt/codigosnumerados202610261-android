@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iara Suite v3.0 - Importador Universal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 2px solid #00d4ff;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #00d4ff;
+            font-size: 18px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #00d4ff;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 0;
+        }
+
+        .section {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .section.active {
+            display: flex;
+        }
+
+        /* EDITOR */
+        .editor-section {
+            display: flex;
+            gap: 0;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.6);
+            border-right: 1px solid #00d4ff;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .file-tree {
+            font-size: 12px;
+        }
+
+        .file-item {
+            padding: 6px 8px;
+            margin: 2px 0;
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 2px solid transparent;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+            word-break: break-word;
+        }
+
+        .file-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-left-color: #00d4ff;
+        }
+
+        .file-item.active {
+            background: rgba(0, 212, 255, 0.3);
+            border-left-color: #00d4ff;
+            font-weight: bold;
+        }
+
+        .file-item.folder {
+            font-weight: bold;
+            color: #00d4ff;
+            margin-left: 8px;
+        }
+
+        .file-item.file {
+            margin-left: 20px;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-toolbar {
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 1px solid #00d4ff;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        .btn:hover {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+
+        .btn.danger {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .btn.danger:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            gap: 0;
+        }
+
+        #code-editor {
+            flex: 1;
+            background: #0f0f1e;
+            color: #e0e0e0;
+            border: none;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: none;
+            overflow: auto;
+            line-height: 1.5;
+        }
+
+        #ed-divider {
+            width: 4px;
+            background: #00d4ff;
+            cursor: col-resize;
+            transition: background 0.2s;
+            display: none;
+        }
+
+        #ed-divider:hover {
+            background: #00ff88;
+        }
+
+        #preview-wrap {
+            flex: 1;
+            background: #0f0f1e;
+            border-left: 1px solid #00d4ff;
+            overflow: auto;
+            display: none;
+        }
+
+        #preview-wrap.active {
+            display: block;
+        }
+
+        #preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        /* MAPPER */
+        .mapper-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            overflow: auto;
+        }
+
+        .mapper-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #00d4ff;
+        }
+
+        .mapper-controls input[type="file"] {
+            display: none;
+        }
+
+        .mapper-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .analysis-card {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            border-radius: 6px;
+            padding: 12px;
+            overflow: auto;
+            max-height: 400px;
+        }
+
+        .analysis-card h3 {
+            color: #00d4ff;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .analysis-card pre {
+            background: #0f0f1e;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            overflow-x: auto;
+            max-height: 300px;
+            line-height: 1.4;
+        }
+
+        .filter-section {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #00d4ff;
+            margin-bottom: 12px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #00d4ff;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-box .value {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .stat-box .label {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            color: #00d4ff;
+            margin-bottom: 12px;
+        }
+
+        .modal-content input, .modal-content textarea, .modal-content select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            background: #0f0f1e;
+            border: 1px solid #00d4ff;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff88;
+        }
+
+        .function-list {
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .function-item {
+            padding: 4px;
+            margin: 2px 0;
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 2px solid #00d4ff;
+            padding-left: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00d4ff;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a2e;
+            font-size: 11px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Iara Suite v3.0 - Importador Universal</h1>
+            <div class="nav-tabs">
+                <button class="nav-btn active" onclick="switchTab('editor')">📝 Editor</button>
+                <button class="nav-btn" onclick="switchTab('mapper')">🗺️ Mapper</button>
+            </div>
+            <div>
+                <button class="btn" onclick="openImportModal()">📂 Importar Arquivo</button>
+                <button class="btn danger" onclick="clearAll()">🗑️ Limpar</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- EDITOR -->
+            <div id="editor" class="section active">
+                <div class="editor-section">
+                    <div class="sidebar">
+                        <div style="margin-bottom: 10px; display: flex; gap: 4px;">
+                            <button class="btn" style="flex: 1; font-size: 11px;" onclick="newFile()">+ Arquivo</button>
+                            <button class="btn" style="flex: 1; font-size: 11px;" onclick="newFolder()">+ Pasta</button>
+                        </div>
+                        <div class="file-tree" id="file-tree"></div>
+                    </div>
+                    <div class="editor-wrapper">
+                        <div class="editor-toolbar">
+                            <button class="btn" onclick="renameFile()">✏️ Renomear</button>
+                            <button class="btn danger" onclick="deleteFile()">🗑️ Deletar</button>
+                            <button class="btn" onclick="togglePreview('split')">⚡ Split</button>
+                            <button class="btn" onclick="togglePreview('full')">🟥 Full</button>
+                            <button class="btn" onclick="downloadAsMarkdown()">📄 MD</button>
+                            <button class="btn" onclick="copyToClipboard()">📋 Copiar</button>
+                        </div>
+                        <div class="editor-content">
+                            <textarea id="code-editor" placeholder="Selecione um arquivo..."></textarea>
+                            <div id="ed-divider"></div>
+                            <div id="preview-wrap">
+                                <iframe id="preview-frame"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAPPER -->
+            <div id="mapper" class="section">
+                <div class="mapper-section">
+                    <div class="mapper-controls">
+                        <button class="btn" onclick="document.getElementById('file-input').click()">📂 Importar Arquivo(s)</button>
+                        <input type="file" id="file-input" multiple onchange="handleFileImport(event)">
+                        <button class="btn" onclick="analyzeAllFiles()">🔍 Analisar</button>
+                        <button class="btn" onclick="generateFullReport()">📊 Relatório</button>
+                        <button class="btn" onclick="exportAllAnalysis()">💾 Exportar</button>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <button class="filter-btn active" onclick="filterMapper('all')">Tudo</button>
+                            <button class="filter-btn" onclick="filterMapper('functions')">⚙️ Funções</button>
+                            <button class="filter-btn" onclick="filterMapper('apis')">🌐 APIs</button>
+                            <button class="filter-btn" onclick="filterMapper('bugs')">🐛 Bugs</button>
+                            <button class="filter-btn" onclick="filterMapper('deps')">📦 Deps</button>
+                            <button class="filter-btn" onclick="filterMapper('errors')">❌ Erros</button>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 4px; border: 1px solid #00d4ff; margin-bottom: 12px;">
+                        <h3 style="color: #00d4ff; margin-bottom: 8px;">📊 Estatísticas</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="value" id="stat-files">0</div>
+                                <div class="label">Arquivos</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-functions">0</div>
+                                <div class="label">Funções</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-apis">0</div>
+                                <div class="label">APIs</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-bugs">0</div>
+                                <div class="label">Bugs</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-deps">0</div>
+                                <div class="label">Deps</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-errors">0</div>
+                                <div class="label">Erros</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="mapper-content" id="mapper-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL IMPORTAR -->
+    <div id="import-modal" class="modal">
+        <div class="modal-content">
+            <h2>📂 Importar Arquivo</h2>
+            <p style="color: #888; margin-bottom: 15px; font-size: 12px;">
+                Suporta: JavaScript, Python, Java, C++, C#, PHP, Ruby, Go, Rust, TypeScript, HTML, CSS, JSON, XML, YAML, Markdown, etc.
+            </p>
+            <div style="margin-bottom: 15px;">
+                <label style="color: #888;">Selecione arquivo(s):</label>
+                <input type="file" id="modal-file-input" multiple style="margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="color: #888;">Codificação (opcional):</label>
+                <select id="encoding-select" style="margin-top: 5px;">
+                    <option value="utf-8">UTF-8</option>
+                    <option value="iso-8859-1">ISO-8859-1</option>
+                    <option value="windows-1252">Windows-1252</option>
+                    <option value="ascii">ASCII</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="importFromModal()" style="flex: 1;">✓ Importar</button>
+                <button class="btn danger" onclick="closeImportModal()" style="flex: 1;">✕ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ ESTADO GLOBAL ============
+        let state = {
+            files: {},
+            currentFile: null,
+            previewMode: null,
+            analysis: {
+                files: [],
+                functions: [],
+                apis: [],
+                bugs: [],
+                dependencies: [],
+                errors: [],
+                languages: {}
+            },
+            currentFilter: 'all'
+        };
+
+        // ============ INICIALIZAÇÃO ============
+        function init() {
+            loadFromStorage();
+            renderFileTree();
+        }
+
+        // ============ STORAGE ============
+        function saveToStorage() {
+            localStorage.setItem('iara-files', JSON.stringify(state.files));
+            localStorage.setItem('iara-current', state.currentFile);
+            localStorage.setItem('iara-analysis', JSON.stringify(state.analysis));
+        }
+
+        function loadFromStorage() {
+            const files = localStorage.getItem('iara-files');
+            const current = localStorage.getItem('iara-current');
+            const analysis = localStorage.getItem('iara-analysis');
+            if (files) state.files = JSON.parse(files);
+            if (current) state.currentFile = current;
+            if (analysis) state.analysis = JSON.parse(analysis);
+        }
+
+        // ============ NAVEGAÇÃO ============
+        function switchTab(tab) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ============ EDITOR - GERENCIAMENTO ============
+        function newFile() {
+            const name = prompt('Nome do arquivo:');
+            if (!name) return;
+            state.files[name] = '';
+            state.currentFile = name;
+            saveToStorage();
+            renderFileTree();
+            loadFile(name);
+        }
+
+        function newFolder() {
+            const name = prompt('Nome da pasta:');
+            if (!name) return;
+            const folderName = `[PASTA] ${name}`;
+            state.files[folderName] = '';
+            saveToStorage();
+            renderFileTree();
+        }
+
+        function loadFile(name) {
+            state.currentFile = name;
+            document.getElementById('code-editor').value = state.files[name] || '';
+            renderFileTree();
+            saveToStorage();
+            updatePreview();
+        }
+
+        function saveFile() {
+            if (state.currentFile) {
+                state.files[state.currentFile] = document.getElementById('code-editor').value;
+                saveToStorage();
+                updatePreview();
+            }
+        }
+
+        function renameFile() {
+            if (!state.currentFile) {
+                alert('Selecione um arquivo');
+                return;
+            }
+            const newName = prompt('Novo nome:', state.currentFile);
+            if (newName && newName !== state.currentFile) {
+                state.files[newName] = state.files[state.currentFile];
+                delete state.files[state.currentFile];
+                state.currentFile = newName;
+                saveToStorage();
+                renderFileTree();
+                loadFile(newName);
+            }
+        }
+
+        function deleteFile() {
+            if (!state.currentFile) {
+                alert('Selecione um arquivo');
+                return;
+            }
+            if (confirm(`Deletar "${state.currentFile}"?`)) {
+                delete state.files[state.currentFile];
+                state.currentFile = null;
+                document.getElementById('code-editor').value = '';
+                saveToStorage();
+                renderFileTree();
+            }
+        }
+
+        function renderFileTree() {
+            const tree = document.getElementById('file-tree');
+            tree.innerHTML = '';
+            const sorted = Object.keys(state.files).sort();
+            
+            sorted.forEach(name => {
+                const item = document.createElement('div');
+                const isFolder = name.startsWith('[PASTA]');
+                item.className = `file-item ${isFolder ? 'folder' : 'file'} ${state.currentFile === name ? 'active' : ''}`;
+                item.textContent = name.replace('[PASTA] ', '');
+                item.onclick = () => loadFile(name);
+                tree.appendChild(item);
+            });
+        }
+
+        // ============ PREVIEW ============
+        function togglePreview(mode) {
+            const preview = document.getElementById('preview-wrap');
+            const divider = document.getElementById('ed-divider');
+            
+            if (state.previewMode === mode) {
+                state.previewMode = null;
+                preview.classList.remove('active');
+                divider.style.display = 'none';
+            } else {
+                state.previewMode = mode;
+                preview.classList.add('active');
+                divider.style.display = mode === 'split' ? 'block' : 'none';
+                updatePreview();
+            }
+        }
+
+        function updatePreview() {
+            if (!state.previewMode) return;
+            const content = document.getElementById('code-editor').value;
+            const frame = document.getElementById('preview-frame');
+            
+            try {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                doc.open();
+                doc.write(content);
+                doc.close();
+            } catch (e) {
+                console.error('Erro:', e);
+            }
+        }
+
+        // ============ EXPORT ============
+        function downloadAsMarkdown() {
+            if (!state.currentFile) {
+                alert('Selecione um arquivo');
+                return;
+            }
+            const content = state.files[state.currentFile];
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = state.currentFile + '.md';
+            a.click();
+        }
+
+        function copyToClipboard() {
+            if (!state.currentFile) {
+                alert('Selecione um arquivo');
+                return;
+            }
+            navigator.clipboard.writeText(state.files[state.currentFile]).then(() => {
+                alert('Copiado!');
+            });
+        }
+
+        // ============ IMPORTADOR UNIVERSAL ============
+        function openImportModal() {
+            document.getElementById('import-modal').classList.add('active');
+        }
+
+        function closeImportModal() {
+            document.getElementById('import-modal').classList.remove('active');
+        }
+
+        async function importFromModal() {
+            const input = document.getElementById('modal-file-input');
+            const encoding = document.getElementById('encoding-select').value;
+            
+            if (!input.files.length) {
+                alert('Selecione arquivo(s)');
+                return;
+            }
+
+            for (let file of input.files) {
+                await processFile(file, encoding);
+            }
+
+            saveToStorage();
+            renderFileTree();
+            closeImportModal();
+            alert(`${input.files.length} arquivo(s) importado(s)!`);
+        }
+
+        async function handleFileImport(event) {
+            const files = event.target.files;
+            const encoding = 'utf-8';
+
+            for (let file of files) {
+                await processFile(file, encoding);
+            }
+
+            saveToStorage();
+            renderFileTree();
+            analyzeAllFiles();
+        }
+
+        async function processFile(file, encoding) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        let content = e.target.result;
+                        
+                        // Detectar linguagem
+                        const ext = file.name.split('.').pop().toLowerCase();
+                        const language = detectLanguage(file.name);
+                        
+                        // Salvar arquivo
+                        const fileName = `[${language}] ${file.name}`;
+                        state.files[fileName] = content;
+                        
+                        // Analisar
+                        analyzeFile(fileName, content, language);
+                        
+                    } catch (err) {
+                        console.error('Erro ao processar:', err);
+                    }
+                    resolve();
+                };
+
+                reader.onerror = () => resolve();
+                
+                // Tentar ler com encoding
+                try {
+                    reader.readAsText(file, encoding);
+                } catch {
+                    reader.readAsText(file, 'utf-8');
+                }
+            });
+        }
+
+        function detectLanguage(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const langMap = {
+                'js': 'JavaScript', 'jsx': 'React', 'ts': 'TypeScript', 'tsx': 'TypeScript',
+                'py': 'Python', 'java': 'Java', 'cpp': 'C++', 'c': 'C', 'cs': 'C#',
+                'php': 'PHP', 'rb': 'Ruby', 'go': 'Go', 'rs': 'Rust', 'swift': 'Swift',
+                'kt': 'Kotlin', 'scala': 'Scala', 'sh': 'Bash', 'html': 'HTML', 'css': 'CSS',
+                'scss': 'SCSS', 'json': 'JSON', 'xml': 'XML', 'yaml': 'YAML', 'yml': 'YAML',
+                'md': 'Markdown', 'sql': 'SQL', 'r': 'R', 'pl': 'Perl', 'lua': 'Lua',
+                'vim': 'VimScript', 'gradle': 'Gradle', 'maven': 'Maven', 'dockerfile': 'Docker'
+            };
+            return langMap[ext] || 'Desconhecido';
+        }
+
+        // ============ ANALISADORES MODULARES ============
+        function analyzeFile(fileName, content, language) {
+            const analysis = {
+                file: fileName,
+                language: language,
+                functions: [],
+                apis: [],
+                bugs: [],
+                dependencies: [],
+                errors: [],
+                lines: content.split('\n').length,
+                size: content.length
+            };
+
+            // Executar analisadores específicos
+            analyzeFunctions(content, language, analysis);
+            analyzeAPIs(content, language, analysis);
+            analyzeBugs(content, language, analysis);
+            analyzeDependencies(content, language, analysis);
+            analyzeErrors(content, language, analysis);
+
+            // Adicionar ao estado
+            if (!state.analysis.files.some(f => f.file === fileName)) {
+                state.analysis.files.push(analysis);
+            }
+
+            // Atualizar contadores
+            state.analysis.functions = state.analysis.functions.concat(analysis.functions);
+            state.analysis.apis = state.analysis.apis.concat(analysis.apis);
+            state.analysis.bugs = state.analysis.bugs.concat(analysis.bugs);
+            state.analysis.dependencies = [...new Set([...state.analysis.dependencies, ...analysis.dependencies])];
+            state.analysis.errors = state.analysis.errors.concat(analysis.errors);
+
+            if (!state.analysis.languages[language]) {
+                state.analysis.languages[language] = 0;
+            }
+            state.analysis.languages[language]++;
+        }
+
+        function analyzeFunctions(content, language, analysis) {
+            const patterns = {
+                'JavaScript': /(?:function|const|let|var)\s+(\w+)\s*(?:=\s*)?(?:async\s+)?\(|async\s+(\w+)\s*\(|class\s+(\w+)/g,
+                'Python': /(?:def|class|async def)\s+(\w+)\s*\(/g,
+                'Java': /(?:public|private|protected)?\s*(?:static)?\s*(?:final)?\s*(?:\w+)\s+(\w+)\s*\(/g,
+                'C++': /(?:\w+\s+)+(\w+)\s*\([^)]*\)\s*(?:{|;)/g,
+                'C#': /(?:public|private|protected)?\s*(?:static)?\s*(?:\w+)\s+(\w+)\s*\(/g,
+                'PHP': /(?:function|public|private|protected)\s+(?:static)?\s*function\s+(\w+)\s*\(/g,
+                'Ruby': /(?:def|class|module)\s+(\w+)/g,
+                'Go': /func\s+(?:\(\w+\s+\*?\w+\)\s+)?(\w+)\s*\(/g,
+                'Rust': /(?:fn|pub fn|async fn)\s+(\w+)\s*\(/g,
+            };
+
+            const pattern = patterns[language] || patterns['JavaScript'];
+            let match;
+            while ((match = pattern.exec(content)) !== null) {
+                const funcName = match[1] || match[2] || match[3];
+                if (funcName && !analysis.functions.some(f => f === funcName)) {
+                    analysis.functions.push(funcName);
+                }
+            }
+        }
+
+        function analyzeAPIs(content, language, analysis) {
+            const apiPatterns = [
+                /(?:fetch|axios|http|request)\s*\(\s*['"`]([^'"`]+)/g,
+                /(?:@get|@post|@put|@delete|@patch)\s*\(\s*['"`]([^'"`]+)/g,
+                /(?:router|app)\.(?:get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)/g,
+                /(?:url|endpoint|api)\s*:\s*['"`]([^'"`]+)/g,
+                /https?:\/\/[^\s'"`]+/g
+            ];
+
+            apiPatterns.forEach(pattern => {
+                let match;
+                while ((match = pattern.exec(content)) !== null) {
+                    const api = match[1] || match[0];
+                    if (api && !analysis.apis.some(a => a === api)) {
+                        analysis.apis.push(api);
+                    }
+                }
+            });
+        }
+
+        function analyzeBugs(content, language, analysis) {
+            const bugPatterns = [
+                { pattern: /console\.log/g, name: 'console.log' },
+                { pattern: /TODO|FIXME|BUG|HACK/g, name: 'Comentário de aviso' },
+                { pattern: /\=\=/g, name: 'Usar ===' },
+                { pattern: /var\s+/g, name: 'Usar const/let' },
+                { pattern: /any\s*[,\)]/g, name: 'Tipo "any"' },
+                { pattern: /try\s*{[\s\S]*?}\s*catch\s*\(\s*\)\s*{/g, name: 'Catch vazio' },
+                { pattern: /\/\/\s*@ts-ignore/g, name: '@ts-ignore' }
+            ];
+
+            bugPatterns.forEach(({ pattern, name }) => {
+                if (pattern.test(content)) {
+                    if (!analysis.bugs.some(b => b === name)) {
+                        analysis.bugs.push(name);
+                    }
+                }
+            });
+        }
+
+        function analyzeDependencies(content, language, analysis) {
+            const depPatterns = [
+                /(?:import|require)\s+(?:.*\s+)?from\s+['"]([^'"]+)['"]/g,
+                /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+                /using\s+([^\s;]+)/g,
+                /include\s+<([^>]+)>/g,
+                /from\s+([^\s]+)\s+import/g,
+                /import\s+([^\s;]+)/g
+            ];
+
+            depPatterns.forEach(pattern => {
+                let match;
+                while ((match = pattern.exec(content)) !== null) {
+                    const dep = match[1];
+                    if (dep && !analysis.dependencies.some(d => d === dep)) {
+                        analysis.dependencies.push(dep);
+                    }
+                }
+            });
+        }
+
+        function analyzeErrors(content, language, analysis) {
+            const errorPatterns = [
+                { pattern: /undefined/g, name: 'undefined' },
+                { pattern: /null\./g, name: 'null access' },
+                { pattern: /\[\]\./g, name: 'array access' },
+                { pattern: /NaN/g, name: 'NaN' },
+                { pattern: /Infinity/g, name: 'Infinity' }
+            ];
+
+            errorPatterns.forEach(({ pattern, name }) => {
+                if (pattern.test(content)) {
+                    if (!analysis.errors.some(e => e === name)) {
+                        analysis.errors.push(name);
+                    }
+                }
+            });
+        }
+
+        // ============ MAPPER - ANÁLISE E EXIBIÇÃO ============
+        function analyzeAllFiles() {
+            state.analysis.files.forEach(file => {
+                analyzeFile(file.file, state.files[file.file], file.language);
+            });
+            displayAnalysis();
+            updateStats();
+        }
+
+        function displayAnalysis() {
+            const container = document.getElementById('mapper-content');
+            container.innerHTML = '';
+
+            const filter = state.currentFilter;
+
+            // Funções
+            if ((filter === 'all' || filter === 'functions') && state.analysis.functions.length > 0) {
+                const uniqueFuncs = [...new Set(state.analysis.functions)];
+                const card = createCard('⚙️ Funções', 'functions');
+                card.querySelector('pre').textContent = uniqueFuncs.join('\n');
+                container.appendChild(card);
+            }
+
+            // APIs
+            if ((filter === 'all' || filter === 'apis') && state.analysis.apis.length > 0) {
+                const uniqueAPIs = [...new Set(state.analysis.apis)];
+                const card = createCard('🌐 APIs', 'apis');
+                card.querySelector('pre').textContent = uniqueAPIs.join('\n');
+                container.appendChild(card);
+            }
+
+            // Bugs
+            if ((filter === 'all' || filter === 'bugs') && state.analysis.bugs.length > 0) {
+                const uniqueBugs = [...new Set(state.analysis.bugs)];
+                const card = createCard('🐛 Bugs', 'bugs');
+                card.querySelector('pre').textContent = uniqueBugs.join('\n');
+                container.appendChild(card);
+            }
+
+            // Dependências
+            if ((filter === 'all' || filter === 'deps') && state.analysis.dependencies.length > 0) {
+                const uniqueDeps = [...new Set(state.analysis.dependencies)];
+                const card = createCard('📦 Dependências', 'deps');
+                card.querySelector('pre').textContent = uniqueDeps.join('\n');
+                container.appendChild(card);
+            }
+
+            // Erros
+            if ((filter === 'all' || filter === 'errors') && state.analysis.errors.length > 0) {
+                const uniqueErrors = [...new Set(state.analysis.errors)];
+                const card = createCard('❌ Erros', 'errors');
+                card.querySelector('pre').textContent = uniqueErrors.join('\n');
+                container.appendChild(card);
+            }
+
+            // Linguagens
+            if (filter === 'all' && Object.keys(state.analysis.languages).length > 0) {
+                const card = createCard('💻 Linguagens', 'languages');
+                const langs = Object.entries(state.analysis.languages)
+                    .map(([lang, count]) => `${lang}: ${count}`)
+                    .join('\n');
+                card.querySelector('pre').textContent = langs;
+                container.appendChild(card);
+            }
+
+            // Arquivos
+            if (filter === 'all' && state.analysis.files.length > 0) {
+                const card = createCard('📁 Arquivos Analisados', 'files');
+                const files = state.analysis.files
+                    .map(f => `${f.file}\n  Linhas: ${f.lines} | Tamanho: ${(f.size / 1024).toFixed(2)}KB`)
+                    .join('\n');
+                card.querySelector('pre').textContent = files;
+                container.appendChild(card);
+            }
+        }
+
+        function createCard(title, type) {
+            const card = document.createElement('div');
+            card.className = 'analysis-card';
+            card.innerHTML = `
+                <h3>
+                    ${title}
+                    <button class="btn" style="font-size: 10px; padding: 4px 8px;" onclick="copyCardContent(this)">📋</button>
+                </h3>
+                <pre></pre>
+            `;
+            return card;
+        }
+
+        function copyCardContent(btn) {
+            const pre = btn.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.textContent).then(() => {
+                const oldText = btn.textContent;
+                btn.textContent = '✓';
+                setTimeout(() => { btn.textContent = oldText; }, 2000);
+            });
+        }
+
+        function filterMapper(type) {
+            state.currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            displayAnalysis();
+        }
+
+        function updateStats() {
+            document.getElementById('stat-files').textContent = state.analysis.files.length;
+            document.getElementById('stat-functions').textContent = [...new Set(state.analysis.functions)].length;
+            document.getElementById('stat-apis').textContent = [...new Set(state.analysis.apis)].length;
+            document.getElementById('stat-bugs').textContent = [...new Set(state.analysis.bugs)].length;
+            document.getElementById('stat-deps').textContent = state.analysis.dependencies.length;
+            document.getElementById('stat-errors').textContent = [...new Set(state.analysis.errors)].length;
+
+            const total = state.analysis.files.length || 1;
+            const progress = Math.min(100, (state.analysis.files.length * 20));
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('progress-fill').textContent = progress + '%';
+        }
+
+        function generateFullReport() {
+            if (!state.analysis.files.length) {
+                alert('Analise arquivos primeiro');
+                return;
+            }
+
+            let report = `# 📊 Relatório Completo de Análise\n\n`;
+            report += `**Data:** ${new Date().toLocaleString()}\n\n`;
+
+            report += `## 📈 Resumo\n`;
+            report += `- Arquivos: ${state.analysis.files.length}\n`;
+            report += `- Funções: ${[...new Set(state.analysis.functions)].length}\n`;
+            report += `- APIs: ${[...new Set(state.analysis.apis)].length}\n`;
+            report += `- Bugs: ${[...new Set(state.analysis.bugs)].length}\n`;
+            report += `- Dependências: ${state.analysis.dependencies.length}\n`;
+            report += `- Erros: ${[...new Set(state.analysis.errors)].length}\n\n`;
+
+            report += `## 💻 Linguagens\n\`\`\`\n`;
+            Object.entries(state.analysis.languages).forEach(([lang, count]) => {
+                report += `${lang}: ${count}\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## ⚙️ Funções Encontradas\n\`\`\`\n`;
+            [...new Set(state.analysis.functions)].forEach(f => {
+                report += `${f}()\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## 🌐 APIs Detectadas\n\`\`\`\n`;
+            [...new Set(state.analysis.apis)].forEach(api => {
+                report += `${api}\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## 🐛 Bugs Potenciais\n\`\`\`\n`;
+            [...new Set(state.analysis.bugs)].forEach(bug => {
+                report += `- ${bug}\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## 📦 Dependências\n\`\`\`\n`;
+            state.analysis.dependencies.forEach(dep => {
+                report += `${dep}\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## ❌ Erros Potenciais\n\`\`\`\n`;
+            [...new Set(state.analysis.errors)].forEach(err => {
+                report += `- ${err}\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## 📁 Detalhes dos Arquivos\n`;
+            state.analysis.files.forEach(file => {
+                report += `### ${file.file}\n`;
+                report += `- Linguagem: ${file.language}\n`;
+                report += `- Linhas: ${file.lines}\n`;
+                report += `- Tamanho: ${(file.size / 1024).toFixed(2)}KB\n`;
+                report += `- Funções: ${file.functions.length}\n`;
+                report += `- APIs: ${file.apis.length}\n\n`;
+            });
+
+            const blob = new Blob([report], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio-${Date.now()}.md`;
+            a.click();
+
+            alert('Relatório gerado!');
+        }
+
+        function exportAllAnalysis() {
+            const json = JSON.stringify(state.analysis, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analise-${Date.now()}.json`;
+            a.click();
+        }
+
+        function clearAll() {
+            if (confirm('Limpar TUDO?')) {
+                localStorage.clear();
+                state = {
+                    files: {},
+                    currentFile: null,
+                    previewMode: null,
+                    analysis: {
+                        files: [],
+                        functions: [],
+                        apis: [],
+                        bugs: [],
+                        dependencies: [],
+                        errors: [],
+                        languages: {}
+                    },
+                    currentFilter: 'all'
+                };
+                renderFileTree();
+                document.getElementById('code-editor').value = '';
+                document.getElementById('mapper-content').innerHTML = '';
+                alert('Tudo limpo!');
+            }
+        }
+
+        // ============ EVENT LISTENERS ============
+        document.getElementById('code-editor').addEventListener('input', saveFile);
+        document.getElementById('code-editor').addEventListener('input', updatePreview);
+
+        // Redimensionador
+        let isDragging = false;
+        document.getElementById('ed-divider').addEventListener('mousedown', () => {
+            isDragging = true;
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const editor = document.getElementById('code-editor');
+            const preview = document.getElementById('preview-wrap');
+            const container = editor.parentElement;
+            const rect = container.getBoundingClientRect();
+            const newWidth = e.clientX - rect.left;
+            editor.style.flex = `0 0 ${newWidth}px`;
+            preview.style.flex = '1';
+        });
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        init();
+    </script>
+</body>
+</html>

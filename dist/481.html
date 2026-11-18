@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 Dissecador de Código — Iara Suite v2.0</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1a472a, #2d6a4f);
+    padding: 20px 24px;
+    border-bottom: 2px solid #40916c;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    color: #b7e4c7;
+    letter-spacing: 1px;
+  }
+
+  header p {
+    font-size: 0.8rem;
+    color: #74c69d;
+    margin-top: 4px;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  /* UPLOAD AREA */
+  .upload-area {
+    border: 2px dashed #40916c;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #161b22;
+    margin-bottom: 24px;
+  }
+
+  .upload-area:hover, .upload-area.drag-over {
+    border-color: #74c69d;
+    background: #1a2332;
+  }
+
+  .upload-area .icon { font-size: 3rem; margin-bottom: 12px; }
+  .upload-area h2 { color: #74c69d; font-size: 1.1rem; margin-bottom: 8px; }
+  .upload-area p { color: #718096; font-size: 0.85rem; }
+
+  #fileInput { display: none; }
+
+  /* CONTROLES */
+  .controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary { background: #2d6a4f; color: #b7e4c7; }
+  .btn-primary:hover { background: #40916c; }
+  .btn-secondary { background: #2d3748; color: #a0aec0; }
+  .btn-secondary:hover { background: #4a5568; }
+  .btn-danger { background: #742a2a; color: #feb2b2; }
+  .btn-danger:hover { background: #9b2c2c; }
+  .btn-copy { 
+    background: #1a365d; color: #90cdf4; 
+    padding: 6px 12px; font-size: 0.78rem;
+  }
+  .btn-copy:hover { background: #2a4a7f; }
+  .btn-copy.copied { background: #1a472a; color: #9ae6b4; }
+
+  select, input[type="text"] {
+    padding: 10px 14px;
+    background: #2d3748;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  input[type="text"] {
+    cursor: text;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  /* INFO DO ARQUIVO */
+  .file-info {
+    background: #161b22;
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: none;
+  }
+
+  .file-info.visible { display: flex; gap: 24px; flex-wrap: wrap; }
+
+  .file-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .file-stat .label { font-size: 0.72rem; color: #718096; text-transform: uppercase; }
+  .file-stat .value { font-size: 1rem; color: #74c69d; font-weight: 700; }
+
+  /* MAIN LAYOUT */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    display: none;
+  }
+
+  .main-layout.visible { display: grid; }
+
+  /* SIDEBAR */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .panel {
+    background: #161b22;
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: #1a2332;
+    padding: 14px 16px;
+    border-bottom: 1px solid #2d3748;
+    font-weight: 600;
+    color: #74c69d;
+    font-size: 0.9rem;
+  }
+
+  .panel-content {
+    padding: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .index-item, .dep-item, .filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-left: 3px solid transparent;
+    font-size: 0.85rem;
+  }
+
+  .index-item:hover, .dep-item:hover, .filter-item:hover { background: #1a2332; }
+  .index-item.active, .dep-item.active { background: #1a2332; border-left-color: #40916c; }
+
+  .item-line {
+    font-size: 0.7rem;
+    color: #4a5568;
+    min-width: 45px;
+    font-family: monospace;
+  }
+
+  .item-type {
+    font-size: 0.65rem;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .type-function { background: #1a365d; color: #90cdf4; }
+  .type-component { background: #1a472a; color: #9ae6b4; }
+  .type-hook { background: #44337a; color: #d6bcfa; }
+  .type-interface { background: #744210; color: #fbd38d; }
+  .type-class { background: #742a2a; color: #feb2b2; }
+  .type-const { background: #2d3748; color: #a0aec0; }
+  .type-import { background: #1a3a3a; color: #81e6d9; }
+  .type-export { background: #2d2a1a; color: #f6e05e; }
+
+  .item-name {
+    font-size: 0.8rem;
+    color: #e2e8f0;
+    font-family: monospace;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .item-badge {
+    font-size: 0.65rem;
+    background: #2d3748;
+    color: #a0aec0;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  /* CONTENT AREA */
+  .content-area {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .block-card {
+    background: #161b22;
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .block-card:hover { border-color: #40916c; }
+  .block-card.has-warning { border-color: #f6ad55; }
+
+  .block-header {
+    background: #1a2332;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-bottom: 1px solid #2d3748;
+  }
+
+  .block-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .block-title {
+    font-size: 0.9rem;
+    color: #e2e8f0;
+    font-family: monospace;
+    font-weight: 600;
+  }
+
+  .block-meta {
+    font-size: 0.72rem;
+    color: #4a5568;
+  }
+
+  .block-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .block-content {
+    padding: 0;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .block-content pre {
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: #a8b2c1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .block-deps {
+    background: #1a2332;
+    padding: 12px 16px;
+    border-top: 1px solid #2d3748;
+    font-size: 0.8rem;
+  }
+
+  .block-deps h4 {
+    color: #74c69d;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .dep-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .dep-tag {
+    background: #1a365d;
+    color: #90cdf4;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .dep-tag:hover { background: #2a4a7f; }
+  .dep-tag.missing { background: #742a2a; color: #feb2b2; }
+  .dep-tag.warning { background: #744210; color: #fbd38d; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1a472a;
+    color: #9ae6b4;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transform: translateY(100px);
+    transition: transform 0.3s;
+    z-index: 1000;
+    border: 1px solid #40916c;
+  }
+
+  .toast.show { transform: translateY(0); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #161b22; }
+  ::-webkit-scrollbar-thumb { background: #2d6a4f; border-radius: 3px; }
+
+  /* PROGRESS */
+  .progress-bar {
+    height: 3px;
+    background: #2d3748;
+    border-radius: 2px;
+    margin-bottom: 24px;
+    display: none;
+  }
+
+  .progress-bar.visible { display: block; }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2d6a4f, #74c69d);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #4a5568;
+  }
+
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+  @media (max-width: 900px) {
+    .main-layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+
+  @media (max-width: 600px) {
+    .controls { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+    select, input[type="text"] { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔬 Dissecador de Código — Iara Suite v2.0</h1>
+  <p>Analisa, indexa, rastreia dependências e separa arquivos grandes em blocos lógicos</p>
+</header>
+
+<div class="container">
+
+  <!-- UPLOAD -->
+  <div class="upload-area" id="uploadArea">
+    <div class="icon">📂</div>
+    <h2>Arraste o arquivo aqui ou clique para selecionar</h2>
+    <p>Suporta: .tsx • .ts • .js • .jsx • .css • .json • .py • qualquer texto</p>
+    <input type="file" id="fileInput" accept="*/*">
+  </div>
+
+  <!-- INFO DO ARQUIVO -->
+  <div class="file-info" id="fileInfo">
+    <div class="file-stat">
+      <span class="label">Arquivo</span>
+      <span class="value" id="statName">—</span>
+    </div>
+    <div class="file-stat">
+      <span class="label">Tamanho</span>
+      <span class="value" id="statSize">—</span>
+    </div>
+    <div class="file-stat">
+      <span class="label">Linhas</span>
+      <span class="value" id="statLines">—</span>
+    </div>
+    <div class="file-stat">
+      <span class="label">Blocos</span>
+      <span class="value" id="statBlocks">—</span>
+    </div>
+    <div class="file-stat">
+      <span class="label">Tipo</span>
+      <span class="value" id="statType">—</span>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <!-- CONTROLES -->
+  <div class="controls" id="controls" style="display:none">
+    <button class="btn btn-primary" onclick="analisarArquivo()">🔍 Analisar</button>
+    <input type="text" id="searchBox" placeholder="🔍 Buscar..." onkeyup="filtrarIndice()">
+    <select id="filterType" onchange="filtrarPorTipo()">
+      <option value="">Todos os tipos</option>
+      <option value="import">Imports</option>
+      <option value="component">Componentes</option>
+      <option value="function">Funções</option>
+      <option value="hook">Hooks</option>
+      <option value="interface">Interfaces</option>
+      <option value="class">Classes</option>
+      <option value="const">Constantes</option>
+    </select>
+    <select id="exportFormat">
+      <option value="md">Exportar como Markdown</option>
+      <option value="html">Exportar como HTML</option>
+      <option value="txt">Exportar como TXT</option>
+    </select>
+    <button class="btn btn-secondary" onclick="exportarTudo()">💾 Exportar Tudo</button>
+    <button class="btn btn-danger" onclick="resetar()">🗑️ Limpar</button>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout" id="mainLayout">
+    
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      
+      <!-- ÍNDICE -->
+      <div class="panel">
+        <div class="panel-header">📋 Índice (<span id="indexCount">0</span>)</div>
+        <div class="panel-content" id="indexList"></div>
+      </div>
+
+      <!-- DEPENDÊNCIAS -->
+      <div class="panel">
+        <div class="panel-header">🔗 Dependências</div>
+        <div class="panel-content" id="depList"></div>
+      </div>
+
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="content-area" id="contentArea"></div>
+
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let codigoOriginal = '';
+let nomeArquivo = '';
+let blocos = [];
+let indice = [];
+let dependencias = {};
+
+// ============================================================
+// UPLOAD
+// ============================================================
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadArea.classList.add('drag-over');
+});
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+uploadArea.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadArea.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processarArquivo(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) processarArquivo(e.target.files[0]);
+});
+
+function processarArquivo(file) {
+  nomeArquivo = file.name;
+  mostrarProgress(20);
+  
+  const reader = new FileReader();
+  reader.onload = e => {
+    codigoOriginal = e.target.result;
+    mostrarProgress(100);
+    
+    setTimeout(() => {
+      esconderProgress();
+      mostrarInfoArquivo(file);
+      document.getElementById('controls').style.display = 'flex';
+      mostrarToast('✅ Arquivo carregado: ' + file.name);
+    }, 300);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function mostrarInfoArquivo(file) {
+  const linhas = codigoOriginal.split('\n').length;
+  const tipo = detectarTipo(nomeArquivo);
+  
+  document.getElementById('statName').textContent = file.name;
+  document.getElementById('statSize').textContent = formatarTamanho(file.size);
+  document.getElementById('statLines').textContent = linhas.toLocaleString('pt-BR');
+  document.getElementById('statBlocks').textContent = '—';
+  document.getElementById('statType').textContent = tipo;
+  
+  document.getElementById('fileInfo').classList.add('visible');
+}
+
+function detectarTipo(nome) {
+  if (nome.endsWith('.tsx')) return 'React/TypeScript';
+  if (nome.endsWith('.ts')) return 'TypeScript';
+  if (nome.endsWith('.jsx')) return 'React/JavaScript';
+  if (nome.endsWith('.js')) return 'JavaScript';
+  if (nome.endsWith('.css')) return 'CSS';
+  if (nome.endsWith('.json')) return 'JSON';
+  if (nome.endsWith('.py')) return 'Python';
+  return 'Texto';
+}
+
+function formatarTamanho(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+// ============================================================
+// ANÁLISE COMPLETA
+// ============================================================
+function analisarArquivo() {
+  if (!codigoOriginal) return;
+  
+  mostrarProgress(30);
+  gerarIndice();
+  mostrarProgress(60);
+  rastrearDependencias();
+  mostrarProgress(80);
+  dissecaBloco();
+  mostrarProgress(100);
+  
+  setTimeout(() => {
+    esconderProgress();
+    document.getElementById('mainLayout').classList.add('visible');
+    mostrarToast('✅ Análise completa!');
+  }, 300);
+}
+
+// ============================================================
+// GERAR ÍNDICE
+// ============================================================
+function gerarIndice() {
+  if (!codigoOriginal) return;
+  
+  indice = [];
+  const linhas = codigoOriginal.split('\n');
+  
+  linhas.forEach((linha, i) => {
+    const num = i + 1;
+    const trim = linha.trim();
+    
+    // Imports
+    if (trim.startsWith('import ')) {
+      const match = trim.match(/import\s+.*?\s+from\s+['"]([^'"]+)['"]/);
+      indice.push({ linha: num, tipo: 'import', nome: match ? match[1] : trim.substring(0, 60) });
+      return;
+    }
+    
+    // Exports
+    if (trim.startsWith('export default function') || trim.startsWith('export default class')) {
+      const match = trim.match(/export default (?:function|class)\s+(\w+)/);
+      indice.push({ linha: num, tipo: 'component', nome: match ? match[1] : 'default export' });
+      return;
+    }
+    
+    // Componentes React
+    const compMatch = trim.match(/^(?:export\s+)?(?:default\s+)?function\s+([A-Z]\w+)\s*[(<]/);
+    if (compMatch) {
+      indice.push({ linha: num, tipo: 'component', nome: compMatch[1] });
+      return;
+    }
+    
+    // Hooks
+    const hookMatch = trim.match(/^(?:export\s+)?(?:const|function)\s+(use[A-Z]\w+)/);
+    if (hookMatch) {
+      indice.push({ linha: num, tipo: 'hook', nome: hookMatch[1] });
+      return;
+    }
+    
+    // Funções
+    const funcMatch = trim.match(/^(?:export\s+)?(?:async\s+)?function\s+([a-z]\w+)\s*[(<]/);
+    if (funcMatch) {
+      indice.push({ linha: num, tipo: 'function', nome: funcMatch[1] });
+      return;
+    }
+    
+    // Arrow functions
+    const arrowMatch = trim.match(/^(?:export\s+)?const\s+([a-zA-Z]\w+)\s*=\s*(?:async\s+)?\(/);
+    if (arrowMatch) {
+      indice.push({ linha: num, tipo: 'function', nome: arrowMatch[1] });
+      return;
+    }
+    
+    // Interfaces
+    const interfaceMatch = trim.match(/^(?:export\s+)?(?:interface|type)\s+(\w+)/);
+    if (interfaceMatch) {
+      indice.push({ linha: num, tipo: 'interface', nome: interfaceMatch[1] });
+      return;
+    }
+    
+    // Classes
+    const classMatch = trim.match(/^(?:export\s+)?class\s+(\w+)/);
+    if (classMatch) {
+      indice.push({ linha: num, tipo: 'class', nome: classMatch[1] });
+      return;
+    }
+    
+    // Constantes
+    const constMatch = trim.match(/^(?:export\s+)?const\s+([A-Z_]{3,})\s*=/);
+    if (constMatch) {
+      indice.push({ linha: num, tipo: 'const', nome: constMatch[1] });
+      return;
+    }
+  });
+  
+  renderizarIndice();
+}
+
+function renderizarIndice() {
+  const lista = document.getElementById('indexList');
+  document.getElementById('indexCount').textContent = indice.length;
+  
+  if (indice.length === 0) {
+    lista.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Nenhuma estrutura encontrada</p></div>';
+  } else {
+    lista.innerHTML = indice.map((item, i) => `
+      <div class="index-item" onclick="selecionarIndice(${i})" id="idx-${i}">
+        <span class="item-line">L${item.linha}</span>
+        <span class="item-type type-${item.tipo}">${item.tipo}</span>
+        <span class="item-name">${escapeHtml(item.nome)}</span>
+        <span class="item-badge" id="badge-${i}">0</span>
+      </div>
+    `).join('');
+  }
+}
+
+function selecionarIndice(i) {
+  document.querySelectorAll('.index-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(`idx-${i}`)?.classList.add('active');
+}
+
+// ============================================================
+// RASTREAR DEPENDÊNCIAS
+// ============================================================
+function rastrearDependencias() {
+  dependencias = {};
+  
+  indice.forEach(item => {
+    dependencias[item.nome] = {
+      tipo: item.tipo,
+      linha: item.linha,
+      usa: [],
+      usadoPor: []
+    };
+  });
+  
+  // Encontrar referências
+  indice.forEach((item, i) => {
+    const linhaInicio = item.linha - 1;
+    const linhaFim = indice[i + 1] ? indice[i + 1].linha - 1 : codigoOriginal.split('\n').length;
+    const bloco = codigoOriginal.split('\n').slice(linhaInicio, linhaFim).join('\n');
+    
+    // Procura por referências a outras funções
+    indice.forEach(outro => {
+      if (item.nome !== outro.nome && bloco.includes(outro.nome)) {
+        if (!dependencias[item.nome].usa.includes(outro.nome)) {
+          dependencias[item.nome].usa.push(outro.nome);
+        }
+        if (!dependencias[outro.nome].usadoPor.includes(item.nome)) {
+          dependencias[outro.nome].usadoPor.push(item.nome);
+        }
+      }
+    });
+  });
+  
+  renderizarDependencias();
+  atualizarBadges();
+}
+
+function renderizarDependencias() {
+  const lista = document.getElementById('depList');
+  const deps = Object.entries(dependencias)
+    .filter(([_, d]) => d.usa.length > 0 || d.usadoPor.length > 0)
+    .sort((a, b) => (b[1].usa.length + b[1].usadoPor.length) - (a[1].usa.length + a[1].usadoPor.length));
+  
+  if (deps.length === 0) {
+    lista.innerHTML = '<div class="empty-state"><p>Sem dependências</p></div>';
+  } else {
+    lista.innerHTML = deps.map(([nome, dep]) => `
+      <div class="dep-item">
+        <span class="item-type type-${dep.tipo}">${dep.tipo}</span>
+        <span class="item-name">${escapeHtml(nome)}</span>
+        <span class="item-badge">${dep.usa.length + dep.usadoPor.length}</span>
+      </div>
+    `).join('');
+  }
+}
+
+function atualizarBadges() {
+  indice.forEach((item, i) => {
+    const dep = dependencias[item.nome];
+    const total = (dep.usa.length + dep.usadoPor.length);
+    const badge = document.getElementById(`badge-${i}`);
+    if (badge) badge.textContent = total;
+  });
+}
+
+// ============================================================
+// DISSECTAR EM BLOCOS
+// ============================================================
+function dissecaBloco() {
+  if (!codigoOriginal) return;
+  
+  blocos = [];
+  const linhas = codigoOriginal.split('\n');
+  const total = linhas.length;
+  
+  const pontos = indice
+    .filter(i => ['component', 'hook', 'function', 'class'].includes(i.tipo))
+    .map(i => i.linha - 1);
+  
+  if (pontos.length === 0) {
+    const tamBloco = 100;
+    for (let i = 0; i < total; i += tamBloco) {
+      const fim = Math.min(i + tamBloco, total);
+      blocos.push({
+        titulo: `Bloco ${blocos.length + 1}`,
+        tipo: 'const',
+        linhaInicio: i + 1,
+        linhaFim: fim,
+        conteudo: linhas.slice(i, fim).join('\n'),
+        deps: []
+      });
+    }
+  } else {
+    if (pontos[0] > 0) {
+      blocos.push({
+        titulo: '📦 Imports',
+        tipo: 'import',
+        linhaInicio: 1,
+        linhaFim: pontos[0],
+        conteudo: linhas.slice(0, pontos[0]).join('\n'),
+        deps: []
+      });
+    }
+    
+    pontos.forEach((inicio, i) => {
+      const fim = pontos[i + 1] || total;
+      const item = indice.find(x => x.linha === inicio + 1);
+      const deps = item ? (dependencias[item.nome]?.usa || []) : [];
+      
+      blocos.push({
+        titulo: item ? item.nome : `Bloco ${i + 1}`,
+        tipo: item ? item.tipo : 'function',
+        linhaInicio: inicio + 1,
+        linhaFim: fim,
+        conteudo: linhas.slice(inicio, fim).join('\n'),
+        deps: deps
+      });
+    });
+  }
+  
+  renderizarBlocos();
+  document.getElementById('statBlocks').textContent = blocos.length;
+}
+
+function renderizarBlocos() {
+  const area = document.getElementById('contentArea');
+  
+  area.innerHTML = blocos.map((bloco, i) => {
+    const temDeps = bloco.deps.length > 0;
+    const depsMissing = bloco.deps.filter(d => !codigoOriginal.includes(d));
+    
+    return `
+      <div class="block-card ${depsMissing.length > 0 ? 'has-warning' : ''}" id="bloco-${i}">
+        <div class="block-header">
+          <div class="block-header-left">
+            <span class="item-type type-${bloco.tipo}">${bloco.tipo}</span>
+            <span class="block-title">${escapeHtml(bloco.titulo)}</span>
+            <span class="block-meta">L${bloco.linhaInicio}–L${bloco.linhaFim} • ${bloco.conteudo.split('\n').length} linhas</span>
+          </div>
+          <div class="block-actions">
+            <button class="btn btn-copy" onclick="copiarBloco(${i})">📋 Copiar</button>
+            <button class="btn btn-copy" onclick="exportarBloco(${i})">💾 Salvar</button>
+          </div>
+        </div>
+        <div class="block-content">
+          <pre>${escapeHtml(bloco.conteudo)}</pre>
+        </div>
+        ${temDeps ? `
+          <div class="block-deps">
+            <h4>🔗 Dependências (${bloco.deps.length})</h4>
+            <div class="dep-list">
+              ${bloco.deps.map(d => `
+                <span class="dep-tag ${depsMissing.includes(d) ? 'missing' : ''}" title="${d}">
+                  ${d}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================================
+// FILTROS
+// ============================================================
+function filtrarIndice() {
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const tipo = document.getElementById('filterType').value;
+  
+  document.querySelectorAll('.index-item').forEach((el, i) => {
+    const item = indice[i];
+    const matchSearch = !search || item.nome.toLowerCase().includes(search);
+    const matchTipo = !tipo || item.tipo === tipo;
+    
+    el.style.display = (matchSearch && matchTipo) ? 'flex' : 'none';
+  });
+}
+
+function filtrarPorTipo() {
+  filtrarIndice();
+}
+
+// ============================================================
+// COPIAR E EXPORTAR
+// ============================================================
+function copiarBloco(i) {
+  const bloco = blocos[i];
+  let texto = `// ===== ${bloco.titulo} =====\n`;
+  texto += `// Linhas: ${bloco.linhaInicio}–${bloco.linhaFim}\n`;
+  texto += `// Arquivo: ${nomeArquivo}\n`;
+  
+  if (bloco.deps.length > 0) {
+    texto += `// Dependências: ${bloco.deps.join(', ')}\n`;
+  }
+  
+  texto += `\n${bloco.conteudo}`;
+  
+  navigator.clipboard.writeText(texto).then(() => {
+    mostrarToast(`📋 Bloco "${bloco.titulo}" copiado!`);
+  });
+}
+
+function exportarBloco(i) {
+  const bloco = blocos[i];
+  const formato = document.getElementById('exportFormat').value;
+  let conteudo = '';
+  let ext = '';
+  let mime = '';
+  
+  if (formato === 'md') {
+    ext = 'md';
+    mime = 'text/markdown';
+    conteudo = `# ${bloco.titulo}\n\n`;
+    conteudo += `> **Arquivo:** ${nomeArquivo}  \n`;
+    conteudo += `> **Linhas:** ${bloco.linhaInicio}–${bloco.linhaFim}\n`;
+    if (bloco.deps.length > 0) {
+      conteudo += `> **Dependências:** ${bloco.deps.join(', ')}\n`;
+    }
+    conteudo += `\n\`\`\`\n${bloco.conteudo}\n\`\`\``;
+  } else if (formato === 'html') {
+    ext = 'html';
+    mime = 'text/html';
+    conteudo = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${bloco.titulo}</title>
+<style>
+  body { font-family: monospace; background: #0f1117; color: #a8b2c1; padding: 24px; }
+  h1 { color: #74c69d; }
+  .meta { color: #4a5568; font-size: 0.85rem; margin-bottom: 16px; }
+  .deps { background: #1a2332; padding: 12px; border-radius: 6px; margin-bottom: 16px; }
+  pre { background: #161b22; padding: 20px; border-radius: 8px; white-space: pre-wrap; line-height: 1.6; }
+</style>
+</head>
+<body>
+<h1>${bloco.titulo}</h1>
+<div class="meta">
+  <strong>Arquivo:</strong> ${nomeArquivo}<br>
+  <strong>Linhas:</strong> ${bloco.linhaInicio}–${bloco.linhaFim}
+</div>
+${bloco.deps.length > 0 ? `<div class="deps"><strong>Dependências:</strong> ${bloco.deps.join(', ')}</div>` : ''}
+<pre>${escapeHtml(bloco.conteudo)}</pre>
+</body>
+</html>`;
+  } else {
+    ext = 'txt';
+    mime = 'text/plain';
+    conteudo = `===== ${bloco.titulo} =====\nArquivo: ${nomeArquivo}\nLinhas: ${bloco.linhaInicio}–${bloco.linhaFim}\n`;
+    if (bloco.deps.length > 0) {
+      conteudo += `Dependências: ${bloco.deps.join(', ')}\n`;
+    }
+    conteudo += `\n${bloco.conteudo}`;
+  }
+  
+  baixarArquivo(conteudo, `${nomeArquivo}_${bloco.titulo.replace(/[^a-zA-Z0-9]/g, '_')}.${ext}`, mime);
+  mostrarToast(`💾 Bloco "${bloco.titulo}" salvo!`);
+}
+
+function exportarTudo() {
+  if (blocos.length === 0) analisarArquivo();
+  
+  const formato = document.getElementById('exportFormat').value;
+  let conteudo = '';
+  let ext = formato;
+  let mime = formato === 'md' ? 'text/markdown' : formato === 'html' ? 'text/html' : 'text/plain';
+  
+  if (formato === 'md') {
+    conteudo = `# ${nomeArquivo} — Análise Completa\n\n`;
+    conteudo += `**Gerado em:** ${new Date().toLocaleString('pt-BR')}\n\n`;
+    conteudo += `## 📋 Índice\n\n`;
+    conteudo += indice.map(i => `- L${i.linha} [\`${i.tipo}\`] **${i.nome}**`).join('\n');
+    conteudo += `\n\n---\n\n## 🧩 Blocos\n\n`;
+    blocos.forEach(b => {
+      conteudo += `### ${b.titulo}\n`;
+      conteudo += `> Linhas ${b.linhaInicio}–${b.linhaFim}\n`;
+      if (b.deps.length > 0) {
+        conteudo += `> **Dependências:** ${b.deps.join(', ')}\n`;
+      }
+      conteudo += `\n\`\`\`\n${b.conteudo}\n\`\`\`\n\n`;
+    });
+  } else if (formato === 'html') {
+    conteudo = gerarHTMLCompleto();
+    ext = 'html';
+  } else {
+    conteudo = blocos.map(b => 
+      `${'='.repeat(60)}\n${b.titulo} | L${b.linhaInicio}–L${b.linhaFim}\n${b.deps.length > 0 ? 'Deps: ' + b.deps.join(', ') + '\n' : ''}${'='.repeat(60)}\n${b.conteudo}\n`
+    ).join('\n');
+  }
+  
+  baixarArquivo(conteudo, `analise_${nomeArquivo}.${ext}`, mime);
+  mostrarToast('💾 Arquivo completo exportado!');
+}
+
+function gerarHTMLCompleto() {
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Análise: ${nomeArquivo}</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { color: #74c69d; } h2 { color: #90cdf4; margin-top: 32px; }
+  .meta { color: #718096; font-size: 0.85rem; margin-bottom: 24px; }
+  .idx { background: #161b22; padding: 16px; border-radius: 8px; margin-bottom: 24px; }
+  .idx-item { padding: 6px 0; font-family: monospace; font-size: 0.85rem; }
+  .block { background: #161b22; border: 1px solid #2d3748; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+  .block-h { background: #1a2332; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .block-h span { color: #74c69d; font-family: monospace; }
+  .block-h small { color: #4a5568; }
+  .deps { color: #90cdf4; font-size: 0.8rem; margin-top: 6px; }
+  pre { padding: 16px; font-family: monospace; font-size: 0.78rem; line-height: 1.6; color: #a8b2c1; white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto; }
+</style>
+</head>
+<body>
+<h1>🔬 ${nomeArquivo}</h1>
+<div class="meta">Gerado em ${new Date().toLocaleString('pt-BR')} • ${indice.length} elementos • ${blocos.length} blocos</div>
+<h2>📋 Índice</h2>
+<div class="idx">
+${indice.map(i => `<div class="idx-item">L${i.linha} [${i.tipo}] ${escapeHtml(i.nome)}</div>`).join('')}
+</div>
+<h2>🧩 Blocos</h2>
+${blocos.map((b, i) => `
+<div class="block">
+  <div class="block-h">
+    <div>
+      <span>${escapeHtml(b.titulo)}</span>
+      ${b.deps.length > 0 ? `<div class="deps">🔗 ${b.deps.join(', ')}</div>` : ''}
+    </div>
+    <small>L${b.linhaInicio}–L${b.linhaFim}</small>
+  </div>
+  <pre>${escapeHtml(b.conteudo)}</pre>
+</div>`).join('')}
+</body>
+</html>`;
+}
+
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
+function baixarArquivo(conteudo, nome, mime) {
+  const blob = new Blob([conteudo], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function mostrarProgress(pct) {
+  const bar = document.getElementById('progressBar');
+  bar.classList.add('visible');
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function esconderProgress() {
+  document.getElementById('progressBar').classList.remove('visible');
+}
+
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function resetar() {
+  codigoOriginal = '';
+  nomeArquivo = '';
+  blocos = [];
+  indice = [];
+  dependencias = {};
+  document.getElementById('fileInfo').classList.remove('visible');
+  document.getElementById('mainLayout').classList.remove('visible');
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('indexList').innerHTML = '';
+  document.getElementById('depList').innerHTML = '';
+  document.getElementById('contentArea').innerHTML = '';
+  fileInput.value = '';
+  document.getElementById('searchBox').value = '';
+  document.getElementById('filterType').value = '';
+  mostrarToast('🗑️ Limpo!');
+}
+</script>
+</body>
+</html>

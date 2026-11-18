@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Importar TJMG</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h2>Importar Excel TJMG</h2>
+  <input type="file" id="fileInput" accept=".xlsx,.xls" />
+
+  <h3>Dados Brutos (do Excel)</h3>
+  <div id="preview"></div>
+
+  <h3>Convertido (Competência + Juros)</h3>
+  <div id="resultado"></div>
+
+  <script>
+    const meses = {
+      "Janeiro": "01", "Fevereiro": "02", "Março": "03", "Abril": "04",
+      "Maio": "05", "Junho": "06", "Julho": "07", "Agosto": "08",
+      "Setembro": "09", "Outubro": "10", "Novembro": "11", "Dezembro": "12"
+    };
+
+    document.getElementById("fileInput").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(sheet);
+
+        // Renderiza tabela bruta
+        renderizarTabela(json, ["ANO","MÊS","ÍNDICE"], "preview");
+
+        // Converte para COMPETÊNCIA + JUROS
+        const convertido = json.map(row => {
+          const ano = row["ANO"];
+          const mes = meses[row["MÊS"]];
+          return {
+            COMPETÊNCIA: mes + "/" + ano,
+            JUROS: (parseFloat(row["ÍNDICE"]) * 100).toFixed(2) + "%"
+          };
+        });
+
+        renderizarTabela(convertido, ["COMPETÊNCIA","JUROS"], "resultado");
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function renderizarTabela(data, cols, divId) {
+      const table = document.createElement("table");
+      table.border = "1";
+      const thead = document.createElement("thead");
+      const tr = document.createElement("tr");
+      cols.forEach(c => {
+        const th = document.createElement("th");
+        th.textContent = c;
+        tr.appendChild(th);
+      });
+      thead.appendChild(tr);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        cols.forEach(c => {
+          const td = document.createElement("td");
+          td.textContent = row[c];
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      document.getElementById(divId).innerHTML = "";
+      document.getElementById(divId).appendChild(table);
+    }
+  </script>
+</body>
+</html>

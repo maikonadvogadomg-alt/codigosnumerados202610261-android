@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador Jurídico Pro (PDF/DOCX + Dedup Inteligente)</title>
+    
+    <!-- PDF.js (Para ler PDFs) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+    </script>
+
+    <!-- Mammoth (Para ler DOCX) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+    <!-- Docx.js e FileSaver (Para exportar Word) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <style>
+        :root {
+            --dark-bg: #2c3e50;
+            --darker-bg: #1a252f;
+            --accent: #f39c12; /* Laranja/Dourado */
+            --success: #27ae60;
+            --danger: #c0392b;
+            --info: #2980b9;
+            --text-light: #ecf0f1;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: #dfe6e9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+            height: 100vh;
+            overflow: hidden; /* Evita scroll na página inteira */
+        }
+
+        .container-principal {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ========== PAINEL ESQUERDO (INPUTS) ========== */
+        .painel-importacao {
+            width: 35%;
+            min-width: 350px;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-right: 5px solid var(--accent);
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+        }
+
+        .painel-importacao h2 {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .painel-importacao h3 {
+            color: #bdc3c7;
+            font-size: 14px;
+            margin: 15px 0 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Inputs e Textarea */
+        textarea {
+            background: var(--darker-bg);
+            color: #fff;
+            border: 1px solid #7f8c8d;
+            padding: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            border-radius: 4px;
+            min-height: 120px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #7f8c8d;
+            border-radius: 4px;
+            background: var(--darker-bg);
+            color: white;
+            font-size: 13px;
+        }
+
+        input[type="file"] {
+            background: var(--darker-bg);
+            padding: 10px;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Botões */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+            transition: transform 0.1s, opacity 0.2s;
+            color: white;
+        }
+
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        .btn-processar { background-color: var(--success); grid-column: 1 / -1; font-size: 13px; padding: 12px; }
+        .btn-limpar { background-color: var(--danger); }
+        .btn-atualizar { background-color: var(--info); }
+        .btn-word { background-color: #2b579a; } /* Cor do Word */
+        .btn-json { background-color: #8e44ad; }
+        .btn-pdf { background-color: #c0392b; }
+
+        /* Checkboxes e Opções */
+        .opcoes-container {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .checkbox-item input { margin-right: 8px; cursor: pointer; }
+
+        /* ========== PAINEL DIREITO (EDITOR) ========== */
+        .area-peticao {
+            flex: 1;
+            background: #bdc3c7;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .folha-a4 {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm 20mm; /* Margens ABNT padrão */
+            box-shadow: 0 0 25px rgba(0,0,0,0.2);
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            text-align: justify;
+            color: #000;
+        }
+
+        /* Estilos Jurídicos na Folha */
+        .folha-a4 h1 {
+            font-size: 14pt;
+            text-align: center;
+            text-transform: uppercase;
+            margin: 30px 0 40px;
+            font-weight: bold;
+        }
+
+        .folha-a4 h2 {
+            font-size: 12pt;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        .folha-a4 p {
+            margin-bottom: 10px;
+            text-indent: 2.5cm; /* Recuo de parágrafo */
+        }
+
+        .folha-a4 .no-indent { text-indent: 0; }
+        .folha-a4 .center { text-align: center; text-indent: 0; }
+        .folha-a4 .bold { font-weight: bold; }
+
+        /* Áreas onde o texto entra */
+        .area-editavel {
+            border: 1px dashed #ccc;
+            padding: 5px;
+            min-height: 20px;
+            transition: background 0.3s;
+        }
+        .area-editavel:hover { background: #f9f9f9; border-color: var(--accent); }
+        .area-editavel:empty::before {
+            content: "[O texto processado aparecerá aqui...]";
+            color: #999;
+            font-style: italic;
+            font-size: 10pt;
+        }
+
+        /* Overlay de Carregamento */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3; border-top: 5px solid var(--accent);
+            border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Impressão */
+        @media print {
+            .painel-importacao { display: none; }
+            .area-peticao { background: white; padding: 0; display: block; }
+            .folha-a4 { box-shadow: none; margin: 0; width: 100%; }
+            .area-editavel { border: none; }
+            body { overflow: auto; height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Overlay de Carregamento -->
+<div class="overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <h3 id="loadingText">Processando...</h3>
+</div>
+
+<div class="container-principal">
+    
+    <!-- PAINEL ESQUERDO -->
+    <div class="painel-importacao">
+        <h2>⚖️ Gerador Jurídico Pro</h2>
+
+        <!-- Seção 1: Importação -->
+        <h3>1. Entrada de Texto</h3>
+        <div style="font-size: 11px; color: #bdc3c7; margin-bottom: 5px;">
+            Cole o texto abaixo OU selecione arquivos (PDF, DOCX, TXT).
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" multiple>
+        <textarea id="textoBruto" placeholder="Cole aqui o resumo do ChatGPT, anotações ou texto bruto..."></textarea>
+
+        <!-- Seção 2: Configurações de Limpeza -->
+        <h3>2. Filtros & Limpeza</h3>
+        <div class="opcoes-container">
+            <label class="checkbox-item">
+                <input type="checkbox" id="cleanMarkdown" checked>
+                Limpar formatação IA (*, #, negrito markdown)
+            </label>
+            <label class="checkbox-item">
+                <input type="checkbox" id="dedupExact" checked>
+                Remover duplicatas exatas
+            </label>
+            <label class="checkbox-item">
+                <input type="checkbox" id="dedupSmart" checked>
+                Remover duplicatas "parecidas" (Inteligente)
+            </label>
+            <label class="checkbox-item">
+                <input type="checkbox" id="removeShort" checked>
+                Remover linhas muito curtas (lixo de PDF)
+            </label>
+        </div>
+
+        <!-- Seção 3: Destino do Texto -->
+        <h3>3. Inserir Onde?</h3>
+        <div class="opcoes-container">
+            <label class="checkbox-item"><input type="checkbox" id="target_fatos" checked> I. Fatos</label>
+            <label class="checkbox-item"><input type="checkbox" id="target_omissao"> II. Omissões</label>
+            <label class="checkbox-item"><input type="checkbox" id="target_contradicao"> III. Contradições</label>
+            <label class="checkbox-item"><input type="checkbox" id="target_direito"> IV. Direito</label>
+        </div>
+
+        <button class="btn-processar" onclick="processarTexto()">⚡ Processar e Inserir</button>
+        <div class="btn-group">
+            <button class="btn-limpar" onclick="limparCampos()">🗑️ Limpar Tudo</button>
+        </div>
+
+        <hr style="border-color: #7f8c8d; margin: 15px 0; opacity: 0.3;">
+
+        <!-- Seção 4: Dados do Processo -->
+        <h3>4. Dados da Peça</h3>
+        <label>Tipo de Peça:</label>
+        <select id="tipoPeca" onchange="atualizarCabecalho()">
+            <option value="EMBARGOS DE DECLARAÇÃO">Embargos de Declaração</option>
+            <option value="RECURSO INOMINADO">Recurso Inominado</option>
+            <option value="APELAÇÃO">Apelação</option>
+            <option value="AGRAVO DE INSTRUMENTO">Agravo de Instrumento</option>
+            <option value="PETIÇÃO INTERCORRENTE">Petição Simples</option>
+        </select>
+
+        <label>Número do Processo:</label>
+        <input type="text" id="numProcesso" value="0000000-00.2024.4.01.0000" oninput="atualizarCabecalho()">
+
+        <label>Nome da Parte:</label>
+        <input type="text" id="nomeParte" value="NOME DO CLIENTE" oninput="atualizarCabecalho()">
+
+        <!-- Seção 5: Exportação -->
+        <h3>5. Exportar</h3>
+        <div class="btn-group">
+            <button class="btn-word" onclick="exportarWord()">📄 Word (.docx)</button>
+            <button class="btn-json" onclick="exportarJSON()">💾 JSON</button>
+            <button class="btn-pdf" onclick="window.print()">🖨️ PDF</button>
+        </div>
+    </div>
+
+    <!-- PAINEL DIREITO (FOLHA) -->
+    <div class="area-peticao">
+        <div class="folha-a4" id="documentoFinal" contenteditable="true">
+            
+            <!-- Cabeçalho -->
+            <p class="center no-indent bold">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) FEDERAL</p>
+            <p class="center no-indent bold" style="margin-bottom: 30px;">DA TURMA RECURSAL / VARA FEDERAL</p>
+
+            <p class="no-indent"><b>Processo nº:</b> <span id="viewProcesso">0000000-00.2024.4.01.0000</span></p>
+            <p class="no-indent"><b>Parte:</b> <span id="viewParte">NOME DO CLIENTE</span></p>
+
+            <h1 id="viewTitulo">EMBARGOS DE DECLARAÇÃO</h1>
+
+            <p>
+                A parte acima qualificada, por seu procurador infra-assinado, vem, respeitosamente, à presença de Vossa Excelência, opor os presentes <b id="viewTituloInline">EMBARGOS DE DECLARAÇÃO</b>, com fulcro na legislação vigente, pelas razões de fato e de direito a seguir expostas.
+            </p>
+
+            <!-- Tópicos Editáveis -->
+            <h2>I. DA SÍNTESE FÁTICA</h2>
+            <div id="area_fatos" class="area-editavel"></div>
+
+            <h2>II. DAS OMISSÕES / OBSCURIDADES</h2>
+            <div id="area_omissao" class="area-editavel"></div>
+
+            <h2>III. DAS CONTRADIÇÕES</h2>
+            <div id="area_contradicao" class="area-editavel"></div>
+
+            <h2>IV. DO DIREITO E PREQUESTIONAMENTO</h2>
+            <div id="area_direito" class="area-editavel"></div>
+
+            <h2>V. DOS PEDIDOS</h2>
+            <p>Diante do exposto, requer:</p>
+            <p class="no-indent">a) O conhecimento e provimento do presente recurso;</p>
+            <p class="no-indent">b) A atribuição de efeitos infringentes, se necessário;</p>
+            <p class="no-indent">c) O prequestionamento da matéria suscitada.</p>
+
+            <p style="margin-top: 40px;">Nestes termos,<br>Pede deferimento.</p>
+            
+            <p class="center" style="margin-top: 50px;">Local e Data.</p>
+            <p class="center">__________________________________<br>Advogado(a) OAB/UF</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== 1. LÓGICA DE IMPORTAÇÃO (PDF/DOCX) ==========
+    
+    const fileInput = document.getElementById('fileInput');
+    const textoBruto = document.getElementById('textoBruto');
+    const overlay = document.getElementById('loadingOverlay');
+    const loadingText = document.getElementById('loadingText');
+
+    function showLoading(msg) {
+        loadingText.innerText = msg;
+        overlay.style.display = 'flex';
+    }
+
+    function hideLoading() {
+        overlay.style.display = 'none';
+    }
+
+    fileInput.addEventListener('change', async (e) => {
+        const files = e.target.files;
+        if (files.length === 0) return;
+
+        showLoading("Lendo arquivos...");
+        let textoAcumulado = textoBruto.value;
+
+        try {
+            for (let file of files) {
+                let extractedText = "";
+                const ext = file.name.split('.').pop().toLowerCase();
+
+                if (ext === 'pdf') {
+                    extractedText = await extractTextFromPDF(file);
+                } else if (ext === 'docx') {
+                    extractedText = await extractTextFromDOCX(file);
+                } else if (ext === 'txt') {
+                    extractedText = await file.text();
+                }
+
+                if (extractedText) {
+                    textoAcumulado += `\n\n--- INÍCIO ARQUIVO: ${file.name} ---\n` + extractedText;
+                }
+            }
+            textoBruto.value = textoAcumulado;
+            alert("Arquivos importados com sucesso!");
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao ler arquivo: " + err.message);
+        } finally {
+            hideLoading();
+            fileInput.value = ""; // Reseta input
+        }
+    });
+
+    // Extração de PDF (Lida com quebras de linha ruins)
+    async function extractTextFromPDF(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        let fullText = "";
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            
+            // Tenta reconstruir parágrafos
+            let lastY = -1;
+            let pageText = "";
+            
+            textContent.items.forEach(item => {
+                // Lógica simples: se a string não termina com pontuação, adiciona espaço, senão nova linha
+                let str = item.str;
+                if (str.trim().length === 0) return;
+                
+                // Se terminar com hífen, junta
+                if (pageText.endsWith("-")) {
+                    pageText = pageText.slice(0, -1) + str;
+                } else {
+                    pageText += " " + str;
+                }
+            });
+            fullText += pageText + "\n\n";
+        }
+        return fullText;
+    }
+
+    // Extração de DOCX
+    async function extractTextFromDOCX(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+        return result.value;
+    }
+
+    // ========== 2. LÓGICA DE PROCESSAMENTO E DEDUPLICAÇÃO ==========
+
+    function processarTexto() {
+        let texto = textoBruto.value;
+        if (!texto.trim()) { alert("Cole um texto ou importe um arquivo primeiro."); return; }
+
+        showLoading("Processando e limpando...");
+
+        setTimeout(() => {
+            // 1. Limpeza de Caracteres (Markdown do ChatGPT/Marlon)
+            if (document.getElementById('cleanMarkdown').checked) {
+                // Remove *, #, >, e sequências como ** ou ###
+                texto = texto.replace(/[\*\#\>_`~]/g, ''); 
+                // Remove linhas que são apenas traços ou iguais
+                texto = texto.replace(/^\s*[-=]{3,}\s*$/gm, '');
+            }
+
+            // 2. Quebrar em parágrafos
+            let paragrafos = texto.split(/\n+/);
+            let outputParagrafos = [];
+            let uniqueSet = new Set(); // Para duplicata exata
+            let signatures = []; // Para duplicata inteligente (shingling)
+
+            for (let p of paragrafos) {
+                p = p.trim();
+                
+                // Filtro de tamanho
+                if (document.getElementById('removeShort').checked && p.length < 20) continue;
+                if (!p) continue;
+
+                // Normalização para comparação
+                let pNorm = p.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ');
+
+                // Deduplicação Exata
+                if (document.getElementById('dedupExact').checked) {
+                    if (uniqueSet.has(pNorm)) continue;
+                    uniqueSet.add(pNorm);
+                }
+
+                // Deduplicação Inteligente (Similaridade de Jaccard)
+                let isSimilar = false;
+                if (document.getElementById('dedupSmart').checked) {
+                    // Cria "assinatura" do parágrafo (conjunto de palavras)
+                    let words = new Set(pNorm.split(' '));
+                    
+                    for (let sig of signatures) {
+                        // Calcula Jaccard: Interseção / União
+                        let intersection = new Set([...words].filter(x => sig.has(x)));
+                        let union = new Set([...words, ...sig]);
+                        let similarity = intersection.size / union.size;
+
+                        // Se for mais de 70% similar, considera duplicado
+                        if (similarity > 0.70) {
+                            isSimilar = true;
+                            break;
+                        }
+                    }
+                    if (isSimilar) continue;
+                    signatures.push(words);
+                }
+
+                // Se passou por tudo, adiciona
+                outputParagrafos.push(p);
+            }
+
+            // 3. Inserir no Documento
+            inserirNoDocumento(outputParagrafos);
+            hideLoading();
+        }, 100); // Timeout para UI renderizar o loading
+    }
+
+    function inserirNoDocumento(listaParagrafos) {
+        // Cria o HTML dos parágrafos
+        let htmlContent = listaParagrafos.map(p => `<p>${p}</p>`).join('');
+
+        // Verifica onde inserir
+        const targets = [
+            { id: 'target_fatos', div: 'area_fatos' },
+            { id: 'target_omissao', div: 'area_omissao' },
+            { id: 'target_contradicao', div: 'area_contradicao' },
+            { id: 'target_direito', div: 'area_direito' }
+        ];
+
+        let inseriu = false;
+        targets.forEach(t => {
+            if (document.getElementById(t.id).checked) {
+                const div = document.getElementById(t.div);
+                // Adiciona ao final do que já existe ou substitui? Vamos adicionar.
+                div.innerHTML += htmlContent;
+                inseriu = true;
+            }
+        });
+
+        if (!inseriu) {
+            alert("Selecione pelo menos um tópico (I, II, III ou IV) para inserir o texto.");
+        }
+    }
+
+    // ========== 3. ATUALIZAÇÃO DE DADOS DINÂMICOS ==========
+
+    function atualizarCabecalho() {
+        const tipo = document.getElementById('tipoPeca').value;
+        const processo = document.getElementById('numProcesso').value;
+        const parte = document.getElementById('nomeParte').value;
+
+        document.getElementById('viewProcesso').innerText = processo;
+        document.getElementById('viewParte').innerText = parte;
+        document.getElementById('viewTitulo').innerText = tipo;
+        document.getElementById('viewTituloInline').innerText = tipo;
+    }
+
+    function limparCampos() {
+        if(confirm("Deseja limpar tudo?")) {
+            textoBruto.value = '';
+            document.getElementById('fileInput').value = '';
+            ['area_fatos', 'area_omissao', 'area_contradicao', 'area_direito'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+        }
+    }
+
+    // ========== 4. EXPORTAÇÃO WORD ==========
+
+    async function exportarWord() {
+        if (!window.docx) { alert("Erro: Biblioteca Docx não carregada."); return; }
+        
+        const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } = window.docx;
+
+        // Função auxiliar para converter HTML p/ Docx Paragraphs
+        function htmlToDocx(elementId) {
+            const div = document.getElementById(elementId);
+            const paragraphs = [];
+            const lines = div.innerText.split('\n'); // Pega texto visível
+            
+            lines.forEach(line => {
+                if(line.trim()) {
+                    paragraphs.push(new Paragraph({
+                        text: line.trim(),
+                        alignment: AlignmentType.JUSTIFIED,
+                        indent: { firstLine: 720 }, // ~1.25cm
+                        spacing: { after: 200 }
+                    }));
+                }
+            });
+            return paragraphs;
+        }
+
+        // Monta o documento
+        const doc = new Document({
+            sections: [{
+                properties: {},
+                children: [
+                    // Cabeçalho
+                    new Paragraph({ text: "EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) FEDERAL", alignment: AlignmentType.CENTER, bold: true }),
+                    new Paragraph({ text: "DA TURMA RECURSAL / VARA FEDERAL", alignment: AlignmentType.CENTER, bold: true, spacing: { after: 400 } }),
+                    
+                    new Paragraph({ children: [new TextRun({ text: "Processo: ", bold: true }), new TextRun(document.getElementById('viewProcesso').innerText)] }),
+                    new Paragraph({ children: [new TextRun({ text: "Parte: ", bold: true }), new TextRun(document.getElementById('viewParte').innerText)], spacing: { after: 400 } }),
+
+                    new Paragraph({ text: document.getElementById('viewTitulo').innerText, heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER, spacing: { after: 400 } }),
+
+                    // Corpo
+                    new Paragraph({ text: "I. DA SÍNTESE FÁTICA", heading: HeadingLevel.HEADING_2 }),
+                    ...htmlToDocx('area_fatos'),
+
+                    new Paragraph({ text: "II. DAS OMISSÕES / OBSCURIDADES", heading: HeadingLevel.HEADING_2 }),
+                    ...htmlToDocx('area_omissao'),
+
+                    new Paragraph({ text: "III. DAS CONTRADIÇÕES", heading: HeadingLevel.HEADING_2 }),
+                    ...htmlToDocx('area_contradicao'),
+
+                    new Paragraph({ text: "IV. DO DIREITO", heading: HeadingLevel.HEADING_2 }),
+                    ...htmlToDocx('area_direito'),
+
+                    // Pedidos
+                    new Paragraph({ text: "V. DOS PEDIDOS", heading: HeadingLevel.HEADING_2 }),
+                    new Paragraph({ text: "Diante do exposto, requer o conhecimento e provimento do presente recurso.", alignment: AlignmentType.JUSTIFIED }),
+                    
+                    new Paragraph({ text: "Nestes termos, pede deferimento.", alignment: AlignmentType.JUSTIFIED, spacing: { before: 400 } }),
+                    new Paragraph({ text: "Local e Data.", alignment: AlignmentType.CENTER, spacing: { before: 400 } }),
+                    new Paragraph({ text: "_______________________", alignment: AlignmentType.CENTER }),
+                    new Paragraph({ text: "Advogado(a)", alignment: AlignmentType.CENTER }),
+                ]
+            }]
+        });
+
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, `Peticao_${document.getElementById('nomeParte').value}.docx`);
+    }
+
+    // ========== 5. EXPORTAÇÃO JSON ==========
+    function exportarJSON() {
+        const data = {
+            processo: document.getElementById('numProcesso').value,
+            parte: document.getElementById('nomeParte').value,
+            tipo: document.getElementById('tipoPeca').value,
+            conteudo: {
+                fatos: document.getElementById('area_fatos').innerHTML,
+                omissao: document.getElementById('area_omissao').innerHTML,
+                contradicao: document.getElementById('area_contradicao').innerHTML,
+                direito: document.getElementById('area_direito').innerHTML
+            }
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+        saveAs(blob, "dados_peticao.json");
+    }
+
+    // Inicializa
+    atualizarCabecalho();
+
+</script>
+
+</body>
+</html>

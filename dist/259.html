@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel Consolidado – Petições, Tabelas e CTC</title>
+<style>
+  body{font-family:Arial,sans-serif;margin:20px}
+  h1,h2{margin:0 0 10px}
+  table{border-collapse:collapse;width:100%;margin-top:12px}
+  th,td{border:1px solid #000;padding:6px;text-align:center}
+  input,select,textarea{margin:5px 0;padding:6px;width:100%}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .btn{margin:10px 6px 0 0;padding:8px 12px;cursor:pointer}
+  .tab{margin:12px 0}
+  .section{border:1px solid #ccc;padding:12px;margin-top:12px}
+  .muted{color:#555;font-size:0.95em}
+  .subtab button{margin-right:6px}
+  .area{display:none}
+</style>
+</head>
+<body>
+<h1>Painel Consolidado – Petições, Tabelas e CTC</h1>
+
+<div class="tab">
+  <button class="btn" onclick="show('pet')">Petições (MS, Concessão, Revisão)</button>
+  <button class="btn" onclick="show('rem')">Remunerações</button>
+  <button class="btn" onclick="show('vin')">Vínculos</button>
+  <button class="btn" onclick="show('ctc')">CTC/IPSEMG (períodos)</button>
+  <button class="btn" onclick="show('col')">CTC – Colador inteligente</button>
+  <button class="btn" onclick="exportarPacote()">Exportar pacote único (Word)</button>
+</div>
+
+<!-- PETIÇÕES -->
+<div id="pet" class="area" style="display:block">
+  <h2>Petições – Geradores com exportação Word</h2>
+  <div class="subtab">
+    <button class="btn" onclick="togglePet('ms')">Mandado de Segurança</button>
+    <button class="btn" onclick="togglePet('con')">Concessão</button>
+    <button class="btn" onclick="togglePet('rev')">Revisão</button>
+  </div>
+
+  <!-- MS -->
+  <div id="pet_ms" class="section">
+    <h3>Mandado de Segurança</h3>
+    <div class="row3">
+      <div><label>Nome do Segurado:</label><input type="text" id="ms_nome"></div>
+      <div><label>Processo anterior nº:</label><input type="text" id="ms_proc"></div>
+      <div><label>Benefício:</label><input type="text" id="ms_ben" placeholder="Ex: aposentadoria especial"></div>
+    </div>
+    <div class="row">
+      <div><label>Autoridade Coatora (Agência INSS):</label><input type="text" id="ms_aut"></div>
+      <div><label>OAB/UF nº:</label><input type="text" id="ms_oab" placeholder="Ex: OAB/MG 000000"></div>
+    </div>
+    <button class="btn" onclick="gerarMS()">Gerar Petição</button>
+    <button class="btn" onclick="exportarTexto('MS','ms_saida')">Exportar MS (Word)</button>
+    <textarea id="ms_saida" rows="12" placeholder="Texto gerado aparecerá aqui..."></textarea>
+  </div>
+
+  <!-- Concessão -->
+  <div id="pet_con" class="section" style="display:none">
+    <h3>Concessão de Benefício</h3>
+    <div class="row3">
+      <div><label>Nome do Segurado:</label><input type="text" id="con_nome"></div>
+      <div><label>Benefício pretendido:</label><input type="text" id="con_ben"></div>
+      <div><label>DER (DD/MM/AAAA):</label><input type="text" id="con_der"></div>
+    </div>
+    <div class="row">
+      <div><label>OAB/UF nº:</label><input type="text" id="con_oab"></div>
+      <div><label>Comarca/Subseção:</label><input type="text" id="con_vara" placeholder="Ex: ___ Vara Federal"></div>
+    </div>
+    <button class="btn" onclick="gerarCon()">Gerar Petição</button>
+    <button class="btn" onclick="exportarTexto('Concessao','con_saida')">Exportar Concessão (Word)</button>
+    <textarea id="con_saida" rows="12" placeholder="Texto gerado aparecerá aqui..."></textarea>
+  </div>
+
+  <!-- Revisão -->
+  <div id="pet_rev" class="section" style="display:none">
+    <h3>Revisão de Benefício</h3>
+    <div class="row3">
+      <div><label>Nome do Segurado:</label><input type="text" id="rev_nome"></div>
+      <div><label>NB (Número do Benefício):</label><input type="text" id="rev_nb"></div>
+      <div><label>Benefício atual:</label><input type="text" id="rev_ben"></div>
+    </div>
+    <div class="row">
+      <div><label>OAB/UF nº:</label><input type="text" id="rev_oab"></div>
+      <div><label>Comarca/Subseção:</label><input type="text" id="rev_vara" placeholder="Ex: ___ Vara Federal"></div>
+    </div>
+    <button class="btn" onclick="gerarRev()">Gerar Petição</button>
+    <button class="btn" onclick="exportarTexto('Revisao','rev_saida')">Exportar Revisão (Word)</button>
+    <textarea id="rev_saida" rows="12" placeholder="Texto gerado aparecerá aqui..."></textarea>
+  </div>
+</div>
+
+<!-- REMUNERAÇÕES -->
+<div id="rem" class="area">
+  <h2>Remunerações – RAIS x CNIS x Carta x HISCRE</h2>
+  <div class="row3">
+    <div><label>Competência (MM/AAAA):</label><input type="text" id="rem_comp" placeholder="05/2015"></div>
+    <div><label>RAIS:</label><input type="text" id="rem_rais" placeholder="788,36"></div>
+    <div><label>CNIS:</label><input type="text" id="rem_cnis" placeholder="0,00"></div>
+  </div>
+  <div class="row3">
+    <div><label>Carta INSS:</label><input type="text" id="rem_carta" placeholder="0,00"></div>
+    <div><label>HISCRE:</label><input type="text" id="rem_hiscre" placeholder="0,00"></div>
+    <div><label>Observações:</label><input type="text" id="rem_obs" placeholder="Opcional"></div>
+  </div>
+  <button class="btn" onclick="adicionarRem()">Adicionar linha</button>
+  <button class="btn" onclick="exportarRem()">Exportar Remunerações (Word)</button>
+  <table id="tabelaRem">
+    <tr>
+      <th>Competência</th><th>RAIS</th><th>CNIS</th><th>Carta INSS</th><th>HISCRE</th><th>Diferença</th><th>Obs.</th>
+    </tr>
+  </table>
+  <div class="section">
+    <strong>Atalho:</strong>
+    <p class="muted">MM/AAAA;RAIS;CNIS;CARTA;HISCRE;OBS</p>
+    <textarea id="rem_batch" rows="6" placeholder="05/2015;788,36;0,00;0,00;0,00;Ajuste IPSEMG&#10;06/2015;788,36;573,36;0,00;0,00;&#10;..."></textarea>
+    <button class="btn" onclick="importarRemBatch()">Importar linhas</button>
+  </div>
+</div>
+
+<!-- VÍNCULOS -->
+<div id="vin" class="area">
+  <h2>Vínculos – Tempo especial convertido</h2>
+  <div class="row">
+    <div><label>Período:</label><input type="text" id="vin_periodo" placeholder="04/04/1998 – 31/12/2015"></div>
+    <div><label>Empregador / Órgão:</label><input type="text" id="vin_emp" placeholder="SEE/MG"></div>
+  </div>
+  <div class="row">
+    <div><label>Tipo de Tempo:</label><input type="text" id="vin_tipo" placeholder="Comum/Especial/Rural"></div>
+    <div><label>Tempo Bruto:</label><input type="text" id="vin_bruto" placeholder="9a 7m 17d"></div>
+  </div>
+  <div class="row">
+    <div><label>Tempo Convertido:</label><input type="text" id="vin_conv" placeholder="12a 10m 5d"></div>
+    <div><label>Código/Decreto de Enquadramento:</label><input type="text" id="vin_enq" placeholder="Dec. 53.831/64 – Cód. 2.1.1"></div>
+  </div>
+  <div><label>Observações:</label><input type="text" id="vin_obs" placeholder="PPP/Laudo; Fator 1,4; Tema 942 STF"></div>
+  <button class="btn" onclick="adicionarVin()">Adicionar linha</button>
+  <button class="btn" onclick="exportarVin()">Exportar Vínculos (Word)</button>
+  <table id="tabelaVin">
+    <tr>
+      <th>Período</th><th>Empregador</th><th>Tipo</th><th>Tempo Bruto</th><th>Tempo Convertido</th><th>Enquadramento</th><th>Observações</th>
+    </tr>
+  </table>
+  <div class="section">
+    <strong>Atalho:</strong>
+    <p class="muted">PERÍODO;EMPREGADOR;TIPO;BRUTO;CONVERTIDO;ENQUADRAMENTO;OBS</p>
+    <textarea id="vin_batch" rows="6" placeholder="04/04/1998 – 31/12/2015;SEE/MG;Comum;9a 7m 17d;9a 7m 17d;LC 64/2002;Sem faltas&#10;..."></textarea>
+    <button class="btn" onclick="importarVinBatch()">Importar linhas</button>
+  </div>
+</div>
+
+<!-- CTC PERÍODOS -->
+<div id="ctc" class="area">
+  <h2>CTC/IPSEMG – Períodos líquidos</h2>
+  <div class="row">
+    <div><label>Período:</label><input type="text" id="ctc_periodo" placeholder="04/04/1998 – 31/12/2015"></div>
+    <div><label>Tempo líquido:</label><input type="text" id="ctc_liquido" placeholder="9a 7m 17d"></div>
+  </div>
+  <div class="row">
+    <div><label>Ocorrências (faltas/licenças):</label><input type="text" id="ctc_oc" placeholder="18/05/2010 a 20/05/2010 – 3 dias – Faltas"></div>
+    <div><label>Observações:</label><input type="text" id="ctc_obs" placeholder="Fonte: Folha de Pagamento – RPPS/MG"></div>
+  </div>
+  <button class="btn" onclick="adicionarCTC()">Adicionar período</button>
+  <button class="btn" onclick="exportarCTC()">Exportar CTC/IPSEMG (Word)</button>
+  <table id="tabelaCTC">
+    <tr>
+      <th>Período</th><th>Tempo líquido</th><th>Ocorrências</th><th>Observações</th>
+    </tr>
+  </table>
+</div>
+
+<!-- COLADOR INTELIGENTE -->
+<div id="col" class="area">
+  <h2>CTC – Colador inteligente (Anexo II)</h2>
+  <div class="section">
+    <strong>1) Cole o bloco de texto do Anexo II:</strong>
+    <p class="muted">Aceita tabela com meses por coluna de anos. Ignora R$ 0,00 automaticamente.</p>
+    <textarea id="col_texto" rows="12" placeholder="Cole aqui o bloco com os meses e anos (ex.: Janeiro R$ 788,36 ..."></textarea>
+  </div>
+  <div class="section">
+    <strong>2) Informações (opcional):</strong>
+    <div class="row3">
+      <div><label>Mês inicial (MM):</label><input type="text" id="col_mes_ini" placeholder="01"></div>
+      <div><label>Ano inicial (AAAA):</label><input type="text" id="col_ano_ini" placeholder="1998"></div>
+      <div><label>Ano final (AAAA):</label><input type="text" id="col_ano_fim" placeholder="2015"></div>
+    </div>
+    <button class="btn" onclick="parseAnexoII()">Gerar competências</button>
+    <button class="btn" onclick="exportarCTCRemParse()">Exportar gerado (Word)</button>
+  </div>
+  <table id="tabelaCTCRemParse">
+    <tr>
+      <th>Competência</th><th>Remuneração</th><th>Ano origem</th><th>Fonte</th>
+    </tr>
+  </table>
+  <div class="section">
+    <strong>3) Consolidação de períodos “em pedaços”:</strong>
+    <p class="muted">Agrupa meses contínuos por ano (valores > 0) e gera blocos para cálculo de tempo.</p>
+    <button class="btn" onclick="consolidarPeriodos()">Gerar períodos contínuos</button>
+    <table id="tabelaPeriodosConsol">
+      <tr><th>Início</th><th>Fim</th><th>Meses</th><th>Ano</th></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+/* Navegação */
+function show(id){
+  ['pet','rem','vin','ctc','col'].forEach(x=>document.getElementById(x).style.display='none');
+  document.getElementById(id).style.display='block';
+}
+function togglePet(which){
+  document.getElementById('pet_ms').style.display = (which==='ms')?'block':'none';
+  document.getElementById('pet_con').style.display = (which==='con')?'block':'none';
+  document.getElementById('pet_rev').style.display = (which==='rev')?'block':'none';
+}
+
+/* Utilidades */
+const MAP_MESES = {'janeiro':'01','fevereiro':'02','março':'03','marco':'03','abril':'04','maio':'05','junho':'06','julho':'07','agosto':'08','setembro':'09','outubro':'10','novembro':'11','dezembro':'12'};
+function moedaParaNumero(str){ if(!str) return 0; return parseFloat(str.replace(/[R$\s\.]/g,'').replace(',','.')) || 0; }
+function baixarWord(nome, html){
+  const cab = '<html><head><meta charset="UTF-8"></head><body style="font-family:Arial, sans-serif">';
+  const rod = '</body></html>';
+  const blob = new Blob([cab+html+rod], {type:"application/msword"});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nome; a.click();
+}
+function limparTabela(t){ while(t.rows.length>1) t.deleteRow(1); }
+function pad2(n){ return ('0'+n).slice(-2); }
+
+/* Petições – geração e exportação */
+function exportarTexto(prefix, taId){
+  const texto = document.getElementById(taId).value || '';
+  if(!texto.trim()) return alert('Gere o texto antes de exportar.');
+  const html = '<pre style="white-space:pre-wrap">'+escapeHtml(texto)+'</pre>';
+  baixarWord('peticao_'+prefix.toLowerCase()+'.doc', html);
+}
+function escapeHtml(s){ return s.replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function gerarMS(){
+  const nome = document.getElementById('ms_nome').value;
+  const proc = document.getElementById('ms_proc').value;
+  const ben  = document.getElementById('ms_ben').value;
+  const aut  = document.getElementById('ms_aut').value;
+  const oab  = document.getElementById('ms_oab').value || 'OAB/UF nº ___';
+  const texto = `Excelentíssimo(a) Senhor(a) Doutor(a) Juiz(a) Federal da ___ Vara Federal
+
+Impetrante: ${nome}
+Advogado: Maikon da Rocha Caldeira – ${oab}
+Autoridade Coatora: ${aut}
+
+I – Dos Fatos
+O Impetrante obteve decisão judicial favorável no processo nº ${proc}, reconhecendo o direito à ${ben}.
+Apesar da coisa julgada, o INSS deixou de cumprir a decisão, apresentando cálculos divergentes e ignorando períodos especiais comprovados.
+
+II – Do Direito
+CF/88, art. 5º, LXIX – cabimento do mandado de segurança.
+Tema 942 STF – conversão de tempo especial.
+CPC, art. 502 – coisa julgada.
+
+III – Da Prova Pré-Constituída
+Junta-se: tabela de vínculos convertidos, tabela de remunerações comparativas (CSV), base técnica (JSON), documentos oficiais.
+
+IV – Do Pedido
+1. Liminar para cumprimento imediato da decisão.
+2. Notificação da autoridade coatora.
+3. Intimação do MPF.
+4. Concessão definitiva da segurança.
+5. Multa diária em caso de descumprimento.
+
+Nestes termos,
+Pede deferimento.
+
+Local, data.
+__________________________________
+Maikon da Rocha Caldeira – ${oab}`;
+  document.getElementById('ms_saida').value = texto;
+}
+
+function gerarCon(){
+  const nome = document.getElementById('con_nome').value;
+  const ben  = document.getElementById('con_ben').value;
+  const der  = document.getElementById('con_der').value;
+  const oab  = document.getElementById('con_oab').value || 'OAB/UF nº ___';
+  const vara = document.getElementById('con_vara').value || '___ Vara Federal';
+  const texto = `Excelentíssimo(a) Senhor(a) Doutor(a) Juiz(a) Federal da ${vara}
+
+Autor: ${nome}
+Advogado: Maikon da Rocha Caldeira – ${oab}
+Réu: Instituto Nacional do Seguro Social – INSS
+
+I – Dos Fatos
+O Autor requereu administrativamente a concessão do benefício de ${ben}, protocolado em ${der}.
+Apesar da documentação completa, o INSS indeferiu o pedido, ignorando períodos especiais e remunerações oficiais.
+
+II – Do Direito
+CF/88, art. 201 – direito à previdência social.
+Lei 8.213/91 – requisitos para aposentadoria.
+Decreto 3.048/99 – fatores de conversão.
+Tema 942 STF – conversão de tempo especial.
+
+III – Da Prova Pré-Constituída
+Junta-se: tabela de vínculos convertidos, tabela de remunerações comparativas (CSV), base técnica (JSON), documentos oficiais.
+
+IV – Do Pedido
+1. Concessão do benefício de ${ben}, com DIB na DER (${der}).
+2. Reconhecimento e conversão dos períodos especiais.
+3. Inclusão das remunerações oficiais ignoradas.
+4. Pagamento das parcelas vencidas desde a DER.
+
+Nestes termos,
+Pede deferimento.
+
+Local, data.
+__________________________________
+Maikon da Rocha Caldeira – ${oab}`;
+  document.getElementById('con_saida').value = texto;
+}
+
+function gerarRev(){
+  const nome = document.getElementById('rev_nome').value;
+  const nb   = document.getElementById('rev_nb').value;
+  const ben  = document.getElementById('rev_ben').value;
+  const oab  = document.getElementById('rev_oab').value || 'OAB/UF nº ___';
+  const vara = document.getElementById('rev_vara').value || '___ Vara Federal';
+  const texto = `Excelentíssimo(a) Senhor(a) Doutor(a) Juiz(a) Federal da ${vara}
+
+Autor: ${nome}
+Advogado: Maikon da Rocha Caldeira – ${oab}
+Réu: Instituto Nacional do Seguro Social – INSS
+
+I – Dos Fatos
+O Autor é titular do benefício nº ${nb} (${ben}), concedido pelo INSS.
+O cálculo da Autarquia ignorou períodos especiais e remunerações oficiais, resultando em RMI inferior ao devido.
+
+II – Do Direito
+CF/88, art. 201 – direito à previdência social.
+Lei 8.213/91 – direito à revisão.
+Tema 942 STF – conversão de tempo especial.
+EC 103/2019, art. 26, §6º – descarte das menores contribuições.
+
+III – Da Prova Pré-Constituída
+Junta-se: tabela de vínculos convertidos, tabela de remunerações comparativas (CSV), base técnica (JSON), documentos oficiais.
+
+IV – Do Pedido
+1. Revisão do benefício nº ${nb}, com recálculo da RMI.
+2. Reconhecimento e conversão dos períodos especiais.
+3. Inclusão das remunerações oficiais ignoradas.
+4. Pagamento das diferenças desde a DIB.
+
+Nestes termos,
+Pede deferimento.
+
+Local, data.
+__________________________________
+Maikon da Rocha Caldeira – ${oab}`;
+  document.getElementById('rev_saida').value = texto;
+}
+
+/* Remunerações */
+function adicionarRem(){
+  const comp=document.getElementById('rem_comp').value.trim();
+  const rais=moedaParaNumero(document.getElementById('rem_rais').value);
+  const cnis=moedaParaNumero(document.getElementById('rem_cnis').value);
+  const carta=moedaParaNumero(document.getElementById('rem_carta').value);
+  const hiscre=moedaParaNumero(document.getElementById('rem_hiscre').value);
+  const obs=document.getElementById('rem_obs').value.trim();
+  if(!comp) return alert('Informe a competência.');
+  const dif=(rais-(cnis+carta+hiscre));
+  const t=document.getElementById('tabelaRem'), l=t.insertRow();
+  l.insertCell(0).innerText=comp;
+  l.insertCell(1).innerText=rais.toFixed(2);
+  l.insertCell(2).innerText=cnis.toFixed(2);
+  l.insertCell(3).innerText=carta.toFixed(2);
+  l.insertCell(4).innerText=hiscre.toFixed(2);
+  l.insertCell(5).innerText=dif.toFixed(2);
+  l.insertCell(6).innerText=obs;
+}
+function exportarRem(){
+  const html = '<h2>Tabela de Remunerações</h2>'+document.getElementById('tabelaRem').outerHTML;
+  baixarWord('tabela_remuneracoes.doc', html);
+}
+function importarRemBatch(){
+  const txt=document.getElementById('rem_batch').value.trim(); if(!txt) return;
+  txt.split('\n').forEach(linha=>{
+    const p=linha.split(';');
+    if(p.length>=5){
+      document.getElementById('rem_comp').value=p[0].trim();
+      document.getElementById('rem_rais').value=p[1].trim();
+      document.getElementById('rem_cnis').value=p[2].trim();
+      document.getElementById('rem_carta').value=p[3].trim();
+      document.getElementById('rem_hiscre').value=p[4].trim();
+      document.getElementById('rem_obs').value=(p[5]||'').trim();
+      adicionarRem();
+    }
+  });
+}
+
+/* Vínculos */
+function adicionarVin(){
+  const periodo=document.getElementById('vin_periodo').value.trim();
+  const emp=document.getElementById('vin_emp').value.trim();
+  const tipo=document.getElementById('vin_tipo').value.trim();
+  const bruto=document.getElementById('vin_bruto').value.trim();
+  const conv=document.getElementById('vin_conv').value.trim();
+  const enq=document.getElementById('vin_enq').value.trim();
+  const obs=document.getElementById('vin_obs').value.trim();
+  if(!periodo||!emp) return alert('Informe período e empregador.');
+  const t=document.getElementById('tabelaVin'), l=t.insertRow();
+  l.insertCell(0).innerText=periodo;
+  l.insertCell(1).innerText=emp;
+  l.insertCell(2).innerText=tipo;
+  l.insertCell(3).innerText=bruto;
+  l.insertCell(4).innerText=conv;
+  l.insertCell(5).innerText=enq;
+  l.insertCell(6).innerText=obs;
+}
+function exportarVin(){
+  const html = '<h2>Tabela de Vínculos</h2>'+document.getElementById('tabelaVin').outerHTML;
+  baixarWord('tabela_vinculos.doc', html);
+}
+function importarVinBatch(){
+  const txt=document.getElementById('vin_batch').value.trim(); if(!txt) return;
+  txt.split('\n').forEach(linha=>{
+    const p=linha.split(';');
+    if(p.length>=7){
+      document.getElementById('vin_periodo').value=p[0].trim();
+      document.getElementById('vin_emp').value=p[1].trim();
+      document.getElementById('vin_tipo').value=p[2].trim();
+      document.getElementById('vin_bruto').value=p[3].trim();
+      document.getElementById('vin_conv').value=p[4].trim();
+      document.getElementById('vin_enq').value=p[5].trim();
+      document.getElementById('vin_obs').value=p[6].trim();
+      adicionarVin();
+    }
+  });
+}
+
+/* CTC períodos */
+function adicionarCTC(){
+  const periodo=document.getElementById('ctc_periodo').value.trim();
+  const liquido=document.getElementById('ctc_liquido').value.trim();
+  const oc=document.getElementById('ctc_oc').value.trim();
+  const obs=document.getElementById('ctc_obs').value.trim();
+  if(!periodo||!liquido) return alert('Informe período e tempo líquido.');
+  const t=document.getElementById('tabelaCTC'), l=t.insertRow();
+  l.insertCell(0).innerText=periodo;
+  l.insertCell(1).innerText=liquido;
+  l.insertCell(2).innerText=oc;
+  l.insertCell(3).innerText=obs;
+}
+function exportarCTC(){
+  const html = '<h2>CTC/IPSEMG – Períodos líquidos</h2>'+document.getElementById('tabelaCTC').outerHTML;
+  baixarWord('ctc_ipsemg_periodos.doc', html);
+}
+
+/* Colador inteligente (Anexo II) */
+function parseAnexoII(){
+  const txtAll=document.getElementById('col_texto').value;
+  if(!txtAll.trim()) return alert('Cole o bloco do Anexo II.');
+  const txt=txtAll.toLowerCase();
+  const anoIni=document.getElementById('col_ano_ini').value.trim();
+  const anoFim=document.getElementById('col_ano_fim').value.trim();
+  const anosDetectados=detectarAnos(txt);
+  const anos=(anoIni && anoFim)?rangeInt(parseInt(anoIni),parseInt(anoFim)):anosDetectados;
+  if(!anos.length) return alert('Não encontrei anos. Informe manualmente ano inicial/final.');
+
+  const linhas = txt.split('\n').map(s=>s.trim()).filter(s=>s);
+  const porMes = extrairPorMes(linhas); // {01:{2015:788.36,...}, ...}
+  const t=document.getElementById('tabelaCTCRemParse'); limparTabela(t);
+
+  Object.keys(porMes).sort().forEach(mm=>{
+    anos.forEach(ano=>{
+      const val = porMes[mm][ano];
+      if(val!==undefined && val>0){
+        const l=t.insertRow();
+        l.insertCell(0).innerText=`${mm}/${ano}`;
+        l.insertCell(1).innerText=val.toFixed(2);
+        l.insertCell(2).innerText=ano;
+        l.insertCell(3).innerText='CTC – Anexo II';
+      }
+    });
+  });
+  alert('Competências geradas a partir do Anexo II.');
+}
+function detectarAnos(txt){
+  const set=new Set(); const rx=/(?:^|\s)(19\d{2}|20\d{2})(?:\s|$)/g; let m;
+  while((m=rx.exec(txt))!==null) set.add(parseInt(m[1]));
+  return Array.from(set).sort((a,b)=>a-b);
+}
+function rangeInt(a,b){ const r=[]; for(let i=a;i<=b;i++) r.push(i); return r; }
+function extrairPorMes(linhas){
+  const res={}; Object.keys(MAP_MESES).forEach(m=>res[MAP_MESES[m]]={});
+  let anosHeader=[];
+  for(let i=0;i<linhas.length;i++){
+    const s=linhas[i];
+    if(/mês\/ano/.test(s) || /mes\/ano/.test(s)){
+      const anos = s.match(/(19\d{2}|20\d{2})/g);
+      if(anos && anos.length) anosHeader = anos.map(x=>parseInt(x));
+      continue;
+    }
+    const mes = Object.keys(MAP_MESES).find(m=>s.includes(m));
+    if(mes){
+      const valores = s.match(/(?:r\$)?\s*\d{1,3}(\.\d{3})*,\d{2}|(?:^|\s)\d+,\d{2}/gi) || [];
+      const nums = valores.map(v=>moedaParaNumero(v));
+      const anosLinha = s.match(/(19\d{2}|20\d{2})/g);
+      const anosUsar = (anosLinha && anosLinha.length>=nums.length) ? anosLinha.map(x=>parseInt(x)) : anosHeader;
+      for(let k=0;k<nums.length;k++){
+        const ano = anosUsar[k]; if(!ano) continue;
+        const mm = MAP_MESES[mes];
+        res[mm][ano] = nums[k]; // sobrescreve se repetir
+      }
+    }
+  }
+  return res;
+}
+function exportarCTCRemParse(){
+  const html = '<h2>CTC – Remunerações (colador inteligente)</h2>'+document.getElementById('tabelaCTCRemParse').outerHTML;
+  baixarWord('ctc_rem_colador.doc', html);
+}
+
+/* Consolidação de períodos contínuos por ano */
+function consolidarPeriodos(){
+  const t=document.getElementById('tabelaCTCRemParse'); if(t.rows.length<=1) return alert('Gere as competências primeiro.');
+  const mapaPorAno={};
+  for(let i=1;i<t.rows.length;i++){
+    const comp=t.rows[i].cells[0].innerText.trim();
+    const val=moedaParaNumero(t.rows[i].cells[1].innerText.trim());
+    if(val<=0) continue;
+    const [mm,aaaa]=comp.split('/'); const ano=parseInt(aaaa);
+    mapaPorAno[ano]=mapaPorAno[ano]||[]; mapaPorAno[ano].push(parseInt(mm));
+  }
+  const tc=document.getElementById('tabelaPeriodosConsol'); limparTabela(tc);
+  Object.keys(mapaPorAno).sort((a,b)=>a-b).forEach(ano=>{
+    const meses=mapaPorAno[ano].sort((a,b)=>a-b);
+    const blocos=agruparContinuos(meses);
+    blocos.forEach(b=>{
+      const l=tc.insertRow();
+      l.insertCell(0).innerText = `${pad2(b.inicio)}/${ano}`;
+      l.insertCell(1).innerText = `${pad2(b.fim)}/${ano}`;
+      l.insertCell(2).innerText = `${b.qtd}`;
+      l.insertCell(3).innerText = `${ano}`;
+    });
+  });
+  alert('Períodos contínuos consolidados por ano.');
+}
+function agruparContinuos(arr){
+  if(!arr.length) return [];
+  const res=[]; let ini=arr[0], prev=arr[0], qtd=1;
+  for(let i=1;i<arr.length;i++){
+    if(arr[i]===prev+1){ prev=arr[i]; qtd++; }
+    else{ res.push({inicio:ini,fim:prev,qtd}); ini=arr[i]; prev=arr[i]; qtd=1; }
+  }
+  res.push({inicio:ini,fim:prev,qtd});
+  return res;
+}
+
+/* Exportar pacote único: inclui tabelas e, se desejar, textos das petições */
+function exportarPacote(){
+  let html='';
+  // Petições (se textos existirem)
+  const ms=document.getElementById('ms_saida').value.trim();
+  const con=document.getElementById('con_saida').value.trim();
+  const rev=document.getElementById('rev_saida').value.trim();
+  if(ms){ html += '<h2>Petição – Mandado de Segurança</h2><pre style="white-space:pre-wrap">'+escapeHtml(ms)+'</pre>'; }
+  if(con){ html += '<h2>Petição – Concessão</h2><pre style="white-space:pre-wrap">'+escapeHtml(con)+'</pre>'; }
+  if(rev){ html += '<h2>Petição – Revisão</h2><pre style="white-space:pre-wrap">'+escapeHtml(rev)+'</pre>'; }
+
+  // Tabelas
+  if(document.getElementById('tabelaRem').rows.length>1){
+    html += '<h2>Tabela de Remunerações (RAIS x CNIS x Carta x HISCRE)</h2>'+document.getElementById('tabelaRem').outerHTML;
+  }
+  if(document.getElementById('tabelaVin').rows.length>1){
+    html += '<h2>Tabela de Vínculos (com enquadramento)</h2>'+document.getElementById('tabelaVin').outerHTML;
+  }
+  if(document.getElementById('tabelaCTC').rows.length>1){
+    html += '<h2>CTC/IPSEMG – Períodos líquidos</h2>'+document.getElementById('tabelaCTC').outerHTML;
+  }
+  if(document.getElementById('tabelaCTCRemParse').rows.length>1){
+    html += '<h2>CTC – Remunerações (colador inteligente)</h2>'+document.getElementById('tabelaCTCRemParse').outerHTML;
+    if(document.getElementById('tabelaPeriodosConsol').rows.length>1){
+      html += '<h2>CTC – Períodos consolidados (por ano)</h2>'+document.getElementById('tabelaPeriodosConsol').outerHTML;
+    }
+  }
+  if(!html){ alert('Nada para exportar. Preencha ao menos uma aba.'); return; }
+  baixarWord('pacote_consolidado.doc', html);
+}
+</script>
+</body>
+</html>

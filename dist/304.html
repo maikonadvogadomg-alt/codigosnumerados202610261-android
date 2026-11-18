@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtrador Avançado de Documentos Jurídicos</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 0;
+        }
+        
+        /* PAINEL ESQUERDO - CONTROLES */
+        .painel-controle {
+            width: 380px;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+        }
+        
+        .painel-controle::-webkit-scrollbar { width: 8px; }
+        .painel-controle::-webkit-scrollbar-track { background: #0f0f1e; }
+        .painel-controle::-webkit-scrollbar-thumb { background: #f39c12; border-radius: 4px; }
+        
+        h1 {
+            color: #f39c12;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f39c12;
+        }
+        
+        .secao {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f39c12;
+        }
+        
+        .secao h3 {
+            color: #f39c12;
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        
+        label {
+            display: block;
+            color: #bbb;
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 8px;
+            background: #0f0f1e;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: monospace;
+        }
+        
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            background: #0f0f1e;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: #1a1a2e;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+        
+        .filtro-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #0f0f1e;
+            border-radius: 4px;
+        }
+        
+        .filtro-item input {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .filtro-item button {
+            padding: 6px 12px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .add-filtro {
+            padding: 8px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .stats {
+            background: #0f0f1e;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #bbb;
+            margin-top: 10px;
+        }
+        
+        .stats strong { color: #f39c12; }
+        
+        /* PAINEL DIREITO - RESULTADO */
+        .painel-resultado {
+            flex: 1;
+            background: #ecf0f1;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .documento {
+            background: white;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            min-height: 600px;
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.8;
+            color: #2c3e50;
+        }
+        
+        .documento p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .documento.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        .progresso {
+            position: fixed;
+            top: 0;
+            left: 380px;
+            right: 0;
+            height: 4px;
+            background: #ecf0f1;
+            z-index: 1000;
+        }
+        
+        .progresso-barra {
+            height: 100%;
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .modo-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .modo-toggle label {
+            flex: 1;
+            padding: 8px;
+            background: #0f0f1e;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modo-toggle input[type="radio"] {
+            display: none;
+        }
+        
+        .modo-toggle input[type="radio"]:checked + label {
+            background: #f39c12;
+            color: #1a1a2e;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progresso">
+    <div class="progresso-barra" id="progressBar"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="container">
+    <!-- PAINEL DE CONTROLE -->
+    <div class="painel-controle">
+        <h1>🔧 Filtrador de Documentos</h1>
+        
+        <!-- UPLOAD DE ARQUIVOS -->
+        <div class="secao">
+            <h3>📁 Importar Documentos</h3>
+            <label>Selecione múltiplos arquivos (TXT, DOCX, PDF, JSON)</label>
+            <input type="file" id="fileInput" multiple accept=".txt,.docx,.pdf,.json">
+            <button class="btn btn-info" onclick="carregarArquivos()">📥 Carregar Arquivos</button>
+        </div>
+        
+        <!-- MODO DE FILTRAGEM -->
+        <div class="secao">
+            <h3>⚙️ Modo de Filtragem</h3>
+            <div class="modo-toggle">
+                <input type="radio" name="modo" id="modoSuave" value="suave" checked>
+                <label for="modoSuave">Suave</label>
+                
+                <input type="radio" name="modo" id="modoModerado" value="moderado">
+                <label for="modoModerado">Moderado</label>
+                
+                <input type="radio" name="modo" id="modoAgressivo" value="agressivo">
+                <label for="modoAgressivo">Agressivo</label>
+            </div>
+            <label>Similaridade mínima para considerar duplicata (%)</label>
+            <input type="number" id="similaridade" value="85" min="50" max="100">
+        </div>
+        
+        <!-- FILTROS DE EXCLUSÃO -->
+        <div class="secao">
+            <h3>🚫 Padrões para Excluir</h3>
+            <div id="filtrosExclusao">
+                <div class="filtro-item">
+                    <input type="text" value="*" placeholder="Padrão (ex: *, #, ##)">
+                    <button onclick="removerFiltro(this)">✕</button>
+                </div>
+                <div class="filtro-item">
+                    <input type="text" value="#" placeholder="Padrão (ex: *, #, ##)">
+                    <button onclick="removerFiltro(this)">✕</button>
+                </div>
+            </div>
+            <button class="add-filtro" onclick="adicionarFiltro('exclusao')">+ Adicionar Padrão</button>
+        </div>
+        
+        <!-- PALAVRAS-CHAVE PARA MANTER -->
+        <div class="secao">
+            <h3>✅ Palavras-Chave Importantes</h3>
+            <div id="filtrosManutencao">
+                <div class="filtro-item">
+                    <input type="text" value="embargo" placeholder="Palavra-chave">
+                    <button onclick="removerFiltro(this)">✕</button>
+                </div>
+                <div class="filtro-item">
+                    <input type="text" value="súmula" placeholder="Palavra-chave">
+                    <button onclick="removerFiltro(this)">✕</button>
+                </div>
+            </div>
+            <button class="add-filtro" onclick="adicionarFiltro('manutencao')">+ Adicionar Palavra</button>
+        </div>
+        
+        <!-- CONFIGURAÇÕES AVANÇADAS -->
+        <div class="secao">
+            <h3>🎯 Configurações Avançadas</h3>
+            <label>Tamanho mínimo de parágrafo (caracteres)</label>
+            <input type="number" id="tamanhoMin" value="30" min="10" max="200">
+            
+            <label>Remover parágrafos com menos de X palavras</label>
+            <input type="number" id="palavrasMin" value="5" min="1" max="20">
+        </div>
+        
+        <!-- AÇÕES PRINCIPAIS -->
+        <div class="secao">
+            <button class="btn btn-primary" onclick="processar()">⚡ PROCESSAR DOCUMENTO</button>
+            <button class="btn btn-success" onclick="exportar()">💾 EXPORTAR RESULTADO</button>
+            <button class="btn btn-danger" onclick="limparTudo()">🗑️ LIMPAR TUDO</button>
+        </div>
+        
+        <!-- ESTATÍSTICAS -->
+        <div class="stats" id="stats">
+            <strong>Estatísticas:</strong><br>
+            Parágrafos originais: <span id="statOriginal">0</span><br>
+            Parágrafos filtrados: <span id="statFiltrado">0</span><br>
+            Redução: <span id="statReducao">0%</span>
+        </div>
+    </div>
+    
+    <!-- PAINEL DE RESULTADO -->
+    <div class="painel-resultado">
+        <div class="documento empty" id="resultado" contenteditable="true">
+            <p>O documento filtrado aparecerá aqui...</p>
+            <p>Você pode editar o texto diretamente após o processamento.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let documentoOriginal = '';
+let documentoFiltrado = '';
+
+// ============================================
+// FUNÇÕES DE INTERFACE
+// ============================================
+
+function mostrarToast(mensagem, tipo = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = mensagem;
+    toast.style.background = tipo === 'success' ? '#27ae60' : '#e74c3c';
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3000);
+}
+
+function atualizarProgresso(percentual) {
+    document.getElementById('progressBar').style.width = percentual + '%';
+}
+
+function adicionarFiltro(tipo) {
+    const container = tipo === 'exclusao' ? 
+        document.getElementById('filtrosExclusao') : 
+        document.getElementById('filtrosManutencao');
+    
+    const div = document.createElement('div');
+    div.className = 'filtro-item';
+    div.innerHTML = `
+        <input type="text" placeholder="${tipo === 'exclusao' ? 'Padrão' : 'Palavra-chave'}">
+        <button onclick="removerFiltro(this)">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function removerFiltro(btn) {
+    btn.parentElement.remove();
+}
+
+// ============================================
+// CARREGAR ARQUIVOS
+// ============================================
+
+async function carregarArquivos() {
+    const files = document.getElementById('fileInput').files;
+    if (files.length === 0) {
+        mostrarToast('Selecione pelo menos um arquivo', 'error');
+        return;
+    }
+    
+    let textoCompleto = '';
+    let arquivosProcessados = 0;
+    
+    for (let file of files) {
+        atualizarProgresso((arquivosProcessados / files.length) * 100);
+        
+        try {
+            const texto = await lerArquivo(file);
+            textoCompleto += '\n\n' + texto;
+            arquivosProcessados++;
+        } catch (error) {
+            console.error('Erro ao ler arquivo:', file.name, error);
+        }
+    }
+    
+    documentoOriginal = textoCompleto;
+    atualizarProgresso(100);
+    mostrarToast(`${arquivosProcessados} arquivo(s) carregado(s) com sucesso!`);
+    
+    // Salvar automaticamente no localStorage
+    localStorage.setItem('documentoOriginal', documentoOriginal);
+    localStorage.setItem('dataCarregamento', new Date().toISOString());
+}
+
+function lerArquivo(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            let texto = e.target.result;
+            
+            // Se for JSON, tentar extrair texto
+            if (file.name.endsWith('.json')) {
+                try {
+                    const json = JSON.parse(texto);
+                    texto = JSON.stringify(json, null, 2);
+                } catch (err) {
+                    console.warn('JSON inválido, usando como texto puro');
+                }
+            }
+            
+            resolve(texto);
+        };
+        
+        reader.onerror = reject;
+        reader.readAsText(file);
+    });
+}
+
+// ============================================
+// PROCESSAMENTO PRINCIPAL
+// ============================================
+
+function processar() {
+    if (!documentoOriginal) {
+        mostrarToast('Carregue um documento primeiro!', 'error');
+        return;
+    }
+    
+    atualizarProgresso(0);
+    
+    // Obter configurações
+    const modo = document.querySelector('input[name="modo"]:checked').value;
+    const similaridade = parseInt(document.getElementById('similaridade').value) / 100;
+    const tamanhoMin = parseInt(document.getElementById('tamanhoMin').value);
+    const palavrasMin = parseInt(document.getElementById('palavrasMin').value);
+    
+    // Obter filtros personalizados
+    const padroesExcluir = obterFiltros('filtrosExclusao');
+    const palavrasChave = obterFiltros('filtrosManutencao');
+    
+    atualizarProgresso(20);
+    
+    // Etapa 1: Limpar caracteres indesejados
+    let textoLimpo = limparTexto(documentoOriginal, padroesExcluir);
+    atualizarProgresso(40);
+    
+    // Etapa 2: Quebrar em parágrafos
+    let paragrafos = quebrarParagrafos(textoLimpo, tamanhoMin, palavrasMin);
+    const totalOriginal = paragrafos.length;
+    atualizarProgresso(60);
+    
+    // Etapa 3: Filtrar duplicatas
+    paragrafos = filtrarDuplicatas(paragrafos, similaridade, modo, palavrasChave);
+    atualizarProgresso(80);
+    
+    // Etapa 4: Montar resultado
+    documentoFiltrado = paragrafos.map(p => `<p>${p}</p>`).join('\n');
+    document.getElementById('resultado').innerHTML = documentoFiltrado;
+    document.getElementById('resultado').classList.remove('empty');
+    
+    // Atualizar estatísticas
+    const totalFiltrado = paragrafos.length;
+    const reducao = ((1 - totalFiltrado / totalOriginal) * 100).toFixed(1);
+    
+    document.getElementById('statOriginal').textContent = totalOriginal;
+    document.getElementById('statFiltrado').textContent = totalFiltrado;
+    document.getElementById('statReducao').textContent = reducao + '%';
+    
+    atualizarProgresso(100);
+    mostrarToast(`Documento processado! Redução de ${reducao}%`);
+    
+    // Salvar automaticamente
+    localStorage.setItem('documentoFiltrado', documentoFiltrado);
+    localStorage.setItem('dataProcessamento', new Date().toISOString());
+}
+
+function obterFiltros(containerId) {
+    const container = document.getElementById(containerId);
+    const inputs = container.querySelectorAll('input[type="text"]');
+    return Array.from(inputs)
+        .map(input => input.value.trim())
+        .filter(v => v.length > 0);
+}
+
+function limparTexto(texto, padroes) {
+    let resultado = texto;
+    
+    // Remover padrões personalizados
+    padroes.forEach(padrao => {
+        // Escapar caracteres especiais de regex
+        const escapado = padrao.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escapado, 'g');
+        resultado = resultado.replace(regex, '');
+    });
+    
+    // Limpezas padrão
+    resultado = resultado.replace(/\*\*/g, ''); // Asteriscos duplos
+    resultado = resultado.replace(/#{2,}/g, ''); // Jogo da velha múltiplo
+    resultado = resultado.replace(/\s{3,}/g, ' '); // Espaços múltiplos
+    resultado = resultado.replace(/\n{3,}/g, '\n\n'); // Quebras múltiplas
+    
+    return resultado;
+}
+
+function quebrarParagrafos(texto, tamanhoMin, palavrasMin) {
+    return texto
+        .split(/\n+/)
+        .map(p => p.trim())
+        .filter(p => {
+            const numPalavras = p.split(/\s+/).length;
+            return p.length >= tamanhoMin && numPalavras >= palavrasMin;
+        });
+}
+
+function filtrarDuplicatas(paragrafos, similaridade, modo, palavrasChave) {
+    const resultado = [];
+    const vistos = new Set();
+    
+    for (let paragrafo of paragrafos) {
+        const normalizado = normalizar(paragrafo);
+        
+        // Verificar se é duplicata
+        let isDuplicata = false;
+        for (let visto of vistos) {
+            if (calcularSimilaridade(normalizado, visto) >= similaridade) {
+                isDuplicata = true;
+                break;
+            }
+        }
+        
+        if (!isDuplicata) {
+            // Aplicar filtro de modo
+            if (deveIncluir(paragrafo, modo, palavrasChave)) {
+                resultado.push(paragrafo);
+                vistos.add(normalizado);
+            }
+        }
+    }
+    
+    return resultado;
+}
+
+function normalizar(texto) {
+    return texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+        .replace(/[^a-z0-9\s]/g, '') // Remove pontuação
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function calcularSimilaridade(texto1, texto2) {
+    const palavras1 = new Set(texto1.split(/\s+/));
+    const palavras2 = new Set(texto2.split(/\s+/));
+    
+    const intersecao = new Set([...palavras1].filter(x => palavras2.has(x)));
+    const uniao = new Set([...palavras1, ...palavras2]);
+    
+    return intersecao.size / uniao.size;
+}
+
+function deveIncluir(paragrafo, modo, palavrasChave) {
+    const textoNorm = normalizar(paragrafo);
+    
+    // Verificar palavras-chave importantes
+    const temPalavraChave = palavrasChave.some(palavra => 
+        textoNorm.includes(normalizar(palavra))
+    );
+    
+    if (modo === 'suave') {
+        return true; // Inclui tudo que não é duplicata
+    }
+    
+    if (modo === 'moderado') {
+        // Inclui se tem palavra-chave OU números (datas, valores)
+        return temPalavraChave || /\d+/.test(paragrafo);
+    }
+    
+    if (modo === 'agressivo') {
+        // Só inclui se tem palavra-chave
+        return temPalavraChave;
+    }
+    
+    return true;
+}
+
+// ============================================
+// EXPORTAR E LIMPAR
+// ============================================
+
+function exportar() {
+    if (!documentoFiltrado) {
+        mostrarToast('Processe um documento primeiro!', 'error');
+        return;
+    }
+    
+    const textoLimpo = document.getElementById('resultado').innerText;
+    const blob = new Blob([textoLimpo], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `documento_filtrado_${new Date().toISOString().slice(0,10)}.txt`;
+    link.click();
+    
+    mostrarToast('Documento exportado com sucesso!');
+}
+
+function limparTudo() {
+    if (confirm('Deseja realmente limpar tudo? Esta ação não pode ser desfeita.')) {
+        documentoOriginal = '';
+        documentoFiltrado = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('resultado').innerHTML = '<p>O documento filtrado aparecerá aqui...</p>';
+        document.getElementById('resultado').classList.add('empty');
+        document.getElementById('statOriginal').textContent = '0';
+        document.getElementById('statFiltrado').textContent = '0';
+        document.getElementById('statReducao').textContent = '0%';
+        atualizarProgresso(0);
+        
+        localStorage.removeItem('documentoOriginal');
+        localStorage.removeItem('documentoFiltrado');
+        
+        mostrarToast('Tudo limpo!');
+    }
+}
+
+// ============================================
+// RECUPERAÇÃO AUTOMÁTICA
+// ============================================
+
+window.addEventListener('load', () => {
+    const docSalvo = localStorage.getItem('documentoOriginal');
+    const resultadoSalvo = localStorage.getItem('documentoFiltrado');
+    
+    if (docSalvo) {
+        documentoOriginal = docSalvo;
+        mostrarToast('Documento anterior recuperado!', 'success');
+    }
+    
+    if (resultadoSalvo) {
+        documentoFiltrado = resultadoSalvo;
+        document.getElementById('resultado').innerHTML = resultadoSalvo;
+        document.getElementById('resultado').classList.remove('empty');
+    }
+});
+
+// Salvar automaticamente a cada 30 segundos
+setInterval(() => {
+    if (documentoOriginal) {
+        localStorage.setItem('documentoOriginal', documentoOriginal);
+    }
+    if (documentoFiltrado) {
+        const conteudoAtual = document.getElementById('resultado').innerHTML;
+        localStorage.setItem('documentoFiltrado', conteudoAtual);
+    }
+}, 30000);
+
+</script>
+
+</body>
+</html>

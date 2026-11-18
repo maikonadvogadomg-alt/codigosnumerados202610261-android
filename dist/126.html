@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐝 Editor Visual - Responsivo</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ===== TOPBAR (CABEÇALHO) ===== */
+    .topbar {
+      min-height: 50px;
+      background: #161b22;
+      border-bottom: 2px solid #1f6feb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      flex-wrap: wrap; /* Faz os botões descerem no celular em vez de sumirem */
+    }
+
+    .topbar h1 {
+      font-size: 16px;
+      color: #1f6feb;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    /* Botões de abrir/fechar painéis no celular */
+    .btn-menu {
+      display: none;
+      background: #1f6feb;
+      border: 0;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .btn-menu:hover {
+      background: #388bfd;
+    }
+
+    .topbar button {
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: bold;
+      background: #1f6feb;
+      color: white;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .topbar button:hover {
+      background: #388bfd;
+    }
+
+    .topbar button.red { background: #da3633; }
+    .topbar button.red:hover { background: #f85149; }
+    .topbar button.green { background: #238636; }
+    .topbar button.green:hover { background: #2ea043; }
+
+    #fileInput { display: none; }
+
+    /* ===== CONTAINER PRINCIPAL (GRID) ===== */
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 1fr;
+      height: calc(100vh - 50px);
+      gap: 0;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #30363d;
+      min-height: 0;
+    }
+
+    .panel-title {
+      height: 40px;
+      background: #0d1117;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #8b949e;
+      flex-shrink: 0;
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow: auto; /* Cria barra de rolagem se o conteúdo for grande */
+      background: #0d1117;
+    }
+
+    /* ===== TEXTAREA (CÓDIGO) ===== */
+    textarea {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      padding: 12px;
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      resize: none;
+    }
+
+    /* ===== PREVIEW (VISUALIZAÇÃO) ===== */
+    .preview-wrap {
+      flex: 1;
+      background: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: white;
+    }
+
+    /* ===== PROPRIEDADES ===== */
+    .props {
+      padding: 12px;
+      overflow-y: auto;
+    }
+
+    .empty {
+      color: #8b949e;
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 12px;
+    }
+
+    .group {
+      border-bottom: 1px solid #30363d;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+    }
+
+    .group:last-child {
+      border-bottom: 0;
+    }
+
+    .group h3 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #1f6feb;
+      text-transform: uppercase;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: #8b949e;
+      margin: 8px 0 4px;
+    }
+
+    input, select, textarea.prop-text {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      background: #161b22;
+      color: #c9d1d9;
+      outline: none;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+    }
+
+    input:focus, select:focus, textarea.prop-text:focus {
+      border-color: #1f6feb;
+      background: #0d1117;
+    }
+
+    input[type="color"] {
+      height: 40px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .selected-info {
+      background: #161b22;
+      border-left: 3px solid #1f6feb;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      word-break: break-word;
+    }
+
+    .small-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .small-buttons button {
+      flex: 1;
+      padding: 8px;
+      font-size: 11px;
+      border: 0;
+      border-radius: 6px;
+      background: #1f6feb;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .small-buttons button:hover { background: #388bfd; }
+    .small-buttons button.red { background: #da3633; }
+    .small-buttons button.red:hover { background: #f85149; }
+
+    /* ===== STATUS ===== */
+    .status {
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(13, 17, 23, 0.95);
+      color: #c9d1d9;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      border: 1px solid #30363d;
+      pointer-events: none;
+      max-width: 90vw;
+      z-index: 9999;
+    }
+
+    /* ===== SCROLLBAR PERSONALIZADA ===== */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0d1117; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+    /* =========================================
+       RESPONSIVIDADE (CELULARES E TABLETS)
+       Aqui está a mágica para não esconder nada
+       ========================================= */
+    
+    @media (max-width: 1200px) {
+      .container { grid-template-columns: 1fr 1.2fr; }
+      .panel:last-child { display: none; } /* Esconde propriedades por padrão */
+      
+      .btn-menu {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Quando clica no botão, o painel aparece flutuando */
+      .panel:last-child.show {
+        display: flex;
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 100%;
+        max-width: 350px;
+        height: 100vh;
+        z-index: 1000;
+        border-left: 1px solid #30363d;
+        background: #0d1117;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .topbar {
+        height: auto;
+        padding: 10px;
+      }
+      .topbar h1 { width: 100%; margin-bottom: 5px; }
+      .container {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 90px); /* Ajusta a altura pro celular */
+      }
+      
+      .panel:first-child { display: none; } /* Esconde código por padrão */
+
+      /* Painel de código flutuante no celular */
+      .panel:first-child.show {
+        display: flex;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: 350px;
+        height: 100vh;
+        z-index: 1000;
+        border-right: 1px solid #30363d;
+        background: #0d1117;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+      }
+
+      .panel:last-child.show { max-width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== TOPBAR ===== -->
+  <div class="topbar">
+    <h1>🐝 Editor Visual</h1>
+
+    <!-- Botões que abrem/fecham as abas no celular -->
+    <button class="btn-menu" onclick="togglePainelCodigo()" title="Abrir/Fechar Código">📝</button>
+    <button class="btn-menu" onclick="togglePainelProps()" title="Abrir/Fechar Propriedades">⚙️</button>
+
+    <button onclick="colarDaAreaTransferencia()">📋 Colar</button>
+    <button onclick="renderizarCodigo()" class="green">▶ Ver</button>
+    <button onclick="abrirImportador()">📂 Importar</button>
+    <button onclick="copiarCodigo()">📄 Copiar</button>
+    <button onclick="baixarHTML()">💾 Baixar</button>
+    <button onclick="desfazer()">↶ Desfazer</button>
+    <button onclick="limparTudo()" class="red">🗑 Limpar</button>
+
+    <input id="fileInput" type="file" accept=".html,.htm,.txt" onchange="importarArquivo(event)">
+  </div>
+
+  <!-- ===== CONTAINER PRINCIPAL ===== -->
+  <div class="container">
+    
+    <!-- PAINEL 1: CÓDIGO (Abre com o botão 📝 no celular) -->
+    <div class="panel">
+      <div class="panel-title">
+        📝 Código HTML 
+        <button onclick="togglePainelCodigo()" style="margin-left:auto; background:none; border:none; color:white; cursor:pointer; font-size:16px;">✖</button>
+      </div>
+      <div class="panel-content">
+        <textarea id="codeInput" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <!-- PAINEL 2: PREVIEW (Sempre visível) -->
+    <div class="panel">
+      <div class="panel-title">👁️ Preview - Clique nos itens para editar</div>
+      <div class="preview-wrap">
+        <iframe id="previewFrame"></iframe>
+      </div>
+    </div>
+
+    <!-- PAINEL 3: PROPRIEDADES (Abre com o botão ⚙️ no celular) -->
+    <div class="panel">
+      <div class="panel-title">
+        ⚙️ Propriedades
+        <button onclick="togglePainelProps()" style="margin-left:auto; background:none; border:none; color:white; cursor:pointer; font-size:16px;">✖</button>
+      </div>
+      <div class="panel-content props" id="props">
+        <div class="empty">
+          Cole ou importe um HTML, clique em <b>Ver</b> e depois clique em um elemento visual na tela branca.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div id="status" class="status">Pronto.</div>
+
+  <script>
+    const codeInput = document.getElementById('codeInput');
+    const frame = document.getElementById('previewFrame');
+    const props = document.getElementById('props');
+    const statusBox = document.getElementById('status');
+
+    let selectedElement = null;
+    let historico = [];
+
+    // Exemplo inicial para não ficar vazio
+    const exemploInicial = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .caixa { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+    h1 { color: #333; }
+    p { color: #666; margin-bottom: 20px; }
+    button { background: #1f6feb; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="caixa">
+    <h1>Olá!</h1>
+    <p>Clique em mim para editar as cores e textos.</p>
+    <button>Botão Teste</button>
+  </div>
+</body>
+</html>`;
+
+    codeInput.value = exemploInicial;
+
+    function setStatus(msg) {
+      statusBox.textContent = msg;
+      clearTimeout(window.__statusTimer);
+      window.__statusTimer = setTimeout(() => { statusBox.textContent = 'Pronto.'; }, 3000);
+    }
+
+    // FUNÇÕES DE ABRIR/FECHAR PAINÉIS NO CELULAR
+    function togglePainelCodigo() {
+      const painel = document.querySelector('.panel:first-child');
+      painel.classList.toggle('show');
+    }
+
+    function togglePainelProps() {
+      const painel = document.querySelector('.panel:last-child');
+      painel.classList.toggle('show');
+    }
+
+    function salvarEstado() {
+      historico.push(codeInput.value);
+      if (historico.length > 50) historico.shift();
+    }
+
+    async function colarDaAreaTransferencia() {
+      try {
+        const texto = await navigator.clipboard.readText();
+        if (!texto.trim()) return alert('Área de transferência vazia.');
+        salvarEstado();
+        codeInput.value = texto;
+        renderizarCodigo();
+        setStatus('Código colado.');
+      } catch (e) {
+        alert('Seu navegador bloqueou. Cole manualmente na área de texto.');
+      }
+    }
+
+    function abrirImportador() {
+      document.getElementById('fileInput').value = '';
+      document.getElementById('fileInput').click();
+    }
+
+    function importarArquivo(event) {
+      const arquivo = event.target.files[0];
+      if (!arquivo) return;
+      const leitor = new FileReader();
+      leitor.onload = function(e) {
+        salvarEstado();
+        codeInput.value = e.target.result;
+        renderizarCodigo();
+        setStatus('Arquivo importado.');
+      };
+      leitor.readAsText(arquivo);
+    }
+
+    function renderizarCodigo() {
+      salvarEstado();
+      selectedElement = null;
+      props.innerHTML = '<div class="empty">Clique em um elemento visual.</div>';
+
+      const codigo = codeInput.value;
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open();
+      doc.write(codigo);
+      doc.close();
+
+      setTimeout(prepararCliqueVisual, 200);
+      setStatus('Preview atualizado.');
+    }
+
+    function prepararCliqueVisual() {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc || !doc.body) return;
+
+      const style = doc.createElement('style');
+      style.setAttribute('data-editor-style', 'true');
+      style.textContent = `
+        .__editor_hover__ { outline: 2px dashed #ff9800 !important; cursor: crosshair !important; }
+        .__editor_selected__ { outline: 3px solid #1f6feb !important; }
+      `;
+      doc.head.appendChild(style);
+
+      doc.addEventListener('mouseover', e => {
+        if (podeSelecionar(e.target) && e.target !== selectedElement) e.target.classList.add('__editor_hover__');
+      }, true);
+
+      doc.addEventListener('mouseout', e => {
+        if (podeSelecionar(e.target)) e.target.classList.remove('__editor_hover__');
+      }, true);
+
+      doc.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (podeSelecionar(e.target)) selecionarElemento(e.target);
+      }, true);
+    }
+
+    function podeSelecionar(el) {
+      if (!el || !el.tagName) return false;
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'html' || tag === 'head' || tag === 'body') return false;
+      if (el.hasAttribute('data-editor-style')) return false;
+      return true;
+    }
+
+    function selecionarElemento(el) {
+      if (selectedElement) {
+        selectedElement.classList.remove('__editor_selected__', '__editor_hover__');
+      }
+      selectedElement = el;
+      selectedElement.classList.add('__editor_selected__');
+      selectedElement.classList.remove('__editor_hover__');
+
+      montarPainel(el);
+      setStatus('Selecionado: <' + el.tagName.toLowerCase() + '>');
+
+      // Abre o painel de propriedades automaticamente no celular se estiver escondido
+      if (window.innerWidth <= 1200) {
+        document.querySelector('.panel:last-child').classList.add('show');
+      }
+    }
+
+    function montarPainel(el) {
+      const cs = frame.contentWindow.getComputedStyle(el);
+
+      props.innerHTML = `
+        <div class="selected-info">
+          <b>&lt;${el.tagName.toLowerCase()}&gt;</b><br>
+          ID: ${el.id || '(sem id)'}<br>
+          Classe: ${el.className || '(sem classe)'}
+        </div>
+
+        <div class="group">
+          <h3>Texto</h3>
+          <textarea class="prop-text" style="height: 60px;" oninput="editarTexto(this.value)">${esc(el.innerText || '')}</textarea>
+        </div>
+
+        <div class="group">
+          <h3>Cores</h3>
+          <label>Texto</label>
+          <input type="color" value="${rgbParaHex(cs.color)}" oninput="editarEstilo('color', this.value)">
+          <label>Fundo</label>
+          <input type="color" value="${rgbParaHex(cs.backgroundColor)}" oninput="editarEstilo('backgroundColor', this.value)">
+        </div>
+
+        <div class="group">
+          <h3>Tamanho</h3>
+          <div class="row2">
+            <div><label>Largura</label><input value="${cs.width}" oninput="editarEstilo('width', this.value)"></div>
+            <div><label>Altura</label><input value="${cs.height}" oninput="editarEstilo('height', this.value)"></div>
+          </div>
+          <div class="row2">
+            <div><label>Fonte</label><input value="${cs.fontSize}" oninput="editarEstilo('fontSize', this.value)"></div>
+            <div><label>Borda (Radius)</label><input value="${cs.borderRadius}" oninput="editarEstilo('borderRadius', this.value)"></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Ações</h3>
+          <div class="small-buttons">
+            <button onclick="duplicarElemento()">Duplicar</button>
+            <button class="red" onclick="removerElemento()">Remover</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function editarTexto(valor) { if (selectedElement) { selectedElement.innerText = valor; sincronizar(); } }
+    function editarEstilo(prop, valor) { if (selectedElement) { selectedElement.style[prop] = valor; sincronizar(); } }
+    
+    function duplicarElemento() {
+      if (!selectedElement) return;
+      const clone = selectedElement.cloneNode(true);
+      selectedElement.insertAdjacentElement('afterend', clone);
+      sincronizar();
+      prepararCliqueVisual();
+    }
+
+    function removerElemento() {
+      if (!selectedElement) return;
+      selectedElement.remove();
+      selectedElement = null;
+      props.innerHTML = '<div class="empty">Elemento removido.</div>';
+      sincronizar();
+    }
+
+    function sincronizar() {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.querySelectorAll('[data-editor-style]').forEach(el => el.remove());
+      doc.querySelectorAll('.__editor_selected__').forEach(el => el.classList.remove('__editor_selected__'));
+      doc.querySelectorAll('.__editor_hover__').forEach(el => el.classList.remove('__editor_hover__'));
+
+      codeInput.value = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+      prepararCliqueVisual();
+      if (selectedElement) selectedElement.classList.add('__editor_selected__');
+    }
+
+    function copiarCodigo() {
+      navigator.clipboard.writeText(codeInput.value).then(() => setStatus('Copiado!')).catch(() => alert('Use Ctrl+C'));
+    }
+
+    function baixarHTML() {
+      const blob = new Blob([codeInput.value], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'meu-site-editado.html';
+      a.click();
+    }
+
+    function desfazer() {
+      if (historico.length === 0) return setStatus('Nada para desfazer.');
+      codeInput.value = historico.pop();
+      renderizarCodigo();
+    }
+
+    function limparTudo() {
+      salvarEstado();
+      codeInput.value = '';
+      renderizarCodigo();
+    }
+
+    function rgbParaHex(rgb) {
+      if (!rgb || rgb === 'rgba(0, 0, 0, 0)') return '#ffffff';
+      const nums = rgb.match(/\d+/g);
+      if (!nums || nums.length < 3) return '#ffffff';
+      return '#' + nums.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+    }
+
+    function esc(str) { return String(str).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); }
+
+    renderizarCodigo();
+  </script>
+</body>
+</html>

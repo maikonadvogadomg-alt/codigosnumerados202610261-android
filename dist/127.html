@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor Visual HTML - Tipo Firebug Simples</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #151515;
+      color: #eee;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 56px;
+      background: #202020;
+      border-bottom: 2px solid #0d8cff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+    }
+
+    .topbar h1 {
+      font-size: 16px;
+      margin: 0 12px 0 4px;
+      color: #0d8cff;
+      white-space: nowrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 5px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: bold;
+      background: #0d8cff;
+      color: white;
+      font-size: 12px;
+    }
+
+    button:hover {
+      background: #006fd1;
+    }
+
+    button.red {
+      background: #c93535;
+    }
+
+    button.red:hover {
+      background: #a52828;
+    }
+
+    button.gray {
+      background: #555;
+    }
+
+    button.gray:hover {
+      background: #666;
+    }
+
+    button.green {
+      background: #168a3a;
+    }
+
+    button.green:hover {
+      background: #0f6d2d;
+    }
+
+    .main {
+      height: calc(100vh - 56px);
+      display: grid;
+      grid-template-columns: 32% 44% 24%;
+      min-width: 900px;
+    }
+
+    .panel {
+      border-right: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .panel-title {
+      height: 36px;
+      background: #252525;
+      border-bottom: 1px solid #333;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      resize: none;
+      border: 0;
+      outline: 0;
+      padding: 12px;
+      background: #111;
+      color: #d6d6d6;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .preview-wrap {
+      flex: 1;
+      background: white;
+      min-height: 0;
+      position: relative;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: white;
+    }
+
+    .props {
+      padding: 10px;
+      overflow: auto;
+      flex: 1;
+    }
+
+    .empty {
+      color: #999;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 12px;
+    }
+
+    .group {
+      border-bottom: 1px solid #3a3a3a;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+    }
+
+    .group h3 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #0d8cff;
+      text-transform: uppercase;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: #aaa;
+      margin: 8px 0 4px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 7px;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #222;
+      color: #eee;
+      outline: none;
+      font-size: 12px;
+    }
+
+    input[type="color"] {
+      height: 36px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .hint {
+      background: #242424;
+      border-left: 3px solid #0d8cff;
+      padding: 8px;
+      color: #bbb;
+      font-size: 12px;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .status {
+      position: fixed;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(0,0,0,0.8);
+      color: #ddd;
+      padding: 7px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      pointer-events: none;
+      max-width: 70vw;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .selected-info {
+      color: #ddd;
+      font-size: 12px;
+      background: #1b1b1b;
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+
+    .small-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .small-buttons button {
+      flex: 1;
+      padding: 8px;
+      font-size: 11px;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        overflow: auto;
+        height: auto;
+      }
+
+      .topbar {
+        height: auto;
+        flex-wrap: wrap;
+      }
+
+      .main {
+        height: auto;
+        min-width: 0;
+        display: block;
+      }
+
+      .panel {
+        height: 450px;
+        border-bottom: 2px solid #333;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <h1>🐝 Editor Visual HTML</h1>
+
+    <button onclick="colarDaAreaTransferencia()">📋 Colar</button>
+    <button onclick="renderizarCodigo()" class="green">▶ Transformar/Ver</button>
+    <button onclick="abrirImportador()">📂 Importar arquivo</button>
+    <button onclick="copiarCodigo()">📄 Copiar código</button>
+    <button onclick="baixarHTML()">💾 Baixar HTML</button>
+    <button onclick="desfazer()" class="gray">↶ Desfazer</button>
+    <button onclick="limparTudo()" class="red">🗑 Limpar</button>
+
+    <input id="fileInput" type="file" accept=".html,.htm,.txt" onchange="importarArquivo(event)">
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <div class="panel-title">Código colado/importado</div>
+      <textarea id="codeInput" spellcheck="false"></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Visual - clique em uma parte para editar</div>
+      <div class="preview-wrap">
+        <iframe id="previewFrame"></iframe>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Editar parte selecionada</div>
+      <div id="props" class="props">
+        <div class="empty">
+          Cole ou importe um HTML, clique em <b>Transformar/Ver</b> e depois clique em algum elemento visual.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="status" class="status">Pronto.</div>
+
+  <script>
+    const codeInput = document.getElementById('codeInput');
+    const frame = document.getElementById('previewFrame');
+    const props = document.getElementById('props');
+    const statusBox = document.getElementById('status');
+
+    let selectedElement = null;
+    let historico = [];
+
+    const exemploInicial = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Exemplo para editar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef3ff;
+      padding: 30px;
+    }
+
+    .card {
+      max-width: 480px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    h1 {
+      color: #146bff;
+    }
+
+    p {
+      color: #555;
+      font-size: 18px;
+    }
+
+    button {
+      background: #146bff;
+      color: white;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Meu código</h1>
+    <p>Clique em mim para editar.</p>
+    <button>Botão de teste</button>
+  </div>
+</body>
+</html>`;
+
+    codeInput.value = exemploInicial;
+
+    function setStatus(msg) {
+      statusBox.textContent = msg;
+      clearTimeout(window.__statusTimer);
+      window.__statusTimer = setTimeout(() => {
+        statusBox.textContent = 'Pronto.';
+      }, 3500);
+    }
+
+    function salvarEstado() {
+      historico.push(codeInput.value);
+      if (historico.length > 50) {
+        historico.shift();
+      }
+    }
+
+    async function colarDaAreaTransferencia() {
+      try {
+        const texto = await navigator.clipboard.readText();
+
+        if (!texto.trim()) {
+          alert('A área de transferência está vazia.');
+          return;
+        }
+
+        salvarEstado();
+        codeInput.value = texto;
+        renderizarCodigo();
+        setStatus('Código colado da área de transferência.');
+      } catch (e) {
+        alert('O navegador bloqueou a colagem automática. Use Ctrl+V dentro da caixa de código.');
+        setStatus('Colagem automática bloqueada pelo navegador.');
+      }
+    }
+
+    function abrirImportador() {
+      document.getElementById('fileInput').value = '';
+      document.getElementById('fileInput').click();
+    }
+
+    function importarArquivo(event) {
+      const arquivo = event.target.files[0];
+
+      if (!arquivo) return;
+
+      const leitor = new FileReader();
+
+      leitor.onload = function(e) {
+        salvarEstado();
+        codeInput.value = e.target.result;
+        renderizarCodigo();
+        setStatus('Arquivo importado: ' + arquivo.name);
+      };
+
+      leitor.onerror = function() {
+        alert('Erro ao ler o arquivo.');
+      };
+
+      leitor.readAsText(arquivo);
+    }
+
+    function renderizarCodigo() {
+      salvarEstado();
+
+      selectedElement = null;
+      props.innerHTML = '<div class="empty">Clique em algum elemento visual dentro do preview.</div>';
+
+      const codigo = codeInput.value;
+
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open();
+      doc.write(codigo);
+      doc.close();
+
+      setTimeout(() => {
+        prepararCliqueVisual();
+      }, 200);
+
+      setStatus('Preview atualizado. Agora clique em um elemento visual.');
+    }
+
+    function prepararCliqueVisual() {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+
+      if (!doc || !doc.body) {
+        setStatus('Não consegui acessar o documento do preview.');
+        return;
+      }
+
+      const style = doc.createElement('style');
+      style.setAttribute('data-editor-style', 'true');
+      style.textContent = `
+        .__editor_hover__ {
+          outline: 2px dashed #ff9800 !important;
+          outline-offset: 2px !important;
+          cursor: crosshair !important;
+        }
+
+        .__editor_selected__ {
+          outline: 3px solid #0d8cff !important;
+          outline-offset: 3px !important;
+        }
+      `;
+      doc.head.appendChild(style);
+
+      doc.addEventListener('mouseover', function(e) {
+        const el = e.target;
+        if (!podeSelecionar(el)) return;
+        if (el !== selectedElement) {
+          el.classList.add('__editor_hover__');
+        }
+      }, true);
+
+      doc.addEventListener('mouseout', function(e) {
+        const el = e.target;
+        if (!podeSelecionar(el)) return;
+        el.classList.remove('__editor_hover__');
+      }, true);
+
+      doc.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const el = e.target;
+
+        if (!podeSelecionar(el)) return;
+
+        selecionarElemento(el);
+      }, true);
+    }
+
+    function podeSelecionar(el) {
+      if (!el) return false;
+      if (!el.tagName) return false;
+      if (el.tagName.toLowerCase() === 'html') return false;
+      if (el.tagName.toLowerCase() === 'head') return false;
+      if (el.hasAttribute('data-editor-style')) return false;
+      return true;
+    }
+
+    function selecionarElemento(el) {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+
+      if (selectedElement) {
+        selectedElement.classList.remove('__editor_selected__');
+        selectedElement.classList.remove('__editor_hover__');
+      }
+
+      selectedElement = el;
+      selectedElement.classList.add('__editor_selected__');
+      selectedElement.classList.remove('__editor_hover__');
+
+      montarPainel(el);
+      setStatus('Selecionado: <' + el.tagName.toLowerCase() + '>');
+    }
+
+    function montarPainel(el) {
+      const cs = frame.contentWindow.getComputedStyle(el);
+
+      props.innerHTML = `
+        <div class="hint">
+          Editando o elemento selecionado. As mudanças viram estilo inline no HTML.
+        </div>
+
+        <div class="selected-info">
+          <b>Selecionado:</b> &lt;${el.tagName.toLowerCase()}&gt;<br>
+          <b>ID:</b> ${el.id || '(sem id)'}<br>
+          <b>Classe:</b> ${el.className || '(sem classe)'}
+        </div>
+
+        <div class="group">
+          <h3>Texto e identificação</h3>
+
+          <label>Texto do elemento</label>
+          <input id="p_text" value="${esc(el.innerText || '')}" oninput="editarTexto(this.value)">
+
+          <label>ID</label>
+          <input id="p_id" value="${esc(el.id || '')}" oninput="editarAtributo('id', this.value)">
+
+          <label>Classe</label>
+          <input id="p_class" value="${esc(el.className || '')}" oninput="editarClasse(this.value)">
+        </div>
+
+        <div class="group">
+          <h3>Cores</h3>
+
+          <label>Cor do texto</label>
+          <input type="color" value="${rgbParaHex(cs.color)}" oninput="editarEstilo('color', this.value)">
+
+          <label>Cor de fundo</label>
+          <input type="color" value="${rgbParaHex(cs.backgroundColor)}" oninput="editarEstilo('backgroundColor', this.value)">
+
+          <label>Cor da borda</label>
+          <input type="color" value="${rgbParaHex(cs.borderColor)}" oninput="editarEstilo('borderColor', this.value)">
+        </div>
+
+        <div class="group">
+          <h3>Tamanho e fonte</h3>
+
+          <div class="row2">
+            <div>
+              <label>Largura</label>
+              <input value="${cs.width}" oninput="editarEstilo('width', this.value)">
+            </div>
+            <div>
+              <label>Altura</label>
+              <input value="${cs.height}" oninput="editarEstilo('height', this.value)">
+            </div>
+          </div>
+
+          <div class="row2">
+            <div>
+              <label>Tamanho da fonte</label>
+              <input value="${cs.fontSize}" oninput="editarEstilo('fontSize', this.value)">
+            </div>
+            <div>
+              <label>Peso da fonte</label>
+              <select onchange="editarEstilo('fontWeight', this.value)">
+                <option value="">manter</option>
+                <option value="normal">normal</option>
+                <option value="bold">bold</option>
+                <option value="300">300</option>
+                <option value="400">400</option>
+                <option value="600">600</option>
+                <option value="700">700</option>
+                <option value="900">900</option>
+              </select>
+            </div>
+          </div>
+
+          <label>Alinhamento do texto</label>
+          <select onchange="editarEstilo('textAlign', this.value)">
+            <option value="">manter</option>
+            <option value="left">esquerda</option>
+            <option value="center">centro</option>
+            <option value="right">direita</option>
+            <option value="justify">justificado</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <h3>Espaçamento e borda</h3>
+
+          <label>Margem</label>
+          <input value="${cs.margin}" oninput="editarEstilo('margin', this.value)">
+
+          <label>Padding / Espaço interno</label>
+          <input value="${cs.padding}" oninput="editarEstilo('padding', this.value)">
+
+          <label>Borda completa</label>
+          <input value="${cs.border}" oninput="editarEstilo('border', this.value)">
+
+          <label>Arredondamento</label>
+          <input value="${cs.borderRadius}" oninput="editarEstilo('borderRadius', this.value)">
+        </div>
+
+        <div class="group">
+          <h3>Posição</h3>
+
+          <label>Display</label>
+          <select onchange="editarEstilo('display', this.value)">
+            <option value="">manter</option>
+            <option value="block">block</option>
+            <option value="inline-block">inline-block</option>
+            <option value="flex">flex</option>
+            <option value="grid">grid</option>
+            <option value="none">none</option>
+          </select>
+
+          <label>Position</label>
+          <select onchange="editarEstilo('position', this.value)">
+            <option value="">manter</option>
+            <option value="static">static</option>
+            <option value="relative">relative</option>
+            <option value="absolute">absolute</option>
+            <option value="fixed">fixed</option>
+            <option value="sticky">sticky</option>
+          </select>
+
+          <div class="row2">
+            <div>
+              <label>Top</label>
+              <input value="${cs.top}" oninput="editarEstilo('top', this.value)">
+            </div>
+            <div>
+              <label>Left</label>
+              <input value="${cs.left}" oninput="editarEstilo('left', this.value)">
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Ações</h3>
+          <div class="small-buttons">
+            <button onclick="duplicarElemento()">Duplicar</button>
+            <button class="red" onclick="removerElemento()">Remover</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function editarTexto(valor) {
+      if (!selectedElement) return;
+      selectedElement.innerText = valor;
+      sincronizarCodigoDoIframe();
+    }
+
+    function editarAtributo(nome, valor) {
+      if (!selectedElement) return;
+
+      if (valor.trim() === '') {
+        selectedElement.removeAttribute(nome);
+      } else {
+        selectedElement.setAttribute(nome, valor);
+      }
+
+      sincronizarCodigoDoIframe();
+    }
+
+    function editarClasse(valor) {
+      if (!selectedElement) return;
+      selectedElement.className = valor;
+      sincronizarCodigoDoIframe();
+    }
+
+    function editarEstilo(prop, valor) {
+      if (!selectedElement) return;
+      selectedElement.style[prop] = valor;
+      sincronizarCodigoDoIframe();
+    }
+
+    function duplicarElemento() {
+      if (!selectedElement) return;
+
+      const clone = selectedElement.cloneNode(true);
+      selectedElement.insertAdjacentElement('afterend', clone);
+      sincronizarCodigoDoIframe();
+      prepararCliqueVisual();
+      setStatus('Elemento duplicado.');
+    }
+
+    function removerElemento() {
+      if (!selectedElement) return;
+
+      if (!confirm('Remover este elemento?')) return;
+
+      selectedElement.remove();
+      selectedElement = null;
+      props.innerHTML = '<div class="empty">Elemento removido. Clique em outro elemento.</div>';
+      sincronizarCodigoDoIframe();
+      setStatus('Elemento removido.');
+    }
+
+    function sincronizarCodigoDoIframe() {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+
+      doc.querySelectorAll('[data-editor-style]').forEach(el => el.remove());
+      doc.querySelectorAll('.__editor_selected__').forEach(el => el.classList.remove('__editor_selected__'));
+      doc.querySelectorAll('.__editor_hover__').forEach(el => el.classList.remove('__editor_hover__'));
+
+      const html = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+      codeInput.value = html;
+
+      prepararCliqueVisual();
+
+      if (selectedElement) {
+        selectedElement.classList.add('__editor_selected__');
+      }
+    }
+
+    function copiarCodigo() {
+      const codigo = codeInput.value;
+
+      navigator.clipboard.writeText(codigo).then(() => {
+        setStatus('Código copiado.');
+      }).catch(() => {
+        codeInput.focus();
+        codeInput.select();
+        alert('Não consegui copiar automaticamente. O código foi selecionado, use Ctrl+C.');
+      });
+    }
+
+    function baixarHTML() {
+      const codigo = codeInput.value;
+      const blob = new Blob([codigo], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'codigo-editado.html';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      setStatus('Arquivo baixado.');
+    }
+
+    function desfazer() {
+      if (historico.length === 0) {
+        setStatus('Nada para desfazer.');
+        return;
+      }
+
+      codeInput.value = historico.pop();
+      renderizarCodigo();
+      setStatus('Desfeito.');
+    }
+
+    function limparTudo() {
+      if (!confirm('Limpar todo o código?')) return;
+
+      salvarEstado();
+      codeInput.value = '';
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open();
+      doc.write('');
+      doc.close();
+
+      selectedElement = null;
+      props.innerHTML = '<div class="empty">Cole ou importe um código para começar.</div>';
+      setStatus('Limpo.');
+    }
+
+    function rgbParaHex(rgb) {
+      if (!rgb) return '#ffffff';
+
+      const nums = rgb.match(/\d+/g);
+
+      if (!nums || nums.length < 3) return '#ffffff';
+
+      const r = parseInt(nums[0]).toString(16).padStart(2, '0');
+      const g = parseInt(nums[1]).toString(16).padStart(2, '0');
+      const b = parseInt(nums[2]).toString(16).padStart(2, '0');
+
+      return '#' + r + g + b;
+    }
+
+    function esc(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('"', '&quot;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+
+    renderizarCodigo();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Auditoria Financeira — Calculadora Sentença</title>
+<style>
+:root{
+  --bg:#0f172a;--panel:#111827;--txt:#e5e7eb;--muted:#9ca3af;--accent:#10b981;
+  --good:#10b981;--bad:#ef4444;--info:#3b82f6;--paper:#ffffff;--border:#243244;
+  --gold:#b45309;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#e5e7eb;color:#111827;overflow:hidden}
+header{background:var(--bg);color:var(--txt);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+header h1{font-size:13px;letter-spacing:.4px;text-transform:uppercase}
+header .clock{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.wrap{display:flex;height:calc(100vh - 44px)}
+.left{width:520px;min-width:520px;background:var(--panel);color:var(--txt);overflow:auto;padding:14px;border-right:1px solid var(--border)}
+.right{flex:1;background:#cbd5e1;overflow:auto;padding:14px}
+
+h2{font-size:11px;margin:14px 0 6px;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);padding-bottom:4px}
+.box{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px}
+label{display:block;font-size:11px;color:var(--muted);margin:6px 0 3px}
+input,select,textarea{
+  width:100%;background:rgba(0,0,0,.25);color:var(--txt);border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;font-size:12px;outline:none
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:90px;font-family:ui-monospace,monospace;resize:vertical;font-size:11px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+button{
+  border:0;border-radius:8px;padding:8px 12px;font-weight:800;cursor:pointer;
+  text-transform:uppercase;font-size:10px;letter-spacing:.3px;transition:opacity .15s
+}
+button:hover{opacity:.9}
+.b1{background:var(--accent);color:#052e16}
+.b2{background:var(--bad);color:#fff}
+.b3{background:var(--info);color:#fff}
+.b4{background:#fff;color:#111827;border:1px solid #cbd5e1}
+.b5{background:#f59e0b;color:#111827}
+.b6{background:var(--gold);color:#fff}
+
+.hint{font-size:11px;line-height:1.3;background:rgba(16,185,129,.1);border-left:3px solid var(--accent);padding:8px 10px;border-radius:8px;color:var(--txt);margin-bottom:8px}
+.status{white-space:pre-wrap;font-size:11px;line-height:1.3;background:rgba(0,0,0,.25);border:1px solid var(--border);padding:8px;border-radius:8px;color:var(--txt);max-height:100px;overflow:auto}
+
+.paper{background:var(--paper);border-radius:12px;padding:20px 24px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-height:100%;font-family:'Times New Roman',Georgia,serif;font-size:13px;line-height:1.5;color:#1a1a1a}
+.paper .title{text-align:center;font-size:16px;font-weight:bold;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.paper .subtitle{text-align:center;font-size:12px;color:#555;margin-bottom:16px}
+.paper .section{margin:16px 0 8px;font-size:14px;font-weight:bold;border-bottom:2px solid #1a1a1a;padding-bottom:4px}
+.paper .subsection{margin:10px 0 6px;font-size:13px;font-weight:bold}
+
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}
+.quad-box{border:2px solid #d1d5db;border-radius:10px;padding:14px;text-align:center}
+.quad-box.a{border-color:#ef4444;background:#fef2f2}
+.quad-box.b{border-color:#10b981;background:#f0fdf4}
+.quad-box .lbl{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.quad-box .val{font-size:22px;font-weight:900}
+.quad-box.a .val{color:#dc2626}
+.quad-box.b .val{color:#059669}
+.proveito{text-align:center;margin:12px 0;padding:12px;background:#eff6ff;border:2px solid #3b82f6;border-radius:10px}
+.proveito .lbl{font-size:11px;color:#666;text-transform:uppercase}
+.proveito .val{font-size:20px;font-weight:900;color:#1d4ed8}
+.honorarios{text-align:center;margin:8px 0;padding:10px;background:#fefce8;border:2px solid #eab308;border-radius:10px}
+.honorarios .lbl{font-size:11px;color:#666;text-transform:uppercase}
+.honorarios .val{font-size:18px;font-weight:900;color:#a16207}
+.total-geral{text-align:center;margin:8px 0 16px;padding:12px;background:#f0fdf4;border:2px solid #059669;border-radius:10px}
+.total-geral .lbl{font-size:11px;color:#666;text-transform:uppercase}
+.total-geral .val{font-size:18px;font-weight:900;color:#059669}
+
+.criterios-box{background:#fffdf0;border:1px solid #ccc;padding:15px;margin:10px 0;font-size:11pt;text-align:justify;line-height:1.5}
+
+table.mem{border-collapse:collapse;width:100%;font-size:10px;margin:8px 0;font-family:ui-monospace,monospace}
+table.mem th,table.mem td{border:1px solid #d1d5db;padding:4px 6px;text-align:right}
+table.mem th{background:#f1f5f9;font-weight:800;text-align:center;font-size:9px;text-transform:uppercase}
+table.mem td:first-child{text-align:center;font-weight:600}
+table.mem tr:nth-child(even){background:#f8fafc}
+table.mem tr.cap{background:#dbeafe !important;font-weight:700}
+
+.assinatura{text-align:center;margin-top:30px;padding-top:10px}
+.assinatura .linha{width:300px;border-top:1px solid #1a1a1a;margin:0 auto 6px;padding-top:6px}
+.assinatura .nome{font-weight:bold;font-size:13px}
+.assinatura .oab{font-size:11px;color:#555}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;font-family:system-ui}
+.topbar .btns{display:flex;gap:6px;flex-wrap:wrap}
+.topbar .btns button{font-family:system-ui;font-size:10px}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999}
+.ovbox{background:#fff;border-radius:12px;padding:18px;min-width:300px;box-shadow:0 20px 60px rgba(0,0,0,.4);color:#0f172a;text-align:center}
+.spin{width:18px;height:18px;border:3px solid #cbd5e1;border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media(max-width:900px){
+  .wrap{flex-direction:column;height:auto;overflow:auto}
+  .left{width:100%;min-width:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .right{min-height:60vh}
+  .row3,.row4{grid-template-columns:1fr 1fr}
+  body{overflow:auto}
+  .quad{grid-template-columns:1fr}
+}
+@media print{
+  body{overflow:visible}
+  .left,header,.topbar,.hint,.status,.overlay{display:none !important}
+  .wrap{display:block}
+  .right{padding:0;background:#fff}
+  .paper{box-shadow:none;border-radius:0;padding:10mm}
+  table.mem{font-size:9px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Auditoria Financeira — Calculadora de Sentença</h1>
+  <div class="clock" id="clock"></div>
+</header>
+
+<div class="overlay" id="ov">
+  <div class="ovbox">
+    <div><span class="spin"></span><b id="ovMsg">Processando…</b></div>
+    <div style="margin-top:6px;color:#64748b;font-size:12px" id="ovSub">Aguarde.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="left">
+    <div class="hint">
+      Preencha os dados conforme a sentença. Os fatores TJMG podem ser colados do PDF da Corregedoria.
+      A taxa BCB é buscada automaticamente do sistema SGS.
+    </div>
+
+    <h2>1) Dados do Caso</h2>
+    <div class="box">
+      <label>Número do Processo</label>
+      <input id="numProcesso" placeholder="0000000-00.0000.0.00.0000" data-testid="input-processo"/>
+      <label>Nome do Cliente</label>
+      <input id="nomeCliente" placeholder="Nome do cliente" data-testid="input-cliente"/>
+      <div class="row">
+        <div>
+          <label>Nome do Advogado</label>
+          <input id="nomeAdv" placeholder="Dr. Fulano de Tal" data-testid="input-advogado"/>
+        </div>
+        <div>
+          <label>OAB</label>
+          <input id="oab" placeholder="OAB/MG 000.000" data-testid="input-oab"/>
+        </div>
+      </div>
+      <label>Valor Base da Dívida (R$)</label>
+      <input id="valorBase" type="number" step="0.01" value="3512.10" data-testid="input-valor-base"/>
+      <div class="row">
+        <div>
+          <label>Data Início (dd/mm/aaaa)</label>
+          <input id="dataInicio" value="01/09/2017" placeholder="01/09/2017" data-testid="input-data-inicio"/>
+        </div>
+        <div>
+          <label>Data Fim (dd/mm/aaaa)</label>
+          <input id="dataFim" value="01/02/2026" placeholder="01/02/2026" data-testid="input-data-fim"/>
+        </div>
+      </div>
+      <label>Mês de capitalização anual (mês que os juros incorporam ao principal)</label>
+      <select id="mesCapitalizacao" data-testid="select-mes-cap">
+        <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+        <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+        <option value="7">Julho</option><option value="8" selected>Agosto</option><option value="9">Setembro</option>
+        <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+      </select>
+    </div>
+
+    <h2>2) Cenário A — Banco/Contrato</h2>
+    <div class="box">
+      <div class="row">
+        <div>
+          <label>Taxa Juros Banco (% ao mês)</label>
+          <input id="txJurosBanco" type="number" step="0.01" value="9" data-testid="input-juros-banco"/>
+        </div>
+        <div>
+          <label>Taxa Mora Banco (% ao mês)</label>
+          <input id="txMoraBanco" type="number" step="0.01" value="1" data-testid="input-mora-banco"/>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Multa Contratual (%)</label>
+          <input id="multaBanco" type="number" step="0.01" value="2" data-testid="input-multa-banco"/>
+        </div>
+        <div>
+          <label>Capitalização Banco</label>
+          <select id="capBanco" data-testid="select-cap-banco">
+            <option value="mensal" selected>Mensal (Compostos)</option>
+            <option value="anual">Anual</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <h2>3) Cenario B -- Sentenca/Juiz</h2>
+    <div class="box">
+      <div class="row">
+        <div>
+          <label>Taxa Mora Sentenca (% ao mes)</label>
+          <input id="txMoraSentenca" type="number" step="0.01" value="1" data-testid="input-mora-sentenca"/>
+        </div>
+        <div>
+          <label>Multa Mora / Art. 523 CPC (%)</label>
+          <input id="multaSentenca" type="number" step="0.01" value="10" data-testid="input-multa-sentenca"/>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Capitalizacao dos Juros (sentenca)</label>
+          <select id="capSentenca" data-testid="select-cap-sentenca">
+            <option value="anual" selected>Anual - Juros simples c/ cap. anual (Art. 591 CC)</option>
+            <option value="mensal">Mensal - Juros compostos mensais</option>
+            <option value="nenhuma">Sem capitalizacao - Juros simples puro</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:end">
+          <span style="font-size:10px;color:var(--muted);padding:8px 0">Juros sempre incidem sobre o principal corrigido. A capitalizacao define quando incorporam ao principal.</span>
+        </div>
+      </div>
+      <label>Serie BCB para Juros Remuneratorios</label>
+      <select id="tipoBCB" data-testid="select-tipo-bcb">
+        <option value="20714">Taxa Media - Credito Pessoal nao consignado - PF (Serie 20714)</option>
+        <option value="25464">Taxa Media - Cartao de credito rotativo - PF (Serie 25464)</option>
+        <option value="20749">Taxa Media - Cheque especial - PF (Serie 20749)</option>
+        <option value="4390">SELIC acumulada no mes (Serie 4390)</option>
+        <option value="4189">Taxa Media Geral - Operacoes de credito - PF (Serie 4189)</option>
+        <option value="custom">Digitar codigo da serie manualmente...</option>
+      </select>
+      <div id="customSerieDiv" style="display:none">
+        <label>Codigo da Serie SGS (consulte em bcb.gov.br/sgspub)</label>
+        <input id="customSerie" placeholder="ex: 20714" data-testid="input-custom-serie"/>
+      </div>
+    </div>
+
+    <h2>4) Honorários Sucumbenciais</h2>
+    <div class="box">
+      <label>Base de Cálculo dos Honorários</label>
+      <select id="tipoHonorarios" data-testid="select-tipo-honorarios">
+        <option value="proveito">% sobre o Proveito Econômico (Diferença)</option>
+        <option value="sentenca">% sobre o Valor da Sentença (Cenário B)</option>
+        <option value="fixo">Valor Fixo (Atualizado pela TJMG)</option>
+      </select>
+      <div class="row" id="honPctRow">
+        <div>
+          <label>Percentual (%)</label>
+          <input id="pctHonorarios" type="number" step="0.1" value="10" data-testid="input-honorarios"/>
+        </div>
+        <div style="display:flex;align-items:end">
+          <span style="font-size:11px;color:var(--muted);padding:8px 0">Incide sobre o valor selecionado acima</span>
+        </div>
+      </div>
+      <div id="honFixoRow" style="display:none">
+        <div class="row">
+          <div>
+            <label>Valor Fixo (R$)</label>
+            <input id="honFixoValor" type="number" step="0.01" value="2000" data-testid="input-hon-fixo-valor"/>
+          </div>
+          <div>
+            <label>Data Fixação (dd/mm/aaaa)</label>
+            <input id="honFixoData" value="17/04/2022" placeholder="17/04/2022" data-testid="input-hon-fixo-data"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>5) Honorários Recursais</h2>
+    <div class="box">
+      <div class="row">
+        <div>
+          <label>Ativar Honorários Recursais?</label>
+          <select id="recAtivar" data-testid="select-rec-ativar">
+            <option value="nao" selected>Não</option>
+            <option value="sim">Sim</option>
+          </select>
+        </div>
+        <div>
+          <label>Valor Arbitrado (R$)</label>
+          <input id="recValor" type="number" step="0.01" value="1000" data-testid="input-rec-valor"/>
+        </div>
+      </div>
+      <div id="recDetalhes" style="display:none">
+        <div class="row">
+          <div>
+            <label>Data do Arbitramento (dd/mm/aaaa)</label>
+            <input id="recData" value="01/01/2024" placeholder="01/01/2024" data-testid="input-rec-data"/>
+          </div>
+          <div>
+            <label>Atualizar pela regra do Cenário B?</label>
+            <select id="recMesmaRegra" data-testid="select-rec-regra">
+              <option value="sim" selected>Sim (TJMG + BCB + Mora)</option>
+              <option value="nao">Não (Valor Fixo)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>6) Correção Monetária TJMG</h2>
+    <div class="box">
+      <label>Cole o texto do PDF da Tabela TJMG (linhas com ANO + 12 fatores)</label>
+      <textarea id="tjText" placeholder="Cole aqui o texto copiado do PDF da Corregedoria TJMG...&#10;Ex: 2017  1.520000  1.518977  1.519280 ..." data-testid="textarea-tjmg"></textarea>
+      <label>Direção do fator</label>
+      <select id="tjFormula" data-testid="select-tj-formula">
+        <option value="prevovercurr" selected>Fator anterior / atual (padrão TJMG)</option>
+        <option value="curroverprev">Fator atual / anterior</option>
+      </select>
+      <div class="row" style="margin-top:8px">
+        <button class="b3" id="btnFetchTJMG" data-testid="button-buscar-tjmg">Buscar TJMG Automatico</button>
+        <button class="b5" id="btnConvertTJ" data-testid="button-converter-tjmg">Converter Fatores</button>
+        <button class="b2" id="btnClearTJ" data-testid="button-limpar-tjmg">Limpar</button>
+      </div>
+      <div id="tjmgAutoStatus" style="margin-top:6px;font-size:11px;color:#666" data-testid="text-tjmg-auto-status"></div>
+    </div>
+
+    <h2>7) Critérios Técnicos (texto do parecer)</h2>
+    <div class="box">
+      <label>Metodologia / Critérios (aparece no parecer, editável)</label>
+      <textarea id="criteriosTexto" style="min-height:120px;font-family:'Times New Roman',serif;font-size:12px" data-testid="textarea-criterios">METODOLOGIA: Este memorial observa estritamente o v. acórdão, aplicando a Correção Monetária pela tabela da CGJ/TJMG e Juros Remuneratórios pela Taxa Média de Mercado (Série BCB). O diferencial determinante desta liquidação é a aplicação da CAPITALIZAÇÃO ANUAL (Art. 591 do Código Civil), expurgando o anatocismo mensal abusivo praticado pelo banco, acrescido de juros de mora de 1% ao mês e multa de mora conforme Art. 523 do CPC.</textarea>
+      <label>Fontes e Links (aparecem no parecer para dar credibilidade)</label>
+      <textarea id="fontesTexto" style="min-height:80px;font-family:'Times New Roman',serif;font-size:12px" data-testid="textarea-fontes">• Correção monetária: Tabela de Atualização Monetária — Corregedoria-Geral de Justiça do Estado de Minas Gerais (https://www.tjmg.jus.br/portal-tjmg/processos/tabela-de-atualizacao-monetaria/)
+• Juros remuneratórios: Sistema Gerenciador de Séries Temporais (SGS) — Banco Central do Brasil (https://www3.bcb.gov.br/sgspub/)
+• Art. 591 do Código Civil: Capitalização anual de juros
+• Art. 523 do CPC: Multa de 10% por não cumprimento espontâneo</textarea>
+    </div>
+
+    <h2>8) Calcular</h2>
+    <div class="box">
+      <div class="row">
+        <button class="b1" id="btnCalcular" style="padding:12px;font-size:12px" data-testid="button-calcular">Calcular Auditoria</button>
+        <button class="b3" id="btnFetchBCB" data-testid="button-buscar-bcb">Buscar Taxas BCB</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="b4" id="btnExportWord" data-testid="button-export-word">Exportar Word</button>
+        <button class="b4" onclick="window.print()" data-testid="button-imprimir">Imprimir PDF</button>
+      </div>
+      <div style="margin-top:8px">
+        <button class="b3" id="btnCompartilhar" data-testid="button-compartilhar">Gerar Link para o Juiz</button>
+        <div id="linkCompartilhado" style="margin-top:6px;font-size:11px;display:none" data-testid="text-link-compartilhado">
+          <input id="linkInput" readonly style="background:#fff;color:#111;font-size:11px;cursor:text" data-testid="input-link"/>
+          <button class="b4" style="margin-top:4px;width:auto" id="btnCopyLink" data-testid="button-copy-link">Copiar Link</button>
+        </div>
+      </div>
+    </div>
+
+    <h2>Status</h2>
+    <div class="status" id="status" data-testid="text-status">Pronto. Preencha os dados e clique em "Calcular Auditoria".</div>
+  </div>
+
+  <div class="right">
+    <div class="topbar">
+      <div style="font-weight:700;font-size:13px;font-family:system-ui">Parecer de Auditoria Financeira</div>
+      <div class="btns">
+        <button class="b4" id="btnCopyAll" data-testid="button-copiar">Copiar Texto</button>
+        <button class="b4" id="btnCopyHtml" data-testid="button-copiar-html">Copiar HTML</button>
+      </div>
+    </div>
+    <div class="paper" id="parecer" data-testid="div-parecer">
+      <div style="text-align:center;color:#999;padding:40px 0;font-family:system-ui;font-size:13px">
+        Preencha os dados à esquerda e clique em <b>Calcular Auditoria</b> para gerar o parecer.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var TJMG_INDEX = {};
+var BCB_INDEX = {};
+var CALC_RESULT = null;
+
+var $ = function(id){ return document.getElementById(id); };
+
+function setClock(){ $("clock").textContent = new Date().toLocaleString("pt-BR"); }
+setInterval(setClock,1000); setClock();
+
+function ov(on,msg,sub){
+  $("ov").style.display = on ? "flex" : "none";
+  if(msg) $("ovMsg").textContent = msg;
+  if(sub) $("ovSub").textContent = sub;
+}
+function log(s){ $("status").textContent = s; }
+function fmtBRL(n){ return (Number(n)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+function fmtPct(n){ return (Number(n)||0).toFixed(2).replace(".",",") + "%"; }
+function fmtFator(n){ return (Number(n)||0).toFixed(6).replace(".",","); }
+
+function toNum(x){
+  if(x==null) return 0;
+  if(typeof x==="number") return x;
+  var s = String(x).trim().replace(/[^\d,.\-]/g,"");
+  if(!s) return 0;
+  if(s.includes(",")) s = s.replace(/\./g,"").replace(",",".");
+  var n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function parseDateBR(str){
+  var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((str||"").trim());
+  if(!m) return null;
+  return new Date(+m[3], +m[2]-1, +m[1]);
+}
+
+function dateToYM(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
+
+function listMonths(d1,d2){
+  var out=[], d=new Date(d1.getTime()); d.setDate(1);
+  var e=new Date(d2.getTime()); e.setDate(1);
+  while(d<=e){ out.push(dateToYM(d)); d.setMonth(d.getMonth()+1); }
+  return out;
+}
+
+function ymToLabel(ym){
+  var p=ym.split("-");
+  var meses=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  return meses[parseInt(p[1])-1]+"/"+p[0];
+}
+
+$("tipoBCB").addEventListener("change", function(){
+  $("customSerieDiv").style.display = this.value === "custom" ? "block" : "none";
+});
+
+$("tipoHonorarios").addEventListener("change", function(){
+  var v = this.value;
+  $("honPctRow").style.display = (v === "fixo") ? "none" : "grid";
+  $("honFixoRow").style.display = (v === "fixo") ? "block" : "none";
+});
+
+$("recAtivar").addEventListener("change", function(){
+  $("recDetalhes").style.display = this.value === "sim" ? "block" : "none";
+});
+
+$("btnClearTJ").addEventListener("click", function(){ $("tjText").value = ""; TJMG_INDEX = {}; log("TJMG limpo."); });
+
+$("btnConvertTJ").addEventListener("click", function(){
+  var raw = $("tjText").value;
+  if(!raw.trim()) return alert("Cole o texto do PDF da tabela TJMG.");
+
+  ov(true,"Processando TJMG...");
+  setTimeout(function(){
+    try {
+      var txt = raw.replace(/\u00A0/g," ").replace(/\r/g,"\n");
+      var lines = txt.split("\n").map(function(l){return l.trim()}).filter(Boolean);
+      var loaded = 0;
+      var yearRows = [];
+
+      for(var i=0; i<lines.length; i++){
+        var line = lines[i];
+        var nums = line.match(/-?\d{1,3}(?:\.\d{3})*(?:,\d+)?|-?\d+(?:,\d+)?/g);
+        if(!nums || nums.length < 10) continue;
+        var yearMatch = line.match(/\b(19|20)\d{2}\b/);
+        if(!yearMatch) continue;
+        var year = parseInt(yearMatch[0]);
+        var factors = nums.filter(function(n){ return n.includes(',') || (n.includes('.') && n.length > 4) }).map(toNum);
+        if(factors.length >= 12) yearRows.push({year: year, factors: factors.slice(0,12)});
+      }
+
+      yearRows.sort(function(a,b){return a.year-b.year});
+
+      for(var yi=0; yi<yearRows.length; yi++){
+        var yr = yearRows[yi];
+        for(var m=1; m<=12; m++){
+          var ym = yr.year+"-"+String(m).padStart(2,"0");
+          TJMG_INDEX[ym] = yr.factors[m-1];
+          loaded++;
+        }
+      }
+
+      if(loaded === 0){
+        var dateLines = raw.split('\n');
+        for(var di=0; di<dateLines.length; di++){
+          var dl = dateLines[di].trim();
+          var partes = dl.split(/\s+/);
+          if(partes.length >= 2){
+            var dp = partes[0].split('/');
+            if(dp.length === 3){
+              var ymKey = dp[2]+"-"+dp[1];
+              var fVal = parseFloat(partes[1].replace(',','.'));
+              if(!isNaN(fVal)){
+                TJMG_INDEX[ymKey] = fVal;
+                loaded++;
+              }
+            }
+          }
+        }
+      }
+
+      log("TJMG carregado: " + loaded + " meses.");
+    } catch(e){ alert("Erro ao processar TJMG: "+e.message); }
+    ov(false);
+  }, 50);
+});
+
+$("btnFetchBCB").addEventListener("click", fetchBCB);
+
+function fetchBCB(){
+  var tipo = $("tipoBCB").value;
+  var code = tipo === "custom" ? ($("customSerie").value||"").trim() : tipo;
+  if(!code) return alert("Selecione ou informe a série BCB.");
+
+  var dIni = parseDateBR($("dataInicio").value);
+  var dFim = parseDateBR($("dataFim").value);
+  if(!dIni || !dFim) return alert("Preencha as datas de início e fim.");
+
+  var diStr = $("dataInicio").value;
+  var dfStr = $("dataFim").value;
+
+  ov(true, "Buscando taxas BCB (série "+code+")...", "Conectando ao Banco Central...");
+  fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs."+code+"/dados?formato=json&dataInicial="+diStr+"&dataFinal="+dfStr)
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(data){
+      var count = 0;
+      data.forEach(function(item){
+        var p = item.data.split("/");
+        var ym = p[2]+"-"+p[1];
+        var val = toNum(item.valor);
+        if(!BCB_INDEX[ym]) BCB_INDEX[ym] = 0;
+        BCB_INDEX[ym] = val;
+        count++;
+      });
+      log("BCB série "+code+" carregada: "+count+" registros.");
+      ov(false);
+    })
+    .catch(function(e){ alert("Erro ao buscar BCB: "+e.message); ov(false); });
+}
+
+$("btnFetchTJMG").addEventListener("click", fetchTJMG);
+
+function fetchTJMG(onSuccess){
+  var dIni = parseDateBR($("dataInicio").value);
+  var dFim = parseDateBR($("dataFim").value);
+  if(!dIni || !dFim) return alert("Preencha as datas de inicio e fim primeiro.");
+
+  var startYear = dIni.getFullYear();
+  var endYear = dFim.getFullYear();
+
+  ov(true, "Buscando fatores TJMG...", "Conectando ao servidor...");
+  $("tjmgAutoStatus").textContent = "Buscando fatores TJMG de "+startYear+" a "+endYear+"...";
+
+  fetch("/api/tjmg/fatores?startYear="+startYear+"&endYear="+endYear)
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(data){
+      var count = 0;
+      var fatores = data.fatores || {};
+      Object.keys(fatores).forEach(function(ym){
+        TJMG_INDEX[ym] = fatores[ym];
+        count++;
+      });
+      log("TJMG automatico carregado: "+count+" meses (fonte: "+data.source+")");
+      $("tjmgAutoStatus").textContent = count+" fatores TJMG carregados ("+startYear+"-"+endYear+") - Fonte: "+data.source;
+      ov(false);
+      if(typeof onSuccess === "function") onSuccess();
+    })
+    .catch(function(e){
+      alert("Erro ao buscar TJMG: "+e.message+"\n\nVoce pode colar manualmente do PDF.");
+      $("tjmgAutoStatus").textContent = "Erro: "+e.message;
+      ov(false);
+    });
+}
+
+$("btnCalcular").addEventListener("click", calcular);
+
+function getTJMGCorrection(ymPrev, ymCurr){
+  var hasTJMG = Object.keys(TJMG_INDEX).length > 0;
+  if(!hasTJMG) return 0;
+  var fPrev = TJMG_INDEX[ymPrev];
+  var fCurr = TJMG_INDEX[ymCurr];
+  if(!fPrev || !fCurr || fCurr === 0) return 0;
+  var formula = $("tjFormula").value;
+  if(formula === "curroverprev") return (fCurr / fPrev - 1);
+  return (fPrev / fCurr - 1);
+}
+
+function calcularRecursal(valorFixo, dataBase, dataFim){
+  if($("recMesmaRegra").value === "nao") return valorFixo;
+
+  var months = listMonths(dataBase, dataFim);
+  var sp = valorFixo;
+  var sj = 0;
+  var mesCapAnual = parseInt($("mesCapitalizacao").value);
+  var txMoraSentenca = toNum($("txMoraSentenca").value);
+  var capSentenca = $("capSentenca").value;
+
+  for(var i = 0; i < months.length; i++){
+    var ym = months[i];
+
+    if(i > 0){
+      var correcao = getTJMGCorrection(months[i-1], ym);
+      sp = sp * (1 + correcao);
+      sj = sj * (1 + correcao);
+    }
+
+    var bcbTaxa = BCB_INDEX[ym] || 0;
+    var taxaMensal = (bcbTaxa + txMoraSentenca) / 100;
+    sj += sp * taxaMensal;
+
+    if(capSentenca === "mensal"){
+      sp = sp + sj;
+      sj = 0;
+    } else if(capSentenca === "anual" && i < months.length - 1){
+      var proxMes = parseInt(months[i+1].split("-")[1]);
+      if(proxMes === mesCapAnual){
+        sp = sp + sj;
+        sj = 0;
+      }
+    }
+  }
+  return sp + sj;
+}
+
+function calcular(){
+  var valorBase = toNum($("valorBase").value);
+  var dIni = parseDateBR($("dataInicio").value);
+  var dFim = parseDateBR($("dataFim").value);
+  if(!dIni || !dFim || valorBase <= 0) return alert("Preencha valor base e datas.");
+
+  var txJurosBanco = toNum($("txJurosBanco").value);
+  var txMoraBanco = toNum($("txMoraBanco").value);
+  var capBanco = $("capBanco").value;
+  var txMoraSentenca = toNum($("txMoraSentenca").value);
+  var pctHonorarios = toNum($("pctHonorarios").value);
+  var mesCapAnual = parseInt($("mesCapitalizacao").value);
+  var multaBanco = toNum($("multaBanco").value);
+  var multaSentenca = toNum($("multaSentenca").value);
+
+  var months = listMonths(dIni, dFim);
+  if(months.length < 2) return alert("Período deve ter pelo menos 2 meses.");
+
+  var hasTJMG = Object.keys(TJMG_INDEX).length > 0;
+  var hasBCB = Object.keys(BCB_INDEX).length > 0;
+
+  if(!hasTJMG){
+    if(!confirm("Fatores TJMG não carregados. Deseja buscar automaticamente agora?")) return;
+    fetchTJMG(function(){ calcular(); });
+    return;
+  }
+
+  if(!hasBCB){
+    if(!confirm("Taxas BCB não carregadas. Deseja buscar automaticamente agora?")) return;
+    fetchBCB();
+    setTimeout(function(){ calcular(); }, 3000);
+    return;
+  }
+
+  ov(true, "Calculando...");
+  setTimeout(function(){
+    try {
+      var rowsJuiz = [];
+
+      var saldoBanco = valorBase;
+      var txJurosBancoDecimal = txJurosBanco / 100;
+      var txMoraBancoDecimal = txMoraBanco / 100;
+      var bancoJurosAcum = 0;
+
+      var capSentenca = $("capSentenca").value;
+
+      var principalJuiz = valorBase;
+      var jurosAcumJuiz = 0;
+
+      for(var i = 0; i < months.length; i++){
+        var ym = months[i];
+        var mesNum = parseInt(ym.split("-")[1]);
+
+        if(capBanco === "mensal"){
+          saldoBanco = saldoBanco * (1 + txJurosBancoDecimal + txMoraBancoDecimal);
+        } else {
+          var jurosM = saldoBanco * txJurosBancoDecimal;
+          var moraM = saldoBanco * txMoraBancoDecimal;
+          bancoJurosAcum += jurosM + moraM;
+          if(i < months.length - 1){
+            var proxMesBanco = parseInt(months[i+1].split("-")[1]);
+            if(proxMesBanco === mesCapAnual){
+              saldoBanco = saldoBanco + bancoJurosAcum;
+              bancoJurosAcum = 0;
+            }
+          }
+        }
+        var saldoBancoTotal = (capBanco === "mensal") ? saldoBanco : saldoBanco + bancoJurosAcum;
+
+        if(i > 0){
+          var correcao = getTJMGCorrection(months[i-1], ym);
+          principalJuiz = principalJuiz * (1 + correcao);
+          jurosAcumJuiz = jurosAcumJuiz * (1 + correcao);
+        }
+
+        var fatorAtual = hasTJMG ? (TJMG_INDEX[ym] || 0) : 0;
+        var bcbTaxa = BCB_INDEX[ym] || 0;
+        var taxaMensal = (bcbTaxa + txMoraSentenca) / 100;
+
+        jurosAcumJuiz += principalJuiz * taxaMensal;
+
+        var saldoJuiz = principalJuiz + jurosAcumJuiz;
+
+        rowsJuiz.push({
+          ym: ym,
+          saldoBanco: saldoBancoTotal,
+          fatorTJMG: fatorAtual,
+          bcbTaxa: bcbTaxa,
+          moraAcum: jurosAcumJuiz,
+          saldoJuiz: saldoJuiz,
+          principalCorrigido: principalJuiz,
+          isCapitalizacao: false
+        });
+
+        if(capSentenca === "mensal"){
+          principalJuiz = saldoJuiz;
+          jurosAcumJuiz = 0;
+          rowsJuiz[rowsJuiz.length-1].isCapitalizacao = true;
+        } else if(capSentenca === "anual" && i < months.length - 1){
+          var proxMes = parseInt(months[i+1].split("-")[1]);
+          if(proxMes === mesCapAnual){
+            principalJuiz = saldoJuiz;
+            jurosAcumJuiz = 0;
+            rowsJuiz[rowsJuiz.length-1].isCapitalizacao = true;
+          }
+        }
+      }
+
+      var lastRow = rowsJuiz[rowsJuiz.length-1];
+      var saldoBancoSemMulta = lastRow.saldoBanco;
+      var saldoJuizSemMulta = lastRow.saldoJuiz;
+
+      var saldoFinalBanco = saldoBancoSemMulta * (1 + multaBanco / 100);
+      var saldoFinalJuiz = saldoJuizSemMulta * (1 + multaSentenca / 100);
+      var proveitoEconomico = saldoFinalBanco - saldoFinalJuiz;
+
+      var tipoHon = $("tipoHonorarios").value;
+      var honorarios = 0;
+      var honLabel = "";
+
+      if(tipoHon === "proveito"){
+        honorarios = proveitoEconomico * (pctHonorarios / 100);
+        honLabel = fmtPct(pctHonorarios) + " SOBRE O PROVEITO ECONÔMICO";
+      } else if(tipoHon === "sentenca"){
+        honorarios = saldoFinalJuiz * (pctHonorarios / 100);
+        honLabel = fmtPct(pctHonorarios) + " SOBRE O VALOR DA SENTENÇA";
+      } else {
+        var honFixoVal = toNum($("honFixoValor").value);
+        var honFixoDataParsed = parseDateBR($("honFixoData").value);
+        if(honFixoDataParsed && hasTJMG){
+          var keyIni = dateToYM(honFixoDataParsed);
+          var keyFim = months[months.length - 1];
+          var fatIni = TJMG_INDEX[keyIni] || 1;
+          var fatFim = TJMG_INDEX[keyFim] || 1;
+          if(fatIni > 0 && fatFim > 0){
+            var formula = $("tjFormula").value;
+            if(formula === "curroverprev"){
+              honorarios = honFixoVal * (fatFim / fatIni);
+            } else {
+              honorarios = honFixoVal * (fatIni / fatFim);
+            }
+          } else {
+            honorarios = honFixoVal;
+          }
+        } else {
+          honorarios = honFixoVal;
+        }
+        honLabel = "VALOR FIXO ATUALIZADO (TJMG)";
+      }
+
+      var honRecursal = 0;
+      var honRecLabel = "";
+      if($("recAtivar").value === "sim"){
+        var recVal = toNum($("recValor").value);
+        var recDataParsed = parseDateBR($("recData").value);
+        if(recDataParsed){
+          honRecursal = calcularRecursal(recVal, recDataParsed, dFim);
+          honRecLabel = ($("recMesmaRegra").value === "sim") ? "ATUALIZADO (TJMG + BCB + MORA)" : "VALOR FIXO";
+        }
+      }
+
+      var serieBCBNome = $("tipoBCB").options[$("tipoBCB").selectedIndex].text;
+
+      CALC_RESULT = {
+        processo: $("numProcesso").value,
+        cliente: $("nomeCliente").value,
+        advogado: $("nomeAdv").value,
+        oab: $("oab").value,
+        valorBase: valorBase,
+        dataInicio: $("dataInicio").value,
+        dataFim: $("dataFim").value,
+        months: months,
+        rowsJuiz: rowsJuiz,
+        saldoBancoSemMulta: saldoBancoSemMulta,
+        saldoJuizSemMulta: saldoJuizSemMulta,
+        saldoFinalBanco: saldoFinalBanco,
+        saldoFinalJuiz: saldoFinalJuiz,
+        proveitoEconomico: proveitoEconomico,
+        honorarios: honorarios,
+        honLabel: honLabel,
+        honRecursal: honRecursal,
+        honRecLabel: honRecLabel,
+        pctHonorarios: pctHonorarios,
+        txJurosBanco: txJurosBanco,
+        txMoraBanco: txMoraBanco,
+        txMoraSentenca: txMoraSentenca,
+        multaBanco: multaBanco,
+        multaSentenca: multaSentenca,
+        hasTJMG: hasTJMG,
+        hasBCB: hasBCB,
+        capSentenca: capSentenca,
+        capBancoUsado: capBanco,
+        serieBCBNome: serieBCBNome,
+        criterios: $("criteriosTexto").value,
+        fontes: $("fontesTexto").value
+      };
+
+      renderParecer();
+      log("Cálculo finalizado! " + months.length + " meses processados.\nBanco: " + fmtBRL(saldoFinalBanco) + " (c/ multa " + fmtPct(multaBanco) + ")\nJuiz: " + fmtBRL(saldoFinalJuiz) + " (c/ multa " + fmtPct(multaSentenca) + ")\nProveito: " + fmtBRL(proveitoEconomico) + "\nHonorários: " + fmtBRL(honorarios) + (honRecursal > 0 ? "\nRecursais: " + fmtBRL(honRecursal) : ""));
+    } catch(e){
+      alert("Erro no cálculo: "+e.message);
+      console.error(e);
+    }
+    ov(false);
+  }, 100);
+}
+
+function renderParecer(){
+  var r = CALC_RESULT;
+  if(!r) return;
+
+  var html = '';
+  html += '<div class="title">PARECER DE AUDITORIA FINANCEIRA</div>';
+  html += '<div class="subtitle">Processo: '+(r.processo||'_________________');
+  if(r.cliente) html += ' | Cliente: '+r.cliente;
+  html += '</div>';
+
+  html += '<div class="section">I. CRITÉRIOS TÉCNICOS DA AUDITORIA</div>';
+  if(r.criterios){
+    html += '<div class="criterios-box">'+r.criterios.replace(/\n/g,'<br>')+'</div>';
+  }
+
+  html += '<div class="section">II. QUADRO COMPARATIVO E PROVEITO ECONÔMICO</div>';
+  html += '<div class="quad">';
+  html += '<div class="quad-box a"><div class="lbl">Cenário A<br>(Banco/Contrato'+(r.multaBanco > 0 ? ' + Multa '+fmtPct(r.multaBanco) : '')+')</div><div class="val">'+fmtBRL(r.saldoFinalBanco)+'</div></div>';
+  html += '<div class="quad-box b"><div class="lbl">Cenário B<br>(Juiz/Sentença'+(r.multaSentenca > 0 ? ' + Multa '+fmtPct(r.multaSentenca) : '')+')</div><div class="val">'+fmtBRL(r.saldoFinalJuiz)+'</div></div>';
+  html += '</div>';
+  html += '<div class="proveito"><div class="lbl">Proveito Econômico do Cliente</div><div class="val">'+fmtBRL(r.proveitoEconomico)+'</div></div>';
+  html += '<div class="honorarios"><div class="lbl">Honorários Sucumbenciais ('+r.honLabel+')</div><div class="val">'+fmtBRL(r.honorarios)+'</div></div>';
+
+  if(r.honRecursal > 0){
+    html += '<div class="honorarios" style="border-color:#7c3aed"><div class="lbl">Honorários Recursais ('+r.honRecLabel+')</div><div class="val" style="color:#7c3aed">'+fmtBRL(r.honRecursal)+'</div></div>';
+  }
+
+  var totalGeral = r.saldoFinalJuiz + r.honorarios + r.honRecursal;
+  html += '<div class="total-geral"><div class="lbl">Total Devido pelo Banco (Dívida + Honorários)</div><div class="val">'+fmtBRL(totalGeral)+'</div></div>';
+
+  html += '<div class="section">III. METODOLOGIA</div>';
+  html += '<div class="subsection">Cenário A — Banco/Contrato</div>';
+  var capDescA = (r.capBancoUsado === "mensal") ? "capitalizacao mensal composta (juros sobre juros)" : (r.capBancoUsado === "anual") ? "capitalizacao anual" : "juros simples sem capitalizacao";
+  html += '<p style="margin:4px 0">Aplicação de juros remuneratórios de <b>'+fmtPct(r.txJurosBanco)+'</b> ao mês, ';
+  html += 'acrescidos de mora de <b>'+fmtPct(r.txMoraBanco)+'</b> ao mês, ';
+  html += 'com '+capDescA+', totalizando taxa efetiva de <b>'+fmtPct(r.txJurosBanco+r.txMoraBanco)+'</b> ao mês';
+  if(r.multaBanco > 0) html += ', acrescido de multa contratual de <b>'+fmtPct(r.multaBanco)+'</b>';
+  html += '.</p>';
+
+  html += '<div class="subsection">Cenario B -- Juiz/Sentenca</div>';
+  var capDescB = (r.capSentenca === "mensal") ? "capitalizacao mensal (juros compostos)" : (r.capSentenca === "anual") ? "juros simples com capitalizacao anual (Art. 591 do Codigo Civil)" : "juros simples sem capitalizacao";
+  html += '<p style="margin:4px 0">Valor base de <b>'+fmtBRL(r.valorBase)+'</b>, corrigido monetariamente pela ';
+  html += '<b>Tabela da Corregedoria-Geral de Justica de Minas Gerais (TJMG)</b>';
+  if(!r.hasTJMG) html += ' <i>(fatores nao informados -- sem correcao monetaria aplicada)</i>';
+  html += ', acrescido de juros remuneratorios segundo a <b>'+r.serieBCBNome+'</b> (Banco Central do Brasil)';
+  html += ', com <b>'+capDescB+'</b>';
+  html += ', e acrescido de juros de mora de <b>'+fmtPct(r.txMoraSentenca)+'</b> ao mes';
+  if(r.multaSentenca > 0) html += ', acrescido de multa de <b>'+fmtPct(r.multaSentenca)+'</b> conforme Art. 523 do CPC';
+  html += '.</p>';
+
+  html += '<div class="subsection">Fontes dos Dados</div>';
+  if(r.fontes){
+    var fontesLines = r.fontes.split('\n');
+    for(var fi=0; fi<fontesLines.length; fi++){
+      var fl = fontesLines[fi].trim();
+      if(fl){
+        fl = fl.replace(/(https?:\/\/[^\s)]+)/g, '<a href="$1" style="color:#2563eb">$1</a>');
+        html += '<p style="margin:4px 0">'+fl+'</p>';
+      }
+    }
+  }
+  html += '<p style="margin:4px 0">• Período: '+r.dataInicio+' a '+r.dataFim+' ('+r.months.length+' meses)</p>';
+
+  html += '<div class="section">IV. MEMORIAL DETALHADO — EVOLUÇÃO CONTRATUAL vs. JUDICIAL</div>';
+
+  html += '<table class="mem"><thead><tr>';
+  html += '<th>Mês/Ano</th><th>Saldo Banco</th><th>Fator TJMG</th><th>Juros BCB</th><th>Mora Juiz</th><th>Saldo Juiz</th>';
+  html += '</tr></thead><tbody>';
+
+  for(var i=0; i<r.rowsJuiz.length; i++){
+    var row = r.rowsJuiz[i];
+    var cls = row.isCapitalizacao ? ' class="cap"' : '';
+    html += '<tr'+cls+'>';
+    html += '<td>'+row.ym+'</td>';
+    html += '<td>'+fmtBRL(row.saldoBanco)+'</td>';
+    html += '<td>'+fmtFator(row.fatorTJMG)+'</td>';
+    html += '<td>'+fmtPct(row.bcbTaxa)+'</td>';
+    html += '<td>'+fmtBRL(row.moraAcum)+'</td>';
+    html += '<td>'+fmtBRL(row.saldoJuiz)+'</td>';
+    html += '</tr>';
+  }
+
+  html += '</tbody></table>';
+
+  html += '<div class="section">V. CONCLUSAO</div>';
+  html += '<p style="margin:4px 0;text-align:justify">';
+  html += 'Diante da analise tecnica realizada, conclui-se que o valor apurado pelo ';
+  html += '<b>Cenario A (Banco/Contrato)</b>, no montante de <b>'+fmtBRL(r.saldoFinalBanco)+'</b>, ';
+  html += 'diverge significativamente do valor correto apurado conforme os criterios judiciais ';
+  html += '(<b>Cenario B</b>), que totaliza <b>'+fmtBRL(r.saldoFinalJuiz)+'</b>. ';
+  html += 'A diferenca de <b>'+fmtBRL(r.proveitoEconomico)+'</b> decorre ';
+
+  var capBDesc = (r.capBancoUsado === "mensal") ? "juros compostos mensais (anatocismo)" : (r.capBancoUsado === "anual") ? "juros compostos com capitalizacao anual" : "juros simples";
+  var capSDesc = (r.capSentenca === "mensal") ? "juros compostos mensais" : (r.capSentenca === "anual") ? "juros simples com capitalizacao anual conforme Art. 591 do Codigo Civil" : "juros simples sem capitalizacao";
+
+  if(r.capBancoUsado !== r.capSentenca){
+    html += 'da aplicacao de '+capBDesc+' pelo banco, enquanto a sentenca determinou '+capSDesc+', ';
+  } else {
+    html += 'da diferenca entre as taxas de juros e indices aplicados pelos cenarios, ';
+  }
+  html += 'em confronto com os indices oficiais determinados pela decisao judicial. ';
+  html += 'Os calculos apresentados neste parecer foram elaborados com base em dados oficiais ';
+  html += 'extraidos do Banco Central do Brasil (SGS) e da Tabela de Atualizacao Monetaria da ';
+  html += 'Corregedoria-Geral de Justica de Minas Gerais (TJMG), ';
+  html += 'podendo ser integralmente verificados e auditados por qualquer perito ou assistente tecnico.</p>';
+  html += '<p style="margin:8px 0;text-align:justify">';
+  html += 'Nestes termos, requer-se a homologacao dos calculos conforme o Cenario B, ';
+  html += 'por estar em estrita consonancia com os parametros fixados na sentenca.</p>';
+
+  if(r.advogado || r.oab){
+    html += '<div class="assinatura">';
+    html += '<div class="linha"></div>';
+    html += '<div class="nome">'+(r.advogado||'_________________')+'</div>';
+    if(r.oab) html += '<div class="oab">'+r.oab+'</div>';
+    html += '<div class="oab" style="margin-top:4px">Patrono da Causa / Auditor Juridico</div>';
+    html += '</div>';
+  }
+
+  $("parecer").innerHTML = html;
+}
+
+$("btnCopyAll").addEventListener("click", function(){
+  if(!CALC_RESULT) return alert("Calcule primeiro.");
+  var text = $("parecer").innerText;
+  navigator.clipboard.writeText(text).then(function(){ alert("Texto do parecer copiado!"); });
+});
+
+$("btnCopyHtml").addEventListener("click", function(){
+  if(!CALC_RESULT) return alert("Calcule primeiro.");
+  var fullHtml = "<!doctype html>\n<html lang=\"pt-BR\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>Parecer de Auditoria Financeira</title>\n<style>\nbody{margin:0;padding:20px;background:#e5e7eb;font-family:system-ui}\n.paper{max-width:900px;margin:0 auto;background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 8px 24px rgba(0,0,0,.12);font-family:'Times New Roman',Georgia,serif;font-size:13px;line-height:1.5;color:#1a1a1a}\n.paper .title{text-align:center;font-size:16px;font-weight:bold;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}\n.paper .subtitle{text-align:center;font-size:12px;color:#555;margin-bottom:16px}\n.paper .section{margin:16px 0 8px;font-size:14px;font-weight:bold;border-bottom:2px solid #1a1a1a;padding-bottom:4px}\n.paper .subsection{margin:10px 0 6px;font-size:13px;font-weight:bold}\n.quad{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}\n.quad-box{border:2px solid #d1d5db;border-radius:10px;padding:14px;text-align:center}\n.quad-box.a{border-color:#ef4444;background:#fef2f2}\n.quad-box.b{border-color:#10b981;background:#f0fdf4}\n.quad-box .lbl{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}\n.quad-box .val{font-size:22px;font-weight:900}\n.quad-box.a .val{color:#dc2626}\n.quad-box.b .val{color:#059669}\n.proveito{text-align:center;margin:12px 0;padding:12px;background:#eff6ff;border:2px solid #3b82f6;border-radius:10px}\n.proveito .lbl{font-size:11px;color:#666;text-transform:uppercase}\n.proveito .val{font-size:20px;font-weight:900;color:#1d4ed8}\n.honorarios{text-align:center;margin:8px 0;padding:10px;background:#fefce8;border:2px solid #eab308;border-radius:10px}\n.honorarios .lbl{font-size:11px;color:#666;text-transform:uppercase}\n.honorarios .val{font-size:18px;font-weight:900;color:#a16207}\n.total-geral{text-align:center;margin:8px 0 16px;padding:12px;background:#f0fdf4;border:2px solid #059669;border-radius:10px}\n.total-geral .lbl{font-size:11px;color:#666;text-transform:uppercase}\n.total-geral .val{font-size:18px;font-weight:900;color:#059669}\n.criterios-box{background:#fffdf0;border:1px solid #ccc;padding:15px;margin:10px 0;font-size:11pt;text-align:justify;line-height:1.5}\ntable.mem{border-collapse:collapse;width:100%;font-size:10px;margin:8px 0;font-family:ui-monospace,monospace}\ntable.mem th,table.mem td{border:1px solid #d1d5db;padding:4px 6px;text-align:right}\ntable.mem th{background:#f1f5f9;font-weight:800;text-align:center;font-size:9px;text-transform:uppercase}\ntable.mem td:first-child{text-align:center;font-weight:600}\ntable.mem tr:nth-child(even){background:#f8fafc}\ntable.mem tr.cap{background:#dbeafe !important;font-weight:700}\n.assinatura{text-align:center;margin-top:30px;padding-top:10px}\n.assinatura .linha{width:300px;border-top:1px solid #1a1a1a;margin:0 auto 6px;padding-top:6px}\n.assinatura .nome{font-weight:bold;font-size:13px}\n.assinatura .oab{font-size:11px;color:#555}\n@media print{body{background:#fff;padding:0}.paper{box-shadow:none;border-radius:0}}\n@media(max-width:700px){.quad{grid-template-columns:1fr}}\n</style>\n</head>\n<body>\n<div class=\"paper\">" + $("parecer").innerHTML + "</div>\n</body>\n</html>";
+  navigator.clipboard.writeText(fullHtml).then(function(){ alert("HTML completo copiado! Cole no Playground ou em qualquer editor."); });
+});
+
+$("btnCompartilhar").addEventListener("click", function(){
+  if(!CALC_RESULT) return alert("Calcule primeiro.");
+  var html = $("parecer").innerHTML;
+  var processo = $("numProcesso").value;
+  ov(true, "Gerando link...");
+  fetch("/api/share/parecer", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    credentials: "same-origin",
+    body: JSON.stringify({ html: html, processo: processo })
+  })
+  .then(function(r){ if(!r.ok) throw new Error("Erro"); return r.json(); })
+  .then(function(data){
+    $("linkInput").value = data.url;
+    $("linkCompartilhado").style.display = "block";
+    ov(false);
+  })
+  .catch(function(e){ alert("Erro ao gerar link: "+e.message); ov(false); });
+});
+
+$("btnCopyLink").addEventListener("click", function(){
+  var link = $("linkInput").value;
+  navigator.clipboard.writeText(link).then(function(){ alert("Link copiado! Envie para o juiz."); });
+});
+
+$("btnExportWord").addEventListener("click", function(){
+  if(!CALC_RESULT) return alert("Calcule primeiro.");
+  var html = $("parecer").innerHTML;
+
+  ov(true, "Gerando documento Word...");
+  fetch("/api/export/word", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ html: html, filename: "Auditoria_Financeira_"+($("numProcesso").value||"parecer").replace(/[^a-zA-Z0-9]/g,"_") })
+  })
+  .then(function(r){
+    if(!r.ok) throw new Error("Erro ao exportar");
+    return r.blob();
+  })
+  .then(function(blob){
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "Auditoria_Financeira.docx";
+    a.click();
+    ov(false);
+  })
+  .catch(function(e){ alert("Erro: "+e.message); ov(false); });
+});
+
+try {
+  var saved = localStorage.getItem("auditoria_dados");
+  if(saved){
+    var d = JSON.parse(saved);
+    if(d.processo) $("numProcesso").value = d.processo;
+    if(d.cliente) $("nomeCliente").value = d.cliente;
+    if(d.advogado) $("nomeAdv").value = d.advogado;
+    if(d.oab) $("oab").value = d.oab;
+    if(d.criterios) $("criteriosTexto").value = d.criterios;
+    if(d.fontes) $("fontesTexto").value = d.fontes;
+  }
+} catch(e){}
+
+function salvarDados(){
+  try {
+    localStorage.setItem("auditoria_dados", JSON.stringify({
+      processo: $("numProcesso").value,
+      cliente: $("nomeCliente").value,
+      advogado: $("nomeAdv").value,
+      oab: $("oab").value,
+      criterios: $("criteriosTexto").value,
+      fontes: $("fontesTexto").value
+    }));
+  } catch(e){}
+}
+$("numProcesso").addEventListener("change", salvarDados);
+$("nomeCliente").addEventListener("change", salvarDados);
+$("nomeAdv").addEventListener("change", salvarDados);
+$("oab").addEventListener("change", salvarDados);
+$("criteriosTexto").addEventListener("change", salvarDados);
+$("fontesTexto").addEventListener("change", salvarDados);
+</script>
+</body>
+</html>

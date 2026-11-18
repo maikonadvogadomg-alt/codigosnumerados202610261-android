@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leitor de Memória</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #e0e0e0; font-family: sans-serif; padding: 16px; }
+
+  h1 { text-align: center; color: #7c9fff; margin-bottom: 4px; font-size: 1.2rem; }
+  .subtitulo { text-align: center; color: #555; font-size: 0.8rem; margin-bottom: 20px; }
+
+  .area-input {
+    max-width: 860px;
+    margin: 0 auto 16px;
+    background: #1a1d27;
+    border: 1px solid #2a2d3e;
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .area-input label {
+    display: block;
+    color: #888;
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-radius: 6px;
+    color: #c8f0a0;
+    padding: 10px;
+    font-size: 0.78rem;
+    font-family: monospace;
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .acoes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 860px;
+    margin: 0 auto 20px;
+  }
+
+  .btn {
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    flex: 1;
+    min-width: 180px;
+    max-width: 260px;
+    border: none;
+  }
+  .btn-azul  { background: #7c9fff; color: #0f1117; }
+  .btn-azul:hover { background: #a0b8ff; }
+  .btn-verde { background: transparent; color: #7fff7f; border: 1px solid #7fff7f; }
+  .btn-verde:hover { background: #7fff7f; color: #0f1117; }
+  .btn-vermelho { background: transparent; color: #ff7c7c; border: 1px solid #ff7c7c; }
+  .btn-vermelho:hover { background: #ff7c7c; color: #0f1117; }
+
+  .info-projeto {
+    max-width: 860px;
+    margin: 0 auto 16px;
+    background: #1a1d27;
+    border: 1px solid #7c9fff;
+    border-radius: 10px;
+    padding: 14px;
+    display: none;
+    font-size: 0.83rem;
+  }
+
+  .info-linha { margin-bottom: 4px; }
+  .info-label { color: #7c9fff; margin-right: 6px; }
+
+  .historico {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mensagem {
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .mensagem.user {
+    background: #1a2a1a;
+    border: 1px solid #3a5a3a;
+    border-left: 4px solid #7fff7f;
+  }
+
+  .mensagem.assistant {
+    background: #1a1d2e;
+    border: 1px solid #2a2d4e;
+    border-left: 4px solid #7c9fff;
+  }
+
+  .msg-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .msg-autor {
+    font-weight: bold;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .msg-autor.user      { color: #7fff7f; }
+  .msg-autor.assistant { color: #7c9fff; }
+
+  .msg-num {
+    background: #2a2d3e;
+    color: #888;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 0.72rem;
+  }
+
+  .btn-copiar {
+    background: #2a2d3e;
+    color: #888;
+    border: 1px solid #3a3d4e;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+  .btn-copiar:hover { background: #7c9fff; color: #0f1117; border-color: #7c9fff; }
+  .btn-copiar.copiado { background: #7fff7f; color: #0f1117; border-color: #7fff7f; }
+
+  .msg-texto {
+    color: #d0d0d0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .msg-texto strong { color: #fff; }
+  .msg-texto code {
+    background: #0a0c12;
+    color: #c8f0a0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.82rem;
+  }
+
+  .bloco-codigo {
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-radius: 6px;
+    padding: 10px;
+    margin: 8px 0;
+    font-family: monospace;
+    font-size: 0.78rem;
+    color: #c8f0a0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .separador {
+    text-align: center;
+    color: #333;
+    font-size: 0.75rem;
+    margin: 4px 0;
+  }
+
+  .rodape {
+    max-width: 860px;
+    margin: 20px auto 0;
+    text-align: center;
+    color: #444;
+    font-size: 0.75rem;
+    padding-bottom: 30px;
+  }
+
+  .msg-vazia {
+    max-width: 860px;
+    margin: 0 auto;
+    text-align: center;
+    color: #555;
+    font-size: 0.85rem;
+    padding: 30px;
+  }
+</style>
+</head>
+<body>
+
+<h1>📖 Leitor de Memória</h1>
+<p class="subtitulo">Cole o JSON de backup e veja o histórico de forma legível</p>
+
+<div class="area-input">
+  <label>Cole o JSON de memória aqui:</label>
+  <textarea id="jsonInput" placeholder='Cole aqui o conteúdo do arquivo .json de memória...'></textarea>
+</div>
+
+<div class="acoes">
+  <button class="btn btn-azul"     onclick="lerMemoria()">📖 Ler Memória</button>
+  <button class="btn btn-verde"    onclick="copiarTudo()">📋 Copiar Tudo</button>
+  <button class="btn btn-vermelho" onclick="limpar()">🗑️ Limpar</button>
+</div>
+
+<div class="info-projeto" id="infoprojeto"></div>
+<div class="historico"    id="historico">
+  <div class="msg-vazia">Cole o JSON acima e clique em Ler Memória</div>
+</div>
+
+<div class="rodape" id="rodape"></div>
+
+<script>
+// ============================================================
+// FORMATAR TEXTO COM MARKDOWN BÁSICO
+// ============================================================
+function formatarTexto(texto) {
+  if (!texto) return '';
+
+  // Blocos de código ```
+  texto = texto.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+    return `<div class="bloco-codigo">${escHtml(code.trim())}</div>`;
+  });
+
+  // Negrito **texto**
+  texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Código inline `texto`
+  texto = texto.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Títulos ### ## #
+  texto = texto.replace(/^### (.+)$/gm, '<strong style="color:#ffcc44;font-size:0.9rem">$1</strong>');
+  texto = texto.replace(/^## (.+)$/gm,  '<strong style="color:#7c9fff;font-size:0.95rem">$1</strong>');
+  texto = texto.replace(/^# (.+)$/gm,   '<strong style="color:#a0b8ff;font-size:1rem">$1</strong>');
+
+  // Listas - item
+  texto = texto.replace(/^[\-\*] (.+)$/gm, '&nbsp;&nbsp;• $1');
+
+  // Listas numeradas 1. item
+  texto = texto.replace(/^\d+\. (.+)$/gm, '&nbsp;&nbsp;$1');
+
+  return texto;
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ============================================================
+// LER MEMÓRIA
+// ============================================================
+function lerMemoria() {
+  const raw = document.getElementById('jsonInput').value.trim();
+  if (!raw) {
+    alert('Cole o JSON antes de continuar.');
+    return;
+  }
+
+  let dados;
+  try {
+    dados = JSON.parse(raw);
+  } catch(e) {
+    alert('JSON inválido. Verifique se copiou o arquivo completo.\n\nErro: ' + e.message);
+    return;
+  }
+
+  // Info do projeto
+  const info = document.getElementById('infoproject') || document.getElementById('infoproject');
+  const infoPainel = document.getElementById('infoproject') || document.getElementById('infoproject');
+
+  const infoEl = document.getElementById('infoproject') 
+    ? document.getElementById('infoproject') 
+    : document.getElementById('infoproject');
+
+  // usa o id correto
+  const infoDiv = document.getElementById('infoproject') || document.getElementById('infoproject');
+
+  const infoProjeto = document.getElementById('infoproject') 
+                   || document.getElementById('infoproject');
+
+  // Correto:
+  const elInfo = document.getElementById('infoproject') 
+              || document.querySelector('.info-projeto');
+
+  const painelInfo = document.querySelector('.info-projeto');
+  painelInfo.style.display = 'block';
+
+  const criado = dados.criado 
+    ? new Date(dados.criado).toLocaleString('pt-BR') 
+    : 'Não informado';
+
+  const total = (dados.historico || []).length;
+  const msgs  = Math.floor(total / 2);
+
+  painelInfo.innerHTML = `
+    <div class="info-linha"><span class="info-label">📁 Projeto:</span>${dados.projeto || 'Sem nome'}</div>
+    <div class="info-linha"><span class="info-label">📅 Criado:</span>${criado}</div>
+    <div class="info-linha"><span class="info-label">💬 Mensagens:</span>${msgs} trocas (${total} entradas)</div>
+    <div class="info-linha"><span class="info-label">🔖 Versão:</span>${dados.versao || '1'}</div>
+    ${dados.diario ? `<div class="info-linha"><span class="info-label">📓 Diário:</span>${dados.diario}</div>` : ''}
+  `;
+
+  // Histórico
+  const historico = dados.historico || [];
+  const container = document.getElementById('historico');
+  container.innerHTML = '';
+
+  if (!historico.length) {
+    container.innerHTML = '<div class="msg-vazia">Nenhuma mensagem encontrada neste arquivo.</div>';
+    return;
+  }
+
+  historico.forEach((msg, i) => {
+    const isUser = msg.role === 'user';
+    const num    = i + 1;
+
+    const div = document.createElement('div');
+    div.className = `mensagem ${isUser ? 'user' : 'assistant'}`;
+    div.id = `msg-${num}`;
+
+    const autorLabel = isUser ? '🧑 Você' : '🤖 IA';
+    const autorClass = isUser ? 'user' : 'assistant';
+
+    div.innerHTML = `
+      <div class="msg-header">
+        <span class="msg-autor ${autorClass}">
+          ${autorLabel}
+          <span class="msg-num">#${num}</span>
+        </span>
+        <button class="btn-copiar" onclick="copiarMensagem(${i}, this)">
+          📋 Copiar esta mensagem
+        </button>
+      </div>
+      <div class="msg-texto">${formatarTexto(msg.content || '')}</div>
+    `;
+
+    container.appendChild(div);
+
+    // Separador entre trocas
+    if (isUser && i < historico.length - 1) {
+      const sep = document.createElement('div');
+      sep.className = 'separador';
+      sep.textContent = '─────────────────────';
+      container.appendChild(sep);
+    }
+  });
+
+  // Rodapé
+  document.getElementById('rodape').textContent = 
+    `Total: ${total} mensagens lidas — ${msgs} trocas completas`;
+
+  // Scroll para o histórico
+  container.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+// COPIAR MENSAGEM INDIVIDUAL
+// ============================================================
+function copiarMensagem(index, btn) {
+  let dados;
+  try { dados = JSON.parse(document.getElementById('jsonInput').value); }
+  catch(e) { return; }
+
+  const msg = dados.historico[index];
+  if (!msg) return;
+
+  const autor = msg.role === 'user' ? 'VOCÊ' : 'IA';
+  const texto = `[${autor} - mensagem #${index+1}]\n${msg.content}`;
+
+  navigator.clipboard.writeText(texto).then(() => {
+    btn.textContent = '✅ Copiado!';
+    btn.classList.add('copiado');
+    setTimeout(() => {
+      btn.textContent = '📋 Copiar esta mensagem';
+      btn.classList.remove('copiado');
+    }, 2500);
+  });
+}
+
+// ============================================================
+// COPIAR TUDO
+// ============================================================
+function copiarTudo() {
+  let dados;
+  try { dados = JSON.parse(document.getElementById('jsonInput').value); }
+  catch(e) { alert('Leia a memória primeiro.'); return; }
+
+  const historico = dados.historico || [];
+  if (!historico.length) { alert('Nenhuma mensagem para copiar.'); return; }
+
+  let texto = `HISTÓRICO COMPLETO — ${dados.projeto || 'Sem nome'}\n`;
+  texto += `Criado: ${dados.criado ? new Date(dados.criado).toLocaleString('pt-BR') : 'N/A'}\n`;
+  texto += `${'='.repeat(60)}\n\n`;
+
+  historico.forEach((msg, i) => {
+    const autor = msg.role === 'user' ? '🧑 VOCÊ' : '🤖 IA';
+    texto += `${autor} [#${i+1}]\n${msg.content}\n\n${'─'.repeat(40)}\n\n`;
+  });
+
+  navigator.clipboard.writeText(texto).then(() => {
+    alert('✅ Histórico completo copiado!');
+  });
+}
+
+// ============================================================
+// LIMPAR
+// ============================================================
+function limpar() {
+  document.getElementById('jsonInput').value = '';
+  document.querySelector('.info-projeto').style.display = 'none';
+  document.getElementById('historico').innerHTML =
+    '<div class="msg-vazia">Cole o JSON acima e clique em Ler Memória</div>';
+  document.getElementById('rodape').textContent = '';
+}
+</script>
+</body>
+</html>

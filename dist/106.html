@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor com Busca - Dr. Maikon</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #1e1e1e; color: #d4d4d4; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    
+    /* Barra de Ferramentas */
+    .toolbar { background-color: #2d2d2d; padding: 10px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #404040; flex-wrap: wrap; }
+    button { background-color: #0e639c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+    button:hover { background-color: #1177bb; }
+    button.danger { background-color: #d16969; }
+    button.danger:hover { background-color: #c74e4e; }
+    
+    /* Área de Busca */
+    .search-area { display: flex; gap: 5px; align-items: center; margin-left: auto; background: #3c3c3c; padding: 5px; border-radius: 4px; }
+    input[type="text"] { background-color: #1e1e1e; color: #d4d4d4; border: 1px solid #555; padding: 6px 10px; border-radius: 3px; font-size: 13px; outline: none; }
+    input[type="text"]:focus { border-color: #0e639c; }
+    
+    /* Área do Editor */
+    .editor-container { flex: 1; display: flex; position: relative; }
+    textarea { flex: 1; background-color: #1e1e1e; color: #d4d4d4; border: none; padding: 15px; font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; line-height: 1.5; resize: none; outline: none; white-space: pre; overflow: auto; }
+    
+    /* Status */
+    .status-bar { background-color: #007acc; color: white; padding: 5px 15px; font-size: 12px; display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <button onclick="document.getElementById('fileInput').click()">📂 Abrir Arquivo</button>
+    <input type="file" id="fileInput" style="display: none;" onchange="abrirArquivo(event)">
+    <button onclick="salvarArquivo()">💾 Salvar Como...</button>
+    
+    <div class="search-area">
+      <input type="text" id="searchInput" placeholder="Buscar palavra..." onkeydown="if(event.key === 'Enter') buscarProximo()">
+      <button onclick="buscarProximo()">🔍 Buscar</button>
+      <input type="text" id="replaceInput" placeholder="Substituir por...">
+      <button class="danger" onclick="substituir()">✏️ Substituir</button>
+    </div>
+  </div>
+
+  <div class="editor-container">
+    <textarea id="editor" spellcheck="false" placeholder="Abra um arquivo ou cole seu código aqui..."></textarea>
+  </div>
+
+  <div class="status-bar">
+    <span id="statusMsg">Pronto.</span>
+    <span id="fileInfo">Nenhum arquivo aberto</span>
+  </div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const searchInput = document.getElementById('searchInput');
+    const replaceInput = document.getElementById('replaceInput');
+    const statusMsg = document.getElementById('statusMsg');
+    const fileInfo = document.getElementById('fileInfo');
+    
+    let nomeArquivoAtual = 'codigo_corrigido.txt';
+    let ultimaPosicaoBusca = 0;
+    let ultimoTermo = '';
+
+    // Função para Abrir Arquivo
+    function abrirArquivo(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        editor.value = e.target.result;
+        nomeArquivoAtual = file.name;
+        fileInfo.textContent = `Arquivo: ${nomeArquivoAtual}`;
+        statusMsg.textContent = 'Arquivo carregado com sucesso!';
+        ultimaPosicaoBusca = 0;
+      };
+      reader.readAsText(file);
+      event.target.value = ''; // Reseta o input
+    }
+
+    // Função para Salvar Arquivo
+    function salvarArquivo() {
+      const conteudo = editor.value;
+      const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = nomeArquivoAtual;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      statusMsg.textContent = 'Arquivo salvo!';
+    }
+
+    // Função para Buscar no Texto (O que você pediu!)
+    function buscarProximo() {
+      const termo = searchInput.value;
+      if (!termo) {
+        statusMsg.textContent = 'Digite algo para buscar.';
+        return;
+      }
+
+      const texto = editor.value;
+      
+      // Se mudou a palavra, recomeça do zero
+      if (termo !== ultimoTermo) {
+        ultimaPosicaoBusca = 0;
+        ultimoTermo = termo;
+      }
+
+      // Procura a palavra a partir da última posição
+      const index = texto.indexOf(termo, ultimaPosicaoBusca);
+
+      if (index !== -1) {
+        // Encontrou!
+        editor.focus();
+        editor.setSelectionRange(index, index + termo.length);
+        
+        // Calcula a rolagem para a palavra aparecer na tela
+        const textBefore = texto.substring(0, index);
+        const linesBefore = textBefore.split('\n').length;
+        const lineHeight = 21; // Altura aproximada da linha
+        editor.scrollTop = (linesBefore * lineHeight) - (editor.clientHeight / 2);
+        
+        ultimaPosicaoBusca = index + termo.length;
+        statusMsg.textContent = `Encontrado na linha ${linesBefore}`;
+      } else {
+        // Não encontrou mais, volta pro começo
+        statusMsg.textContent = 'Fim do documento. Voltando ao início...';
+        ultimaPosicaoBusca = 0;
+        if (texto.includes(termo)) {
+          buscarProximo(); // Tenta de novo do zero
+        } else {
+          statusMsg.textContent = 'Palavra não encontrada no código.';
+        }
+      }
+    }
+
+    // Função para Substituir a palavra selecionada
+    function substituir() {
+      const termo = searchInput.value;
+      const novoTermo = replaceInput.value;
+      
+      if (!termo) return;
+
+      const inicioSelecao = editor.selectionStart;
+      const fimSelecao = editor.selectionEnd;
+      const textoSelecionado = editor.value.substring(inicioSelecao, fimSelecao);
+
+      // Só substitui se a palavra atual selecionada for igual à da busca
+      if (textoSelecionado === termo) {
+        const texto = editor.value;
+        editor.value = texto.substring(0, inicioSelecao) + novoTermo + texto.substring(fimSelecao);
+        
+        // Ajusta a posição para a próxima busca
+        ultimaPosicaoBusca = inicioSelecao + novoTermo.length;
+        statusMsg.textContent = 'Substituído com sucesso!';
+        
+        // Já busca o próximo automaticamente
+        buscarProximo();
+      } else {
+        // Se não estiver selecionado, busca primeiro
+        buscarProximo();
+      }
+    }
+  </script>
+</body>
+</html>

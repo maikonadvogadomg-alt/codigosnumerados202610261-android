@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Confronto de Remunerações (CNIS/RAIS/CTC)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.2.2/docx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';</script>
+    <style>
+        /* Estilo para divergência na tabela */
+        .divergence-row {
+            background-color: #fce7e7; /* Vermelho claro */
+        }
+        .divergence-cell {
+            color: #b91c1c; /* Vermelho escuro */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 h-screen flex flex-col overflow-hidden">
+  
+    <header class="bg-indigo-900 text-white p-4 shadow-lg flex justify-between items-center z-10">  
+        <h1 class="text-xl font-bold"><i class="fas fa-balance-scale"></i> Painel de Confronto de Remunerações</h1>  
+        <div class="space-x-2 flex items-center">
+            
+            <select id="sourceSelect" class="bg-indigo-800 text-white p-2 rounded font-bold transition">
+                <option value="">-- Selecione a Fonte do PDF --</option>
+                <option value="RAIS">RAIS/eSocial</option>
+                <option value="CNIS">CNIS</option>
+                <option value="CARTA">Carta de Concessão</option>
+                <option value="CTC">CTC (Tempo Contrib.)</option>
+                <option value="DTC">DTC (Declaração)</option>
+            </select>
+
+            <button id="btnAbrir" onclick="document.getElementById('fileInput').click()" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded font-bold transition">  
+                <i class="fas fa-folder-open"></i> Abrir PDFs
+            </button>  
+            <button onclick="exportarExcel()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold transition">  
+                <i class="fas fa-file-excel"></i> Exportar Confronto (Excel)
+            </button>
+            <button onclick="exportarJSON()" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">  
+            <i class="fas fa-file-code"></i> JSON
+             <button onclick="exportarPDF()" class="bg-red-600 px-4 py-2 rounded">PDF</button>
+             <button onclick="exportarWord()" class="bg-purple-600 px-4 py-2 rounded">Word</button>
+            <button onclick="exportarJSON()" class="bg-gray-600 px-4 py-2 rounded">JSON</button>
+            </button>
+        </div>
+        <input type="file" id="fileInput" multiple accept="application/pdf" class="hidden">  
+    </header>
+  
+    <div class="flex flex-1 overflow-hidden">  
+          
+        <aside class="w-1/4 bg-white border-r border-gray-200 flex flex-col">  
+            <div class="p-4 bg-gray-50 border-b">  
+                <h2 class="font-bold text-gray-700 mb-2">Variáveis de Extração</h2>  
+                <p class="text-xs text-gray-500 mb-2">Este painel usa variáveis fixas para o confronto.</p> 
+                <ul class="text-xs text-gray-600 space-y-1">
+                    <li><i class="fas fa-check text-green-500"></i> **Competência** (`\d{2}/\d{4}`) - Chave principal.</li>
+                    <li><i class="fas fa-check text-green-500"></i> **Valor** (`[\d\.,]+`) - Valor associado.</li>
+                    <li><i class="fas fa-info-circle text-blue-500"></i> **Regex de Valor (Padrão):** `\s*([\d\.,]+)`</li>
+                </ul>
+            </div>  
+  
+            <div class="flex-1 overflow-y-auto p-4 space-y-2">  
+                <h3 class="font-bold text-gray-700">Arquivos Carregados</h3>
+                <div id="listaArquivos" class="text-sm space-y-1">
+                    <p class="text-gray-500 italic">Nenhum arquivo carregado.</p>
+                </div>
+            </div>  
+              
+            <div class="p-4 border-t bg-gray-50">  
+                <button onclick="reprocessar()" class="w-full bg-indigo-100 text-indigo-700 font-bold py-2 rounded hover:bg-indigo-200">  
+                    <i class="fas fa-sync"></i> Recalcular Confronto
+                </button>  
+            </div>  
+        </aside>  
+  
+        <main class="w-3/4 flex flex-col">  
+              
+            <div class="h-1/2 overflow-auto p-4 border-b border-gray-200 bg-white">  
+                <h3 class="font-bold text-gray-700 mb-2 sticky top-0 bg-white z-10">Tabela de Confronto de Remunerações</h3>  
+                <table class="w-full text-sm text-left border-collapse">  
+                    <thead class="bg-gray-100 text-gray-600 sticky top-6 z-10" id="tabelaHeader">  
+                        <tr>
+                            <th class="p-2 border bg-gray-200 text-indigo-800">Competência</th>
+                            <th class="p-2 border bg-gray-200 text-indigo-800">RAIS</th>
+                            <th class="p-2 border bg-gray-200 text-indigo-800">CNIS</th>
+                            <th class="p-2 border bg-gray-200 text-indigo-800">Carta INSS</th>
+                            <th class="p-2 border bg-gray-200 text-indigo-800">CTC/DTC</th>
+                            <th class="p-2 border bg-gray-200 text-indigo-800">Divergência (RAIS - Outras)</th>
+                        </tr> 
+                    </thead>  
+                    <tbody id="tabelaBody">  
+                        <tr class="bg-gray-50"><td class="p-4 text-gray-400 italic" colspan="6">Carregue um PDF e selecione a fonte para começar...</td></tr>  
+                    </tbody>  
+                </table>  
+            </div>  
+  
+            <div class="h-1/2 flex flex-col bg-gray-800 text-green-400 font-mono text-xs p-4 overflow-hidden">  
+                <div class="flex justify-between items-center mb-2">  
+                    <span class="font-bold"><i class="fas fa-terminal"></i> Inspetor de Texto Bruto (Para conferência do Regex)</span>  
+                    <select id="seletorArquivoTexto" class="bg-gray-700 text-white border border-gray-600 rounded p-1" onchange="mostrarTextoBruto()">  
+                        <option>Nenhum arquivo</option>  
+                    </select>  
+                </div>  
+                <textarea id="textoBrutoArea" class="flex-1 w-full bg-gray-900 border border-gray-700 p-4 resize-none focus:outline-none rounded" readonly spellcheck="false">Aqui aparecerá o texto extraído do PDF. Use este texto para conferir se as competências e valores estão visíveis.</textarea>  
+            </div>  
+        </main>  
+    </div>  
+  
+    <script>  
+        // Variáveis globais  
+        let ARQUIVOS_CACHE = []; // Guarda {nome: "x.pdf", texto: "...", source: "RAIS"}  
+        const FORMATTER = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        // Regex fixas
+        const REGEX_COMPETENCIA = "(\\d{2}/\\d{4})";
+        // Regex flexível de valor: captura o número com vírgula, ignorando "R$" e pontos de milhar (se houver)
+        const REGEX_VALOR = "\\s*([\\d\\.,]+)"; 
+
+        // ====================================================================  
+        // 1. FUNÇÕES AUXILIARES DE EXTRAÇÃO E FORMATO
+        // ====================================================================  
+        
+        function moedaParaNumero(str) {
+            if (!str) return 0;
+            // Remove "R$", espaços, pontos de milhar e troca vírgula por ponto.
+            // O regex ajustado para o valor já facilita isso na extração.
+            return parseFloat(String(str).replace(/r?\$\s*/gi, '').replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        // Extrai TODAS as ocorrências de uma regex
+        function extrairTodasOcorrencias(texto, regexString) {
+            try {
+                const regex = new RegExp(regexString, "gi"); // Global e Case-Insensitive
+                let matches = [...texto.matchAll(regex)]; 
+                // Retorna o primeiro grupo de captura (ou o match completo se não houver grupo)
+                return matches.map(match => match[1] || match[0]); 
+            } catch(e) {
+                console.error("Erro em extrairTodasOcorrencias:", e, "para", regexString);
+                return [];
+            }
+        }
+          
+        // ====================================================================  
+        // 2. PROCESSAMENTO PRINCIPAL (CONFRONTO/PIVOTAGEM)  
+        // ====================================================================  
+        function reprocessar() {  
+            const tbody = document.getElementById('tabelaBody');  
+            let consolidatedMap = {}; // Estrutura: [Competência] -> {RAIS: 0, CNIS: 0, ...}
+            
+            // 1. Coletar e Pivotar Dados de Todos os Arquivos
+            ARQUIVOS_CACHE.forEach(arq => {  
+                
+                // a. Extrai todas as competências e todos os valores
+                const competencias = extrairTodasOcorrencias(arq.texto, REGEX_COMPETENCIA);
+                const valores = extrairTodasOcorrencias(arq.texto, REGEX_VALOR);
+                
+                // b. Associa Competência e Valor por Posição
+                const numRegistros = Math.min(competencias.length, valores.length);
+                const sourceKey = arq.source; // RAIS, CNIS, CARTA, CTC, DTC
+
+                for (let i = 0; i < numRegistros; i++) {
+                    const comp = competencias[i];
+                    const valorNum = moedaParaNumero(valores[i]);
+                    
+                    if (!consolidatedMap[comp]) {
+                        // Inicializa o registro com todos os campos zerados
+                        consolidatedMap[comp] = {
+                            RAIS: 0, CNIS: 0, CARTA: 0, CTC: 0, DTC: 0
+                        };
+                    }
+
+                    // Se a fonte for CNIS, Carta, CTC ou DTC, somamos o valor em uma coluna consolidada "OUTRAS FONTES" para simplificar o cálculo da divergência
+                    // Vamos manter separado para melhor visualização, mas usaremos a soma para o cálculo.
+                    consolidatedMap[comp][sourceKey] = valorNum; 
+                }
+            });  
+            
+            // 2. Montar Linhas Finais e Calcular Divergência
+            let bodyHTML = "";  
+            const competenciasOrdenadas = Object.keys(consolidatedMap).sort();
+            let registrosFinais = [];
+
+            competenciasOrdenadas.forEach(comp => {
+                const data = consolidatedMap[comp];
+                
+                // Valores
+                const rais = data.RAIS || 0;
+                const cnis = data.CNIS || 0;
+                const carta = data.CARTA || 0;
+                const ctc = data.CTC || 0;
+                const dtc = data.DTC || 0;
+                
+                // A soma de todas as "outras" fontes (que não RAIS)
+                const somaOutrasFontes = cnis + carta + ctc + dtc;
+                
+                // Divergência: RAIS - (Soma das Outras Fontes)
+                const diferenca = rais - somaOutrasFontes;
+                
+                // Verifica se há divergência significativa
+                const isDivergent = Math.abs(diferenca) > 0.01;
+                const rowClass = isDivergent ? 'divergence-row' : '';
+                const diffClass = isDivergent ? 'divergence-cell' : 'text-gray-700';
+
+                // Prepara a linha HTML
+                let row = `<tr class="hover:bg-gray-100 ${rowClass}">`;
+                row += `<td class="p-2 border text-xs text-gray-700">${comp}</td>`;
+                row += `<td class="p-2 border text-xs text-gray-700">${FORMATTER.format(rais)}</td>`;
+                row += `<td class="p-2 border text-xs text-gray-700">${FORMATTER.format(cnis)}</td>`;
+                row += `<td class="p-2 border text-xs text-gray-700">${FORMATTER.format(carta)}</td>`;
+                row += `<td class="p-2 border text-xs text-gray-700">${FORMATTER.format(ctc + dtc)}</td>`; // Agrupa CTC e DTC
+                row += `<td class="p-2 border text-xs ${diffClass}">${FORMATTER.format(diferenca)}</td>`;
+                row += '</tr>';
+                bodyHTML += row;
+
+                // Salva para exportação (Excel/JSON)
+                registrosFinais.push({
+                    Competência: comp,
+                    RAIS: FORMATTER.format(rais),
+                    CNIS: FORMATTER.format(cnis),
+                    'Carta INSS': FORMATTER.format(carta),
+                    'CTC/DTC': FORMATTER.format(ctc + dtc),
+                    Divergência: FORMATTER.format(diferenca),
+                    'Soma Outras Fontes': FORMATTER.format(somaOutrasFontes),
+                    Status: isDivergent ? 'Divergência' : 'Conforme'
+                });
+            });
+
+            // Armazena os dados finais para exportação
+            tbody.dataset.finalData = JSON.stringify(registrosFinais); 
+              
+            // 3. Renderizar a Tabela
+            if (bodyHTML.length === 0) {  
+                 bodyHTML = `<tr class="bg-gray-50"><td class="p-4 text-gray-400 italic" colspan="6">Nenhum dado de competência extraído dos arquivos.</td></tr>`;  
+            }  
+            tbody.innerHTML = bodyHTML;  
+        }  
+          
+        // ====================================================================  
+        // 3. CARREGAMENTO E EXTRAÇÃO DE TEXTO DE ARQUIVOS (PDF.js)  
+        // ====================================================================  
+        document.getElementById('fileInput').addEventListener('change', async (e) => {  
+            const files = Array.from(e.target.files);  
+            const source = document.getElementById('sourceSelect').value;
+            
+            if (!source) {
+                alert('ATENÇÃO: Selecione a Fonte do PDF (RAIS, CNIS, etc.) antes de abrir o arquivo.');
+                document.getElementById('fileInput').value = ''; // Limpa o input
+                return;
+            }
+
+            // 1. Feedback visual e desativação de botões  
+            document.getElementById('textoBrutoArea').value = 'Processando arquivos PDF... Aguarde.';  
+            const btnAbrir = document.getElementById('btnAbrir');  
+            btnAbrir.disabled = true;  
+              
+            let index = 0;  
+            let fileListHTML = '';
+
+            for(const file of files){  
+                try {  
+                    const texto = await extrairTextoPDF(file);  
+                    ARQUIVOS_CACHE.push({nome: file.name, texto: texto, source: source});  
+                      
+                    // Adiciona ao inspetor de texto bruto  
+                    const opt = document.createElement('option');  
+                    opt.value = index;  
+                    opt.text = `${source}: ${file.name}`;  
+                    document.getElementById('seletorArquivoTexto').appendChild(opt);  
+                    
+                    fileListHTML += `<div class="flex justify-between text-gray-700"><span><i class="fas fa-file-pdf"></i> ${file.name}</span><span class="font-bold text-indigo-700">[${source}]</span></div>`;
+
+                    index++;  
+  
+                } catch (error) {  
+                    console.error(`[ERRO] Falha ao processar o arquivo: ${file.name}`, error);  
+                }  
+            }  
+              
+            // 2. Reabilitar botões e renderizar
+            btnAbrir.disabled = false;  
+            document.getElementById('listaArquivos').innerHTML = fileListHTML || '<p class="text-gray-500 italic">Nenhum arquivo carregado.</p>';
+              
+            if(ARQUIVOS_CACHE.length > 0) {  
+                document.getElementById('seletorArquivoTexto').selectedIndex = 0;  
+                mostrarTextoBruto();  
+                reprocessar();  
+            } else {  
+                document.getElementById('textoBrutoArea').value = 'Nenhum arquivo PDF válido foi carregado. Tente novamente.';  
+                reprocessar(); 
+            }
+            document.getElementById('fileInput').value = ''; // Limpa o input
+        });  
+          
+        async function extrairTextoPDF(file) {  
+            const buffer = await file.arrayBuffer();  
+            const pdf = await pdfjsLib.getDocument(buffer).promise;  
+            let fullText = "";  
+            for(let i=1; i<=pdf.numPages; i++){  
+                const page = await pdf.getPage(i);  
+                const content = await page.getTextContent();  
+                // Mantém quebra de linha para preservar a estrutura visual de tabelas (crucial para o regex) 
+                fullText += content.items.map(item => item.str).join(" ") + "\n";   
+            }  
+            return fullText;  
+        }  
+  
+        // ====================================================================  
+        // 4. FUNÇÕES DE INTERFACE E EXPORTAÇÃO  
+        // ====================================================================  
+        function mostrarTextoBruto() {  
+            const select = document.getElementById('seletorArquivoTexto');  
+            const idx = select.value;  
+            if(ARQUIVOS_CACHE[idx]) {  
+                document.getElementById('textoBrutoArea').value = ARQUIVOS_CACHE[idx].texto;  
+            } else {  
+                 document.getElementById('textoBrutoArea').value = 'Nenhum arquivo selecionado.';  
+            }  
+        }  
+  
+        function exportarExcel() {  
+            const tbody = document.getElementById('tabelaBody');
+            if (!tbody.dataset.finalData) {
+                return alert("Nada para exportar.");
+            }
+            
+            const data = JSON.parse(tbody.dataset.finalData);
+            
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Confronto Remunerações");
+            
+            XLSX.writeFile(wb, 'Confronto_Remuneracoes_Final.xlsx');  
+        }  
+        
+        function exportarJSON() {  
+            const tbody = document.getElementById('tabelaBody');
+            if (!tbody.dataset.finalData) {
+                return alert("Nada para exportar.");
+            }
+            
+            const dados = tbody.dataset.finalData;
+            const blob = new Blob([dados], {type:"application/json"});  
+            saveAs(blob, "Confronto_Remuneracoes_Final.json");  
+        }  
+        
+        function exportarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Extracao RAIS/CNIS", 10, 10);
+  doc.autoTable({ html: '#tabelaBody' });
+  doc.save("Extracao_RAIS.pdf");
+}
+        function exportarWord() {
+  const { Document, Packer, Paragraph, Table, TableRow, TableCell } = docx;
+  let rows = [];
+  document.querySelectorAll("#tabelaBody tr").forEach(tr => {
+    let cells = [];
+    tr.querySelectorAll("td").forEach(td => {
+      cells.push(new TableCell({children:[new Paragraph(td.innerText)]}));
+    });
+    rows.push(new TableRow({children:cells}));
+  });
+  const doc = new Document({sections:[{children:[new Table({rows})]}]});
+  Packer.toBlob(doc).then(blob => saveAs(blob, "Extracao_RAIS.docx"));
+}
+        document.addEventListener('DOMContentLoaded', reprocessar); // Garante a tabela inicial vazia
+    </script>  
+</body>  
+</html>

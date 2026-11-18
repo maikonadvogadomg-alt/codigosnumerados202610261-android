@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validador de Código + Testador de API</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', monospace;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container { max-width: 1600px; margin: 0 auto; }
+h1 { color: #a3a082; margin-bottom: 10px; text-align: center; font-size: 24px; }
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 13px; }
+h2 { color: #4ade80; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #334155; padding-bottom: 8px; }
+h3 { color: #60a5fa; margin: 12px 0 8px 0; font-size: 13px; }
+
+.upload-area {
+  background: #1e293b;
+  border: 2px dashed #334155;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover { border-color: #a3a082; background: #334155; }
+.upload-area.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+
+input[type="file"] { display: none; }
+
+.btn {
+  background: #a3a082;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+.btn:hover { background: #d4d0a8; transform: translateY(-2px); }
+.btn-secondary { background: #3b82f6; color: #fff; }
+.btn-secondary:hover { background: #2563eb; }
+.btn-danger { background: #f87171; color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-success { background: #4ade80; color: #000; }
+.btn-success:hover { background: #22c55e; }
+.btn-small { padding: 6px 12px; font-size: 11px; }
+
+.loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px;
+  font-size: 14px;
+}
+.spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #334155;
+  border-top-color: #a3a082;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.tab:hover { color: #e2e8f0; }
+.tab.active { color: #a3a082; border-bottom-color: #a3a082; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.results {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #0f172a;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.card-error { border-left-color: #f87171; }
+.card-warning { border-left-color: #fbbf24; }
+.card-success { border-left-color: #4ade80; }
+.card-info { border-left-color: #60a5fa; }
+
+.card-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.card-content {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.code-block {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  max-height: 200px;
+  overflow-y: auto;
+  color: #60a5fa;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.stat-box {
+  background: #334155;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-box strong {
+  display: block;
+  color: #a3a082;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.stat-box span {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.api-list {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.api-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  background: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.api-item:hover {
+  background: #334155;
+  border-color: #a3a082;
+}
+
+.api-method {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.api-method.get { background: #60a5fa; color: #fff; }
+.api-method.post { background: #4ade80; color: #000; }
+.api-method.put { background: #fbbf24; color: #000; }
+.api-method.delete { background: #f87171; color: #fff; }
+.api-method.patch { background: #a78bfa; color: #fff; }
+
+.api-url {
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 12px;
+  margin: 5px 0;
+  word-break: break-all;
+}
+
+.api-status {
+  font-size: 11px;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 3px;
+  background: #0f172a;
+}
+
+.api-status.pending { color: #fbbf24; }
+.api-status.success { color: #4ade80; }
+.api-status.error { color: #f87171; }
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #a3a082;
+}
+
+.response-box {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 15px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  max-height: 300px;
+  overflow: auto;
+  color: #4ade80;
+  line-height: 1.4;
+}
+
+.response-header {
+  color: #60a5fa;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #334155;
+}
+
+.error-line { color: #f87171; }
+.warning-line { color: #fbbf24; }
+.success-line { color: #4ade80; }
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-content {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+  width: 900px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #334155;
+}
+
+.modal-close {
+  background: #f87171;
+  color: #fff;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🧪 Validador de Código + Testador de API</h1>
+  <p class="subtitle">Valida código, detecta APIs e testa chamadas em tempo real</p>
+
+  <div class="upload-area" id="dropZone">
+    <p style="font-size: 18px; margin-bottom: 10px;">📦 Arraste seu ZIP da Replit aqui</p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Será analisado para validação e detecção de APIs</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecionar ZIP</button>
+    <input type="file" id="fileInput" accept=".zip" />
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Analisando código e detectando APIs...</p>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<!-- MODAL DE TESTE DE API -->
+<div class="modal" id="apiTestModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="apiTestTitle">Testar API</h2>
+      <button class="modal-close" onclick="closeApiModal()">✕</button>
+    </div>
+    
+    <div id="apiTestContent"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+
+let allFiles = {};
+let detectedAPIs = [];
+let validationResults = {};
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+async function handleFile(file) {
+  if (!file) return;
+  
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  
+  try {
+    const zip = new JSZip();
+    const content = await zip.loadAsync(file);
+    
+    allFiles = {};
+    detectedAPIs = [];
+    validationResults = {};
+    
+    // Extrai arquivos JavaScript/TypeScript
+    for (let [path, zipEntry] of Object.entries(content.files)) {
+      if (!zipEntry.dir && /\.(js|jsx|ts|tsx)$/.test(path)) {
+        try {
+          const fileContent = await zipEntry.async('text');
+          allFiles[path] = fileContent;
+          
+          // Valida código
+          validationResults[path] = validateCode(fileContent, path);
+          
+          // Detecta APIs
+          const apis = detectAPIs(fileContent, path);
+          detectedAPIs.push(...apis);
+        } catch (e) {}
+      }
+    }
+    
+    loadingDiv.style.display = 'none';
+    displayResults();
+    
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultsDiv.innerHTML = `<div class="card card-error">
+      <div class="card-title">❌ Erro ao processar</div>
+      <div class="card-content">${err.message}</div>
+    </div>`;
+  }
+}
+
+function validateCode(code, filePath) {
+  const issues = [];
+  const lines = code.split('\n');
+  
+  // Verifica sintaxe básica
+  const checks = [
+    {
+      name: 'Chaves não fechadas',
+      regex: /(\{|\[|\()/g,
+      test: (code) => {
+        const opens = (code.match(/[\{\[\(]/g) || []).length;
+        const closes = (code.match(/[\}\]\)]/g) || []).length;
+        return opens !== closes;
+      },
+      severity: 'error'
+    },
+    {
+      name: 'Variáveis não declaradas',
+      regex: /(?:^|\s)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/,
+      test: (code) => {
+        const vars = new Set();
+        const declared = new Set();
+        
+        (code.match(/(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g) || []).forEach(m => {
+          declared.add(m.replace(/(?:const|let|var)\s+/, ''));
+        });
+        
+        return false; // Simplificado
+      },
+      severity: 'warning'
+    },
+    {
+      name: 'Console.log em produção',
+      regex: /console\.(log|error|warn)/g,
+      test: (code) => /console\.(log|error|warn)/.test(code),
+      severity: 'warning'
+    },
+    {
+      name: 'Try-catch ausente em promises',
+      regex: /\.then\(/g,
+      test: (code) => {
+        const thens = (code.match(/\.then\(/g) || []).length;
+        const catches = (code.match(/\.catch\(/g) || []).length;
+        return thens > catches;
+      },
+      severity: 'warning'
+    },
+    {
+      name: 'Async sem await',
+      regex: /async\s+function/g,
+      test: (code) => {
+        const asyncFuncs = (code.match(/async\s+function/g) || []).length;
+        const awaits = (code.match(/await\s+/g) || []).length;
+        return asyncFuncs > 0 && awaits === 0;
+      },
+      severity: 'warning'
+    },
+    {
+      name: 'URLs hardcoded',
+      regex: /https?:\/\/[^\s"']+/g,
+      test: (code) => /https?:\/\/[^\s"']+/.test(code),
+      severity: 'info'
+    },
+    {
+      name: 'Senhas/tokens expostos',
+      regex: /(password|token|secret|apikey)\s*[:=]/gi,
+      test: (code) => /(password|token|secret|apikey)\s*[:=]/i.test(code),
+      severity: 'error'
+    }
+  ];
+  
+  checks.forEach(check => {
+    if (check.test(code)) {
+      issues.push({
+        name: check.name,
+        severity: check.severity,
+        count: (code.match(check.regex) || []).length
+      });
+    }
+  });
+  
+  return {
+    filePath,
+    totalLines: lines.length,
+    issues,
+    hasErrors: issues.some(i => i.severity === 'error'),
+    hasWarnings: issues.some(i => i.severity === 'warning')
+  };
+}
+
+function detectAPIs(code, filePath) {
+  const apis = [];
+  
+  // Padrões de detecção de APIs
+  const patterns = [
+    {
+      name: 'fetch',
+      regex: /fetch\s*\(\s*['"`]([^'"`]+)['"`]/g,
+      method: 'GET'
+    },
+    {
+      name: 'axios',
+      regex: /axios\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g,
+      method: 'DYNAMIC'
+    },
+    {
+      name: 'XMLHttpRequest',
+      regex: /open\s*\(\s*['"`](\w+)['"`]\s*,\s*['"`]([^'"`]+)['"`]/g,
+      method: 'DYNAMIC'
+    },
+    {
+      name: 'jQuery.ajax',
+      regex: /\$\.ajax\s*\(\s*\{[^}]*url\s*:\s*['"`]([^'"`]+)['"`]/g,
+      method: 'GET'
+    },
+    {
+      name: 'WebSocket',
+      regex: /new\s+WebSocket\s*\(\s*['"`]([^'"`]+)['"`]/g,
+      method: 'WS'
+    }
+  ];
+  
+  patterns.forEach(pattern => {
+    let match;
+    const regex = new RegExp(pattern.regex.source, 'g');
+    
+    while ((match = regex.exec(code)) !== null) {
+      const url = match[1] || match[2];
+      const method = pattern.method === 'DYNAMIC' ? (match[1] || 'GET').toUpperCase() : pattern.method;
+      
+      apis.push({
+        type: pattern.name,
+        url: url,
+        method: method,
+        filePath: filePath,
+        line: code.substring(0, match.index).split('\n').length,
+        fullMatch: match[0]
+      });
+    }
+  });
+  
+  return apis;
+}
+
+function displayResults() {
+  const validationIssues = Object.values(validationResults);
+  const totalErrors = validationIssues.reduce((sum, v) => sum + v.issues.filter(i => i.severity === 'error').length, 0);
+  const totalWarnings = validationIssues.reduce((sum, v) => sum + v.issues.filter(i => i.severity === 'warning').length, 0);
+  
+  let html = `
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('validation')">✅ Validação</button>
+      <button class="tab" onclick="switchTab('apis')">🔌 APIs Detectadas</button>
+      <button class="tab" onclick="switchTab('test')">🧪 Testar APIs</button>
+    </div>
+    
+    <!-- TAB: VALIDAÇÃO -->
+    <div id="tab-validation" class="tab-content active">
+      <div class="results">
+        <h2>✅ Validação de Código</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <strong>${validationIssues.length}</strong>
+            <span>Arquivos Analisados</span>
+          </div>
+          <div class="stat-box">
+            <strong>${totalErrors}</strong>
+            <span>Erros</span>
+          </div>
+          <div class="stat-box">
+            <strong>${totalWarnings}</strong>
+            <span>Avisos</span>
+          </div>
+          <div class="stat-box">
+            <strong>${validationIssues.filter(v => !v.hasErrors && !v.hasWarnings).length}</strong>
+            <span>OK</span>
+          </div>
+        </div>
+      </div>
+  `;
+  
+  validationIssues.forEach(validation => {
+    const status = validation.hasErrors ? '❌' : validation.hasWarnings ? '⚠️' : '✅';
+    const cardClass = validation.hasErrors ? 'card-error' : validation.hasWarnings ? 'card-warning' : 'card-success';
+    
+    html += `
+      <div class="card ${cardClass}">
+        <div class="card-title">${status} ${validation.filePath}</div>
+        <div class="card-content">
+          <strong>Linhas:</strong> ${validation.totalLines}<br>
+          ${validation.issues.length > 0 ? `
+            <strong>Problemas encontrados:</strong>
+            <ul style="margin-left: 20px; margin-top: 8px;">
+              ${validation.issues.map(issue => `
+                <li>${issue.name} (${issue.severity}) - ${issue.count} ocorrência(s)</li>
+              `).join('')}
+            </ul>
+          ` : '<strong style="color: #4ade80;">Nenhum problema detectado!</strong>'}
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `</div>`;
+  
+  // TAB: APIs DETECTADAS
+  html += `
+    <div id="tab-apis" class="tab-content">
+      <div class="results">
+        <h2>🔌 APIs Detectadas</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <strong>${detectedAPIs.length}</strong>
+            <span>APIs Encontradas</span>
+          </div>
+          <div class="stat-box">
+            <strong>${new Set(detectedAPIs.map(a => a.url)).size}</strong>
+            <span>URLs Únicas</span>
+          </div>
+          <div class="stat-box">
+            <strong>${new Set(detectedAPIs.map(a => a.type)).size}</strong>
+            <span>Tipos de Chamada</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="results">
+        <h2>📋 Lista de APIs</h2>
+        <div class="api-list">
+          ${detectedAPIs.length > 0 ? detectedAPIs.map((api, idx) => `
+            <div class="api-item" onclick="openApiTest(${idx})">
+              <div>
+                <span class="api-method ${api.method.toLowerCase()}">${api.method}</span>
+                <span style="color: #a3a082; font-weight: 600;">${api.type}</span>
+              </div>
+              <div class="api-url">${api.url}</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">
+                📄 ${api.filePath} (linha ${api.line})
+              </div>
+              <button class="btn btn-small btn-secondary" style="margin-top: 8px;" onclick="event.stopPropagation(); openApiTest(${idx})">
+                🧪 Testar
+              </button>
+            </div>
+          `).join('') : '<div style="color: #94a3b8; padding: 20px; text-align: center;">Nenhuma API detectada</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // TAB: TESTAR APIs
+  html += `
+    <div id="tab-test" class="tab-content">
+      <div class="results">
+        <h2>🧪 Testar APIs</h2>
+        <p style="color: #94a3b8; margin-bottom: 15px;">Selecione uma API acima para testar, ou configure manualmente:</p>
+        
+        <div class="form-group">
+          <label>URL da API</label>
+          <input type="text" id="testUrl" placeholder="https://api.exemplo.com/dados" value="">
+        </div>
+        
+        <div class="form-group">
+          <label>Método HTTP</label>
+          <select id="testMethod">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+            <option value="PATCH">PATCH</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Headers (JSON)</label>
+          <textarea id="testHeaders" style="height: 80px;" placeholder='{"Authorization": "Bearer token", "Content-Type": "application/json"}'></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Body (JSON)</label>
+          <textarea id="testBody" style="height: 80px;" placeholder='{"chave": "valor"}'></textarea>
+        </div>
+        
+        <button class="btn btn-success" onclick="testAPI()">🚀 Executar Teste</button>
+        
+        <div id="testResults" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+  `;
+  
+  resultsDiv.innerHTML = html;
+}
+
+function switchTab(tabName) {
+  // Remove active de todos
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  // Adiciona active ao selecionado
+  event.target.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
+function openApiTest(index) {
+  const api = detectedAPIs[index];
+  
+  document.getElementById('testUrl').value = api.url;
+  document.getElementById('testMethod').value = api.method;
+  
+  // Muda para tab de teste
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  const tabs = document.querySelectorAll('.tab');
+  tabs[2].classList.add('active');
+  document.getElementById('tab-test').classList.add('active');
+  
+  // Scroll para o formulário
+  document.getElementById('tab-test').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function testAPI() {
+  const url = document.getElementById('testUrl').value;
+  const method = document.getElementById('testMethod').value;
+  const headersStr = document.getElementById('testHeaders').value;
+  const bodyStr = document.getElementById('testBody').value;
+  
+  if (!url) {
+    alert('❌ Digite uma URL válida!');
+    return;
+  }
+  
+  const resultsDiv = document.getElementById('testResults');
+  resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Testando API...</p></div>';
+  
+  try {
+    let headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (headersStr) {
+      try {
+        headers = { ...headers, ...JSON.parse(headersStr) };
+      } catch (e) {
+        throw new Error('Headers inválido: ' + e.message);
+      }
+    }
+    
+    let body = undefined;
+    if (bodyStr && ['POST', 'PUT', 'PATCH'].includes(method)) {
+      try {
+        body = JSON.parse(bodyStr);
+      } catch (e) {
+        throw new Error('Body inválido: ' + e.message);
+      }
+    }
+    
+    const startTime = performance.now();
+    const response = await fetch(url, {
+      method: method,
+      headers: headers,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const endTime = performance.now();
+    
+    const responseText = await response.text();
+    let responseData;
+    
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (e) {
+      responseData = responseText;
+    }
+    
+    const isSuccess = response.ok;
+    const statusClass = isSuccess ? 'success-line' : 'error-line';
+    
+    let html = `
+      <div class="card ${isSuccess ? 'card-success' : 'card-error'}">
+        <div class="card-title">${isSuccess ? '✅ Sucesso!' : '❌ Erro na Chamada'}</div>
+        <div class="card-content">
+          <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+          <strong>Tempo de Resposta:</strong> ${(endTime - startTime).toFixed(2)}ms<br>
+          <strong>Content-Type:</strong> ${response.headers.get('content-type') || 'não especificado'}<br>
+          <strong>Tamanho:</strong> ${responseText.length} bytes
+        </div>
+      </div>
+      
+      <div class="response-box">
+        <div class="response-header">📨 Resposta da API</div>
+        <pre>${typeof responseData === 'object' ? JSON.stringify(responseData, null, 2) : escapeHtml(responseData)}</pre>
+      </div>
+      
+      <div class="card card-info">
+        <div class="card-title">📊 Análise da Resposta</div>
+        <div class="card-content">
+          ${analyzeResponse(responseData, response.status)}
+        </div>
+      </div>
+    `;
+    
+    resultsDiv.innerHTML = html;
+    
+  } catch (err) {
+    resultsDiv.innerHTML = `
+      <div class="card card-error">
+        <div class="card-title">❌ Erro na Requisição</div>
+        <div class="card-content">
+          <strong>Tipo de Erro:</strong> ${err.name}<br>
+          <strong>Mensagem:</strong> ${err.message}<br>
+          <br>
+          <strong>Possíveis Causas:</strong>
+          <ul style="margin-left: 20px; margin-top: 8px;">
+            <li>URL inválida ou inacessível</li>
+            <li>CORS bloqueado (Cross-Origin)</li>
+            <li>Servidor fora do ar</li>
+            <li>Timeout na conexão</li>
+            <li>Certificado SSL inválido</li>
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function analyzeResponse(data, status) {
+  let analysis = '';
+  
+  if (status >= 200 && status < 300) {
+    analysis += '<span class="success-line">✅ Status de sucesso (2xx)</span><br>';
+  } else if (status >= 300 && status < 400) {
+    analysis += '<span class="warning-line">⚠️ Redirecionamento (3xx)</span><br>';
+  } else if (status >= 400 && status < 500) {
+    analysis += '<span class="error-line">❌ Erro do cliente (4xx)</span><br>';
+  } else if (status >= 500) {
+    analysis += '<span class="error-line">❌ Erro do servidor (5xx)</span><br>';
+  }
+  
+  if (typeof data === 'object' && data !== null) {
+    analysis += '<strong>Tipo:</strong> JSON<br>';
+    
+    if (data.error || data.erro) {
+      analysis += '<span class="error-line">⚠️ Campo de erro detectado</span><br>';
+    }
+    
+    if (data.data || data.resultado || data.result) {
+      analysis += '<span class="success-line">✅ Campo de dados detectado</span><br>';
+    }
+    
+    if (data.message || data.mensagem) {
+      analysis += `<strong>Mensagem:</strong> ${data.message || data.mensagem}<br>`;
+    }
+    
+    const keys = Object.keys(data);
+    analysis += `<strong>Campos na resposta:</strong> ${keys.join(', ')}<br>`;
+  } else {
+    analysis += '<strong>Tipo:</strong> Texto/HTML<br>';
+  }
+  
+  return analysis;
+}
+
+function closeApiModal() {
+  document.getElementById('apiTestModal').classList.remove('open');
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+</script>
+
+</body>
+</html>

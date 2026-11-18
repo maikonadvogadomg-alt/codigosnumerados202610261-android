@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerenciador de Portas e Projetos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #e0e0e0; font-family: sans-serif; padding: 16px; }
+
+  h1 { text-align: center; color: #7c9fff; margin-bottom: 4px; font-size: 1.2rem; }
+  .sub { text-align: center; color: #555; font-size: 0.8rem; margin-bottom: 20px; }
+
+  .abas {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    max-width: 860px;
+    margin: 0 auto 16px;
+  }
+  .aba {
+    flex: 1;
+    min-width: 130px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1px solid #2a2d3e;
+    background: #1a1d27;
+    color: #888;
+    font-size: 0.78rem;
+    cursor: pointer;
+    text-align: center;
+  }
+  .aba:hover { border-color: #7c9fff; color: #7c9fff; }
+  .aba.ativa { background: #7c9fff; color: #0f1117; font-weight: bold; border-color: #7c9fff; }
+
+  .pag { display: none; max-width: 860px; margin: 0 auto; }
+  .pag.ativa { display: block; }
+
+  .card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3e;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card.verde   { border-left: 4px solid #7fff7f; }
+  .card.azul    { border-left: 4px solid #7c9fff; }
+  .card.amarelo { border-left: 4px solid #ffcc44; }
+  .card.vermelho{ border-left: 4px solid #ff7c7c; }
+  .card.roxo    { border-left: 4px solid #c87cff; }
+
+  .titulo { font-weight: bold; font-size: 0.95rem; margin-bottom: 12px; }
+  p { color: #aaa; font-size: 0.85rem; line-height: 1.6; margin-bottom: 8px; }
+  p:last-child { margin-bottom: 0; }
+
+  .cmd-box {
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .cmd-txt {
+    flex: 1;
+    font-family: monospace;
+    font-size: 0.83rem;
+    color: #c8f0a0;
+    word-break: break-all;
+  }
+  .btn-c {
+    background: #2a2d3e;
+    color: #888;
+    border: 1px solid #3a3d4e;
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-c:hover { background: #7c9fff; color: #0f1117; border-color: #7c9fff; }
+  .btn-c.ok    { background: #7fff7f; color: #0f1117; border-color: #7fff7f; }
+  .cmd-desc { width: 100%; color: #555; font-size: 0.73rem; }
+
+  .label-sec {
+    color: #7c9fff;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 12px 0 4px;
+  }
+
+  .btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    margin-right: 8px;
+    margin-top: 8px;
+  }
+  .btn-azul  { background: #7c9fff; color: #0f1117; }
+  .btn-azul:hover { background: #a0b8ff; }
+  .btn-verde { background: transparent; color: #7fff7f; border: 1px solid #7fff7f; }
+  .btn-verde:hover { background: #7fff7f; color: #0f1117; }
+  .btn-amarelo { background: transparent; color: #ffcc44; border: 1px solid #ffcc44; }
+  .btn-amarelo:hover { background: #ffcc44; color: #0f1117; }
+
+  textarea, input[type="text"], input[type="number"] {
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-radius: 6px;
+    color: #c8f0a0;
+    padding: 8px 12px;
+    font-family: monospace;
+    font-size: 0.83rem;
+    width: 100%;
+    margin-top: 6px;
+  }
+  textarea { resize: vertical; min-height: 120px; }
+  input[type="text"]:focus,
+  input[type="number"]:focus { outline: none; border-color: #7c9fff; }
+
+  .porta-input {
+    width: 120px !important;
+    display: inline-block;
+  }
+
+  .resultado-box {
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-left: 3px solid #ffcc44;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    display: none;
+  }
+  .resultado-box.verde  { border-left-color: #7fff7f; }
+  .resultado-box.azul   { border-left-color: #7c9fff; }
+  .resultado-box.erro   { border-left-color: #ff7c7c; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.73rem;
+    margin: 2px;
+  }
+  .tag-v { background: #002a00; color: #7fff7f; }
+  .tag-a { background: #2a2000; color: #ffcc44; }
+  .tag-r { background: #2a0000; color: #ff7c7c; }
+
+  hr { border: none; border-top: 1px solid #2a2d3e; margin: 12px 0; }
+
+  .destaque { color: #ffcc44; font-weight: bold; }
+  .verde-txt { color: #7fff7f; }
+  .azul-txt  { color: #7c9fff; }
+  .roxo-txt  { color: #c87cff; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media(max-width:600px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .porta-card {
+    background: #0a0c12;
+    border: 1px solid #2a2d3e;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .porta-card:hover { border-color: #7c9fff; }
+  .porta-card.selecionada { border-color: #7fff7f; background: #001a00; }
+  .porta-num { font-size: 1.4rem; font-weight: bold; color: #7c9fff; font-family: monospace; }
+  .porta-nome { color: #888; font-size: 0.75rem; margin-top: 4px; }
+  .porta-uso  { color: #ffcc44; font-size: 0.72rem; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<h1>🔧 Gerenciador de Projetos</h1>
+<p class="sub">Portas, configurações, executáveis e muito mais</p>
+
+<div class="abas">
+  <div class="aba ativa" onclick="ir('portas',this)">🔌 Portas</div>
+  <div class="aba" onclick="ir('config',this)">⚙️ Configurar Projeto</div>
+  <div class="aba" onclick="ir('executavel',this)">📦 Executável</div>
+  <div class="aba" onclick="ir('electron',this)">🖥️ Electron</div>
+</div>
+
+<!-- ==================== PORTAS ==================== -->
+<div class="pag ativa" id="pag-portas">
+
+  <div class="card amarelo">
+    <div class="titulo">⚠️ Problema: "Porta já está sendo usada"</div>
+    <p>Isso acontece quando você abre uma versão do projeto e depois tenta abrir outra. A porta fica presa.</p>
+    <p>Solução: descobrir qual processo está usando a porta e matar ele.</p>
+  </div>
+
+  <div class="card azul">
+    <div class="titulo">🔍 Passo 1 — Descobrir qual processo está na porta</div>
+
+    <div class="label-sec">No computador (Windows):</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netstat -ano | findstr :3000</span>
+      <button class="btn-c" onclick="cp(this,'netstat -ano | findstr :3000')">📋</button>
+      <span class="cmd-desc">Troque 3000 pelo número da sua porta</span>
+    </div>
+
+    <div class="label-sec">No computador (Mac / Linux):</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">lsof -i :3000</span>
+      <button class="btn-c" onclick="cp(this,'lsof -i :3000')">📋</button>
+      <span class="cmd-desc">Mostra qual processo está na porta 3000</span>
+    </div>
+
+    <div class="label-sec">No Termux (celular):</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">lsof -i :3000</span>
+      <button class="btn-c" onclick="cp(this,'lsof -i :3000')">📋</button>
+    </div>
+    <div class="cmd-box">
+      <span class="cmd-txt">ss -tulpn | grep :3000</span>
+      <button class="btn-c" onclick="cp(this,'ss -tulpn | grep :3000')">📋</button>
+    </div>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">🔫 Passo 2 — Matar o processo que está travando</div>
+
+    <div class="label-sec">Windows — depois de pegar o PID do comando acima:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">taskkill /PID 12345 /F</span>
+      <button class="btn-c" onclick="cp(this,'taskkill /PID 12345 /F')">📋</button>
+      <span class="cmd-desc">Troque 12345 pelo número PID que apareceu</span>
+    </div>
+
+    <div class="label-sec">Mac / Linux / Termux:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">kill -9 12345</span>
+      <button class="btn-c" onclick="cp(this,'kill -9 12345')">📋</button>
+      <span class="cmd-desc">Troque 12345 pelo PID que apareceu</span>
+    </div>
+
+    <div class="label-sec">Matar TUDO numa porta de uma vez (Mac/Linux/Termux):</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">fuser -k 3000/tcp</span>
+      <button class="btn-c" onclick="cp(this,'fuser -k 3000/tcp')">📋</button>
+      <span class="cmd-desc">Mata qualquer processo na porta 3000 — mais rápido</span>
+    </div>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">🎯 Gerador de comandos para SUA porta</div>
+    <p>Digite o número da porta que está travada:</p>
+    <input type="number" id="portaNum" class="porta-input" value="3000" min="1000" max="65535"
+      oninput="gerarCmdsPorta()"/>
+    <div id="cmdsPorta" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card azul">
+    <div class="titulo">📋 Portas mais comuns — clique para selecionar</div>
+    <div class="grid2">
+      <div class="porta-card" onclick="selecionarPorta(3000,this)">
+        <div class="porta-num">3000</div>
+        <div class="porta-nome">Node / Express / React</div>
+        <div class="porta-uso">A mais comum</div>
+      </div>
+      <div class="porta-card" onclick="selecionarPorta(5000,this)">
+        <div class="porta-num">5000</div>
+        <div class="porta-nome">Flask / Python</div>
+        <div class="porta-uso">Projetos Python</div>
+      </div>
+      <div class="porta-card" onclick="selecionarPorta(8080,this)">
+        <div class="porta-num">8080</div>
+        <div class="porta-nome">Alternativa HTTP</div>
+        <div class="porta-uso">Quando 3000 está ocupada</div>
+      </div>
+      <div class="porta-card" onclick="selecionarPorta(5173,this)">
+        <div class="porta-num">5173</div>
+        <div class="porta-nome">Vite</div>
+        <div class="porta-uso">Projetos React + Vite</div>
+      </div>
+      <div class="porta-card" onclick="selecionarPorta(4173,this)">
+        <div class="porta-num">4173</div>
+        <div class="porta-nome">Vite Preview</div>
+        <div class="porta-uso">Build do Vite</div>
+      </div>
+      <div class="porta-card" onclick="selecionarPorta(7681,this)">
+        <div class="porta-num">7681</div>
+        <div class="porta-nome">ttyd (Termux)</div>
+        <div class="porta-uso">Ponte do seu projeto</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== CONFIGURAR PROJETO ==================== -->
+<div class="pag" id="pag-config">
+
+  <div class="card azul">
+    <div class="titulo">⚙️ Onde fica a configuração de porta em cada arquivo</div>
+    <p>A porta pode estar em <span class="destaque">vários lugares</span> ao mesmo tempo. Todos precisam bater.</p>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">📄 1. package.json — scripts</div>
+    <p>Os scripts que viram botões no terminal. A porta pode estar escrita aqui:</p>
+    <div class="cmd-box" style="flex-direction:column;align-items:flex-start">
+      <span class="cmd-txt" style="white-space:pre">{
+  "scripts": {
+    "dev":   "vite --port 3000",
+    "start": "node server.js",
+    "build": "vite build"
+  }
+}</span>
+    </div>
+    <p style="margin-top:8px">Se quiser mudar a porta: troque o número depois de <span class="verde-txt">--port</span></p>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">📄 2. vite.config.js — projetos React/Vite</div>
+    <p>Se o projeto usa Vite, a porta fica aqui:</p>
+    <div class="cmd-box" style="flex-direction:column;align-items:flex-start">
+      <span class="cmd-txt" style="white-space:pre">export default {
+  server: {
+    port: 3000,
+    host: '0.0.0.0'
+  }
+}</span>
+      <button class="btn-c" style="margin-top:8px"
+        onclick="cp(this,`export default {\n  server: {\n    port: 3000,\n    host: '0.0.0.0'\n  }\n}`)">📋 Copiar</button>
+    </div>
+    <p style="margin-top:8px"><span class="destaque">host: 0.0.0.0</span> é importante — sem isso às vezes não abre no navegador</p>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">📄 3. server.js / index.js — projetos Node/Express</div>
+    <p>Se o projeto tem um servidor próprio, a porta fica no arquivo principal:</p>
+    <div class="cmd-box" style="flex-direction:column;align-items:flex-start">
+      <span class="cmd-txt" style="white-space:pre">const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});</span>
+      <button class="btn-c" style="margin-top:8px"
+        onclick="cp(this,`const PORT = process.env.PORT || 3000;\napp.listen(PORT, '0.0.0.0', () => {\n  console.log('Servidor rodando na porta ' + PORT);\n});`)">📋 Copiar</button>
+    </div>
+    <p style="margin-top:8px">O <span class="destaque">0.0.0.0</span> faz o servidor aceitar conexões de fora — essencial para funcionar pelo navegador</p>
+  </div>
+
+  <div class="card azul">
+    <div class="titulo">🎯 Gerador de configuração completa</div>
+    <p>Escolha a porta e o tipo de projeto — gero os três arquivos prontos:</p>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0">
+      <div>
+        <div class="label-sec">Porta:</div>
+        <input type="number" id="portaConfig" class="porta-input" value="3000"/>
+      </div>
+      <div style="flex:1;min-width:160px">
+        <div class="label-sec">Tipo de projeto:</div>
+        <select id="tipoProj" style="background:#0a0c12;border:1px solid #2a2d3e;border-radius:6px;color:#c8f0a0;padding:8px 12px;font-size:0.83rem;width:100%;margin-top:6px">
+          <option value="vite">React + Vite</option>
+          <option value="express">Node + Express</option>
+          <option value="next">Next.js</option>
+          <option value="simples">Node simples</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-azul" onclick="gerarConfig()">⚙️ Gerar Configuração</button>
+
+    <div id="resultConfig" style="margin-top:12px"></div>
+  </div>
+
+</div>
+
+<!-- ==================== EXECUTÁVEL ==================== -->
+<div class="pag" id="pag-executavel">
+
+  <div class="card azul">
+    <div class="titulo">📦 Tipos de executável — qual é qual</div>
+  </div>
+
+  <div class="card vermelho">
+    <div class="titulo">❌ O que você não quer — Electron cheio de arquivo</div>
+    <p>O Electron padrão gera uma pasta com <span class="destaque">centenas de arquivos</span>, pesa 150MB+ e precisa de bat/sh para rodar.</p>
+    <p>É horrível mesmo. Você está certo em não gostar.</p>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">✅ O que você quer — executável único pequeno</div>
+    <p>Existem duas formas de fazer isso:</p>
+
+    <div class="label-sec" style="margin-top:10px">Opção 1 — pkg (Node → .exe único)</div>
+    <p>Transforma o projeto Node em um .exe único. Sem pasta, sem bat.</p>
+    <div class="cmd-box">
+      <span class="cmd-txt">npm install -g pkg</span>
+      <button class="btn-c" onclick="cp(this,'npm install -g pkg')">📋</button>
+      <span class="cmd-desc">Instala o pkg globalmente — só precisa fazer uma vez</span>
+    </div>
+    <div class="cmd-box">
+      <span class="cmd-txt">pkg . --targets node18-win-x64 --output meuapp.exe</span>
+      <button class="btn-c" onclick="cp(this,'pkg . --targets node18-win-x64 --output meuapp.exe')">📋</button>
+      <span class="cmd-desc">Gera meuapp.exe — um arquivo só, abre direto</span>
+    </div>
+
+    <div class="label-sec" style="margin-top:14px">Opção 2 — Electron Builder (gera instalador)</div>
+    <p>Gera um instalador .exe que instala o app direitinho, como programa de verdade.</p>
+    <div class="cmd-box">
+      <span class="cmd-txt">npm install --save-dev electron electron-builder</span>
+      <button class="btn-c" onclick="cp(this,'npm install --save-dev electron electron-builder')">📋</button>
+    </div>
+    <div class="cmd-box">
+      <span class="cmd-txt">npx electron-builder --win portable</span>
+      <button class="btn-c" onclick="cp(this,'npx electron-builder --win portable')">📋</button>
+      <span class="cmd-desc">--portable gera um .exe único sem precisar instalar</span>
+    </div>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">🎯 Gerador de package.json para executável</div>
+    <p>Cole o nome do seu projeto e gero o package.json configurado para gerar executável:</p>
+
+    <input type="text" id="nomeApp" placeholder="Nome do app (ex: meu-juridico)" style="margin-bottom:8px"/>
+    <input type="text" id="entradaApp" placeholder="Arquivo principal (ex: index.js)" style="margin-bottom:8px"/>
+    <input type="number" id="portaApp" value="3000" class="porta-input" style="margin-bottom:8px"/>
+
+    <button class="btn btn-azul" onclick="gerarPkgExe()">📦 Gerar package.json para executável</button>
+    <div id="resultExe" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">💡 Como a Replit gerava executável pequeno</div>
+    <p>A Replit usava o <span class="destaque">pkg</span> ou empacotava tudo num servidor Node simples com um launcher.</p>
+    <p>O segredo era: o executável não carregava interface gráfica — ele só subia o servidor e abria o navegador automaticamente.</p>
+    <p>Isso é possível de replicar. O package.json que gerei acima já faz isso.</p>
+  </div>
+
+</div>
+
+<!-- ==================== ELECTRON ==================== -->
+<div class="pag" id="pag-electron">
+
+  <div class="card azul">
+    <div class="titulo">🖥️ Electron do jeito certo — abre igual app de verdade</div>
+    <p>O problema do Electron que você baixou é que veio sem configuração. Com a configuração certa ele abre igual um app normal.</p>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">✅ main.js correto para Electron abrir na hora</div>
+    <p>Esse é o arquivo que faz o Electron abrir direto, sem bat, sem pasta estranha:</p>
+    <textarea id="mainElectron" readonly style="height:220px">const { app, BrowserWindow } = require('electron');
+const path = require('path');
+const { exec } = require('child_process');
+
+let mainWindow;
+let servidor;
+
+function criarJanela(porta) {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    },
+    icon: path.join(__dirname, 'icon.png'),
+    title: 'Meu App',
+    show: false
+  });
+
+  mainWindow.loadURL(`http://localhost:${porta}`);
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
+  mainWindow.on('closed', () => {
+    if (servidor) servidor.kill();
+    app.quit();
+  });
+}
+
+app.whenReady().then(() => {
+  const porta = 3000;
+
+  // Inicia o servidor Node antes de abrir a janela
+  servidor = exec(`node server.js`, { cwd: __dirname });
+
+  // Aguarda o servidor subir e abre a janela
+  setTimeout(() => criarJanela(porta), 2000);
+});
+
+app.on('window-all-closed', () => {
+  if (servidor) servidor.kill();
+  app.quit();
+});</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn btn-azul" onclick="cp2('mainElectron')">📋 Copiar</button>
+      <button class="btn btn-verde" onclick="baixarTxt('mainElectron','main.js')">⬇️ Baixar main.js</button>
+    </div>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">📄 package.json para Electron portátil</div>
+    <textarea id="pkgElectron" readonly style="height:260px">{
+  "name": "meu-app",
+  "version": "1.0.0",
+  "description": "Meu aplicativo",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder --win portable",
+    "setup": "npm install"
+  },
+  "build": {
+    "appId": "com.meuapp.app",
+    "productName": "Meu App",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "MeuApp.exe"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.cache"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn btn-azul" onclick="cp2('pkgElectron')">📋 Copiar</button>
+      <button class="btn btn-verde" onclick="baixarTxt('pkgElectron','package.json')">⬇️ Baixar package.json</button>
+    </div>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">▶️ Como usar — passo a passo</div>
+    <div class="label-sec">1. Instalar dependências:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">npm install</span>
+      <button class="btn-c" onclick="cp(this,'npm install')">📋</button>
+    </div>
+    <div class="label-sec">2. Testar antes de gerar:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">npm start</span>
+      <button class="btn-c" onclick="cp(this,'npm start')">📋</button>
+      <span class="cmd-desc">Abre o app em modo desenvolvimento — sem gerar .exe</span>
+    </div>
+    <div class="label-sec">3. Gerar o .exe portátil:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">npm run build</span>
+      <button class="btn-c" onclick="cp(this,'npm run build')">📋</button>
+      <span class="cmd-desc">Gera MeuApp.exe na pasta dist/ — arquivo único, abre direto</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+function ir(id, el) {
+  document.querySelectorAll('.pag').forEach(p => p.classList.remove('ativa'));
+  document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+  document.getElementById('pag-' + id).classList.add('ativa');
+  el.classList.add('ativa');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// COPIAR
+// ============================================================
+function cp(btn, txt) {
+  navigator.clipboard.writeText(txt).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+function cp2(id) {
+  const txt = document.getElementById(id).value;
+  navigator.clipboard.writeText(txt).then(() => alert('✅ Copiado!'));
+}
+
+function baixarTxt(id, nome) {
+  const txt = document.getElementById(id).value;
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nome; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// GERADOR DE COMANDOS POR PORTA
+// ============================================================
+function gerarCmdsPorta() {
+  const p = document.getElementById('portaNum').value || '3000';
+  document.getElementById('cmdsPorta').innerHTML = `
+    <div class="label-sec">Windows:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">netstat -ano | findstr :${p}</span>
+      <button class="btn-c" onclick="cp(this,'netstat -ano | findstr :${p}')">📋</button>
+      <span class="cmd-desc">Pega o PID — depois use taskkill /PID [numero] /F</span>
+    </div>
+    <div class="label-sec">Mac / Linux / Termux:</div>
+    <div class="cmd-box">
+      <span class="cmd-txt">fuser -k ${p}/tcp</span>
+      <button class="btn-c" onclick="cp(this,'fuser -k ${p}/tcp')">📋</button>
+      <span class="cmd-desc">Mata tudo na porta ${p} de uma vez</span>
+    </div>
+    <div class="cmd-box">
+      <span class="cmd-txt">lsof -i :${p}</span>
+      <button class="btn-c" onclick="cp(this,'lsof -i :${p}')">📋</button>
+      <span class="cmd-desc">Ver qual processo está na porta ${p}</span>
+    </div>
+  `;
+}
+
+function selecionarPorta(num, el) {
+  document.querySelectorAll('.porta-card').forEach(c => c.classList.remove('selecionada'));
+  el.classList.add('selecionada');
+  document.getElementById('portaNum').value = num;
+  gerarCmdsPorta();
+  document.getElementById('portaNum').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Inicializar
+gerarCmdsPorta();
+document.getElementById('portaNum').addEventListener('input', gerarCmdsPorta);
+
+// ============================================================
+// GERADOR DE CONFIG
+// ============================================================
+function gerarConfig() {
+  const porta = document.getElementById('portaConfig').value || '3000';
+  const tipo  = document.getElementById('tipoProj').value;
+  const div   = document.getElementById('resultConfig');
+
+  let vite = '', pkg = '', server = '';
+
+  if (tipo === 'vite') {
+    vite = `import { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\n\nexport default defineConfig({\n  plugins: [react()],\n  server: {\n    port: ${porta},\n    host: '0.0.0.0'\n  },\n  preview: {\n    port: ${porta},\n    host: '0.0.0.0'\n  }\n})`;
+    pkg = `{\n  "scripts": {\n    "dev":     "vite --port ${porta}",\n    "build":   "vite build",\n    "preview": "vite preview --port ${porta}",\n    "setup":   "npm install"\n  }\n}`;
+  } else if (tipo === 'express') {
+    server = `const express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || ${porta};\n\napp.use(express.json());\napp.use(express.static('public'));\n\napp.listen(PORT, '0.0.0.0', () => {\n  console.log('Servidor rodando em http://localhost:' + PORT);\n});`;
+    pkg = `{\n  "scripts": {\n    "start": "node server.js",\n    "dev":   "nodemon server.js",\n    "setup": "npm install"\n  }\n}`;
+  } else if (tipo === 'next') {
+    pkg = `{\n  "scripts": {\n    "dev":   "next dev -p ${porta}",\n    "build": "next build",\n    "start": "next start -p ${porta}",\n    "setup": "npm install"\n  }\n}`;
+  } else {
+    server = `const http = require('http');\nconst fs = require('fs');\nconst path = require('path');\nconst PORT = ${porta};\n\nconst server = http.createServer((req, res) => {\n  const file = path.join(__dirname, 'public', req.url === '/' ? 'index.html' : req.url);\n  fs.readFile(file, (err, data) => {\n    if (err) { res.writeHead(404); res.end('Não encontrado'); return; }\n    res.writeHead(200);\n    res.end(data);\n  });\n});\n\nserver.listen(PORT, '0.0.0.0', () => {\n  console.log('Rodando em http://localhost:' + PORT);\n});`;
+    pkg = `{\n  "scripts": {\n    "start": "node server.js",\n    "setup": "npm install"\n  }\n}`;
+  }
+
+  div.innerHTML = '';
+
+  if (pkg) {
+    div.innerHTML += `
+      <div class="label-sec">package.json — seção scripts:</div>
+      <textarea readonly style="height:140px">${pkg}</textarea>
+      <button class="btn btn-verde" onclick="navigator.clipboard.writeText(document.querySelectorAll('#resultConfig textarea')[0].value).then(()=>alert('✅ Copiado!'))">📋 Copiar</button>
+    `;
+  }
+  if (vite) {
+    div.innerHTML += `
+      <div class="label-sec" style="margin-top:12px">vite.config.js:</div>
+      <textarea readonly style="height:160px">${vite}</textarea>
+      <button class="btn btn-verde" onclick="navigator.clipboard.writeText(document.querySelectorAll('#resultConfig textarea')[1]?.value||'').then(()=>alert('✅ Copiado!'))">📋 Copiar</button>
+    `;
+  }
+  if (server) {
+    div.innerHTML += `
+      <div class="label-sec" style="margin-top:12px">server.js:</div>
+      <textarea readonly style="height:180px">${server}</textarea>
+      <button class="btn btn-verde" onclick="navigator.clipboard.writeText(document.querySelectorAll('#resultConfig textarea')[1]?.value||'').then(()=>alert('✅ Copiado!'))">📋 Copiar</button>
+    `;
+  }
+}
+
+// ============================================================
+// GERADOR PACKAGE.JSON EXECUTÁVEL
+// ============================================================
+function gerarPkgExe() {
+  const nome   = document.getElementById('nomeApp').value || 'meu-app';
+  const entrada = document.getElementById('entradaApp').value || 'index.js';
+  const porta  = document.getElementById('portaApp').value || '3000';
+
+  const pkg = {
+    name: nome,
+    version: '1.0.0',
+    description: nome,
+    main: entrada,
+    scripts: {
+      start: `node ${entrada}`,
+      dev: `node ${entrada}`,
+      build: `pkg . --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --output dist/${nome}`,
+      setup: 'npm install',
+      'build-win': `pkg . --targets node18-win-x64 --output dist/${nome}.exe`,
+      'build-mac': `pkg . --targets node18-macos-x64 --output dist/${nome}-mac`,
+      'build-linux': `pkg . --targets node18-linux-x64 --output dist/${nome}-linux`
+    },
+    bin: entrada,
+    pkg: {
+      assets: ['public/**/*', '*.html', '*.css'],
+      targets: [`node18-win-x64`],
+      outputPath: 'dist'
+    }
+  };
+
+  const json = JSON.stringify(pkg, null, 2);
+  document.getElementById('resultExe').innerHTML = `
+    <div class="label-sec">package.json gerado:</div>
+    <textarea readonly style="height:280px">${json}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn btn-azul" onclick="navigator.clipboard.writeText(document.querySelector('#resultExe textarea').value).then(()=>alert('✅ Copiado!'))">📋 Copiar</button>
+      <button class="btn btn-verde" onclick="(()=>{const b=new Blob([document.querySelector('#resultExe textarea').value],{type:'text/plain'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='package.json';a.click();URL.revokeObjectURL(u)})()">⬇️ Baixar</button>
+    </div>
+    <div style="color:#888;font-size:0.8rem;margin-top:10px;line-height:1.7">
+      <strong style="color:#ffcc44">Depois de colocar o package.json na pasta:</strong><br>
+      1. <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm install</code><br>
+      2. <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm install -g pkg</code><br>
+      3. <code style="background:#0a0c12;padding:2px 6px;border-radius:4px;color:#c8f0a0">npm run build-win</code> → gera o .exe na pasta dist/
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

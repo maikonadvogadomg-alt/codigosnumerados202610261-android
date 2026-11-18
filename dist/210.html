@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK Oficina Jurídica v6 - Integrada</title>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #223018; border-radius: 3px; }
+    .spinner { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-[#0d1208] text-[#c8dda8] font-sans">
+
+<header class="bg-[#141c0d] border-b border-[#223018] p-4 flex justify-between items-center">
+  <div>
+    <h1 class="text-[#5fad3c] font-bold text-xl">SK Oficina Jurídica <span class="text-xs bg-[#5fad3c]/20 px-2 py-0.5 rounded">v6</span></h1>
+    <p class="text-[11px] text-[#7dcf55]">Maikon Caldeira • APK + Scanner + Editor + Extrator</p>
+  </div>
+  <div class="flex gap-1 text-xs">
+    <button onclick="showSection('importar')" class="px-3 py-1.5 bg-[#223018] rounded hover:bg-[#5fad3c] hover:text-black">Importar</button>
+    <button onclick="showSection('apk-info')" class="px-3 py-1.5 bg-[#223018] rounded hover:bg-[#5fad3c] hover:text-black">APK Info</button>
+    <button onclick="showSection('editor')" class="px-3 py-1.5 bg-[#223018] rounded hover:bg-[#5fad3c] hover:text-black">Editor</button>
+    <button onclick="showSection('scanner')" class="px-3 py-1.5 bg-[#223018] rounded hover:bg-[#5fad3c] hover:text-black">Scanner</button>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto p-4">
+  <!-- IMPORTAR -->
+  <section id="section-importar" class="section">
+    <div class="border-2 border-dashed border-[#223018] p-8 rounded-2xl text-center cursor-pointer" onclick="document.getElementById('fileInput').click()">
+      <p class="text-4xl mb-2">📦</p>
+      <p class="font-bold">Arraste ou clique para carregar APK / ZIP</p>
+      <input type="file" id="fileInput" accept=".apk,.zip" class="hidden" onchange="handleFile(this.files[0])">
+    </div>
+  </section>
+
+  <!-- APK INFO (usando sua lógica React) -->
+  <section id="section-apk-info" class="section hidden">
+    <div id="apkInfoBox" class="bg-[#141c0d] border border-[#223018] rounded-2xl p-6"></div>
+  </section>
+
+  <!-- EDITOR -->
+  <section id="section-editor" class="section hidden flex gap-4">
+    <div class="w-80 bg-[#141c0d] border border-[#223018] rounded-2xl p-3">
+      <div class="flex justify-between mb-2">
+        <span class="text-xs font-bold">Arquivos (<span id="fileCount">0</span>)</span>
+        <input type="text" id="searchFile" placeholder="Buscar..." class="text-xs bg-[#0d1208] border border-[#223018] px-2 rounded" onkeyup="filterFileList()">
+      </div>
+      <div id="fileList" class="text-xs space-y-1 max-h-[500px] overflow-auto"></div>
+    </div>
+    <div class="flex-1">
+      <div class="flex justify-between mb-2">
+        <span id="currentFile" class="font-mono text-sm text-[#5fad3c]"></span>
+        <div class="flex gap-2">
+          <button onclick="saveFile()" class="text-xs px-3 py-1 bg-[#5fad3c] text-black rounded">Salvar</button>
+          <button onclick="downloadCleanZip()" class="text-xs px-3 py-1 bg-[#223018] rounded">Baixar ZIP Limpo</button>
+        </div>
+      </div>
+      <textarea id="editorArea" class="w-full h-[500px] bg-[#020617] border border-[#223018] rounded p-4 font-mono text-sm"></textarea>
+    </div>
+  </section>
+
+  <!-- SCANNER + LIMPEZA -->
+  <section id="section-scanner" class="section hidden">
+    <div class="bg-[#141c0d] border border-[#223018] rounded-2xl p-6">
+      <h3 class="font-bold mb-4">🛡️ Scanner & Limpeza Replit</h3>
+      <button onclick="runFullScan()" class="bg-[#5fad3c] text-black px-4 py-2 rounded text-sm font-bold">Escanear Projeto</button>
+      <div id="scanResults" class="mt-4 text-sm"></div>
+      <button onclick="cleanAndDownload()" class="mt-4 w-full bg-red-900/50 border border-red-700 text-red-300 py-2 rounded">🧹 Limpar Replit e Baixar</button>
+    </div>
+  </section>
+</main>
+
+<script>
+// ==================== FUNÇÕES DO SEU APKANALYZER REACT ====================
+const REPLIT_PATTERNS = [
+  /replit\.dev/gi, /repl\.co/gi, /repl\.it/gi,
+  /REPL_ID/g, /REPLIT_DEV_DOMAIN/g, /REPLIT_DOMAINS/g,
+  /replit\.com/gi, /cartographer/gi, /vite-plugin-dev-banner/gi,
+  /vite-plugin-runtime-error-modal/gi, /replitDomain/gi, /__replit/gi,
+];
+
+function hasReplitRef(text) {
+  return REPLIT_PATTERNS.some(p => { p.lastIndex = 0; return p.test(text); });
+}
+
+function cleanReplitRefs(text) {
+  let out = text;
+  out = out.replace(/https?:\/\/[a-z0-9-]+\.replit\.dev[^\s"'`)]*/gi, "");
+  out = out.replace(/https?:\/\/[a-z0-9-]+\.repl\.co[^\s"'`)]*/gi, "");
+  out = out.replace(/["']REPLIT_DEV_DOMAIN["']\s*:\s*["'][^"']*["']/gi, '"REPLIT_DEV_DOMAIN":""');
+  out = out.replace(/["']REPL_ID["']\s*:\s*["'][^"']*["']/gi, '"REPL_ID":""');
+  out = out.replace(/process\.env\.REPL_ID/g, '""');
+  out = out.replace(/process\.env\.REPLIT_DEV_DOMAIN/g, '""');
+  out = out.replace(/import\.meta\.env\.REPLIT[A-Z_]*/g, '""');
+  return out;
+}
+
+function parseAxml(buf) {
+  // (mesma função que você enviou - copiada fielmente)
+  const data = new Uint8Array(buf);
+  const dv = new DataView(buf);
+  const strings = [];
+  try {
+    const off = 8;
+    const strCount = dv.getUint32(off + 8, true);
+    const flags = dv.getUint32(off + 16, true);
+    const strStart = dv.getUint32(off + 20, true);
+    const poolHSize = dv.getUint16(off + 2, true);
+    const isUtf8 = !!(flags & (1 << 8));
+    const offsetsBase = off + poolHSize;
+    const stringsBase = off + strStart;
+    for (let i = 0; i < Math.min(strCount, 500); i++) {
+      const idxOff = offsetsBase + i * 4;
+      if (idxOff + 4 > data.byteLength) break;
+      const sOff = stringsBase + dv.getUint32(idxOff, true);
+      if (sOff >= data.byteLength) continue;
+      let s = "";
+      if (isUtf8) {
+        const clen = data[sOff + 1];
+        for (let j = 0; j < clen; j++) { const c = data[sOff + 2 + j]; if (c >= 0x20) s += String.fromCharCode(c); }
+      } else {
+        const clen = dv.getUint16(sOff, true);
+        for (let j = 0; j < clen; j++) { const c = dv.getUint16(sOff + 2 + j * 2, true); if (c >= 0x20) s += String.fromCharCode(c); }
+      }
+      if (s.length >= 2) strings.push(s);
+    }
+  } catch {}
+  return strings;
+}
+
+// ==================== ESTADO GLOBAL ====================
+let currentZip = null;
+let currentFiles = {};
+let currentApkInfo = null;
+let activeFileName = null;
+
+// ==================== FUNÇÕES PRINCIPAIS ====================
+async function handleFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['apk', 'zip'].includes(ext)) return alert("Apenas .apk ou .zip");
+
+  const buf = await file.arrayBuffer();
+  currentZip = await JSZip.loadAsync(buf);
+  currentFiles = {};
+
+  // Carrega todos os arquivos (sem limite de 60)
+  for (const [name, entry] of Object.entries(currentZip.files)) {
+    if (entry.dir) continue;
+    try {
+      currentFiles[name] = await entry.async("string");
+    } catch {
+      currentFiles[name] = "[binário]";
+    }
+  }
+
+  // Extrai info do APK usando sua lógica
+  const manifest = currentZip.files["AndroidManifest.xml"];
+  if (manifest) {
+    const mBuf = await manifest.async("arraybuffer");
+    const strings = parseAxml(mBuf);
+    currentApkInfo = extractInfo(strings, file.name, (file.size / 1024 / 1024).toFixed(1), []);
+    renderApkInfo();
+  }
+
+  renderFileList();
+  showSection('editor');
+}
+
+function extractInfo(strings, fileName, size, replitFiles) {
+  // Versão adaptada da sua função React
+  const pkg = strings.find(s => /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,6}$/.test(s) && !s.startsWith("android")) ?? "—";
+  const verName = strings.find(s => /^\d+(\.\d+){0,3}$/.test(s)) ?? "—";
+  const verCode = strings.find(s => /^\d{2,6}$/.test(s)) ?? "—";
+  const minSdk = strings.find(s => /^(2[4-9]|3[0-9])$/.test(s)) ?? "24";
+  const perms = strings.filter(s => s.startsWith("android.permission.")).map(s => s.replace("android.permission.", "")).slice(0, 20);
+  return { fileName, fileSizeMB: size, packageName: pkg, versionName: verName, versionCode: verCode, minSdk, permissions: perms, replitFiles };
+}
+
+function renderApkInfo() {
+  if (!currentApkInfo) return;
+  const box = document.getElementById('apkInfoBox');
+  box.innerHTML = `
+    <h3 class="font-bold text-lg">${currentApkInfo.fileName}</h3>
+    <p>Package: <span class="font-mono text-[#d4aa4e]">${currentApkInfo.packageName}</span></p>
+    <p>Versão: ${currentApkInfo.versionName} (${currentApkInfo.versionCode})</p>
+    <p>SDK Mínimo: API ${currentApkInfo.minSdk}</p>
+    <p>Permissões: ${currentApkInfo.permissions.length}</p>
+  `;
+  showSection('apk-info');
+}
+
+function renderFileList(filter = "") {
+  const container = document.getElementById('fileList');
+  container.innerHTML = "";
+  let count = 0;
+  for (const name in currentFiles) {
+    if (filter && !name.toLowerCase().includes(filter)) continue;
+    count++;
+    const div = document.createElement('div');
+    div.className = "px-2 py-1 hover:bg-[#223018] cursor-pointer text-xs truncate";
+    div.textContent = name;
+    div.onclick = () => openFile(name);
+    container.appendChild(div);
+  }
+  document.getElementById('fileCount').textContent = count;
+}
+
+function filterFileList() {
+  const term = document.getElementById('searchFile').value.toLowerCase();
+  renderFileList(term);
+}
+
+function openFile(name) {
+  activeFileName = name;
+  document.getElementById('currentFile').textContent = name;
+  document.getElementById('editorArea').value = currentFiles[name] || "";
+  showSection('editor');
+}
+
+function saveFile() {
+  if (!activeFileName) return;
+  currentFiles[activeFileName] = document.getElementById('editorArea').value;
+  alert("Arquivo salvo na memória!");
+}
+
+async function cleanAndDownload() {
+  const zip = new JSZip();
+  let cleaned = 0;
+
+  for (const name in currentFiles) {
+    let content = currentFiles[name];
+    if (hasReplitRef(content)) {
+      content = cleanReplitRefs(content);
+      cleaned++;
+    }
+    zip.file(name, content);
+  }
+
+  const blob = await zip.generateAsync({ type: "blob" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "projeto-limpo.zip";
+  a.click();
+  alert(`✅ ${cleaned} arquivo(s) limpo(s)!`);
+}
+
+function runFullScan() {
+  const results = document.getElementById('scanResults');
+  results.innerHTML = "";
+  let found = 0;
+  for (const name in currentFiles) {
+    if (hasReplitRef(currentFiles[name])) {
+      found++;
+      const p = document.createElement('p');
+      p.className = "text-red-400 text-xs";
+      p.textContent = `⚠️ ${name}`;
+      results.appendChild(p);
+    }
+  }
+  if (found === 0) results.innerHTML = '<p class="text-green-400">✅ Nenhum arquivo com Replit encontrado.</p>';
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(`section-${id}`).classList.remove('hidden');
+}
+</script>
+</body>
+</html>

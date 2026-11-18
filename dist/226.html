@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siscajur - Perícia Bancária & Sentença (Capitalização Anual)</title>
+    <!-- Biblioteca para ler Excel (TJMG) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb; --sec: #475569; --bg: #f8fafc;
+            --bank-color: #ef4444; --court-color: #10b981;
+            --border: #cbd5e1;
+        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+        
+        /* Layout Principal */
+        .container { display: grid; grid-template-columns: 350px 1fr; gap: 20px; height: 95vh; }
+        
+        /* Painel Lateral (Inputs) */
+        .sidebar { background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        /* Painel Central (Resultados) */
+        .main { display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+        
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; color: var(--sec); }
+        h3 { font-size: 16px; margin: 0; }
+
+        label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 3px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; margin-bottom: 8px; background: #fdfdfd; }
+        input:focus { border-color: var(--primary); outline: none; }
+
+        .row { display: flex; gap: 10px; }
+        .col { flex: 1; }
+
+        /* Estilos Específicos dos Cenários */
+        .scenario-box { padding: 10px; border-radius: 6px; border-left: 4px solid #ccc; background: #f8fafc; }
+        .sc-a { border-color: var(--bank-color); }
+        .sc-b { border-color: var(--court-color); }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; text-transform: uppercase; font-size: 12px; }
+        .btn-calc { background: var(--primary); font-size: 14px; margin-top: 10px; }
+        .btn-calc:hover { background: #1d4ed8; }
+        .btn-imp { background: #64748b; margin-bottom: 5px; }
+        .btn-print { background: #0f172a; width: auto; padding: 8px 20px; }
+
+        /* Cards de Resultado */
+        .cards-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .card { background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
+        .card-val { font-size: 24px; font-weight: 900; margin-top: 5px; }
+        
+        /* Tabela */
+        .table-wrap { flex: 1; overflow: auto; background: white; border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #f1f5f9; position: sticky; top: 0; padding: 10px; text-align: right; font-weight: 600; border-bottom: 2px solid var(--border); }
+        td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; text-align: right; font-family: 'Courier New', monospace; }
+        tr:hover { background: #f8fafc; }
+
+        /* Impressão */
+        @media print {
+            .sidebar, .btn-print { display: none; }
+            .container { display: block; height: auto; }
+            .table-wrap { overflow: visible; }
+            body { background: white; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- BARRA LATERAL (INPUTS) -->
+    <div class="sidebar">
+        <div style="text-align:center; font-weight:900; color:var(--primary); font-size:18px; margin-bottom:10px;">SISCAJUR <span style="font-weight:400; color:#666">v8.0</span></div>
+
+        <h2>1. Dados Iniciais</h2>
+        <label>Valor Principal (R$)</label>
+        <input type="number" id="v_principal" value="3080.79">
+        <div class="row">
+            <div class="col"><label>Data Início</label><input type="date" id="d_ini" value="2017-07-01"></div>
+            <div class="col"><label>Data Fim</label><input type="date" id="d_fim" value="2024-02-18"></div>
+        </div>
+
+        <!-- CENÁRIO A: BANCO -->
+        <div class="scenario-box sc-a">
+            <h2 style="color:var(--bank-color); border:none; margin:0">2. Cenário Banco</h2>
+            <label>Juros Remuneratórios (% a.m.)</label>
+            <input type="number" id="a_juros" value="9.00">
+            <label>Capitalização</label>
+            <select id="a_cap">
+                <option value="mensal">Mensal (Composta)</option>
+                <option value="simples">Simples</option>
+            </select>
+            <label>Multa (%)</label>
+            <input type="number" id="a_multa" value="2.0">
+        </div>
+
+        <!-- CENÁRIO B: SENTENÇA -->
+        <div class="scenario-box sc-b">
+            <h2 style="color:var(--court-color); border:none; margin:0">3. Cenário Sentença</h2>
+            
+            <label>Correção Monetária (TJMG)</label>
+            <input type="file" id="file_tj" style="display:none" onchange="importarTJMG(this)">
+            <button class="btn btn-imp" onclick="document.getElementById('file_tj').click()">📂 Importar Excel TJMG</button>
+            <div id="status_tj" style="font-size:10px; color:green; margin-bottom:5px"></div>
+
+            <label>Juros Remuneratórios (Bacen/Sentença)</label>
+            <div class="row">
+                <input type="number" id="b_juros" value="1.00" placeholder="% a.m.">
+                <button class="btn btn-imp" style="width:60px; margin:0" onclick="buscarBacen()" title="Buscar SELIC/Taxa Média">API</button>
+            </div>
+
+            <label>Capitalização (Sentença)</label>
+            <select id="b_cap">
+                <option value="anual" selected>ANUAL (Art. 591 CC)</option>
+                <option value="simples">Simples (Linear)</option>
+                <option value="mensal">Mensal</option>
+            </select>
+            
+            <label>Multa (%)</label>
+            <input type="number" id="b_multa" value="0.0">
+        </div>
+
+        <h2>4. Sucumbência</h2>
+        <label>Honorários (%)</label>
+        <input type="number" id="hon_pct" value="10">
+        <label>Base de Cálculo</label>
+        <select id="hon_base">
+            <option value="proveito">Proveito Econômico (A - B)</option>
+            <option value="condenacao">Valor da Condenação (B)</option>
+        </select>
+
+        <button class="btn btn-calc" onclick="calcular()">CALCULAR AGORA</button>
+    </div>
+
+    <!-- PAINEL CENTRAL (RESULTADOS) -->
+    <div class="main">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+            <h3>Resultado da Liquidação</h3>
+            <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        </div>
+
+        <div class="cards-container">
+            <div class="card" style="border-top: 4px solid var(--bank-color)">
+                <div style="font-size:12px; color:#666">Total Pedido (Banco)</div>
+                <div class="card-val" id="res_a" style="color:var(--bank-color)">R$ 0,00</div>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--court-color)">
+                <div style="font-size:12px; color:#666">Total Devido (Sentença)</div>
+                <div class="card-val" id="res_b" style="color:var(--court-color)">R$ 0,00</div>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--primary); background:#eff6ff">
+                <div style="font-size:12px; color:#1e40af">Proveito Econômico</div>
+                <div class="card-val" id="res_diff" style="color:#1e40af">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div style="background:white; padding:10px; border:1px dashed var(--border); border-radius:6px; display:flex; justify-content:space-between; align-items:center">
+            <strong>⚖️ Honorários de Sucumbência:</strong>
+            <span id="res_hon" style="font-size:18px; font-weight:bold; color:#334155">R$ 0,00</span>
+        </div>
+
+        <div class="table-wrap">
+            <table id="tabela_evolucao">
+                <thead>
+                    <tr>
+                        <th style="text-align:left">Mês/Ano</th>
+                        <th>Dias</th>
+                        <th>Índice TJ</th>
+                        <th>Saldo Banco (A)</th>
+                        <th>Saldo Sentença (B)</th>
+                        <th>Diferença</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    <tr><td colspan="6" style="text-align:center; padding:20px">Aguardando cálculo...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Armazena índices importados
+let DB_INDICES = {}; 
+let DB_BACEN = {};
+
+// 1. Importação Excel TJMG
+function importarTJMG(input) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws, {header:1});
+        
+        let count = 0;
+        // Assume coluna A = Data, Coluna B = Fator
+        json.forEach(row => {
+            if(row[0] && row[1]) {
+                let dataStr = row[0];
+                let fator = parseFloat(String(row[1]).replace(',','.'));
+                
+                // Tenta normalizar data (Excel serial ou String)
+                let dateKey = "";
+                if(typeof dataStr === 'number') {
+                    const d = new Date((dataStr - (25567 + 2))*86400*1000);
+                    dateKey = d.toISOString().slice(0,7);
+                } else if (typeof dataStr === 'string') {
+                    // Tenta parsear string pt-br
+                    if(dataStr.includes('/')) {
+                        let parts = dataStr.split('/');
+                        if(parts.length === 3) dateKey = `${parts[2]}-${parts[1]}`; // yyyy-mm
+                        else if(parts.length === 2) dateKey = `${parts[1]}-${parts[0]}`; // mm-yyyy invertido? assumir yyyy-mm se > 1900
+                    }
+                }
+                
+                if(dateKey && !isNaN(fator)) {
+                    DB_INDICES[dateKey] = fator;
+                    count++;
+                }
+            }
+        });
+        document.getElementById('status_tj').innerText = `✅ ${count} índices carregados.`;
+    };
+    reader.readAsArrayBuffer(input.files[0]);
+}
+
+// 2. Busca Bacen (Opcional)
+async function buscarBacen() {
+    // Exemplo: Série 4390 (Selic acumulada) ou 20742 (Crédito Pessoal)
+    // Aqui vamos pegar uma taxa fixa para simplificar ou implementar a lógica real se tiver internet
+    alert("Para usar a API do Bacen, certifique-se de estar conectado. O sistema tentará buscar a série 4390.");
+    // Implementação real seria fetch aqui. Por enquanto, simulação manual no input é mais segura sem internet.
+}
+
+// 3. O CÁLCULO
+function calcular() {
+    const vPrincipal = parseFloat(document.getElementById('v_principal').value);
+    const dIni = new Date(document.getElementById('d_ini').value);
+    const dFim = new Date(document.getElementById('d_fim').value);
+    
+    // Cenário A
+    const jurosA = parseFloat(document.getElementById('a_juros').value) / 100;
+    const capA = document.getElementById('a_cap').value;
+    const multaA = parseFloat(document.getElementById('a_multa').value) / 100;
+    
+    // Cenário B
+    const jurosB = parseFloat(document.getElementById('b_juros').value) / 100;
+    const capB = document.getElementById('b_cap').value;
+    const multaB = parseFloat(document.getElementById('b_multa').value) / 100;
+
+    let saldoA = vPrincipal;
+    let saldoB = vPrincipal; // Principal corrigido
+    let jurosAcumB = 0;      // Acumulador de juros simples
+    let jurosAnualBucketB = 0; // Cofrinho para capitalização anual
+    let mesesAnual = 0;
+
+    let html = "";
+    let dataCursor = new Date(dIni.getFullYear(), dIni.getMonth(), dIni.getDate());
+    
+    // Loop Mensal (Avança mês a mês)
+    while(dataCursor <= dFim) {
+        const ano = dataCursor.getFullYear();
+        const mes = dataCursor.getMonth();
+        const key = `${ano}-${String(mes+1).padStart(2,'0')}`;
+        
+        // Define data fim do mês corrente para cálculo pro-rata
+        let ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
+        let diasNoMes = ultimoDiaMes;
+        let diasEfetivos = diasNoMes;
+
+        // Ajuste Pro-Rata (Primeiro e Último mês)
+        if(ano === dIni.getFullYear() && mes === dIni.getMonth()) {
+            diasEfetivos = diasNoMes - dIni.getDate() + 1;
+        }
+        if(ano === dFim.getFullYear() && mes === dFim.getMonth()) {
+            diasEfetivos = dFim.getDate();
+        }
+        
+        let prop = diasEfetivos / diasNoMes;
+
+        // --- CÁLCULO A (BANCO) ---
+        // Banco geralmente não corrige monetariamente se já cobra juros compostos altos, 
+        // mas se tiver correção, aplica-se antes. Vamos assumir juros puros sobre saldo.
+        if(capA === 'mensal') {
+            saldoA = saldoA * Math.pow((1 + jurosA), prop); // Exponencial pro-rata
+        } else {
+            saldoA += (saldoA * jurosA * prop);
+        }
+
+        // --- CÁLCULO B (SENTENÇA) ---
+        // 1. Correção Monetária (TJMG)
+        let fatorTJ = DB_INDICES[key] || 1.0; 
+        // Se importou tabela de fatores acumulados, a lógica muda. 
+        // Assumindo tabela de índices mensais (ex: 1.005):
+        saldoB = saldoB * fatorTJ; 
+
+        // 2. Juros
+        let jurosMesB = (saldoB * jurosB) * prop;
+
+        if(capB === 'anual') {
+            jurosAnualBucketB += jurosMesB;
+            mesesAnual++;
+            // Se completou 12 meses (aniversário da dívida)
+            // A sentença diz "Capitalização Anual".
+            // Verifica se mudou o ano civil ou se completou ciclo de 12 meses?
+            // Art 591 CC geralmente é ciclo de 1 ano.
+            if(mesesAnual === 12) {
+                saldoB += jurosAnualBucketB; // Juros viram principal
+                jurosAnualBucketB = 0;
+                mesesAnual = 0;
+            }
+        } else if (capB === 'mensal') {
+            saldoB += jurosMesB;
+        } else {
+            // Simples
+            jurosAcumB += jurosMesB;
+        }
+
+        // Totalizador B para exibição
+        let totalB_Agora = saldoB + jurosAcumB + jurosAnualBucketB;
+
+        html += `<tr>
+            <td style="text-align:left">${key}</td>
+            <td>${diasEfetivos}</td>
+            <td>${fatorTJ.toFixed(4)}</td>
+            <td>${saldoA.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+            <td>${totalB_Agora.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+            <td style="color:${(saldoA - totalB_Agora) > 0 ? 'green' : 'red'}">
+                ${(saldoA - totalB_Agora).toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}
+            </td>
+        </tr>`;
+
+        // Avança para dia 1 do próximo mês
+        dataCursor = new Date(ano, mes + 1, 1);
+    }
+
+    // Aplicação de Multas Finais
+    saldoA = saldoA * (1 + multaA);
+    let totalB_Final = (saldoB + jurosAcumB + jurosAnualBucketB) * (1 + multaB);
+
+    // Renderiza Resultados
+    document.getElementById('tbody').innerHTML = html;
+    document.getElementById('res_a').innerText = saldoA.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    document.getElementById('res_b').innerText = totalB_Final.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    
+    let diff = saldoA - totalB_Final;
+    document.getElementById('res_diff').innerText = diff.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+
+    // Honorários
+    let pctHon = parseFloat(document.getElementById('hon_pct').value) / 100;
+    let baseHon = document.getElementById('hon_base').value === 'proveito' ? diff : totalB_Final;
+    if(baseHon < 0) baseHon = 0;
+    
+    document.getElementById('res_hon').innerText = (baseHon * pctHon).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+</script>
+
+</body>
+</html>

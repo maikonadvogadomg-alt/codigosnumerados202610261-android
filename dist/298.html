@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Liquidação & Proveito Econômico</title>
+  <style>
+    :root {
+      --bg: #f3f4f6; --panel: #ffffff; --text: #1f2937; --accent: #2563eb;
+      --border: #e5e7eb; --success: #16a34a; --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+    
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    h1 { font-size: 1.5rem; margin: 0; color: var(--accent); }
+    
+    .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; height: calc(100vh - 100px); }
+    
+    /* Painéis */
+    .panel { background: var(--panel); border-radius: 8px; padding: 15px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    .panel-header { font-weight: bold; margin-bottom: 10px; text-transform: uppercase; font-size: 0.85rem; color: #6b7280; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+    .scroll-area { flex: 1; overflow-y: auto; padding-right: 5px; }
+
+    /* Inputs */
+    label { display: block; font-size: 0.8rem; margin-top: 10px; font-weight: 500; }
+    input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #d1d5db; border-radius: 4px; font-family: monospace; }
+    textarea { resize: vertical; min-height: 80px; font-size: 0.8rem; }
+    
+    .row { display: flex; gap: 10px; }
+    .col { flex: 1; }
+
+    /* Botões */
+    .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+    button { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-calc { background: var(--accent); color: white; }
+    .btn-calc:hover { background: #1d4ed8; }
+    .btn-exp { background: #4b5563; color: white; }
+    
+    /* Resultados */
+    .res-card { background: #f9fafb; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid var(--border); }
+    .res-val { font-size: 1.2rem; font-weight: bold; color: var(--text); }
+    .res-diff { color: var(--success); }
+    .res-neg { color: var(--danger); }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 10px; }
+    th, td { border: 1px solid var(--border); padding: 4px 8px; text-align: right; }
+    th { background: #e5e7eb; text-align: center; position: sticky; top: 0; }
+    
+    .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+    .tab { padding: 8px 12px; cursor: pointer; font-size: 0.8rem; }
+    .tab.active { border-bottom: 2px solid var(--accent); font-weight: bold; color: var(--accent); }
+
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Calculadora de Liquidação & Sucumbência</h1>
+  <div>
+    <button class="btn-exp" onclick="exportData()" style="width:auto; padding: 8px 15px;">Salvar Projeto (JSON)</button>
+    <button class="btn-exp" onclick="document.getElementById('fileInput').click()" style="width:auto; padding: 8px 15px;">Abrir Projeto</button>
+    <input type="file" id="fileInput" style="display:none" onchange="importData(this)">
+  </div>
+</div>
+
+<div class="grid">
+  <!-- COLUNA 1: DADOS GERAIS E ÍNDICES -->
+  <div class="panel">
+    <div class="panel-header">1. Parâmetros Gerais</div>
+    <div class="scroll-area">
+      <div class="row">
+        <div class="col">
+          <label>Valor Original (R$)</label>
+          <input type="number" id="valorOriginal" value="10000.00">
+        </div>
+        <div class="col">
+          <label>Data Inicial</label>
+          <input type="date" id="dataInicial" value="2020-01-01">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <label>Data Final (Cálculo)</label>
+          <input type="date" id="dataFinal" value="2023-12-01">
+        </div>
+      </div>
+
+      <label>Tabela de Índices de Correção (Data;Fator)</label>
+      <div style="font-size:0.7rem; color:#666; margin-bottom:4px;">
+        Cole aqui os índices (ex: INPC/IGP-M). Formato: <code>01/2020;1.005</code> ou <code>jan/20;1,005</code>. Se vazio, correção será 0.
+      </div>
+      <textarea id="indicesInput" placeholder="01/2020;1.0045&#10;02/2020;1.0023&#10;..."></textarea>
+      
+      <label>Honorários de Sucumbência (%)</label>
+      <input type="number" id="percHonorarios" value="10">
+      
+      <div class="btn-group">
+        <button class="btn-calc" onclick="calcular()">CALCULAR COMPARATIVO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLUNA 2: CONFIGURAÇÃO DOS CENÁRIOS -->
+  <div class="panel">
+    <div class="panel-header">2. Configuração dos Cenários</div>
+    <div class="scroll-area">
+      
+      <!-- CENÁRIO A -->
+      <div class="res-card" style="border-left: 4px solid var(--danger);">
+        <strong>CENÁRIO A (Contrato/Banco)</strong>
+        <label>Tipo de Juros</label>
+        <select id="jurosTipoA">
+          <option value="composto">Juros Compostos (Price/Exponencial)</option>
+          <option value="simples">Juros Simples (Linear)</option>
+          <option value="anual">Capitalização Anual (Simples mensal, compõe no ano)</option>
+        </select>
+        <div class="row">
+          <div class="col">
+            <label>Juros (% a.m.)</label>
+            <input type="number" id="jurosTaxaA" value="2.5">
+          </div>
+          <div class="col">
+            <label>Multa (%)</label>
+            <input type="number" id="multaA" value="2">
+          </div>
+        </div>
+      </div>
+
+      <!-- CENÁRIO B -->
+      <div class="res-card" style="border-left: 4px solid var(--success);">
+        <strong>CENÁRIO B (Sentença/Defesa)</strong>
+        <label>Tipo de Juros</label>
+        <select id="jurosTipoB">
+          <option value="simples" selected>Juros Simples (Linear)</option>
+          <option value="composto">Juros Compostos (Price/Exponencial)</option>
+          <option value="anual">Capitalização Anual</option>
+        </select>
+        <div class="row">
+          <div class="col">
+            <label>Juros (% a.m.)</label>
+            <input type="number" id="jurosTaxaB" value="1.0">
+          </div>
+          <div class="col">
+            <label>Multa (%)</label>
+            <input type="number" id="multaB" value="0">
+          </div>
+        </div>
+        <label style="color:var(--accent)">
+          <input type="checkbox" id="ignorarJurosNegativos" checked> Ignorar juros se índice for negativo (Deflação)
+        </label>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COLUNA 3: RESULTADOS -->
+  <div class="panel">
+    <div class="panel-header">3. Resultados e Proveito Econômico</div>
+    <div class="scroll-area">
+      
+      <div class="res-card">
+        <div style="font-size:0.8rem; color:#666">Total Cenário A (Banco)</div>
+        <div class="res-val res-neg" id="resTotalA">R$ 0,00</div>
+      </div>
+
+      <div class="res-card">
+        <div style="font-size:0.8rem; color:#666">Total Cenário B (Sentença)</div>
+        <div class="res-val" id="resTotalB">R$ 0,00</div>
+      </div>
+
+      <div class="res-card" style="background:#ecfdf5; border-color:#86efac;">
+        <div style="font-size:0.8rem; color:#166534">Proveito Econômico (A - B)</div>
+        <div class="res-val res-diff" id="resDiferenca">R$ 0,00</div>
+      </div>
+
+      <div class="res-card" style="background:#eff6ff; border-color:#93c5fd;">
+        <div style="font-size:0.8rem; color:#1e40af">Honorários sobre Proveito (<span id="lblHonorarios">10</span>%)</div>
+        <div class="res-val" style="color:#1e40af" id="resHonorarios">R$ 0,00</div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-exp" onclick="exportCSV()">Exportar Tabela (CSV)</button>
+      </div>
+
+      <div id="tabelaContainer"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* --- LÓGICA DE CÁLCULO --- */
+
+// Função auxiliar para parsear datas e valores
+function parseMoney(val) { return parseFloat(val) || 0; }
+function formatMoney(val) { return val.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); }
+
+// Processa o texto de índices (Data;Fator)
+function parseIndices(text) {
+  const map = {};
+  if(!text) return map;
+  const lines = text.split('\n');
+  lines.forEach(line => {
+    const parts = line.split(/[;|\t]/); // Aceita ; ou tab
+    if(parts.length >= 2) {
+      // Tenta normalizar data para YYYY-MM
+      let dateStr = parts[0].trim();
+      let valStr = parts[1].trim().replace(',', '.');
+      
+      // Tratamento básico de datas (ex: 01/2020 ou jan/20)
+      // Para simplificar, vamos assumir que o usuário coloca datas parseáveis ou YYYY-MM
+      // Se for DD/MM/YYYY
+      if(dateStr.includes('/')) {
+        const dParts = dateStr.split('/');
+        if(dParts.length === 3) dateStr = `${dParts[2]}-${dParts[1]}`; // YYYY-MM
+        else if(dParts.length === 2) dateStr = `${dParts[1]}-${dParts[0]}`; // MM/YYYY -> Invertido? Não, vamos padronizar YYYY-MM no código
+        // Melhor abordagem: criar um objeto Date e pegar YYYY-MM
+      }
+      
+      try {
+        // Tenta converter string pt-br para Date object
+        // Aceita formatos como 01/01/2020
+        let d;
+        if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            const [dia, mes, ano] = dateStr.split('/');
+            d = new Date(ano, mes - 1, 1);
+        } else if (dateStr.match(/^\d{2}\/\d{4}$/)) {
+            const [mes, ano] = dateStr.split('/');
+            d = new Date(ano, mes - 1, 1);
+        } else {
+            d = new Date(dateStr);
+        }
+        
+        if(!isNaN(d)) {
+          const key = d.toISOString().slice(0, 7); // YYYY-MM
+          map[key] = parseFloat(valStr);
+        }
+      } catch(e) {}
+    }
+  });
+  return map;
+}
+
+function calcular() {
+  const valorOriginal = parseMoney(document.getElementById('valorOriginal').value);
+  const dtIni = new Date(document.getElementById('dataInicial').value);
+  const dtFim = new Date(document.getElementById('dataFinal').value);
+  
+  // Parâmetros A
+  const tipoA = document.getElementById('jurosTipoA').value;
+  const taxaA = parseMoney(document.getElementById('jurosTaxaA').value) / 100;
+  const multaA = parseMoney(document.getElementById('multaA').value) / 100;
+  
+  // Parâmetros B
+  const tipoB = document.getElementById('jurosTipoB').value;
+  const taxaB = parseMoney(document.getElementById('jurosTaxaB').value) / 100;
+  const multaB = parseMoney(document.getElementById('multaB').value) / 100;
+  
+  const indicesMap = parseIndices(document.getElementById('indicesInput').value);
+  
+  // Arrays de evolução
+  let evolucao = [];
+  
+  // Inicializa
+  let currentA = valorOriginal;
+  let currentB = valorOriginal;
+  
+  // Acumuladores para Juros Simples
+  let jurosAcumuladosA = 0;
+  let jurosAcumuladosB = 0;
+  
+  // Acumuladores para Capitalização Anual
+  let jurosAnuaisBucketA = 0;
+  let jurosAnuaisBucketB = 0;
+  
+  // Loop mês a mês
+  let currDate = new Date(dtIni.getFullYear(), dtIni.getMonth(), 1);
+  // Ajusta para o mês seguinte ao inicial para começar a correção/juros? 
+  // Geralmente correção é pro-rata ou mês cheio. Vamos considerar mês cheio para simplificar visualização.
+  
+  let mesesCount = 0;
+  
+  while (currDate <= dtFim) {
+    const key = currDate.toISOString().slice(0, 7);
+    const indice = indicesMap[key]; 
+    
+    // Fator de correção (se não tiver índice, assume 1.0 = sem correção, ou 0% inflação)
+    // Se o usuário colou percentual (ex: 0.5%), tem que tratar. 
+    // Assumindo que o usuário cola FATOR (ex: 1.005). Se colar percentual, o código precisaria dividir por 100.
+    // Vamos assumir FATOR ACUMULADO ou MENSAL? 
+    // Padrão Tabela TJ: Índices mensais. Ex: 1.0053.
+    // Se o input for vazio, fator = 1.
+    let fator = indice !== undefined ? indice : 1.0;
+    
+    // Aplica Correção Monetária (Sobre o Principal Atualizado)
+    // Nota: Em juros simples, a correção incide sobre o principal. Em compostos, sobre o todo.
+    
+    // --- CENÁRIO A ---
+    let principalAntigoA = currentA;
+    // Correção
+    currentA = currentA * fator; 
+    let correcaoMesA = currentA - principalAntigoA;
+    
+    // Juros
+    let jurosMesA = 0;
+    if (tipoA === 'composto') {
+        jurosMesA = currentA * taxaA;
+        currentA += jurosMesA; // Incorpora ao principal
+    } else if (tipoA === 'simples') {
+        // Juros sobre o capital corrigido (mas não sobre juros anteriores)
+        // No método simples estrito, juros incidem sobre o capital original corrigido.
+        // Aqui, currentA está crescendo com a correção monetária, então está correto aplicar sobre currentA.
+        jurosMesA = currentA * taxaA;
+        jurosAcumuladosA += jurosMesA; // Guarda num pote separado
+    } else if (tipoA === 'anual') {
+        jurosMesA = currentA * taxaA;
+        jurosAnuaisBucketA += jurosMesA;
+        if ((mesesCount + 1) % 12 === 0) {
+            currentA += jurosAnuaisBucketA; // Capitaliza anualmente
+            jurosAnuaisBucketA = 0;
+        }
+    }
+
+    // --- CENÁRIO B ---
+    let principalAntigoB = currentB;
+    currentB = currentB * fator;
+    let correcaoMesB = currentB - principalAntigoB;
+    
+    let jurosMesB = 0;
+    if (tipoB === 'composto') {
+        jurosMesB = currentB * taxaB;
+        currentB += jurosMesB;
+    } else if (tipoB === 'simples') {
+        jurosMesB = currentB * taxaB;
+        jurosAcumuladosB += jurosMesB;
+    } else if (tipoB === 'anual') {
+        jurosMesB = currentB * taxaB;
+        jurosAnuaisBucketB += jurosMesB;
+        if ((mesesCount + 1) % 12 === 0) {
+            currentB += jurosAnuaisBucketB;
+            jurosAnuaisBucketB = 0;
+        }
+    }
+
+    evolucao.push({
+        data: key,
+        fator: fator,
+        totalA: (tipoA === 'simples' ? currentA + jurosAcumuladosA : currentA + jurosAnuaisBucketA),
+        totalB: (tipoB === 'simples' ? currentB + jurosAcumuladosB : currentB + jurosAnuaisBucketB)
+    });
+
+    // Avança mês
+    currDate.setMonth(currDate.getMonth() + 1);
+    mesesCount++;
+  }
+  
+  // Aplica Multa no Final (sobre o total)
+  let finalA = evolucao[evolucao.length-1].totalA;
+  let finalB = evolucao[evolucao.length-1].totalB;
+  
+  finalA += finalA * multaA;
+  finalB += finalB * multaB;
+  
+  // Exibir Totais
+  document.getElementById('resTotalA').innerText = formatMoney(finalA);
+  document.getElementById('resTotalB').innerText = formatMoney(finalB);
+  
+  const diff = finalA - finalB;
+  document.getElementById('resDiferenca').innerText = formatMoney(diff);
+  
+  const percHonor = parseMoney(document.getElementById('percHonorarios').value) / 100;
+  document.getElementById('lblHonorarios').innerText = (percHonor*100).toFixed(1);
+  document.getElementById('resHonorarios').innerText = formatMoney(diff * percHonor);
+  
+  renderTable(evolucao);
+  window.lastEvolution = evolucao; // Para exportação
+}
+
+function renderTable(data) {
+  let html = `<table><thead><tr>
+    <th>Mês</th>
+    <th>Fator</th>
+    <th>Total A (Acum.)</th>
+    <th>Total B (Acum.)</th>
+    <th>Diferença</th>
+  </tr></thead><tbody>`;
+  
+  data.forEach(row => {
+    html += `<tr>
+      <td>${row.data}</td>
+      <td>${row.fator.toFixed(6)}</td>
+      <td>${formatMoney(row.totalA)}</td>
+      <td>${formatMoney(row.totalB)}</td>
+      <td>${formatMoney(row.totalA - row.totalB)}</td>
+    </tr>`;
+  });
+  
+  html += `</tbody></table>`;
+  document.getElementById('tabelaContainer').innerHTML = html;
+}
+
+/* --- IMPORTAÇÃO / EXPORTAÇÃO --- */
+
+function exportData() {
+  const data = {
+    valorOriginal: document.getElementById('valorOriginal').value,
+    dataInicial: document.getElementById('dataInicial').value,
+    dataFinal: document.getElementById('dataFinal').value,
+    indices: document.getElementById('indicesInput').value,
+    percHonorarios: document.getElementById('percHonorarios').value,
+    
+    jurosTipoA: document.getElementById('jurosTipoA').value,
+    jurosTaxaA: document.getElementById('jurosTaxaA').value,
+    multaA: document.getElementById('multaA').value,
+    
+    jurosTipoB: document.getElementById('jurosTipoB').value,
+    jurosTaxaB: document.getElementById('jurosTaxaB').value,
+    multaB: document.getElementById('multaB').value
+  };
+  
+  const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'projeto_calculo_juridico.json';
+  a.click();
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      document.getElementById('valorOriginal').value = data.valorOriginal;
+      document.getElementById('dataInicial').value = data.dataInicial;
+      document.getElementById('dataFinal').value = data.dataFinal;
+      document.getElementById('indicesInput').value = data.indices;
+      document.getElementById('percHonorarios').value = data.percHonorarios;
+      
+      document.getElementById('jurosTipoA').value = data.jurosTipoA;
+      document.getElementById('jurosTaxaA').value = data.jurosTaxaA;
+      document.getElementById('multaA').value = data.multaA;
+      
+      document.getElementById('jurosTipoB').value = data.jurosTipoB;
+      document.getElementById('jurosTaxaB').value = data.jurosTaxaB;
+      document.getElementById('multaB').value = data.multaB;
+      
+      alert("Projeto carregado! Clique em Calcular.");
+    } catch(err) {
+      alert("Erro ao ler arquivo JSON.");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function exportCSV() {
+  if(!window.lastEvolution) return alert("Calcule primeiro.");
+  let csv = "Mes;Fator;Total_A;Total_B;Diferenca\n";
+  window.lastEvolution.forEach(row => {
+    csv += `${row.data};${row.fator.toFixed(6).replace('.',',')};${row.totalA.toFixed(2).replace('.',',')};${row.totalB.toFixed(2).replace('.',',')};${(row.totalA - row.totalB).toFixed(2).replace('.',',')}\n`;
+  });
+  
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'tabela_comparativa.csv';
+  a.click();
+}
+
+</script>
+</body>
+</html>

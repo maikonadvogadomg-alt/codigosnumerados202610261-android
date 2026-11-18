@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fatiador Universal de Código</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel2: #1e293b;
+      --dark: #020617;
+      --border: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --blue: #38bdf8;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--bg);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      padding: 8px 11px;
+      color: var(--text);
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #263750;
+      border-color: var(--blue);
+    }
+
+    button.primary {
+      color: white;
+      background: #0369a1;
+      border-color: var(--blue);
+    }
+
+    button.success {
+      background: #166534;
+      border-color: var(--green);
+    }
+
+    button.danger {
+      background: #7f1d1d;
+      border-color: var(--red);
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    input,
+    select,
+    textarea {
+      color: var(--text);
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--blue);
+    }
+
+    header {
+      padding: 18px 22px;
+      background: var(--dark);
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      margin: 0 0 5px;
+      font-size: 23px;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 18px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: #0b1220;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .options label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .options input,
+    .options select {
+      width: 145px;
+      margin-left: 5px;
+      padding: 7px;
+    }
+
+    .options input[type="number"] {
+      width: 90px;
+    }
+
+    .status {
+      padding: 7px 18px;
+      color: var(--muted);
+      background: var(--dark);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .status.ok {
+      color: var(--green);
+    }
+
+    .status.warning {
+      color: var(--yellow);
+    }
+
+    .status.error {
+      color: var(--red);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px minmax(400px, 1fr) 360px;
+      min-height: calc(100vh - 190px);
+    }
+
+    .panel {
+      min-width: 0;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+    }
+
+    .panel:last-child {
+      border-right: 0;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 46px;
+      padding: 10px 12px;
+      background: #0b1220;
+      border-bottom: 1px solid var(--border);
+      font-weight: bold;
+    }
+
+    .panel-title small {
+      color: var(--muted);
+      font-weight: normal;
+    }
+
+    .list {
+      max-height: calc(100vh - 236px);
+      overflow: auto;
+    }
+
+    .file-row,
+    .part-row {
+      display: flex;
+      gap: 5px;
+      padding: 5px;
+      border-bottom: 1px solid #182235;
+    }
+
+    .file-row button:first-child,
+    .part-row button:first-child {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .delete {
+      color: #fecaca;
+      background: transparent;
+      border: 0;
+    }
+
+    .empty {
+      padding: 25px 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .editor-info {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 11px;
+      color: var(--muted);
+      background: #0b1220;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    #editor {
+      display: block;
+      width: 100%;
+      height: calc(100vh - 292px);
+      min-height: 480px;
+      padding: 15px;
+      resize: none;
+      color: #dbeafe;
+      background: var(--dark);
+      border: 0;
+      border-radius: 0;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      tab-size: 2;
+    }
+
+    .analysis {
+      height: calc(100vh - 236px);
+      padding: 11px;
+      overflow: auto;
+    }
+
+    .analysis h3 {
+      margin: 14px 0 7px;
+      color: var(--blue);
+      font-size: 16px;
+    }
+
+    .analysis h3:first-child {
+      margin-top: 0;
+    }
+
+    .card {
+      margin: 7px 0;
+      padding: 9px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+    }
+
+    .part-card {
+      margin: 8px 0;
+      padding: 10px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+    }
+
+    .part-card h4 {
+      margin: 0 0 5px;
+      color: #bae6fd;
+    }
+
+    .part-card small {
+      color: var(--muted);
+    }
+
+    .part-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    pre {
+      max-height: 280px;
+      margin: 8px 0 0;
+      padding: 9px;
+      overflow: auto;
+      color: #dbeafe;
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 5px;
+      font: 12px/1.45 Consolas, monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 230px 1fr;
+      }
+
+      .analysis-panel {
+        grid-column: 1 / -1;
+        border-top: 1px solid var(--border);
+      }
+
+      .analysis {
+        height: auto;
+        max-height: 600px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .layout {
+        display: block;
+      }
+
+      .panel {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      #editor {
+        height: 430px;
+        min-height: 430px;
+      }
+
+      .list {
+        max-height: 350px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Fatiador Universal de Código</h1>
+    <p>
+      Cole, importe, analise, divida, copie e exporte arquivos de qualquer tipo.
+    </p>
+  </header>
+
+  <div class="toolbar">
+    <label>
+      <input id="folderInput" class="file-input" type="file" webkitdirectory directory multiple>
+      <button id="folderButton">📁 Importar pasta</button>
+    </label>
+
+    <label>
+      <input id="filesInput" class="file-input" type="file" multiple>
+      <button id="filesButton">📄 Importar arquivos</button>
+    </label>
+
+    <button id="pasteButton">📋 Colar arquivo</button>
+    <button id="newButton">➕ Novo arquivo</button>
+    <button id="saveButton" class="success">💾 Salvar</button>
+    <button id="downloadButton">⬇️ Baixar atual</button>
+    <button id="markdownButton">Exportar Markdown</button>
+    <button id="htmlButton">Exportar HTML</button>
+    <button id="clearButton" class="danger">Limpar tudo</button>
+  </div>
+
+  <div class="options">
+    <label>
+      Método:
+      <select id="splitMethod">
+        <option value="lines">Por linhas</option>
+        <option value="chars">Por caracteres</option>
+        <option value="structure">Por estrutura</option>
+        <option value="hybrid">Estrutura + limite</option>
+      </select>
+    </label>
+
+    <label>
+      Limite:
+      <input id="splitLimit" type="number" min="1" value="500">
+    </label>
+
+    <label>
+      Unidade:
+      <select id="splitUnit">
+        <option value="lines">linhas</option>
+        <option value="chars">caracteres</option>
+      </select>
+    </label>
+
+    <button id="splitButton" class="primary">✂️ Fatiar arquivo atual</button>
+    <button id="copyAllButton">Copiar arquivo atual</button>
+    <input id="searchInput" type="search" placeholder="Pesquisar no arquivo atual">
+    <button id="searchButton">Pesquisar</button>
+  </div>
+
+  <div id="status" class="status">Nenhum arquivo carregado.</div>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-title">
+        <span>Arquivos</span>
+        <small id="fileCount">0</small>
+      </div>
+      <div id="fileList" class="list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span id="currentTitle">Editor</span>
+        <small id="currentType"></small>
+      </div>
+
+      <div class="editor-info">
+        <span id="editorInfo">Nenhum arquivo aberto</span>
+        <span id="saveInfo">Auto-save ativo</span>
+      </div>
+
+      <textarea id="editor" spellcheck="false"
+        placeholder="Cole ou abra um arquivo aqui..."></textarea>
+    </section>
+
+    <section class="panel analysis-panel">
+      <div class="panel-title">
+        <span>Índice e pedaços</span>
+        <small id="partCount">0</small>
+      </div>
+
+      <div id="analysis" class="analysis">
+        <div class="empty">Fatie um arquivo para ver os pedaços.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "fatiador-universal-v1";
+    const files = new Map();
+
+    let currentPath = null;
+    let currentParts = [];
+    let saveTimer = null;
+
+    const $ = id => document.getElementById(id);
+
+    $("folderButton").onclick = () => $("folderInput").click();
+    $("filesButton").onclick = () => $("filesInput").click();
+
+    $("folderInput").onchange = event => {
+      importFiles([...event.target.files]);
+      event.target.value = "";
+    };
+
+    $("filesInput").onchange = event => {
+      importFiles([...event.target.files]);
+      event.target.value = "";
+    };
+
+    $("pasteButton").onclick = pasteFile;
+    $("newButton").onclick = newFile;
+    $("saveButton").onclick = () => saveProject(true);
+    $("splitButton").onclick = splitCurrent;
+    $("copyAllButton").onclick = copyCurrent;
+    $("downloadButton").onclick = downloadCurrent;
+    $("markdownButton").onclick = exportMarkdown;
+    $("htmlButton").onclick = exportHtml;
+    $("searchButton").onclick = searchCurrent;
+    $("clearButton").onclick = clearAll;
+
+    $("searchInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") searchCurrent();
+    });
+
+    $("editor").addEventListener("input", () => {
+      if (!currentPath || !files.has(currentPath)) return;
+
+      const text = $("editor").value;
+      const file = files.get(currentPath);
+
+      file.text = text;
+      file.size = new Blob([text]).size;
+
+      updateInfo();
+      scheduleSave();
+
+      currentParts = [];
+      renderEmptyAnalysis();
+    });
+
+    $("editor").addEventListener("keydown", event => {
+      if (event.key !== "Tab") return;
+
+      event.preventDefault();
+
+      const editor = $("editor");
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+
+      editor.value =
+        editor.value.slice(0, start) +
+        "  " +
+        editor.value.slice(end);
+
+      editor.selectionStart = editor.selectionEnd = start + 2;
+      editor.dispatchEvent(new Event("input"));
+    });
+
+    function setStatus(message, type = "") {
+      $("status").textContent = message;
+      $("status").className = "status " + type;
+    }
+
+    function normalizePath(path) {
+      return String(path || "arquivo.txt")
+        .replaceAll("\\", "/")
+        .replace(/^\/+/, "");
+    }
+
+    function getExtension(path) {
+      const name = path.toLowerCase().split("/").pop();
+
+      if (name === "dockerfile") return "dockerfile";
+      if (name.startsWith(".env")) return "env";
+
+      const pieces = name.split(".");
+      return pieces.length > 1 ? pieces.pop() : "";
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes) return "0 bytes";
+
+      const units = ["bytes", "KB", "MB", "GB"];
+      const index = Math.min(
+        Math.floor(Math.log(bytes) / Math.log(1024)),
+        units.length - 1
+      );
+
+      return `${(bytes / 1024 ** index).toFixed(index ? 1 : 0)} ${units[index]}`;
+    }
+
+    function importFiles(list) {
+      if (!list.length) return;
+
+      let pending = list.length;
+      let loaded = 0;
+
+      list.forEach(file => {
+        const reader = new FileReader();
+        const path = normalizePath(file.webkitRelativePath || file.name);
+
+        reader.onload = () => {
+          files.set(path, {
+            path,
+            name: file.name,
+            type: file.type || "text/plain",
+            size: file.size,
+            text: String(reader.result || "")
+          });
+
+          loaded++;
+          pending--;
+
+          if (!pending) {
+            renderFileList();
+
+            if (!currentPath && files.size) {
+              openFile([...files.keys()].sort()[0]);
+            }
+
+            saveProject();
+            setStatus(`${loaded} arquivo(s) importado(s).`, "ok");
+          }
+        };
+
+        reader.onerror = () => {
+          pending--;
+
+          if (!pending) {
+            setStatus("Importação finalizada com alguns erros.", "warning");
+          }
+        };
+
+        reader.readAsText(file);
+      });
+    }
+
+    async function pasteFile() {
+      let text = "";
+
+      try {
+        text = await navigator.clipboard.readText();
+      } catch {
+        text = prompt("Cole o conteúdo do arquivo:");
+      }
+
+      if (!text) {
+        setStatus("Nenhum conteúdo foi colado.", "warning");
+        return;
+      }
+
+      const suggestedName = currentPath || "arquivo-colado.txt";
+      const name = prompt("Nome do arquivo:", suggestedName);
+
+      if (!name) return;
+
+      const path = normalizePath(name);
+
+      files.set(path, {
+        path,
+        name: path.split("/").pop(),
+        type: "text/plain",
+        size: new Blob([text]).size,
+        text
+      });
+
+      renderFileList();
+      openFile(path);
+      saveProject();
+
+      setStatus(`Arquivo colado: ${path}`, "ok");
+    }
+
+    function newFile() {
+      const name = prompt("Nome do novo arquivo:", "novo-arquivo.txt");
+
+      if (!name) return;
+
+      const path = normalizePath(name);
+
+      files.set(path, {
+        path,
+        name: path.split("/").pop(),
+        type: "text/plain",
+        size: 0,
+        text: ""
+      });
+
+      renderFileList();
+      openFile(path);
+      saveProject();
+    }
+
+    function renderFileList() {
+      const list = $("fileList");
+      list.replaceChildren();
+      $("fileCount").textContent = files.size;
+
+      if (!files.size) {
+        list.innerHTML = '<div class="empty">Nenhum arquivo carregado.</div>';
+        return;
+      }
+
+      [...files.keys()]
+        .sort((a, b) => a.localeCompare(b))
+        .forEach(path => {
+          const row = document.createElement("div");
+          row.className = "file-row";
+
+          const open = document.createElement("button");
+          open.textContent = path;
+          open.title = path;
+          open.onclick = () => openFile(path);
+
+          const remove = document.createElement("button");
+          remove.className = "delete";
+          remove.textContent = "×";
+          remove.title = "Excluir arquivo";
+
+          remove.onclick = () => {
+            if (!confirm(`Excluir ${path}?`)) return;
+
+            files.delete(path);
+
+            if (currentPath === path) {
+              currentPath = null;
+              $("editor").value = "";
+              $("currentTitle").textContent = "Editor";
+              $("currentType").textContent = "";
+              updateInfo();
+              renderEmptyAnalysis();
+            }
+
+            renderFileList();
+
+            if (!currentPath && files.size) {
+              openFile([...files.keys()].sort()[0]);
+            }
+
+            saveProject();
+          };
+
+          row.append(open, remove);
+          list.appendChild(row);
+        });
+    }
+
+    function openFile(path) {
+      const file = files.get(path);
+      if (!file) return;
+
+      currentPath = path;
+      currentParts = [];
+
+      $("editor").value = file.text;
+      $("currentTitle").textContent = path;
+      $("currentType").textContent =
+        getExtension(path).toUpperCase() || "DESCONHECIDO";
+
+      $("downloadButton").disabled = false;
+
+      updateInfo();
+      renderFileList();
+      renderEmptyAnalysis();
+    }
+
+    function updateInfo() {
+      if (!currentPath || !files.has(currentPath)) {
+        $("editorInfo").textContent = "Nenhum arquivo aberto";
+        return;
+      }
+
+      const text = $("editor").value;
+      const lines = text.split(/\r?\n/).length;
+      const bytes = new Blob([text]).size;
+
+      $("editorInfo").textContent =
+        `${formatBytes(bytes)} • ${lines} linha(s) • ${text.length} caractere(s)`;
+    }
+
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+
+      $("saveInfo").textContent = "Salvando...";
+
+      saveTimer = setTimeout(() => saveProject(), 700);
+    }
+
+    function saveProject(showMessage = false) {
+      try {
+        const data = [...files.values()].map(file => ({
+          path: file.path,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          text: file.text
+        }));
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          savedAt: new Date().toISOString(),
+          files: data
+        }));
+
+        $("saveInfo").textContent =
+          "Salvo às " + new Date().toLocaleTimeString("pt-BR");
+
+        if (showMessage) setStatus("Projeto salvo no navegador.", "ok");
+      } catch {
+        $("saveInfo").textContent = "Falha no auto-save";
+
+        setStatus(
+          "Não foi possível salvar. O navegador pode ter atingido o limite de armazenamento.",
+          "error"
+        );
+      }
+    }
+
+    function restoreProject() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+
+        const data = JSON.parse(raw);
+
+        (data.files || []).forEach(file => {
+          files.set(file.path, file);
+        });
+
+        if (files.size) {
+          renderFileList();
+          openFile([...files.keys()].sort()[0]);
+          setStatus(`${files.size} arquivo(s) restaurado(s) do auto-save.`, "ok");
+        }
+      } catch {
+        setStatus("Não foi possível restaurar o auto-save.", "warning");
+      }
+    }
+
+    function splitCurrent() {
+      if (!currentPath || !files.has(currentPath)) {
+        setStatus("Abra ou cole um arquivo primeiro.", "warning");
+        return;
+      }
+
+      const text = $("editor").value;
+      const method = $("splitMethod").value;
+      const limit = Math.max(1, Number($("splitLimit").value) || 500);
+      const unit = $("splitUnit").value;
+
+      if (!text) {
+        setStatus("O arquivo está vazio.", "warning");
+        return;
+      }
+
+      if (method === "lines") {
+        currentParts = splitByLines(text, limit);
+      } else if (method === "chars") {
+        currentParts = splitByChars(text, limit);
+      } else if (method === "structure") {
+        currentParts = splitByStructure(text);
+      } else {
+        currentParts = splitHybrid(text, limit, unit);
+      }
+
+      renderParts();
+
+      setStatus(
+        `${currentParts.length} pedaço(s) criado(s) pelo método "${method}".`,
+        "ok"
+      );
+    }
+
+    function splitByLines(text, limit) {
+      const lines = text.split(/\r?\n/);
+      const parts = [];
+
+      for (let start = 0; start < lines.length; start += limit) {
+        const end = Math.min(start + limit, lines.length);
+
+        parts.push({
+          title: `Parte ${parts.length + 1}`,
+          start: start + 1,
+          end,
+          text: lines.slice(start, end).join("\n")
+        });
+      }
+
+      return parts;
+    }
+
+    function splitByChars(text, limit) {
+      const parts = [];
+      let position = 0;
+      let lineStart = 1;
+
+      while (position < text.length) {
+        let end = Math.min(position + limit, text.length);
+
+        if (end < text.length) {
+          const newline = text.lastIndexOf("\n", end);
+
+          if (newline > position) {
+            end = newline;
+          }
+        }
+
+        const piece = text.slice(position, end);
+        const startLine = lineStart;
+        const lineCount = piece.split(/\r?\n/).length;
+        const endLine = startLine + lineCount - 1;
+
+        parts.push({
+          title: `Parte ${parts.length + 1}`,
+          start: startLine,
+          end: endLine,
+          text: piece
+        });
+
+        lineStart = endLine + 1;
+        position = end;
+
+        while (text[position] === "\n" || text[position] === "\r") {
+          position++;
+        }
+      }
+
+      return parts;
+    }
+
+    function getStructurePattern(ext) {
+      const patterns = {
+        js: /^\s*(?:export\s+)?(?:async\s+)?function\s+[\w$]+|^\s*(?:export\s+)?class\s+[\w$]+|^\s*(?:export\s+)?const\s+[A-Za-z_$][\w$]*\s*=/,
+        jsx: /^\s*(?:export\s+)?function\s+[\w$]+|^\s*(?:export\s+)?const\s+[A-Z][\w$]*\s*=/,
+        ts: /^\s*(?:export\s+)?(?:async\s+)?function\s+[\w$]+|^\s*(?:export\s+)?class\s+[\w$]+|^\s*(?:export\s+)?(?:interface|type)\s+[\w$]+/,
+        tsx: /^\s*(?:export\s+)?(?:async\s+)?function\s+[\w$]+|^\s*(?:export\s+)?class\s+[\w$]+|^\s*(?:export\s+)?const\s+[A-Z][\w$]*\s*=/,
+        vue: /^\s*<(?:template|script|style)\b|^\s*(?:export\s+)?(?:function|const|class)\b/,
+        svelte: /^\s*<(?:script|style|svelte:head)\b|^\s*(?:function|const|class)\b/,
+        py: /^\s*(?:async\s+)?(?:def|class)\s+\w+/,
+        java: /^\s*(?:public|private|protected)?\s*(?:static\s+)?(?:class|interface|enum)\s+\w+|^\s*(?:public|private|protected).*\([^;]*\)\s*\{/,
+        php: /^\s*(?:public|private|protected)?\s*(?:function|class)\s+\w+/,
+        c: /^\s*(?:static\s+)?[\w*]+\s+\w+\s*\([^;]*\)\s*\{/,
+        cpp: /^\s*(?:static\s+)?[\w:<>,*]+\s+\w+\s*\([^;]*\)\s*\{/,
+        go: /^\s*func\s+/,
+        rs: /^\s*(?:pub\s+)?(?:fn|struct|enum|impl)\s+/,
+        css: /^\s*(?:@media|@supports|@keyframes|[^/@\s][^{]*)\s*\{/,
+        scss: /^\s*(?:@mixin|@media|@supports|[^/@\s][^{]*)\s*\{/,
+        html: /^\s*<(?:html|head|body|main|section|article|header|footer|script|style|template)\b/i,
+        htm: /^\s*<(?:html|head|body|main|section|article|header|footer|script|style|template)\b/i,
+        md: /^\s{0,3}#{1,6}\s+/,
+        markdown: /^\s{0,3}#{1,6}\s+/,
+        sql: /^\s*(?:CREATE|ALTER|SELECT|INSERT|UPDATE|DELETE|WITH)\b/i
+      };
+
+      return patterns[ext] || /^\s*(?:function|class|def|module|section|component)\b/i;
+    }
+
+    function splitByStructure(text) {
+      const lines = text.split(/\r?\n/);
+      const ext = getExtension(currentPath);
+      const pattern = getStructurePattern(ext);
+      const starts = [];
+
+      lines.forEach((line, index) => {
+        pattern.lastIndex = 0;
+
+        if (pattern.test(line)) {
+          starts.push({
+            line: index + 1,
+            title: line.trim().slice(0, 120)
+          });
+        }
+      });
+
+      if (!starts.length) {
+        return [{
+          title: "Arquivo completo",
+          start: 1,
+          end: lines.length,
+          text
+        }];
+      }
+
+      return starts.map((block, index) => {
+        const start = block.line - 1;
+        const end = index + 1 < starts.length
+          ? starts[index + 1].line - 1
+          : lines.length;
+
+        return {
+          title: block.title,
+          start: block.line,
+          end,
+          text: lines.slice(start, end).join("\n")
+        };
+      });
+    }
+
+    function splitHybrid(text, limit, unit) {
+      const structural = splitByStructure(text);
+      const parts = [];
+
+      structural.forEach(block => {
+        const size = unit === "chars"
+          ? block.text.length
+          : block.text.split(/\r?\n/).length;
+
+        if (size <= limit) {
+          parts.push(block);
+          return;
+        }
+
+        const divided = unit === "chars"
+          ? splitByChars(block.text, limit)
+          : splitByLines(block.text, limit);
+
+        divided.forEach((piece, index) => {
+          parts.push({
+            title: `${block.title} — parte ${index + 1}`,
+            start: block.start + piece.start - 1,
+            end: block.start + piece.end - 1,
+            text: piece.text
+          });
+        });
+      });
+
+      return parts;
+    }
+
+    function renderEmptyAnalysis() {
+      currentParts = [];
+      $("partCount").textContent = "0";
+      $("analysis").innerHTML =
+        '<div class="empty">Fatie o arquivo atual para criar o índice.</div>';
+    }
+
+    function renderParts() {
+      const panel = $("analysis");
+      panel.replaceChildren();
+      $("partCount").textContent = currentParts.length;
+
+      if (!currentParts.length) {
+        renderEmptyAnalysis();
+        return;
+      }
+
+      const title = document.createElement("h3");
+      title.textContent = `Índice de ${currentPath}`;
+      panel.appendChild(title);
+
+      currentParts.forEach((part, index) => {
+        const card = document.createElement("div");
+        card.className = "part-card";
+
+        const heading = document.createElement("h4");
+        heading.textContent = `${index + 1}. ${part.title}`;
+
+        const info = document.createElement("small");
+        info.textContent =
+          `Linhas ${part.start}–${part.end} • ${part.text.length} caracteres`;
+
+        const actions = document.createElement("div");
+        actions.className = "part-actions";
+
+        const copy = document.createElement("button");
+        copy.textContent = "Copiar";
+        copy.onclick = () => copyText(part.text, copy);
+
+        const download = document.createElement("button");
+        download.textContent = "Baixar";
+        download.onclick = () => downloadBlob(
+          new Blob([part.text], { type: "text/plain;charset=utf-8" }),
+          `${baseName(currentPath)}-parte-${String(index + 1).padStart(3, "0")}.${getExtension(currentPath) || "txt"}`
+        );
+
+        const focus = document.createElement("button");
+        focus.textContent = "Ir para linha";
+        focus.onclick = () => focusLine(part.start);
+
+        const preview = document.createElement("pre");
+        const code = document.createElement("code");
+        code.textContent = part.text.slice(0, 1500) +
+          (part.text.length > 1500 ? "\n\n... prévia reduzida ..." : "");
+
+        preview.appendChild(code);
+        actions.append(copy, download, focus);
+        card.append(heading, info, actions, preview);
+        panel.appendChild(card);
+      });
+    }
+
+    async function copyText(text, button) {
+      try {
+        await navigator.clipboard.writeText(text);
+
+        if (button) {
+          const old = button.textContent;
+          button.textContent = "Copiado!";
+          setTimeout(() => button.textContent = old, 1200);
+        }
+
+        setStatus("Conteúdo copiado.", "ok");
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+        setStatus("Conteúdo copiado.", "ok");
+      }
+    }
+
+    function copyCurrent() {
+      if (!currentPath) {
+        setStatus("Nenhum arquivo aberto.", "warning");
+        return;
+      }
+
+      copyText($("editor").value);
+    }
+
+    function focusLine(line) {
+      const editor = $("editor");
+      const lines = editor.value.split(/\r?\n/);
+      let position = 0;
+
+      for (let i = 0; i < line - 1; i++) {
+        position += lines[i].length + 1;
+      }
+
+      editor.focus();
+      editor.setSelectionRange(
+        position,
+        position + (lines[line - 1] || "").length
+      );
+    }
+
+    function searchCurrent() {
+      const term = $("searchInput").value.trim().toLowerCase();
+
+      if (!term || !currentPath) {
+        setStatus("Digite uma busca e abra um arquivo.", "warning");
+        return;
+      }
+
+      const results = [];
+      const lines = $("editor").value.split(/\r?\n/);
+
+      lines.forEach((line, index) => {
+        if (line.toLowerCase().includes(term)) {
+          results.push({
+            line: index + 1,
+            text: line.trim()
+          });
+        }
+      });
+
+      const panel = $("analysis");
+      panel.replaceChildren();
+
+      const title = document.createElement("h3");
+      title.textContent = `Pesquisa: ${term}`;
+      panel.appendChild(title);
+
+      results.forEach(result => {
+        const button = document.createElement("button");
+        button.className = "part-row";
+        button.textContent = `Linha ${result.line}: ${result.text}`;
+        button.onclick = () => focusLine(result.line);
+        panel.appendChild(button);
+      });
+
+      if (!results.length) {
+        panel.appendChild(
+          document.createElement("div")
+        ).textContent = "Nenhum resultado encontrado.";
+      }
+
+      setStatus(`${results.length} resultado(s) encontrado(s).`);
+    }
+
+    function baseName(path) {
+      return path
+        .split("/")
+        .pop()
+        .replace(/\.[^.]+$/, "");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function downloadCurrent() {
+      if (!currentPath) return;
+
+      downloadBlob(
+        new Blob([$("editor").value], {
+          type: "text/plain;charset=utf-8"
+        }),
+        currentPath.split("/").pop()
+      );
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function exportMarkdown() {
+      if (!currentPath || !currentParts.length) {
+        setStatus("Fatie o arquivo antes de exportar.", "warning");
+        return;
+      }
+
+      let md = `# Índice de ${currentPath}\n\n`;
+
+      currentParts.forEach((part, index) => {
+        md += `${index + 1}. [${part.title}](#parte-${index + 1}) — linhas ${part.start}–${part.end}\n`;
+      });
+
+      currentParts.forEach((part, index) => {
+        const ext = getExtension(currentPath) || "text";
+
+        md += `\n## <a id="parte-${index + 1}"></a>${index + 1}. ${part.title}\n\n`;
+        md += `Linhas ${part.start}–${part.end}\n\n`;
+        md += `\`\`\`${ext}\n${part.text}\n\`\`\`\n`;
+      });
+
+      downloadBlob(
+        new Blob([md], { type: "text/markdown;charset=utf-8" }),
+        `${baseName(currentPath)}-indice.md`
+      );
+
+      setStatus("Markdown exportado.", "ok");
+    }
+
+    function exportHtml() {
+      if (!currentPath || !currentParts.length) {
+        setStatus("Fatie o arquivo antes de exportar.", "warning");
+        return;
+      }
+
+      const index = currentParts.map((part, number) =>
+        `<li><a href="#bloco-${number}">${escapeHtml(part.title)}</a> — linhas ${part.start}–${part.end}</li>`
+      ).join("");
+
+      const blocks = currentParts.map((part, number) => `
+        <section class="block" id="bloco-${number}">
+          <h2>${escapeHtml(part.title)}</h2>
+          <p>Linhas ${part.start}–${part.end} • ${part.text.length} caracteres</p>
+          <button onclick="copyBlock(this)">Copiar este bloco</button>
+          <pre><code>${escapeHtml(part.text)}</code></pre>
+        </section>
+      `).join("");
+
+      const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Índice de ${escapeHtml(currentPath)}</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 25px;
+      color: #dbeafe;
+      background: #0f172a;
+      font-family: Arial, sans-serif;
+    }
+
+    h1, h2 {
+      color: #7dd3fc;
+    }
+
+    a {
+      color: #7dd3fc;
+    }
+
+    .block {
+      margin: 22px 0;
+      padding: 15px;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 9px;
+    }
+
+    button {
+      padding: 8px 10px;
+      color: white;
+      background: #0369a1;
+      border: 1px solid #38bdf8;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    pre {
+      padding: 13px;
+      overflow: auto;
+      color: #dbeafe;
+      background: #020617;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: 13px/1.5 Consolas, monospace;
+    }
+
+    p {
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Índice de ${escapeHtml(currentPath)}</h1>
+  <p>Arquivo dividido em ${currentParts.length} pedaço(s).</p>
+  <h2>Índice</h2>
+  <ol>${index}</ol>
+  ${blocks}
+
+  <script>
+    async function copyBlock(button) {
+      const code = button.parentElement.querySelector("code").innerText;
+
+      try {
+        await navigator.clipboard.writeText(code);
+        const old = button.textContent;
+        button.textContent = "Copiado!";
+        setTimeout(() => button.textContent = old, 1200);
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = code;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+        button.textContent = "Copiado!";
+      }
+    }
+  <\/script>
+</body>
+</html>`;
+
+      downloadBlob(
+        new Blob([html], { type: "text/html;charset=utf-8" }),
+        `${baseName(currentPath)}-indice.html`
+      );
+
+      setStatus("HTML exportado com botões de cópia.", "ok");
+    }
+
+    function clearAll() {
+      if (!confirm("Apagar todos os arquivos e o auto-save?")) return;
+
+      files.clear();
+      currentPath = null;
+      currentParts = [];
+
+      localStorage.removeItem(STORAGE_KEY);
+
+      renderFileList();
+      renderEmptyAnalysis();
+
+      $("editor").value = "";
+      $("currentTitle").textContent = "Editor";
+      $("currentType").textContent = "";
+      $("downloadButton").disabled = true;
+
+      updateInfo();
+      setStatus("Tudo foi apagado.", "warning");
+    }
+
+    renderFileList();
+    restoreProject();
+
+    if (!files.size) {
+      renderEmptyAnalysis();
+    }
+  </script>
+</body>
+</html>

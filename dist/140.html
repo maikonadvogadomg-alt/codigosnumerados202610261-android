@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comparar Código</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* HEADER */
+.header { background: #1e293b; border-bottom: 2px solid #334155; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.title { font-size: 15px; font-weight: 700; color: #58a6ff; }
+.btn { padding: 7px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; transition: 0.2s; }
+.btn-blue  { background: #3b82f6; color: #fff; }
+.btn-green { background: #22c55e; color: #fff; }
+.btn-red   { background: #ef4444; color: #fff; }
+.btn-gray  { background: #475569; color: #fff; }
+.btn:hover { opacity: 0.85; }
+.status { margin-left: auto; font-size: 11px; color: #94a3b8; }
+
+/* SEARCH BAR */
+.searchbar { background: #1e293b; border-bottom: 1px solid #334155; padding: 8px 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.search-input { flex: 1; min-width: 180px; padding: 7px 12px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; color: #e2e8f0; font-size: 12px; outline: none; }
+.search-input:focus { border-color: #58a6ff; }
+.search-count { font-size: 11px; color: #3fb950; min-width: 90px; }
+.nav-btn { padding: 6px 10px; background: #334155; border: none; border-radius: 4px; color: #e2e8f0; cursor: pointer; font-size: 12px; }
+.nav-btn:hover { background: #475569; }
+.chk-label { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #94a3b8; cursor: pointer; }
+
+/* PAINEIS */
+.panels { flex: 1; display: flex; overflow: hidden; }
+.panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid #334155; }
+.panel:last-child { border-right: none; }
+.panel-header { padding: 8px 12px; background: #0f172a; border-bottom: 1px solid #334155; font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+.panel-header.blue  { color: #58a6ff; }
+.panel-header.green { color: #3fb950; }
+.panel-header.gold  { color: #ffc107; }
+.panel-body { flex: 1; display: flex; overflow: hidden; }
+.line-nums { background: #0a0f1a; color: #475569; padding: 8px 10px; font-family: monospace; font-size: 11px; line-height: 1.6; overflow: hidden; user-select: none; text-align: right; min-width: 40px; border-right: 1px solid #1e293b; }
+.code-area { flex: 1; padding: 8px 12px; background: #0a0f1a; color: #e2e8f0; border: none; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6; resize: none; outline: none; overflow: auto; white-space: pre; }
+.code-area.editable { background: #0d1117; }
+
+/* RESULTADOS */
+.results-panel { width: 260px; background: #1e293b; border-left: 2px solid #334155; display: flex; flex-direction: column; overflow: hidden; }
+.results-header { padding: 8px 12px; background: #0f172a; border-bottom: 1px solid #334155; font-size: 11px; font-weight: 600; color: #ffc107; }
+.results-body { flex: 1; overflow-y: auto; padding: 6px; }
+.result-item { padding: 7px 8px; margin-bottom: 5px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; cursor: pointer; font-size: 10px; transition: 0.2s; }
+.result-item:hover { border-color: #58a6ff; background: #1e293b; }
+.result-item.active { border-color: #3fb950; background: #0d2818; }
+.result-line { color: #58a6ff; font-weight: 700; margin-bottom: 3px; }
+.result-text { color: #94a3b8; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-copy { padding: 3px 7px; background: #6366f1; color: #fff; border: none; border-radius: 3px; cursor: pointer; font-size: 9px; margin-top: 4px; }
+.result-copy:hover { background: #4f46e5; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 16px; background: #22c55e; color: #fff; border-radius: 8px; font-size: 11px; font-weight: 600; z-index: 9999; animation: pop 0.3s ease; }
+.toast.err { background: #ef4444; }
+@keyframes pop { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+@media (max-width: 700px) {
+  .panels { flex-direction: column; }
+  .results-panel { width: 100%; height: 160px; border-left: none; border-top: 2px solid #334155; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="title">🔍 Comparar e Buscar Código</div>
+
+  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+    <div class="btn btn-blue">📁 Carregar Arquivo</div>
+    <input type="file" id="file-input" style="display:none" accept="*">
+  </label>
+
+  <button class="btn btn-gray" onclick="clearAll()">🗑️ Limpar</button>
+  <button class="btn btn-green" onclick="copyEditor()">📋 Copiar Código</button>
+  <button class="btn btn-red"  onclick="downloadCode()">💾 Baixar</button>
+
+  <div class="status" id="status">Pronto</div>
+</div>
+
+<!-- BARRA DE BUSCA -->
+<div class="searchbar">
+  <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar no código...">
+  <button class="nav-btn" onclick="prevMatch()" title="Anterior (Shift+Enter)">▲</button>
+  <button class="nav-btn" onclick="nextMatch()" title="Próximo (Enter)">▼</button>
+  <span class="search-count" id="search-count">0 resultados</span>
+  <label class="chk-label"><input type="checkbox" id="chk-case"> Maiúsc</label>
+  <label class="chk-label"><input type="checkbox" id="chk-regex"> Regex</label>
+  <label class="chk-label"><input type="checkbox" id="chk-word"> Palavra</label>
+</div>
+
+<!-- PAINEIS -->
+<div class="panels">
+
+  <!-- PAINEL ESQUERDO: código carregado -->
+  <div class="panel">
+    <div class="panel-header blue">
+      <span id="panel-left-title">📄 Cole ou carregue o código aqui</span>
+      <span id="panel-left-info" style="font-size:10px;color:#475569;"></span>
+    </div>
+    <div class="panel-body">
+      <div class="line-nums" id="ln-left"></div>
+      <textarea class="code-area editable" id="editor-left"
+        placeholder="Cole o código do 4.6 aqui...&#10;&#10;Ou use o botão 📁 para carregar um arquivo."
+        spellcheck="false"
+        oninput="onEditorChange()"
+        onscroll="syncLN('left')"></textarea>
+    </div>
+  </div>
+
+  <!-- PAINEL DE RESULTADOS -->
+  <div class="results-panel">
+    <div class="results-header">🎯 Resultados da Busca</div>
+    <div class="results-body" id="results-body">
+      <div style="color:#475569;font-size:11px;padding:16px;text-align:center;">
+        Digite algo na busca para encontrar no código
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let matches = [];
+let matchIndex = 0;
+
+/* ── ARQUIVO ── */
+$('file-input').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    $('editor-left').value = text;
+    $('panel-left-title').textContent = '📄 ' + file.name;
+    $('panel-left-info').textContent = (file.size/1024).toFixed(1) + ' KB';
+    onEditorChange();
+    setStatus('✅ Carregado: ' + file.name);
+    toast('✅ Arquivo carregado!');
+  } catch(err) {
+    toast('❌ Erro: ' + err.message, true);
+  }
+  e.target.value = '';
+});
+
+/* ── LINHA NUMBERS ── */
+function updateLN(side) {
+  const ta = $('editor-' + side);
+  const ln = $('ln-' + side);
+  if (!ta || !ln) return;
+  const n = ta.value.split('\n').length;
+  ln.textContent = Array.from({length: n}, (_, i) => i + 1).join('\n');
+}
+
+function syncLN(side) {
+  const ta = $('editor-' + side);
+  const ln = $('ln-' + side);
+  if (ta && ln) ln.scrollTop = ta.scrollTop;
+}
+
+function onEditorChange() {
+  updateLN('left');
+  doSearch();
+}
+
+/* ── BUSCA ── */
+$('search-input').addEventListener('input', doSearch);
+$('chk-case').addEventListener('change', doSearch);
+$('chk-regex').addEventListener('change', doSearch);
+$('chk-word').addEventListener('change', doSearch);
+
+$('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.shiftKey ? prevMatch() : nextMatch(); }
+});
+
+function doSearch() {
+  const term = $('search-input').value;
+  const code = $('editor-left').value;
+  matches = [];
+  matchIndex = 0;
+
+  if (!term || !code) {
+    $('search-count').textContent = '0 resultados';
+    $('results-body').innerHTML = '<div style="color:#475569;font-size:11px;padding:16px;text-align:center;">Digite algo na busca</div>';
+    return;
+  }
+
+  const caseSens = $('chk-case').checked;
+  const useRegex = $('chk-regex').checked;
+  const wholeWord = $('chk-word').checked;
+
+  let regex;
+  try {
+    let pattern = useRegex ? term : term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (wholeWord) pattern = '\\b' + pattern + '\\b';
+    regex = new RegExp(pattern, caseSens ? 'g' : 'gi');
+  } catch(e) {
+    $('search-count').textContent = '❌ Regex inválida';
+    return;
+  }
+
+  const lines = code.split('\n');
+  lines.forEach((line, li) => {
+    let m;
+    regex.lastIndex = 0;
+    while ((m = regex.exec(line)) !== null) {
+      matches.push({ line: li, col: m.index, text: m[0], context: line });
+    }
+  });
+
+  $('search-count').textContent = matches.length + ' resultado(s)';
+  renderResults();
+  if (matches.length > 0) goToMatch(0);
+}
+
+function renderResults() {
+  if (!matches.length) {
+    $('results-body').innerHTML = '<div style="color:#ef4444;font-size:11px;padding:16px;text-align:center;">❌ Nenhum resultado</div>';
+    return;
+  }
+
+  $('results-body').innerHTML = matches.map((m, i) => `
+    <div class="result-item ${i === matchIndex ? 'active' : ''}" id="ri-${i}" onclick="goToMatch(${i})">
+      <div class="result-line">Linha ${m.line + 1}, Col ${m.col + 1}</div>
+      <div class="result-text">${escHtml(m.context.trim().slice(0, 55))}</div>
+      <button class="result-copy" onclick="event.stopPropagation(); copyLine('${escAttr(m.context)}')">📋 Copiar linha</button>
+    </div>
+  `).join('');
+}
+
+function goToMatch(i) {
+  if (i < 0) i = matches.length - 1;
+  if (i >= matches.length) i = 0;
+  matchIndex = i;
+
+  const m = matches[i];
+  const ta = $('editor-left');
+  const lines = ta.value.split('\n');
+
+  // Posição no textarea
+  let pos = 0;
+  for (let l = 0; l < m.line; l++) pos += lines[l].length + 1;
+  pos += m.col;
+
+  ta.focus();
+  ta.setSelectionRange(pos, pos + m.text.length);
+
+  // Scroll para linha
+  const lh = parseFloat(getComputedStyle(ta).lineHeight) || 18;
+  ta.scrollTop = m.line * lh - ta.clientHeight / 2;
+  syncLN('left');
+
+  // Atualizar lista
+  document.querySelectorAll('.result-item').forEach((el, idx) => {
+    el.classList.toggle('active', idx === i);
+  });
+  const ri = $('ri-' + i);
+  if (ri) ri.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  setStatus(`Resultado ${i + 1} de ${matches.length} — Linha ${m.line + 1}`);
+}
+
+function nextMatch() { goToMatch(matchIndex + 1); }
+function prevMatch() { goToMatch(matchIndex - 1); }
+
+/* ── AÇÕES ── */
+function clearAll() {
+  $('editor-left').value = '';
+  $('panel-left-title').textContent = '📄 Cole ou carregue o código aqui';
+  $('panel-left-info').textContent = '';
+  $('search-input').value = '';
+  matches = [];
+  $('search-count').textContent = '0 resultados';
+  $('results-body').innerHTML = '<div style="color:#475569;font-size:11px;padding:16px;text-align:center;">Digite algo na busca</div>';
+  updateLN('left');
+  toast('🗑️ Limpo!');
+}
+
+function copyEditor() {
+  const code = $('editor-left').value;
+  if (!code) { toast('❌ Nada para copiar', true); return; }
+  navigator.clipboard.writeText(code).then(() => toast('📋 Copiado!'));
+}
+
+function downloadCode() {
+  const code = $('editor-left').value;
+  if (!code) { toast('❌ Nada para baixar', true); return; }
+  const name = $('panel-left-title').textContent.replace('📄 ', '') || 'codigo.txt';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([code], {type: 'text/plain'}));
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('💾 Baixando...');
+}
+
+function copyLine(text) {
+  navigator.clipboard.writeText(text).then(() => toast('📋 Linha copiada!'));
+}
+
+/* ── UTILS ── */
+function setStatus(msg) { $('status').textContent = msg; }
+
+function toast(msg, err = false) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (err ? ' err' : '');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2800);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+}
+
+// Init
+updateLN('left');
+</script>
+</body>
+</html>

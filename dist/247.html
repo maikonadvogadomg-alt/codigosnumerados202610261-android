@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>🚨 RECURSO URGENTE - FUNCIONA</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<style>
+body{font-family:Arial;background:#f5f5f5;padding:20px;text-align:center}
+h1{background:red;color:white;padding:20px;border-radius:10px}
+.btn{display:block;width:90%;margin:10px auto;padding:20px;background:#1976d2;color:white;text-decoration:none;border-radius:10px;font-size:18px;font-weight:bold}
+.btn:hover{background:#1565c0}
+.categoria{margin:20px 0;background:white;padding:20px;border-radius:10px}
+</style>
+</head>
+<body>
+<h1>📋 FERRAMENTAS JURÍDICAS - URGENTE</h1>
+
+<div class="categoria">
+<h2>🔑 JWT / PDJUD</h2>
+<a href="data:text/html;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIGh0bWwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIC40MDEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvVFIvcmRmYy9odG1sNDAxIj4KPGh0bWw+CiBoZWFkPgogIDx0aXRsZT5KV1QgR0VSRURPUiBQRkpVRC9QREpVRDwvdGl0bGU+" class="btn">🔑 Gerar JWT PDJUD</a>
+</div>
+
+<div class="categoria">
+<h2>📄 BPC / LOAS</h2>
+<a href="data:text/html;base64,PDxkb2N0eXBlIGh0bWw+CjxodG1sPgo8aGVhZD4KPHRpdGxlPkJQQy9MT0FTIE9DUjwvdGl0bGU+" class="btn">📄 BPC LOAS OCR</a>
+</div>
+
+<div class="categoria">
+<h2>⚖️ PETIÇÕES</h2>
+<a href="data:text/html;base64,PDxkb2N0eXBlIGh0bWw+CjxodG1sPgo8Ym9keT48aDE+UkVTVVJTTyBQUkVWSURFTjpJQSBBQlJJVkFTPC9oMT4KPGZvcm0+P..." class="btn">⚖️ Petição Recurso</a>
+</div>
+<p style="color:#666">Copie seus códigos HTML aqui embaixo 👇</p>
+<textarea style="width:95%;height:200px;font-family:monospace;font-size:14px" placeholder="Cole aqui o código HTML que funcionou..."></textarea>
+<button onclick="salvarCodigos()" style="background:green;color:white;border:none;padding:15px 30px;border-radius:10px;font-size:16px;cursor:pointer">💾 SALVAR MEUS CÓDIGOS</button>
+
+<script>
+function salvarCodigos(){
+  const codigos = document.querySelector('textarea').value;
+  if(codigos){
+    localStorage.setItem('meusCodigos', codigos);
+    alert('✅ SALVOS! Reabra a página.');
+  }
+}
+window.onload = () => {
+  const salvos = localStorage.getItem('meusCodigos');
+  if(salvos) document.querySelector('textarea').value = salvos;
+}
+</script>
+
+</body>
+</html>

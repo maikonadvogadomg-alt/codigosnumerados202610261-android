@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Documentação Automática</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', monospace;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container { max-width: 1800px; margin: 0 auto; }
+h1 { color: #a3a082; margin-bottom: 10px; text-align: center; font-size: 24px; }
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 13px; }
+h2 { color: #4ade80; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #334155; padding-bottom: 8px; }
+h3 { color: #60a5fa; margin: 12px 0 8px 0; font-size: 13px; }
+
+.upload-area {
+  background: #1e293b;
+  border: 2px dashed #334155;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover { border-color: #a3a082; background: #334155; }
+.upload-area.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+
+input[type="file"] { display: none; }
+
+.btn {
+  background: #a3a082;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+.btn:hover { background: #d4d0a8; transform: translateY(-2px); }
+.btn-secondary { background: #3b82f6; color: #fff; }
+.btn-secondary:hover { background: #2563eb; }
+.btn-danger { background: #f87171; color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-success { background: #4ade80; color: #000; }
+.btn-success:hover { background: #22c55e; }
+.btn-small { padding: 6px 12px; font-size: 11px; }
+
+.loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px;
+  font-size: 14px;
+}
+.spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #334155;
+  border-top-color: #a3a082;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.tab:hover { color: #e2e8f0; }
+.tab.active { color: #a3a082; border-bottom-color: #a3a082; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.results {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #0f172a;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.card-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.card-content {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.stat-box {
+  background: #334155;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-box strong {
+  display: block;
+  color: #a3a082;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.stat-box span {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.doc-section {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.doc-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.doc-content {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.8;
+}
+
+.code-block {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  max-height: 250px;
+  overflow-y: auto;
+  color: #60a5fa;
+}
+
+.api-doc {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.api-method {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.api-method.get { background: #60a5fa; color: #fff; }
+.api-method.post { background: #4ade80; color: #000; }
+.api-method.put { background: #fbbf24; color: #000; }
+.api-method.delete { background: #f87171; color: #fff; }
+.api-method.patch { background: #a78bfa; color: #fff; }
+
+.api-path {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 12px;
+  margin: 8px 0;
+  font-family: 'Courier New', monospace;
+}
+
+.api-description {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 8px 0;
+}
+
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 11px;
+}
+
+.param-table th,
+.param-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #334155;
+}
+
+.param-table th {
+  background: #334155;
+  color: #a3a082;
+  font-weight: 600;
+}
+
+.param-table td {
+  color: #94a3b8;
+}
+
+.function-doc {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.function-name {
+  color: #60a5fa;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 8px;
+}
+
+.function-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.function-params {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 8px 0;
+  font-size: 11px;
+}
+
+.function-params strong {
+  color: #a3a082;
+}
+
+.function-return {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 8px 0;
+  font-size: 11px;
+}
+
+.function-return strong {
+  color: #4ade80;
+}
+
+.example-code {
+  background: #0f172a;
+  border-left: 4px solid #60a5fa;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 10px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #60a5fa;
+  overflow-x: auto;
+}
+
+.toc {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.toc-item {
+  padding: 5px 0;
+  margin-left: 15px;
+  font-size: 12px;
+  color: #60a5fa;
+  cursor: pointer;
+}
+
+.toc-item:hover {
+  color: #a3a082;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.dependency-tree {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+}
+
+.tree-item {
+  padding: 5px 0;
+  margin-left: 20px;
+}
+
+.tree-item.root {
+  margin-left: 0;
+  color: #a3a082;
+  font-weight: 600;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📚 Gerador de Documentação Automática</h1>
+  <p class="subtitle">Gera documentação completa do projeto em múltiplos formatos</p>
+
+  <div class="upload-area" id="dropZone">
+    <p style="font-size: 18px; margin-bottom: 10px;">📦 Arraste seu ZIP da Replit aqui</p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Será analisado e gerará documentação automática</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecionar ZIP</button>
+    <input type="file" id="fileInput" accept=".zip" />
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Analisando projeto e gerando documentação...</p>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+
+let projectDocs = {
+  projectInfo: {},
+  apis: [],
+  functions: [],
+  components: [],
+  modules: [],
+  dependencies: [],
+  fileStructure: {},
+  examples: [],
+  gettingStarted: '',
+  architecture: ''
+};
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+async function handleFile(file) {
+  if (!file) return;
+  
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  projectDocs = {
+    projectInfo: {},
+    apis: [],
+    functions: [],
+    components: [],
+    modules: [],
+    dependencies: [],
+    fileStructure: {},
+    examples: [],
+    gettingStarted: '',
+    architecture: ''
+  };
+  
+  try {
+    const zip = new JSZip();
+    const content = await zip.loadAsync(file);
+    
+    const files = {};
+    
+    // Extrai arquivos
+    for (let [path, zipEntry] of Object.entries(content.files)) {
+      if (!zipEntry.dir) {
+        try {
+          const fileContent = await zipEntry.async('text');
+          files[path] = fileContent;
+        } catch (e) {}
+      }
+    }
+    
+    // Gera documentação
+    generateDocumentation(files);
+    
+    loadingDiv.style.display = 'none';
+    displayDocumentation();
+    
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultsDiv.innerHTML = `<div class="card">
+      <div class="card-title">❌ Erro ao processar</div>
+      <div class="card-content">${err.message}</div>
+    </div>`;
+  }
+}
+
+function generateDocumentation(files) {
+  // Análise de package.json
+  for (let [path, content] of Object.entries(files)) {
+    if (path.includes('package.json')) {
+      try {
+        const pkg = JSON.parse(content);
+        projectDocs.projectInfo = {
+          name: pkg.name || 'Projeto sem nome',
+          version: pkg.version || '1.0.0',
+          description: pkg.description || 'Sem descrição',
+          author: pkg.author || 'Desconhecido',
+          license: pkg.license || 'MIT',
+          homepage: pkg.homepage || '',
+          repository: pkg.repository || ''
+        };
+        
+        projectDocs.dependencies = Object.entries(pkg.dependencies || {}).map(([name, version]) => ({
+          name,
+          version,
+          type: 'production'
+        })).concat(
+          Object.entries(pkg.devDependencies || {}).map(([name, version]) => ({
+            name,
+            version,
+            type: 'development'
+          }))
+        );
+      } catch (e) {}
+    }
+  }
+  
+  // Análise de arquivos JS/TS
+  for (let [path, content] of Object.entries(files)) {
+    if (/\.(js|ts|jsx|tsx)$/.test(path)) {
+      analyzeJSFile(path, content);
+    }
+  }
+  
+  // Análise de estrutura de arquivos
+  analyzeFileStructure(files);
+  
+  // Gera guia de início
+  generateGettingStarted();
+  
+  // Gera arquitetura
+  generateArchitecture();
+}
+
+function analyzeJSFile(filePath, content) {
+  // Detecta funções
+  const functionPattern = /(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)\s*(?::\s*(\w+))?\s*\{/g;
+  let match;
+  
+  while ((match = functionPattern.exec(content)) !== null) {
+    const name = match[1];
+    const params = match[2].split(',').map(p => p.trim()).filter(p => p);
+    const returnType = match[3] || 'void';
+    
+    // Tenta encontrar comentário JSDoc
+    const docPattern = new RegExp(`/\\*\\*[\\s\\S]*?\\*\\/\\s*(?:export\\s+)?(?:async\\s+)?function\\s+${name}`, 'g');
+    const docMatch = docPattern.exec(content);
+    
+    projectDocs.functions.push({
+      name,
+      file: filePath,
+      params,
+      returnType,
+      description: 'Função do projeto',
+      example: `${name}(${params.join(', ')})`
+    });
+  }
+  
+  // Detecta APIs (endpoints)
+  const apiPatterns = [
+    { regex: /app\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g, type: 'express' },
+    { regex: /router\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g, type: 'express' }
+  ];
+  
+  apiPatterns.forEach(pattern => {
+    let apiMatch;
+    const regex = new RegExp(pattern.regex.source, 'g');
+    
+    while ((apiMatch = regex.exec(content)) !== null) {
+      const method = apiMatch[1].toUpperCase();
+      const path = apiMatch[2];
+      
+      projectDocs.apis.push({
+        method,
+        path,
+        file: filePath,
+        description: `${method} ${path}`,
+        params: [],
+        response: 'JSON'
+      });
+    }
+  });
+  
+  // Detecta componentes React/Vue
+  if (content.includes('export default') || content.includes('export const')) {
+    const componentPattern = /(?:export\s+(?:default\s+)?)?(?:const|function)\s+(\w+)\s*(?:=|:)/g;
+    let compMatch;
+    
+    while ((compMatch = componentPattern.exec(content)) !== null) {
+      const componentName = compMatch[1];
+      if (componentName.charAt(0) === componentName.charAt(0).toUpperCase()) {
+        projectDocs.components.push({
+          name: componentName,
+          file: filePath,
+          description: `Componente ${componentName}`,
+          props: [],
+          usage: `<${componentName} />`
+        });
+      }
+    }
+  }
+}
+
+function analyzeFileStructure(files) {
+  const structure = {};
+  
+  Object.keys(files).forEach(path => {
+    const parts = path.split('/');
+    let current = structure;
+    
+    parts.forEach((part, idx) => {
+      if (!current[part]) {
+        current[part] = {};
+      }
+      if (idx === parts.length - 1) {
+        current[part]._file = true;
+      }
+      current = current[part];
+    });
+  });
+  
+  projectDocs.fileStructure = structure;
+}
+
+function generateGettingStarted() {
+  projectDocs.gettingStarted = `
+# 🚀 Guia de Início Rápido
+
+## Instalação
+
+\`\`\`bash
+npm install
+\`\`\`
+
+## Desenvolvimento
+
+\`\`\`bash
+npm run dev
+\`\`\`
+
+## Build
+
+\`\`\`bash
+npm run build
+\`\`\`
+
+## Testes
+
+\`\`\`bash
+npm test
+\`\`\`
+
+## Estrutura do Projeto
+
+\`\`\`
+${generateFileTree()}
+\`\`\`
+  `;
+}
+
+function generateFileTree() {
+  let tree = '';
+  
+  function buildTree(obj, prefix = '') {
+    Object.entries(obj).forEach(([key, value], idx, arr) => {
+      const isLast = idx === arr.length - 1;
+      const connector = isLast ? '└── ' : '├── ';
+      tree += prefix + connector + key + '\n';
+      
+      if (value._file !== true && Object.keys(value).length > 0) {
+        const nextPrefix = prefix + (isLast ? '    ' : '│   ');
+        buildTree(value, nextPrefix);
+      }
+    });
+  }
+  
+  buildTree(projectDocs.fileStructure);
+  return tree;
+}
+
+function generateArchitecture() {
+  projectDocs.architecture = `
+# 🏗️ Arquitetura do Projeto
+
+## Componentes Principais
+
+${projectDocs.components.map(comp => `- **${comp.name}** - ${comp.description}`).join('\n')}
+
+## APIs/Endpoints
+
+${projectDocs.apis.map(api => `- **${api.method}** \`${api.path}\` - ${api.description}`).join('\n')}
+
+## Dependências Principais
+
+${projectDocs.dependencies.filter(d => d.type === 'production').slice(0, 10).map(dep => `- **${dep.name}** (${dep.version})`).join('\n')}
+
+## Fluxo de Dados
+
+1. Cliente faz requisição
+2. API processa dados
+3. Banco de dados é consultado
+4. Resposta é retornada
+5. Frontend renderiza resultado
+  `;
+}
+
+function displayDocumentation() {
+  const apiCount = projectDocs.apis.length;
+  const funcCount = projectDocs.functions.length;
+  const compCount = projectDocs.components.length;
+  const depCount = projectDocs.dependencies.length;
+  
+  let html = `
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">📊 Visão Geral</button>
+      <button class="tab" onclick="switchTab('apis')">🔌 APIs</button>
+      <button class="tab" onclick="switchTab('functions')">⚙️ Funções</button>
+      <button class="tab" onclick="switchTab('components')">🧩 Componentes</button>
+      <button class="tab" onclick="switchTab('guide')">📖 Guia</button>
+      <button class="tab" onclick="switchTab('export')">📥 Exportar</button>
+    </div>
+    
+    <!-- TAB: VISÃO GERAL -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="results">
+        <h2>📊 Informações do Projeto</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <strong>${projectDocs.projectInfo.name || 'N/A'}</strong>
+            <span>Nome</span>
+          </div>
+          <div class="stat-box">
+            <strong>${projectDocs.projectInfo.version || 'N/A'}</strong>
+            <span>Versão</span>
+          </div>
+          <div class="stat-box">
+            <strong>${apiCount}</strong>
+            <span>Endpoints</span>
+          </div>
+          <div class="stat-box">
+            <strong>${funcCount}</strong>
+            <span>Funções</span>
+          </div>
+          <div class="stat-box">
+            <strong>${compCount}</strong>
+            <span>Componentes</span>
+          </div>
+          <div class="stat-box">
+            <strong>${depCount}</strong>
+            <span>Dependências</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="results">
+        <h2>📝 Descrição</h2>
+        <div class="doc-section">
+          <div class="doc-content">
+            <strong>Nome:</strong> ${projectDocs.projectInfo.name || 'Sem nome'}<br>
+            <strong>Versão:</strong> ${projectDocs.projectInfo.version || '1.0.0'}<br>
+            <strong>Descrição:</strong> ${projectDocs.projectInfo.description || 'Sem descrição'}<br>
+            <strong>Autor:</strong> ${projectDocs.projectInfo.author || 'Desconhecido'}<br>
+            <strong>Licença:</strong> ${projectDocs.projectInfo.license || 'MIT'}<br>
+          </div>
+        </div>
+      </div>
+      
+      <div class="results">
+        <h2>📦 Dependências Principais</h2>
+        <div class="doc-section">
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Pacote</th>
+                <th>Versão</th>
+                <th>Tipo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${projectDocs.dependencies.slice(0, 15).map(dep => `
+                <tr>
+                  <td>${dep.name}</td>
+                  <td>${dep.version}</td>
+                  <td>${dep.type}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- TAB: APIs -->
+    <div id="tab-apis" class="tab-content">
+      <div class="results">
+        <h2>🔌 Endpoints da API</h2>
+        ${apiCount > 0 ? projectDocs.apis.map(api => `
+          <div class="api-doc">
+            <div>
+              <span class="api-method ${api.method.toLowerCase()}">${api.method}</span>
+              <span class="api-path">${api.path}</span>
+            </div>
+            <div class="api-description">
+              <strong>Descrição:</strong> ${api.description}<br>
+              <strong>Arquivo:</strong> ${api.file}
+            </div>
+            ${api.params.length > 0 ? `
+              <div style="margin-top: 10px;">
+                <strong>Parâmetros:</strong>
+                <table class="param-table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Tipo</th>
+                      <th>Descrição</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${api.params.map(p => `
+                      <tr>
+                        <td>${p.name || 'N/A'}</td>
+                        <td>${p.type || 'string'}</td>
+                        <td>${p.description || 'N/A'}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : ''}
+            <div style="margin-top: 10px;">
+              <strong>Response:</strong>
+              <div class="code-block">
+{
+  "status": "success",
+  "data": {}
+}
+              </div>
+            </div>
+          </div>
+        `).join('') : '<p style="color: #94a3b8;">Nenhuma API detectada</p>'}
+      </div>
+    </div>
+    
+    <!-- TAB: FUNÇÕES -->
+    <div id="tab-functions" class="tab-content">
+      <div class="results">
+        <h2>⚙️ Funções Documentadas</h2>
+        ${funcCount > 0 ? projectDocs.functions.map(func => `
+          <div class="function-doc">
+            <div class="function-name">
+              ${func.name}(${func.params.join(', ')})
+            </div>
+            <div class="function-desc">
+              ${func.description}
+            </div>
+            ${func.params.length > 0 ? `
+              <div class="function-params">
+                <strong>Parâmetros:</strong><br>
+                ${func.params.map(p => `- <strong>${p}</strong>: tipo desconhecido`).join('<br>')}
+              </div>
+            ` : ''}
+            <div class="function-return">
+              <strong>Retorna:</strong> ${func.returnType}
+            </div>
+            <div class="example-code">
+// Exemplo de uso:
+${func.example}
+            </div>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 8px;">
+              📄 ${func.file}
+            </div>
+          </div>
+        `).join('') : '<p style="color: #94a3b8;">Nenhuma função detectada</p>'}
+      </div>
+    </div>
+    
+    <!-- TAB: COMPONENTES -->
+    <div id="tab-components" class="tab-content">
+      <div class="results">
+        <h2>🧩 Componentes</h2>
+        ${compCount > 0 ? projectDocs.components.map(comp => `
+          <div class="function-doc">
+            <div class="function-name">
+              &lt;${comp.name} /&gt;
+            </div>
+            <div class="function-desc">
+              ${comp.description}
+            </div>
+            ${comp.props.length > 0 ? `
+              <div class="function-params">
+                <strong>Props:</strong><br>
+                ${comp.props.map(p => `- <strong>${p.name}</strong>: ${p.type}`).join('<br>')}
+              </div>
+            ` : '<div class="function-params"><strong>Props:</strong> Nenhuma</div>'}
+            <div class="example-code">
+// Exemplo de uso:
+import ${comp.name} from '${comp.file}';
+
+export default function App() {
+  return &lt;${comp.name} /&gt;;
+}
+            </div>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 8px;">
+              📄 ${comp.file}
+            </div>
+          </div>
+        `).join('') : '<p style="color: #94a3b8;">Nenhum componente detectado</p>'}
+      </div>
+    </div>
+    
+    <!-- TAB: GUIA -->
+    <div id="tab-guide" class="tab-content">
+      <div class="results">
+        <h2>📖 Guia de Início Rápido</h2>
+        <div class="doc-section">
+          <div class="doc-content">
+            ${projectDocs.gettingStarted.replace(/\n/g, '<br>').replace(/\`\`\`bash([\s\S]*?)\`\`\`/g, '<div class="code-block">$1</div>')}
+          </div>
+        </div>
+      </div>
+      
+      <div class="results">
+        <h2>🏗️ Arquitetura</h2>
+        <div class="doc-section">
+          <div class="doc-content">
+            ${projectDocs.architecture.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\`(.*?)\`/g, '<code style="background: #0f172a; padding: 2px 4px; border-radius: 2px;">$1</code>')}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- TAB: EXPORTAR -->
+    <div id="tab-export" class="tab-content">
+      <div class="results">
+        <h2>📥 Exportar Documentação</h2>
+        <p style="color: #94a3b8; margin-bottom: 20px;">Escolha o formato de exportação:</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">
+          <button class="btn btn-success" onclick="exportDocs('markdown')">
+            📝 Markdown
+          </button>
+          <button class="btn btn-success" onclick="exportDocs('html')">
+            🌐 HTML
+          </button>
+          <button class="btn btn-success" onclick="exportDocs('json')">
+            📊 JSON
+          </button>
+          <button class="btn btn-success" onclick="exportDocs('pdf')">
+            📄 PDF (HTML)
+          </button>
+        </div>
+        
+        <div class="results" style="background: #0f172a; border: 1px solid #334155;">
+          <h3>📋 Conteúdo da Documentação</h3>
+          <ul style="margin-left: 20px; margin-top: 10px; font-size: 12px; color: #94a3b8; line-height: 1.8;">
+            <li>✅ Informações do projeto</li>
+            <li>✅ ${apiCount} endpoints documentados</li>
+            <li>✅ ${funcCount} funções documentadas</li>
+            <li>✅ ${compCount} componentes documentados</li>
+            <li>✅ ${depCount} dependências listadas</li>
+            <li>✅ Guia de início rápido</li>
+            <li>✅ Arquitetura do projeto</li>
+            <li>✅ Estrutura de arquivos</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  resultsDiv.innerHTML = html;
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
+function exportDocs(format) {
+  if (format === 'markdown') {
+    exportMarkdown();
+  } else if (format === 'html') {
+    exportHTML();
+  } else if (format === 'json') {
+    exportJSON();
+  } else if (format === 'pdf') {
+    exportPDF();
+  }
+}
+
+function exportMarkdown() {
+  let md = `# ${projectDocs.projectInfo.name || 'Documentação do Projeto'}\n\n`;
+  md += `**Versão:** ${projectDocs.projectInfo.version || '1.0.0'}\n`;
+  md += `**Autor:** ${projectDocs.projectInfo.author || 'Desconhecido'}\n`;
+  md += `**Licença:** ${projectDocs.projectInfo.license || 'MIT'}\n\n`;
+  
+  md += `## 📝 Descrição\n\n`;
+  md += `${projectDocs.projectInfo.description || 'Sem descrição'}\n\n`;
+  
+  md += `## 🚀 Instalação\n\n`;
+  md += `\`\`\`bash\nnpm install\n\`\`\`\n\n`;
+  
+  md += `## 🔌 Endpoints da API\n\n`;
+  projectDocs.apis.forEach(api => {
+    md += `### ${api.method} \`${api.path}\`\n\n`;
+    md += `${api.description}\n\n`;
+    md += `**Arquivo:** \`${api.file}\`\n\n`;
+  });
+  
+  md += `## ⚙️ Funções\n\n`;
+  projectDocs.functions.forEach(func => {
+    md += `### ${func.name}()\n\n`;
+    md += `${func.description}\n\n`;
+    md += `**Parâmetros:** ${func.params.join(', ') || 'Nenhum'}\n`;
+    md += `**Retorna:** ${func.returnType}\n\n`;
+  });
+  
+  md += `## 🧩 Componentes\n\n`;
+  projectDocs.components.forEach(comp => {
+    md += `### ${comp.name}\n\n`;
+    md += `${comp.description}\n\n`;
+    md += `\`\`\`jsx\n<${comp.name} />\n\`\`\`\n\n`;
+  });
+  
+  md += `## 📦 Dependências\n\n`;
+  projectDocs.dependencies.forEach(dep => {
+    md += `- **${dep.name}** (${dep.version}) - ${dep.type}\n`;
+  });
+  
+  downloadFile(md, `documentacao-${projectDocs.projectInfo.name || 'projeto'}.md`, 'text/markdown');
+}
+
+function exportHTML() {
+  let html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentação - ${projectDocs.projectInfo.name || 'Projeto'}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; }
+    h1 { color: #a3a082; margin-bottom: 10px; }
+    h2 { color: #4ade80; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+    h3 { color: #60a5fa; margin-top: 20px; margin-bottom: 10px; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
+    pre { background: #f0f0f0; padding: 15px; border-radius: 5px; overflow-x: auto; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #f0f0f0; font-weight: 600; }
+    .api { background: #f9f9f9; padding: 15px; border-left: 4px solid #60a5fa; margin: 15px 0; border-radius: 4px; }
+    .method { display: inline-block; padding: 4px 8px; border-radius: 3px; color: white; font-size: 12px; font-weight: 600; margin-right: 8px; }
+    .get { background: #60a5fa; }
+    .post { background: #4ade80; }
+    .put { background: #fbbf24; }
+    .delete { background: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 ${projectDocs.projectInfo.name || 'Documentação do Projeto'}</h1>
+    <p><strong>Versão:</strong> ${projectDocs.projectInfo.version || '1.0.0'}</p>
+    <p><strong>Autor:</strong> ${projectDocs.projectInfo.author || 'Desconhecido'}</p>
+    
+    <h2>📝 Descrição</h2>
+    <p>${projectDocs.projectInfo.description || 'Sem descrição'}</p>
+    
+    <h2>🔌 Endpoints da API</h2>
+    ${projectDocs.apis.map(api => `
+      <div class="api">
+        <span class="method ${api.method.toLowerCase()}">${api.method}</span>
+        <code>${api.path}</code>
+        <p>${api.description}</p>
+      </div>
+    `).join('')}
+    
+    <h2>⚙️ Funções</h2>
+    ${projectDocs.functions.map(func => `
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>${func.name}(${func.params.join(', ')})</code></h3>
+        <p>${func.description}</p>
+        <p><strong>Retorna:</strong> ${func.returnType}</p>
+      </div>
+    `).join('')}
+    
+    <h2>📦 Dependências</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Pacote</th>
+          <th>Versão</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${projectDocs.dependencies.map(dep => `
+          <tr>
+            <td>${dep.name}</td>
+            <td>${dep.version}</td>
+            <td>${dep.type}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>`;
+  
+  downloadFile(html, `documentacao-${projectDocs.projectInfo.name || 'projeto'}.html`, 'text/html');
+}
+
+function exportJSON() {
+  const json = JSON.stringify(projectDocs, null, 2);
+  downloadFile(json, `documentacao-${projectDocs.projectInfo.name || 'projeto'}.json`, 'application/json');
+}
+
+function exportPDF() {
+  alert('💡 Para gerar PDF, use a função "Imprimir como PDF" do seu navegador (Ctrl+P ou Cmd+P) após exportar como HTML');
+  exportHTML();
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+</script>
+
+</body>
+</html>

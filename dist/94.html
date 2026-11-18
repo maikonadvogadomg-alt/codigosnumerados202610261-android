@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Projetos PWA — Maikon Caldeira</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+.project-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #12121a;
+  border-bottom: 2px solid #a3a082;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  background: #1a1a2e;
+  border: 1px solid #2d2d3a;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #a3a082;
+  color: #000;
+  border-color: #a3a082;
+}
+
+.nav-btn.active {
+  background: #a3a082;
+  color: #000;
+  border-color: #d4d0a8;
+}
+
+.project-container {
+  display: none;
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+.project-container.active {
+  display: block;
+}
+
+/* Isola estilos de cada projeto */
+.project-container iframe {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Navegação -->
+<div class="project-nav">
+  <span style="font-size:14px;font-weight:700;color:#a3a082;margin-right:10px;">📂</span>
+  <button class="nav-btn active" onclick="trocarProjeto(0)">1.</button><button class="nav-btn " onclick="trocarProjeto(1)">2.</button><button class="nav-btn " onclick="trocarProjeto(2)">3.</button>
+</div>
+
+<!-- Projetos (cada um em iframe isolado) -->
+
+<div class="project-container active" id="projeto0">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Playground IA — Saulo&lt;/title&gt;
+&lt;style&gt;
+:root {
+  --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+  --text: #e2e8f0; --text2: #94a3b8;
+  --accent: #a3a082; --accent2: #d4d0a8;
+  --blue: #3b82f6; --green: #4ade80; --red: #f87171; --yellow: #fbbf24;
+  --border: #334155; --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+.header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 6px; }
+.header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.header-right { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.logo { font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: -0.5px; }
+.logo small { font-size: 9px; color: var(--text2); font-weight: 400; letter-spacing: 1px; display: block; }
+
+/* Inputs &amp; Buttons */
+.title-input { background: transparent; border: 1px solid transparent; color: var(--text); font-size: 12px; padding: 4px 8px; border-radius: 6px; width: 140px; transition: border-color 0.2s; }
+.title-input:focus { outline: none; border-color: var(--accent); }
+.btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn-icon { padding: 6px; border-radius: 6px; background: transparent; border: none; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+.btn-icon:hover { background: var(--bg3); color: var(--text); }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ai { background: #7c3aed; color: #fff; }
+.btn-ai:hover { background: #6d28d9; }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-mode { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.btn-mode.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.mode-group { display: flex; gap: 2px; background: var(--bg); padding: 2px; border-radius: 8px; border: 1px solid var(--border); }
+
+/* Tabs */
+.tabs-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.tabs { display: flex; gap: 2px; }
+.tab { padding: 5px 12px; font-size: 11px; font-weight: 600; border: none; background: transparent; color: var(--text2); cursor: pointer; border-radius: 6px; transition: all 0.15s; }
+.tab.active { background: var(--bg3); color: var(--text); }
+.tab:hover:not(.active) { color: var(--text); }
+.tab-info { font-size: 10px; color: var(--text2); }
+.status-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+.status-badge.html { background: rgba(239,68,68,0.15); color: var(--red); }
+.status-badge.react { background: rgba(59,130,246,0.15); color: var(--blue); }
+.status-badge.python { background: rgba(251,191,36,0.15); color: var(--yellow); }
+
+/* Main layout */
+.main { display: flex; flex: 1; overflow: hidden; }
+.editor-panel { display: flex; flex-direction: column; flex: 1; border-right: 1px solid var(--border); min-width: 0; }
+.preview-panel { display: flex; flex-direction: column; flex: 1; border-right: 1px solid var(--border); min-width: 0; }
+.chat-panel { display: flex; flex-direction: column; width: 320px; background: var(--bg2); flex-shrink: 0; transition: width 0.3s; }
+.chat-panel.hidden { width: 0; overflow: hidden; border: none; }
+
+/* Editor */
+.editor-wrap { flex: 1; position: relative; overflow: hidden; }
+.editor-textarea { width: 100%; height: 100%; resize: none; background: var(--bg); color: var(--text); font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.6; padding: 12px 12px 12px 48px; border: none; outline: none; tab-size: 2; position: absolute; inset: 0; }
+.line-numbers { position: absolute; left: 0; top: 0; bottom: 0; width: 40px; background: rgba(30,41,59,0.5); padding: 12px 6px 12px 0; text-align: right; font-family: 'Consolas', monospace; font-size: 11px; line-height: 1.6; color: var(--text2); opacity: 0.5; overflow: hidden; pointer-events: none; user-select: none; z-index: 1; }
+
+/* Preview */
+.preview-header { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.preview-header .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.preview-frame { flex: 1; border: none; background: #fff; }
+
+/* Chat UI */
+.chat-header { padding: 8px 12px; background: var(--bg3); font-size: 12px; font-weight: bold; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.msg { padding: 10px; border-radius: 8px; font-size: 12px; line-height: 1.5; word-break: break-word; }
+.msg-user { background: #1e3a8a; color: #fff; align-self: flex-end; max-width: 90%; }
+.msg-ai { background: var(--bg); border: 1px solid var(--border); color: var(--text); align-self: flex-start; max-width: 95%; }
+.msg-system { background: rgba(0,0,0,0.2); color: var(--text2); font-size: 10px; text-align: center; align-self: center; }
+.chat-input-area { padding: 10px; background: var(--bg); border-top: 1px solid var(--border); display: flex; gap: 6px; }
+.chat-input-area textarea { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 8px; color: var(--text); font-size: 12px; resize: none; outline: none; font-family: inherit; }
+.chat-input-area button { background: #3b82f6; color: #fff; border: none; border-radius: 6px; padding: 0 12px; cursor: pointer; font-weight: bold; }
+.chat-input-area button:hover { background: #2563eb; }
+.apply-btn { margin-top: 8px; width: 100%; padding: 6px; background: var(--green); color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
+.apply-btn:hover { background: #22c55e; }
+
+/* Modals */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 90%; max-width: 480px; max-height: 80vh; overflow-y: auto; }
+.modal h3 { font-size: 16px; margin-bottom: 12px; color: var(--accent); }
+.search-input, .modal-input { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; margin-bottom: 12px; outline: none; }
+.search-input:focus, .modal-input:focus { border-color: var(--accent); }
+
+/* Snippet list */
+.snippet-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; cursor: pointer; transition: all 0.15s; }
+.snippet-item:hover { border-color: var(--accent); background: var(--bg3); }
+.snippet-item .name { font-size: 12px; font-weight: 600; }
+.snippet-item .meta { font-size: 10px; color: var(--text2); }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: 12px 20px; font-size: 12px; font-weight: 600; color: var(--accent2); z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- Header --&gt;
+&lt;header class=&quot;header&quot;&gt;
+  &lt;div class=&quot;header-left&quot;&gt;
+    &lt;div class=&quot;logo&quot;&gt;⚡ Playground IA &lt;small&gt;Saulo — Code Editor&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;mode-group&quot;&gt;
+      &lt;button class=&quot;btn-mode active&quot; id=&quot;modeHtml&quot; onclick=&quot;switchMode('html')&quot;&gt;🌐 HTML&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modeReact&quot; onclick=&quot;switchMode('react')&quot;&gt;⚛️ React&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modePython&quot; onclick=&quot;switchMode('python')&quot;&gt;🐍 Python&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;input type=&quot;text&quot; class=&quot;title-input&quot; id=&quot;projectTitle&quot; value=&quot;Sem titulo&quot; placeholder=&quot;Nome do projeto...&quot; /&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;header-right&quot;&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;importFile()&quot; title=&quot;Importar arquivo&quot;&gt;📂&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;copyCode()&quot; title=&quot;Copiar código&quot;&gt;📋&lt;/button&gt;
+    &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;saveToLocal()&quot; title=&quot;Salvar no banco local&quot;&gt;💾 Salvar&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openSavedModal()&quot; title=&quot;Meus códigos salvos&quot;&gt;📁&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;resetCode()&quot; title=&quot;Resetar&quot;&gt;🔄&lt;/button&gt;
+    &lt;button class=&quot;btn btn-ai&quot; onclick=&quot;openApiModal()&quot;&gt;🔑 API Key&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;toggleChat()&quot; title=&quot;Mostrar/Ocultar IA&quot;&gt;🤖&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/header&gt;
+
+&lt;!-- Tabs --&gt;
+&lt;div class=&quot;tabs-bar&quot;&gt;
+  &lt;div class=&quot;tabs&quot; id=&quot;tabsContainer&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;tab-info&quot;&gt;
+    &lt;span id=&quot;lineCount&quot;&gt;1 linhas&lt;/span&gt;
+    &lt;span class=&quot;status-badge html&quot; id=&quot;modeBadge&quot;&gt;HTML&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Main --&gt;
+&lt;div class=&quot;main&quot;&gt;
+  &lt;!-- Editor --&gt;
+  &lt;div class=&quot;editor-panel&quot; id=&quot;editorPanel&quot;&gt;
+    &lt;div class=&quot;editor-wrap&quot;&gt;
+      &lt;div class=&quot;line-numbers&quot; id=&quot;lineNumbers&quot;&gt;1&lt;/div&gt;
+      &lt;textarea class=&quot;editor-textarea&quot; id=&quot;editor&quot; spellcheck=&quot;false&quot; placeholder=&quot;Cole ou digite seu código aqui...&quot;&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  
+  &lt;!-- Preview --&gt;
+  &lt;div class=&quot;preview-panel&quot; id=&quot;previewPanel&quot;&gt;
+    &lt;div class=&quot;preview-header&quot;&gt;
+      &lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;
+      &lt;span style=&quot;font-size:11px;color:var(--text2);font-weight:600;&quot;&gt;Resultado ao vivo&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;iframe class=&quot;preview-frame&quot; id=&quot;previewFrame&quot; sandbox=&quot;allow-scripts allow-modals allow-forms allow-popups&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Chat IA --&gt;
+  &lt;div class=&quot;chat-panel&quot; id=&quot;chatPanel&quot;&gt;
+    &lt;div class=&quot;chat-header&quot;&gt;
+      &lt;span&gt;🤖 Assistente IA&lt;/span&gt;
+      &lt;span style=&quot;font-size:9px; font-weight:normal; color:var(--text2);&quot;&gt;Lê o código atual&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;chat-messages&quot; id=&quot;chatMessages&quot;&gt;
+      &lt;div class=&quot;msg msg-system&quot;&gt;A IA tem contexto do seu editor. Peça alterações, correções ou explicações.&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;chat-input-area&quot;&gt;
+      &lt;textarea id=&quot;chatInput&quot; rows=&quot;2&quot; placeholder=&quot;O que deseja alterar? (Enter envia)&quot; onkeydown=&quot;if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();sendAiMsg();}&quot;&gt;&lt;/textarea&gt;
+      &lt;button onclick=&quot;sendAiMsg()&quot;&gt;➤&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Hidden file input --&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm,.css,.js,.jsx,.tsx,.py,.txt,.svg,.xml&quot; /&gt;
+
+&lt;!-- Modal: Saved Snippets --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;savedModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;h3&gt;📁 Meus Códigos Salvos&lt;/h3&gt;
+    &lt;input type=&quot;text&quot; class=&quot;search-input&quot; id=&quot;searchInput&quot; placeholder=&quot;🔍 Buscar por nome...&quot; oninput=&quot;renderSavedList()&quot; /&gt;
+    &lt;div id=&quot;savedList&quot;&gt;&lt;/div&gt;
+    &lt;div style=&quot;text-align:right;margin-top:12px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeSavedModal()&quot;&gt;Fechar&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Modal: API Key --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;apiModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;h3&gt;🔑 Configurar IA (Google Gemini)&lt;/h3&gt;
+    &lt;p style=&quot;font-size:11px; color:var(--text2); margin-bottom:10px;&quot;&gt;A chave fica salva apenas no seu navegador.&lt;/p&gt;
+    &lt;input type=&quot;password&quot; class=&quot;modal-input&quot; id=&quot;apiKeyInput&quot; placeholder=&quot;Cole sua API Key do Gemini aqui...&quot; /&gt;
+    &lt;div style=&quot;display:flex; gap:8px; justify-content:flex-end;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeApiModal()&quot;&gt;Cancelar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;saveApiKey()&quot;&gt;Salvar Chave&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Toast --&gt;
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// ========== STATE ==========
+const LS_KEY = 'saulo-snippets-v3'; // Chave nova para evitar conflitos antigos
+const AUTOSAVE_KEY = 'saulo-autosave-v3';
+const API_KEY_LS = 'saulo-gemini-key';
+
+let state = {
+  mode: 'html',
+  activeTab: 'html',
+  html: `&lt;div style=&quot;max-width:600px;margin:40px auto;padding:20px;font-family:sans-serif;&quot;&gt;
+  &lt;h1 style=&quot;color:#333;&quot;&gt;Bem-vindo ao Playground IA&lt;/h1&gt;
+  &lt;p style=&quot;color:#666;margin:16px 0;&quot;&gt;Cole seu código HTML aqui e veja o resultado ao vivo!&lt;/p&gt;
+  &lt;button onclick=&quot;alert('Funcionou!')&quot; style=&quot;padding:10px 24px;font-size:16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;&quot;&gt;Clique aqui&lt;/button&gt;
+&lt;/div&gt;`,
+  css: '',
+  js: `console.log(&quot;Hello from Playground!&quot;);`,
+  jsx: `function App() {
+  const [count, setCount] = React.useState(0);
+  return (
+    &lt;div style={{padding:40,fontFamily:'sans-serif',textAlign:'center'}}&gt;
+      &lt;h1&gt;⚛️ React no Playground&lt;/h1&gt;
+      &lt;p&gt;Contador: &lt;strong&gt;{count}&lt;/strong&gt;&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)} style={{padding:'10px 24px',fontSize:16,background:'#3b82f6',color:'white',border:'none',borderRadius:8,cursor:'pointer'}}&gt;
+        Incrementar
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`,
+  python: `dados = [&quot;João Silva&quot;, &quot;Maria Souza&quot;, &quot;Pedro Lima&quot;]
+print(&quot;=== LISTA DE CLIENTES ===&quot;)
+for i, nome in enumerate(dados, 1):
+    print(f&quot;{i}. {nome}&quot;)
+print(f&quot;\\nTotal: {len(dados)} clientes&quot;)`,
+  title: 'Sem titulo'
+};
+
+// Load autosave
+try {
+  const saved = localStorage.getItem(AUTOSAVE_KEY);
+  if (saved) Object.assign(state, JSON.parse(saved));
+} catch(e) {}
+
+// ========== DOM REFS ==========
+const editor = document.getElementById('editor');
+const previewFrame = document.getElementById('previewFrame');
+const lineNumbers = document.getElementById('lineNumbers');
+const titleInput = document.getElementById('projectTitle');
+
+// ========== INIT ==========
+titleInput.value = state.title;
+updateTabs();
+loadEditorContent();
+updatePreview();
+
+// ========== EDITOR ==========
+editor.addEventListener('input', () =&gt; {
+  saveCurrentTab();
+  updateLineNumbers();
+  autoSave();
+  debouncePreview();
+});
+
+editor.addEventListener('scroll', () =&gt; {
+  lineNumbers.scrollTop = editor.scrollTop;
+});
+
+editor.addEventListener('keydown', (e) =&gt; {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+    editor.selectionStart = editor.selectionEnd = start + 2;
+    saveCurrentTab();
+  }
+});
+
+titleInput.addEventListener('input', () =&gt; {
+  state.title = titleInput.value;
+  autoSave();
+});
+
+// ========== FUNCTIONS ==========
+let previewTimer = null;
+function debouncePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 400);
+}
+
+function updateLineNumbers() {
+  const lines = editor.value.split('\n').length;
+  document.getElementById('lineCount').textContent = lines + ' linhas';
+  let nums = '';
+  for (let i = 1; i &lt;= lines; i++) nums += i + '\n';
+  lineNumbers.textContent = nums;
+}
+
+function saveCurrentTab() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' &amp;&amp; tab === 'jsx') state.jsx = editor.value;
+  else if (state.mode === 'python' &amp;&amp; tab === 'python') state.python = editor.value;
+  else if (tab === 'html') state.html = editor.value;
+  else if (tab === 'css') state.css = editor.value;
+  else if (tab === 'js') state.js = editor.value;
+}
+
+function loadEditorContent() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' &amp;&amp; tab === 'jsx') editor.value = state.jsx;
+  else if (state.mode === 'python' &amp;&amp; tab === 'python') editor.value = state.python;
+  else if (tab === 'html') editor.value = state.html;
+  else if (tab === 'css') editor.value = state.css;
+  else if (tab === 'js') editor.value = state.js;
+  else editor.value = '';
+  updateLineNumbers();
+}
+
+function switchTab(tab) {
+  saveCurrentTab();
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t =&gt; t.classList.remove('active'));
+  const tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (tabEl) tabEl.classList.add('active');
+  loadEditorContent();
+}
+
+function updateTabs() {
+  const container = document.getElementById('tabsContainer');
+  const badge = document.getElementById('modeBadge');
+  
+  if (state.mode === 'html') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='html'?'active':''}&quot; id=&quot;tabHtml&quot; onclick=&quot;switchTab('html')&quot;&gt;📄 HTML&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='js'?'active':''}&quot; id=&quot;tabJs&quot; onclick=&quot;switchTab('js')&quot;&gt;⚙️ JS&lt;/button&gt;
+    `;
+    badge.className = 'status-badge html'; badge.textContent = 'HTML';
+  } else if (state.mode === 'react') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='jsx'?'active':''}&quot; id=&quot;tabJsx&quot; onclick=&quot;switchTab('jsx')&quot;&gt;⚛️ JSX&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+    `;
+    badge.className = 'status-badge react'; badge.textContent = 'REACT';
+  } else if (state.mode === 'python') {
+    container.innerHTML = `&lt;button class=&quot;tab active&quot; id=&quot;tabPython&quot; onclick=&quot;switchTab('python')&quot;&gt;🐍 Python&lt;/button&gt;`;
+    badge.className = 'status-badge python'; badge.textContent = 'PYTHON';
+  }
+}
+
+function switchMode(mode) {
+  saveCurrentTab(); // Salva o atual ANTES de mudar
+  state.mode = mode;
+  
+  document.querySelectorAll('.btn-mode').forEach(b =&gt; b.classList.remove('active'));
+  document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  
+  if (mode === 'html') state.activeTab = 'html';
+  else if (mode === 'react') state.activeTab = 'jsx';
+  else if (mode === 'python') state.activeTab = 'python';
+  
+  updateTabs();
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+}
+
+function buildDocument() {
+  if (state.mode === 'react') {
+    return `&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react@18/umd/react.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react-dom@18/umd/react-dom.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;\/script&gt;
+&lt;style&gt;*{box-sizing:border-box;}body{margin:0;font-family:sans-serif;}${state.css}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+&lt;script type=&quot;text/babel&quot;&gt;
+const { useState, useEffect, useRef } = React;
+${state.jsx}
+try { ReactDOM.createRoot(document.getElementById('root')).render(&lt;App /&gt;); } 
+catch(e) { document.getElementById('root').innerHTML = '&lt;div style=&quot;color:red;padding:20px;&quot;&gt;Erro: '+e.message+'&lt;/div&gt;'; }
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  if (state.mode === 'python') {
+    const escapedCode = state.python.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/&lt;\/script&gt;/g,'&lt;\\/script&gt;');
+    return `&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;style&gt;body{margin:0;background:#0f172a;color:#e2e8f0;font-family:monospace;padding:20px;}#output{white-space:pre-wrap;}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;output&quot; style=&quot;color:#60a5fa&quot;&gt;⟳ Carregando Python...&lt;/div&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js&quot;&gt;&lt;\/script&gt;
+&lt;script&gt;
+async function main() {
+  const out = document.getElementById('output');
+  try {
+    const pyodide = await loadPyodide();
+    pyodide.runPython('import sys\\nfrom io import StringIO\\nsys.stdout = StringIO()');
+    pyodide.runPython(\`${escapedCode}\`);
+    out.innerHTML = '&lt;span style=&quot;color:#4ade80&quot;&gt;$ python3&lt;/span&gt;\\n' + pyodide.runPython('sys.stdout.getvalue()');
+  } catch(e) { out.innerHTML = '&lt;span style=&quot;color:#f87171&quot;&gt;Erro: ' + e.message + '&lt;/span&gt;'; }
+} main();
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  const lower = state.html.trim().toLowerCase();
+  if (lower.includes('&lt;!doctype') || lower.includes('&lt;html')) return state.html;
+  
+  return `&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;&gt;
+&lt;style&gt;${state.css}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;${state.html}&lt;script&gt;${state.js}&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+}
+
+function updatePreview() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  previewFrame.src = url;
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function autoSave() {
+  try { localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// ========== AÇÕES ==========
+function copyCode() {
+  navigator.clipboard.writeText(buildDocument()).then(() =&gt; showToast('📋 Código copiado!'));
+}
+
+function importFile() { document.getElementById('fileInput').click(); }
+
+document.getElementById('fileInput').addEventListener('change', (e) =&gt; {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) =&gt; {
+    const content = ev.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const name = file.name.replace(/\.[^.]+$/, '');
+    
+    if (ext === 'py') { switchMode('python'); state.python = content; } 
+    else if (ext === 'jsx' || ext === 'tsx') { switchMode('react'); state.jsx = content; } 
+    else if (ext === 'css') { state.css = content; if (state.mode === 'html') switchTab('css'); } 
+    else if (ext === 'js') { state.js = content; if (state.mode === 'html') switchTab('js'); } 
+    else {
+      if (content.toLowerCase().includes('&lt;html')) { state.html = content; state.css = ''; state.js = ''; } 
+      else { state.html = content; }
+      switchMode('html');
+    }
+    state.title = name; titleInput.value = name;
+    loadEditorContent(); updatePreview(); autoSave();
+    showToast('📂 Arquivo importado!');
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+function resetCode() {
+  if(confirm(&quot;Limpar e resetar o código atual?&quot;)) {
+    state.html = ''; state.css = ''; state.js = ''; state.jsx = ''; state.python = '';
+    loadEditorContent(); updatePreview(); autoSave();
+  }
+}
+
+// ========== SALVAR / ABRIR (CORRIGIDO) ==========
+function getSnippets() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+}
+function setSnippets(list) { localStorage.setItem(LS_KEY, JSON.stringify(list)); }
+
+function saveToLocal() {
+  saveCurrentTab(); // Garante que a aba atual está no state
+  const snippets = getSnippets();
+  const id = Date.now().toString(36);
+  const item = {
+    id, title: state.title || 'Sem titulo', mode: state.mode,
+    html: state.html, css: state.css, js: state.js, jsx: state.jsx, python: state.python,
+    date: new Date().toISOString()
+  };
+  snippets.unshift(item);
+  setSnippets(snippets);
+  showToast('💾 Salvo com sucesso!');
+}
+
+function openSavedModal() {
+  document.getElementById('savedModal').classList.add('open');
+  renderSavedList();
+}
+function closeSavedModal() { document.getElementById('savedModal').classList.remove('open'); }
+
+function renderSavedList() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const snippets = getSnippets().filter(s =&gt; s.title.toLowerCase().includes(query));
+  const container = document.getElementById('savedList');
+  
+  if (snippets.length === 0) {
+    container.innerHTML = '&lt;p style=&quot;text-align:center;color:var(--text2);font-size:12px;padding:20px;&quot;&gt;Nenhum código salvo.&lt;/p&gt;';
+    return;
+  }
+  
+  container.innerHTML = snippets.map(s =&gt; `
+    &lt;div class=&quot;snippet-item&quot; onclick=&quot;loadSnippet('${s.id}')&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;name&quot;&gt;${s.title.replace(/&lt;/g,'&amp;lt;')}&lt;/div&gt;
+        &lt;div class=&quot;meta&quot;&gt;${s.mode.toUpperCase()} • ${new Date(s.date).toLocaleDateString('pt-BR')}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();deleteSnippet('${s.id}')&quot;&gt;🗑️&lt;/button&gt;
+    &lt;/div&gt;
+  `).join('');
+}
+
+function loadSnippet(id) {
+  const snippets = getSnippets();
+  const s = snippets.find(x =&gt; x.id === id);
+  if (!s) return;
+  
+  // CORREÇÃO DO BUG: Atualiza o state DIRETAMENTE sem chamar switchMode() que sobrescrevia os dados
+  state.mode = s.mode || 'html';
+  if (state.mode === 'html') state.activeTab = 'html';
+  else if (state.mode === 'react') state.activeTab = 'jsx';
+  else if (state.mode === 'python') state.activeTab = 'python';
+  
+  state.title = s.title;
+  state.html = s.html || '';
+  state.css = s.css || '';
+  state.js = s.js || '';
+  state.jsx = s.jsx || '';
+  state.python = s.python || '';
+  
+  titleInput.value = state.title;
+  
+  // Atualiza botões visuais
+  document.querySelectorAll('.btn-mode').forEach(b =&gt; b.classList.remove('active'));
+  document.getElementById('mode' + state.mode.charAt(0).toUpperCase() + state.mode.slice(1)).classList.add('active');
+  
+  updateTabs();
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  closeSavedModal();
+  showToast('📂 Projeto carregado!');
+}
+
+function deleteSnippet(id) {
+  if (!confirm('Excluir este código?')) return;
+  setSnippets(getSnippets().filter(s =&gt; s.id !== id));
+  renderSavedList();
+}
+
+// ========== INTEGRAÇÃO IA (GEMINI) ==========
+function toggleChat() {
+  document.getElementById('chatPanel').classList.toggle('hidden');
+}
+
+function openApiModal() { document.getElementById('apiModal').classList.add('open'); document.getElementById('apiKeyInput').value = localStorage.getItem(API_KEY_LS) || ''; }
+function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
+function saveApiKey() {
+  localStorage.setItem(API_KEY_LS, document.getElementById('apiKeyInput').value.trim());
+  closeApiModal();
+  showToast('🔑 API Key salva!');
+}
+
+function addMsg(text, sender, isHtml = false) {
+  const div = document.createElement('div');
+  div.className = `msg msg-${sender}`;
+  if(isHtml) div.innerHTML = text; else div.textContent = text;
+  document.getElementById('chatMessages').appendChild(div);
+  div.scrollIntoView({behavior: 'smooth'});
+}
+
+function applyAiCode(btn) {
+  const code = decodeURIComponent(btn.getAttribute('data-code'));
+  editor.value = code;
+  saveCurrentTab();
+  updateLineNumbers();
+  updatePreview();
+  autoSave();
+  showToast('✅ Código aplicado!');
+}
+
+async function sendAiMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  
+  const apiKey = localStorage.getItem(API_KEY_LS);
+  if(!apiKey) return openApiModal();
+
+  input.value = '';
+  addMsg(text, 'user');
+  
+  // Pega o código atual do editor para enviar de contexto
+  const currentCode = editor.value;
+  const prompt = `Você é um assistente de programação. O usuário está editando um código na linguagem/aba: ${state.activeTab}.
+Código atual no editor:
+\`\`\`
+${currentCode}
+\`\`\`
+Pedido do usuário: &quot;${text}&quot;
+Responda de forma curta. Se for alterar o código, retorne APENAS o código completo atualizado dentro de blocos \`\`\`.`;
+
+  const loadingId = 'loading-' + Date.now();
+  addMsg('Pensando...', 'ai', true);
+  const msgs = document.getElementById('chatMessages');
+  msgs.lastChild.id = loadingId;
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    
+    const data = await res.json();
+    document.getElementById(loadingId).remove();
+    
+    if(data.error) throw new Error(data.error.message);
+    
+    let reply = data.candidates[0].content.parts[0].text;
+    
+    // Extrai código se houver
+    const codeMatch = reply.match(/```[\w]*\n([\s\S]*?)```/);
+    let htmlReply = reply.replace(/```[\w]*\n[\s\S]*?```/g, '').replace(/\n/g, '&lt;br&gt;');
+    
+    if(codeMatch &amp;&amp; codeMatch[1]) {
+      const code = codeMatch[1].trim();
+      const safeCode = encodeURIComponent(code);
+      htmlReply += `&lt;br&gt;&lt;button class=&quot;apply-btn&quot; data-code=&quot;${safeCode}&quot; onclick=&quot;applyAiCode(this)&quot;&gt;✨ Aplicar no Editor&lt;/button&gt;`;
+    }
+    
+    addMsg(htmlReply, 'ai', true);
+    
+  } catch(err) {
+    document.getElementById(loadingId).remove();
+    addMsg('Erro: ' + err.message, 'ai');
+  }
+}
+
+// ========== UTILS ==========
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() =&gt; toast.classList.remove('show'), 2500);
+}
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+<div class="project-container " id="projeto1">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Playground IA — Saulo&lt;/title&gt;
+&lt;style&gt;
+:root {
+  --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+  --text: #e2e8f0; --text2: #94a3b8;
+  --accent: #a3a082; --accent2: #d4d0a8;
+  --border: #334155;
+}
+* { box-sizing: border-box; margin:0; padding:0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+.header { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:var(--bg2); border-bottom:1px solid var(--border); }
+.logo { font-weight:800; font-size:14px; color:var(--accent); }
+.mode-group { display:flex; gap:2px; background:var(--bg); padding:2px; border-radius:8px; border:1px solid var(--border); }
+.btn-mode { padding:4px 10px; font-size:11px; font-weight:700; border:none; background:transparent; color:var(--text2); cursor:pointer; border-radius:6px; }
+.btn-mode.active { background:var(--accent); color:#000; }
+
+.main { display:flex; flex:1; overflow:hidden; }
+.editor-panel { width:42%; border-right:1px solid var(--border); display:flex; flex-direction:column; }
+.preview-panel { flex:1; display:flex; flex-direction:column; }
+
+.editor-wrap { flex:1; position:relative; }
+.editor-textarea { width:100%; height:100%; resize:none; background:var(--bg); color:var(--text); font-family:'Consolas',monospace; font-size:13px; line-height:1.6; padding:12px 12px 12px 46px; border:none; outline:none; }
+.line-numbers { position:absolute; left:0; top:0; bottom:0; width:38px; background:rgba(30,41,59,.5); padding:12px 6px 12px 0; text-align:right; font-family:'Consolas',monospace; font-size:11px; color:var(--text2); opacity:.5; pointer-events:none; }
+
+.preview-header { padding:6px 12px; background:var(--bg2); border-bottom:1px solid var(--border); font-size:12px; color:var(--text2); }
+.preview-frame { flex:1; border:none; background:#fff; }
+
+.chat-panel { width:300px; border-left:1px solid var(--border); display:flex; flex-direction:column; }
+.chat-header { padding:8px 12px; background:var(--bg2); border-bottom:1px solid var(--border); font-size:12px; }
+#chat-messages { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
+.msg { padding:8px 10px; border-radius:8px; font-size:12px; line-height:1.5; }
+.msg-user { background:#1e3a8a; align-self:flex-end; max-width:92%; }
+.msg-ai { background:#1a1a2e; border:1px solid var(--bg3); align-self:flex-start; max-width:98%; white-space:pre-wrap; }
+.chat-input-area { padding:8px; background:var(--bg2); display:flex; gap:6px; }
+#chat-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:6px 8px; color:var(--text); font-size:12px; resize:none; }
+#chat-send { background:#2563eb; color:white; border:none; border-radius:6px; padding:0 14px; cursor:pointer; }
+
+.btn { padding:5px 10px; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; }
+.btn-primary { background:var(--accent); color:#000; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;header class=&quot;header&quot;&gt;
+  &lt;div style=&quot;display:flex; align-items:center; gap:10px;&quot;&gt;
+    &lt;div class=&quot;logo&quot;&gt;⚡ Playground IA&lt;/div&gt;
+    &lt;div class=&quot;mode-group&quot;&gt;
+      &lt;button class=&quot;btn-mode active&quot; onclick=&quot;switchMode('html')&quot;&gt;HTML&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; onclick=&quot;switchMode('react')&quot;&gt;React&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; onclick=&quot;switchMode('python')&quot;&gt;Python&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;input id=&quot;projectTitle&quot; type=&quot;text&quot; value=&quot;Sem título&quot; style=&quot;background:transparent;border:1px solid transparent;color:var(--text);padding:4px 8px;border-radius:6px;width:140px;&quot;&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;display:flex; gap:6px;&quot;&gt;
+    &lt;button class=&quot;btn&quot; onclick=&quot;importFile()&quot;&gt;📂 Importar&lt;/button&gt;
+    &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;saveToLocal()&quot;&gt;💾 Salvar&lt;/button&gt;
+    &lt;button class=&quot;btn&quot; onclick=&quot;openSavedModal()&quot;&gt;📁 Abrir&lt;/button&gt;
+    &lt;button class=&quot;btn&quot; onclick=&quot;toggleChat()&quot;&gt;🤖 IA&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/header&gt;
+
+&lt;div class=&quot;main&quot;&gt;
+  &lt;!-- EDITOR --&gt;
+  &lt;div class=&quot;editor-panel&quot;&gt;
+    &lt;div class=&quot;editor-wrap&quot;&gt;
+      &lt;div class=&quot;line-numbers&quot; id=&quot;lineNumbers&quot;&gt;1&lt;/div&gt;
+      &lt;textarea class=&quot;editor-textarea&quot; id=&quot;editor&quot; spellcheck=&quot;false&quot;&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PREVIEW --&gt;
+  &lt;div class=&quot;preview-panel&quot;&gt;
+    &lt;div class=&quot;preview-header&quot;&gt;📄 Preview ao vivo&lt;/div&gt;
+    &lt;iframe class=&quot;preview-frame&quot; id=&quot;previewFrame&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+
+  &lt;!-- CHAT IA --&gt;
+  &lt;div class=&quot;chat-panel&quot; id=&quot;chatPanel&quot; style=&quot;display:none;&quot;&gt;
+    &lt;div class=&quot;chat-header&quot;&gt;🤖 IA (lê o editor)&lt;/div&gt;
+    &lt;div id=&quot;chat-messages&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;chat-input-area&quot;&gt;
+      &lt;textarea id=&quot;chat-input&quot; rows=&quot;2&quot; placeholder=&quot;Peça para alterar o código...&quot;&gt;&lt;/textarea&gt;
+      &lt;button id=&quot;chat-send&quot; onclick=&quot;sendToAI()&quot;&gt;Enviar&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;input type=&quot;file&quot; id=&quot;fileInput&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm,.js,.css,.jsx,.py&quot;&gt;
+
+&lt;script&gt;
+// ==================== ESTADO ====================
+let state = {
+  mode: 'html',
+  html: `&lt;h1 style=&quot;padding:40px;text-align:center;&quot;&gt;Olá Saulo!&lt;/h1&gt;`,
+  css: '',
+  js: '',
+  jsx: '',
+  python: '',
+  title: 'Sem título'
+};
+
+const editor = document.getElementById('editor');
+const previewFrame = document.getElementById('previewFrame');
+const lineNumbers = document.getElementById('lineNumbers');
+const titleInput = document.getElementById('projectTitle');
+
+// Carregar autosave
+try {
+  const saved = localStorage.getItem('pg_autosave');
+  if (saved) Object.assign(state, JSON.parse(saved));
+} catch(e) {}
+
+titleInput.value = state.title;
+
+// ==================== EDITOR ====================
+editor.addEventListener('input', () =&gt; {
+  saveCurrentTab();
+  updateLineNumbers();
+  autoSave();
+  updatePreview();
+});
+
+editor.addEventListener('scroll', () =&gt; lineNumbers.scrollTop = editor.scrollTop);
+
+function updateLineNumbers() {
+  const lines = editor.value.split('\n').length;
+  lineNumbers.textContent = Array.from({length: lines}, (_, i) =&gt; i + 1).join('\n');
+}
+
+function saveCurrentTab() {
+  if (state.mode === 'html') {
+    if (state.activeTab === 'html') state.html = editor.value;
+    else if (state.activeTab === 'css') state.css = editor.value;
+    else if (state.activeTab === 'js') state.js = editor.value;
+  } else if (state.mode === 'react') {
+    state.jsx = editor.value;
+  } else {
+    state.python = editor.value;
+  }
+}
+
+function loadEditorContent() {
+  if (state.mode === 'html') {
+    if (state.activeTab === 'html') editor.value = state.html;
+    else if (state.activeTab === 'css') editor.value = state.css;
+    else if (state.activeTab === 'js') editor.value = state.js;
+  } else if (state.mode === 'react') {
+    editor.value = state.jsx;
+  } else {
+    editor.value = state.python;
+  }
+  updateLineNumbers();
+}
+
+function switchMode(mode) {
+  saveCurrentTab();
+  state.mode = mode;
+  document.querySelectorAll('.btn-mode').forEach(b =&gt; b.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  if (mode === 'html') state.activeTab = 'html';
+  else if (mode === 'react') state.activeTab = 'jsx';
+  else state.activeTab = 'python';
+  
+  loadEditorContent();
+  updatePreview();
+}
+
+function updatePreview() {
+  let html = '';
+  if (state.mode === 'html') {
+    html = `&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;${state.css}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;${state.html}&lt;script&gt;${state.js}&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  } else if (state.mode === 'react') {
+    html = `&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;script src=&quot;https://unpkg.com/react@18/umd/react.development.js&quot;&gt;&lt;\/script&gt;&lt;script src=&quot;https://unpkg.com/react-dom@18/umd/react-dom.development.js&quot;&gt;&lt;\/script&gt;&lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;\/script&gt;&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;&lt;script type=&quot;text/babel&quot;&gt;${state.jsx}&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  } else {
+    html = `&lt;pre style=&quot;padding:20px;font-family:monospace;&quot;&gt;${state.python}&lt;/pre&gt;`;
+  }
+  
+  const blob = new Blob([html], { type: 'text/html' });
+  previewFrame.src = URL.createObjectURL(blob);
+}
+
+// ==================== SALVAR E ABRIR ====================
+function autoSave() {
+  localStorage.setItem('pg_autosave', JSON.stringify(state));
+}
+
+function saveToLocal() {
+  const snippets = JSON.parse(localStorage.getItem('pg_snippets') || '[]');
+  const item = { ...state, id: Date.now(), date: new Date().toISOString() };
+  snippets.unshift(item);
+  localStorage.setItem('pg_snippets', JSON.stringify(snippets));
+  alert('✅ Salvo com sucesso!');
+}
+
+function openSavedModal() {
+  const snippets = JSON.parse(localStorage.getItem('pg_snippets') || '[]');
+  if (snippets.length === 0) return alert('Nenhum código salvo.');
+  
+  const list = snippets.map(s =&gt; 
+    `&lt;div onclick=&quot;loadSnippet(${s.id})&quot; style=&quot;padding:10px;border-bottom:1px solid #334155;cursor:pointer;&quot;&gt;
+      ${s.title} &lt;small style=&quot;color:#64748b&quot;&gt;(${s.mode})&lt;/small&gt;
+    &lt;/div&gt;`
+  ).join('');
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999';
+  modal.innerHTML = `&lt;div style=&quot;background:#1e293b;padding:20px;border-radius:12px;width:400px;max-height:70vh;overflow:auto;&quot;&gt;
+    &lt;h3 style=&quot;margin-bottom:12px;&quot;&gt;Meus Códigos&lt;/h3&gt;
+    ${list}
+    &lt;button onclick=&quot;this.parentElement.parentElement.remove()&quot; style=&quot;margin-top:12px;&quot;&gt;Fechar&lt;/button&gt;
+  &lt;/div&gt;`;
+  document.body.appendChild(modal);
+}
+
+function loadSnippet(id) {
+  const snippets = JSON.parse(localStorage.getItem('pg_snippets') || '[]');
+  const s = snippets.find(x =&gt; x.id === id);
+  if (!s) return;
+  
+  Object.assign(state, s);
+  titleInput.value = state.title;
+  switchMode(state.mode);
+  document.querySelectorAll('.modal').forEach(m =&gt; m.remove());
+  updatePreview();
+}
+
+// ==================== IMPORTAR ====================
+function importFile() {
+  document.getElementById('fileInput').click();
+}
+
+document.getElementById('fileInput').addEventListener('change', e =&gt; {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = ev =&gt; {
+    state.html = ev.target.result;
+    state.mode = 'html';
+    state.activeTab = 'html';
+    titleInput.value = file.name.replace(/\.[^/.]+$/, '');
+    loadEditorContent();
+    updatePreview();
+  };
+  reader.readAsText(file);
+});
+
+// ==================== IA ====================
+let chatVisible = false;
+function toggleChat() {
+  chatVisible = !chatVisible;
+  document.getElementById('chatPanel').style.display = chatVisible ? 'flex' : 'none';
+}
+
+async function sendToAI() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const messages = document.getElementById('chat-messages');
+  messages.innerHTML += `&lt;div class=&quot;msg msg-user&quot;&gt;${msg}&lt;/div&gt;`;
+  input.value = '';
+
+  // Aqui você pode integrar com Gemini ou OpenAI
+  // Por enquanto só mostra que a IA &quot;lê&quot; o código
+  setTimeout(() =&gt; {
+    messages.innerHTML += `&lt;div class=&quot;msg msg-ai&quot;&gt;IA recebeu o código. (Adicione sua API Key para funcionar de verdade)&lt;/div&gt;`;
+    messages.scrollTop = messages.scrollHeight;
+  }, 600);
+}
+
+// Inicialização
+loadEditorContent();
+updatePreview();
+updateLineNumbers();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;"></iframe>
+</div>
+
+<div class="project-container " id="projeto2">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Playground IA — Saulo&lt;/title&gt;
+&lt;style&gt;
+:root {
+  --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+  --text: #e2e8f0; --text2: #94a3b8;
+  --accent: #a3a082; --accent2: #d4d0a8;
+  --blue: #3b82f6; --green: #4ade80; --red: #f87171; --yellow: #fbbf24;
+  --border: #334155; --radius: 10px;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+/* HEADER */
+.header { display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:var(--bg2); border-bottom:1px solid var(--border); flex-wrap:wrap; gap:4px; }
+.header-left { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.header-right { display:flex; align-items:center; gap:3px; flex-wrap:wrap; }
+.logo { font-weight:800; font-size:13px; color:var(--accent); letter-spacing:-0.5px; white-space:nowrap; }
+.logo small { font-size:9px; color:var(--text2); font-weight:400; letter-spacing:1px; display:block; }
+.title-input { background:transparent; border:1px solid transparent; color:var(--text); font-size:12px; padding:3px 7px; border-radius:6px; width:130px; }
+.title-input:focus { outline:none; border-color:var(--accent); }
+
+/* BUTTONS */
+.btn { display:inline-flex; align-items:center; gap:3px; padding:4px 9px; border:none; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.btn-icon { padding:5px; border-radius:6px; background:transparent; border:none; color:var(--text2); cursor:pointer; font-size:13px; transition:all .15s; }
+.btn-icon:hover { background:var(--bg3); color:var(--text); }
+.btn-primary { background:var(--accent); color:#000; }
+.btn-primary:hover { background:var(--accent2); }
+.btn-ghost { background:transparent; color:var(--text2); }
+.btn-ghost:hover { background:var(--bg3); color:var(--text); }
+.btn-mode { padding:3px 9px; border-radius:6px; font-size:10px; font-weight:700; border:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; }
+.btn-mode.active { background:var(--accent); color:#000; border-color:var(--accent); }
+.btn-ai { background:#7c3aed; color:#fff; font-size:11px; padding:4px 10px; border-radius:6px; border:none; cursor:pointer; font-weight:700; }
+.btn-ai:hover { background:#6d28d9; }
+.mode-group { display:flex; gap:2px; background:var(--bg); padding:2px; border-radius:8px; border:1px solid var(--border); }
+
+/* TABS */
+.tabs-bar { display:flex; align-items:center; justify-content:space-between; padding:3px 8px; background:var(--bg2); border-bottom:1px solid var(--border); }
+.tabs { display:flex; gap:2px; }
+.tab { padding:4px 11px; font-size:11px; font-weight:600; border:none; background:transparent; color:var(--text2); cursor:pointer; border-radius:6px; transition:all .15s; }
+.tab.active { background:var(--bg3); color:var(--text); }
+.tab-info { font-size:10px; color:var(--text2); display:flex; align-items:center; gap:6px; }
+.status-badge { font-size:9px; padding:2px 6px; border-radius:4px; font-weight:700; text-transform:uppercase; }
+.status-badge.html { background:rgba(239,68,68,.15); color:var(--red); }
+.status-badge.react { background:rgba(59,130,246,.15); color:var(--blue); }
+.status-badge.python { background:rgba(251,191,36,.15); color:var(--yellow); }
+
+/* MAIN LAYOUT */
+.main { display:flex; flex:1; overflow:hidden; }
+.editor-panel { display:flex; flex-direction:column; width:38%; border-right:1px solid var(--border); transition:width .3s; min-width:0; }
+.editor-panel.collapsed { width:0; overflow:hidden; border:none; }
+.editor-panel.expanded { width:62%; }
+.preview-panel { display:flex; flex-direction:column; flex:1; min-width:0; border-right:1px solid var(--border); }
+.preview-panel.hidden { display:none; }
+.chat-panel { display:flex; flex-direction:column; width:300px; flex-shrink:0; }
+.chat-panel.hidden { display:none; }
+
+/* EDITOR */
+.editor-wrap { flex:1; position:relative; overflow:hidden; }
+.editor-textarea { width:100%; height:100%; resize:none; background:var(--bg); color:var(--text); font-family:'Cascadia Code','Fira Code','Consolas',monospace; font-size:12px; line-height:1.6; padding:10px 10px 10px 46px; border:none; outline:none; tab-size:2; position:absolute; inset:0; }
+.line-numbers { position:absolute; left:0; top:0; bottom:0; width:38px; background:rgba(30,41,59,.5); padding:10px 5px 10px 0; text-align:right; font-family:'Consolas',monospace; font-size:11px; line-height:1.6; color:var(--text2); opacity:.5; overflow:hidden; pointer-events:none; user-select:none; z-index:1; }
+
+/* PREVIEW */
+.preview-header { display:flex; align-items:center; gap:6px; padding:5px 10px; background:var(--bg2); border-bottom:1px solid var(--border); }
+.preview-header .dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+.preview-frame { flex:1; border:none; background:#fff; }
+
+/* CHAT */
+.chat-header { display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:var(--bg2); border-bottom:1px solid var(--border); }
+.chat-header span { font-size:11px; font-weight:700; color:var(--text2); }
+#chat-messages { flex:1; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:7px; }
+.msg { padding:8px 10px; border-radius:8px; font-size:11.5px; line-height:1.5; word-break:break-word; }
+.msg-user { background:#1e3a8a; color:#fff; align-self:flex-end; max-width:92%; }
+.msg-ai { background:#1a1a2e; border:1px solid var(--bg3); color:var(--text); align-self:flex-start; max-width:98%; white-space:pre-wrap; }
+.msg-system { background:var(--bg2); border:1px solid var(--border); color:#4b5563; font-size:10px; align-self:center; text-align:center; padding:4px 8px; border-radius:5px; }
+.apply-btn { display:block; width:100%; margin-top:7px; padding:6px; background:#15803d; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:11px; font-weight:700; }
+.apply-btn:hover { background:#16a34a; }
+.chat-input-area { padding:7px; background:var(--bg2); border-top:1px solid var(--border); display:flex; gap:5px; flex-shrink:0; }
+#chat-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:7px; padding:6px 8px; color:var(--text); font-size:11px; outline:none; resize:none; font-family:inherit; }
+#chat-input:focus { border-color:#2563eb; }
+#chat-send { background:#1d4ed8; color:#fff; border:none; border-radius:7px; padding:6px 10px; cursor:pointer; font-size:15px; }
+#chat-send:hover { background:#2563eb; }
+#chat-send:disabled { background:var(--bg3); cursor:not-allowed; }
+
+/* MODALS */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:18px; width:90%; max-width:460px; max-height:80vh; overflow-y:auto; }
+.modal h3 { font-size:15px; margin-bottom:10px; color:var(--accent); }
+.modal-input { width:100%; padding:8px 10px; background:var(--bg); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:12px; margin-bottom:10px; outline:none; }
+.modal-input:focus { border-color:var(--accent); }
+.modal-select { width:100%; padding:8px 10px; background:var(--bg); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:12px; margin-bottom:10px; outline:none; }
+
+/* SAVED LIST */
+.snippet-item { display:flex; align-items:center; justify-content:space-between; padding:9px 11px; background:var(--bg); border:1px solid var(--border); border-radius:8px; margin-bottom:5px; cursor:pointer; transition:all .15s; }
+.snippet-item:hover { border-color:var(--accent); background:var(--bg3); }
+.snippet-item .sname { font-size:12px; font-weight:600; }
+.snippet-item .smeta { font-size:10px; color:var(--text2); }
+.snippet-actions { display:flex; gap:2px; }
+
+/* FULLSCREEN */
+#fs-modal { display:none; position:fixed; inset:0; background:var(--bg); z-index:999; flex-direction:column; }
+#fs-modal.open { display:flex; }
+#fs-bar { background:var(--bg2); padding:7px 12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); }
+#fs-editor { flex:1; width:100%; background:var(--bg); color:var(--text); border:none; outline:none; padding:18px; font-family:'Cascadia Code','Consolas',monospace; font-size:14px; line-height:1.7; resize:none; }
+
+/* TOAST */
+.toast { position:fixed; bottom:18px; right:18px; background:var(--bg2); border:1px solid var(--accent); border-radius:9px; padding:10px 18px; font-size:12px; font-weight:600; color:var(--accent2); z-index:2000; transform:translateY(80px); opacity:0; transition:all .3s; }
+.toast.show { transform:translateY(0); opacity:1; }
+
+/* LOADING DOTS */
+.dots { display:flex; gap:4px; padding:8px 10px; }
+.dot-a { width:7px; height:7px; background:#7c3aed; border-radius:50%; animation:blink .8s infinite; }
+.dot-a:nth-child(2){animation-delay:.15s} .dot-a:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+::-webkit-scrollbar{width:5px;height:5px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+
+@media(max-width:768px){
+  .main{flex-direction:column}
+  .editor-panel{width:100%!important;height:40%;border-right:none;border-bottom:1px solid var(--border)}
+  .preview-panel{height:35%}
+  .chat-panel{width:100%;height:25%}
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- HEADER --&gt;
+&lt;header class=&quot;header&quot;&gt;
+  &lt;div class=&quot;header-left&quot;&gt;
+    &lt;div class=&quot;logo&quot;&gt;⚡ Playground IA &lt;small&gt;Saulo — Advogado&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;mode-group&quot;&gt;
+      &lt;button class=&quot;btn-mode active&quot; id=&quot;modeHtml&quot; onclick=&quot;switchMode('html')&quot;&gt;🌐 HTML&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modeReact&quot; onclick=&quot;switchMode('react')&quot;&gt;⚛️ React&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modePython&quot; onclick=&quot;switchMode('python')&quot;&gt;🐍 Python&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;input type=&quot;text&quot; class=&quot;title-input&quot; id=&quot;projectTitle&quot; value=&quot;Sem titulo&quot; placeholder=&quot;Nome do projeto...&quot; /&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;header-right&quot;&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;importFile()&quot; title=&quot;Abrir arquivo&quot;&gt;📂&lt;/button&gt;
+    &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;saveToLocal()&quot;&gt;💾 Salvar&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openSavedModal()&quot; title=&quot;Meus salvos&quot;&gt;📁&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;downloadFile()&quot; title=&quot;Baixar&quot;&gt;⬇️&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;copyCode()&quot; title=&quot;Copiar&quot;&gt;📋&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openFullscreen()&quot; title=&quot;Ampliar editor&quot;&gt;⛶&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openPreviewFull()&quot; title=&quot;Preview tela cheia&quot;&gt;🔍&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;toggleChat()&quot; title=&quot;Mostrar/ocultar IA&quot; id=&quot;btnChat&quot;&gt;🤖&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;clearCode()&quot; title=&quot;Limpar&quot;&gt;🗑️&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;resetCode()&quot; title=&quot;Resetar&quot;&gt;🔄&lt;/button&gt;
+    &lt;button class=&quot;btn-ai&quot; onclick=&quot;openApiModal()&quot;&gt;🔑 API Key&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/header&gt;
+
+&lt;!-- TABS --&gt;
+&lt;div class=&quot;tabs-bar&quot;&gt;
+  &lt;div class=&quot;tabs&quot; id=&quot;tabsContainer&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;tab-info&quot;&gt;
+    &lt;span id=&quot;lineCount&quot;&gt;1 linhas&lt;/span&gt;
+    &lt;span class=&quot;status-badge html&quot; id=&quot;modeBadge&quot;&gt;HTML&lt;/span&gt;
+    &lt;span id=&quot;save-status&quot; style=&quot;font-size:10px;color:#4ade80;&quot;&gt;&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- MAIN --&gt;
+&lt;div class=&quot;main&quot;&gt;
+
+  &lt;!-- EDITOR --&gt;
+  &lt;div class=&quot;editor-panel&quot; id=&quot;editorPanel&quot;&gt;
+    &lt;div class=&quot;editor-wrap&quot;&gt;
+      &lt;div class=&quot;line-numbers&quot; id=&quot;lineNumbers&quot;&gt;1&lt;/div&gt;
+      &lt;textarea class=&quot;editor-textarea&quot; id=&quot;editor&quot; spellcheck=&quot;false&quot; placeholder=&quot;Cole ou importe seu código...&quot;&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PREVIEW --&gt;
+  &lt;div class=&quot;preview-panel&quot; id=&quot;previewPanel&quot;&gt;
+    &lt;div class=&quot;preview-header&quot;&gt;
+      &lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;
+      &lt;span style=&quot;font-size:11px;color:var(--text2);font-weight:600;&quot;&gt;Preview ao vivo&lt;/span&gt;
+      &lt;span id=&quot;autoLabel&quot; style=&quot;font-size:9px;color:var(--green);margin-left:auto;cursor:pointer;&quot; onclick=&quot;toggleAuto()&quot; title=&quot;Clique para ligar/desligar auto-preview&quot;&gt;● AUTO: ON&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;iframe class=&quot;preview-frame&quot; id=&quot;previewFrame&quot; sandbox=&quot;allow-scripts allow-modals allow-forms allow-popups&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+
+  &lt;!-- CHAT IA --&gt;
+  &lt;div class=&quot;chat-panel&quot; id=&quot;chatPanel&quot;&gt;
+    &lt;div class=&quot;chat-header&quot;&gt;
+      &lt;span&gt;🤖 IA Integrada&lt;/span&gt;
+      &lt;span id=&quot;model-tag&quot; style=&quot;color:#a78bfa;font-size:10px;&quot;&gt;Gemini Flash&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;chat-messages&quot;&gt;
+      &lt;div class=&quot;msg msg-system&quot;&gt;IA lê o código do editor. Peça qualquer alteração.&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;chat-input-area&quot;&gt;
+      &lt;textarea id=&quot;chat-input&quot; rows=&quot;2&quot; placeholder=&quot;O que precisa? (Enter = enviar)&quot; onkeydown=&quot;handleChatKey(event)&quot;&gt;&lt;/textarea&gt;
+      &lt;button id=&quot;chat-send&quot; onclick=&quot;sendMsg()&quot;&gt;➤&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;!-- INPUT ARQUIVO OCULTO --&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm,.css,.js,.jsx,.tsx,.py,.txt,.svg,.xml,.json&quot; /&gt;
+
+&lt;!-- MODAL SALVOS --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;savedModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;h3&gt;📁 Meus Códigos Salvos&lt;/h3&gt;
+    &lt;input type=&quot;text&quot; class=&quot;modal-input&quot; id=&quot;searchInput&quot; placeholder=&quot;🔍 Buscar por nome...&quot; oninput=&quot;renderSavedList()&quot; /&gt;
+    &lt;div id=&quot;savedList&quot;&gt;&lt;/div&gt;
+    &lt;div style=&quot;text-align:right;margin-top:10px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeSavedModal()&quot;&gt;Fechar&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- MODAL API KEY --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;apiModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;h3&gt;🔑 Configurar IA&lt;/h3&gt;
+    &lt;select class=&quot;modal-select&quot; id=&quot;api-provider&quot; onchange=&quot;updateModelTag()&quot;&gt;
+      &lt;option value=&quot;gemini&quot;&gt;Google Gemini (gratuito)&lt;/option&gt;
+      &lt;option value=&quot;openai&quot;&gt;OpenAI GPT-4o Mini&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;input class=&quot;modal-input&quot; id=&quot;api-key-input&quot; type=&quot;password&quot; placeholder=&quot;Cole sua API Key aqui...&quot; /&gt;
+    &lt;textarea class=&quot;modal-input&quot; id=&quot;system-prompt-input&quot; rows=&quot;5&quot; style=&quot;resize:vertical;font-family:inherit;font-size:11px;&quot; placeholder=&quot;System Prompt da IA...&quot;&gt;&lt;/textarea&gt;
+    &lt;div style=&quot;display:flex;gap:6px;&quot;&gt;
+      &lt;button class=&quot;btn btn-primary&quot; style=&quot;flex:1&quot; onclick=&quot;saveApiKey()&quot;&gt;✅ Salvar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; style=&quot;flex:1&quot; onclick=&quot;closeApiModal()&quot;&gt;Cancelar&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p style=&quot;font-size:10px;color:#4b5563;margin-top:8px;&quot;&gt;Chave salva só no seu navegador.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- FULLSCREEN EDITOR --&gt;
+&lt;div id=&quot;fs-modal&quot;&gt;
+  &lt;div id=&quot;fs-bar&quot;&gt;
+    &lt;span style=&quot;color:var(--accent);font-weight:700;font-size:13px;&quot;&gt;⛶ Editor Ampliado&lt;/span&gt;
+    &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeFsEditor()&quot; style=&quot;background:#dc2626;color:#fff;&quot;&gt;✕ Fechar e Aplicar&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;textarea id=&quot;fs-editor&quot; spellcheck=&quot;false&quot;&gt;&lt;/textarea&gt;
+&lt;/div&gt;
+
+&lt;!-- TOAST --&gt;
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// ═══════════════════════════════════════════════
+// CONSTANTES
+// ═══════════════════════════════════════════════
+const LS_SNIPPETS   = 'pg_snippets_v3';
+const LS_AUTOSAVE   = 'pg_autosave_v3';
+const LS_APIKEY     = 'pg_apikey';
+const LS_PROVIDER   = 'pg_provider';
+const LS_SYSPROMPT  = 'pg_sysprompt';
+
+const DEFAULT_SYSTEM = `Você é uma IA integrada a um playground de código. O usuário é Saulo, advogado de Manhumirim-MG, direto ao ponto.
+REGRAS ABSOLUTAS:
+1. NUNCA peça desculpas.
+2. NUNCA use frases de empatia (&quot;parece que&quot;, &quot;eu entendo&quot;, &quot;sinto muito&quot;, &quot;compreendo&quot;).
+3. Vá DIRETO ao ponto. Só o que foi pedido.
+4. Ao alterar código: retorne o arquivo COMPLETO atualizado entre triple backticks para aplicação automática.
+5. Seja cirúrgico. Em uma linha diga o que mudou, depois o código.
+6. Ao final: &quot;Quer mais alguma alteração?&quot;`;
+
+// ═══════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════
+let state = {
+  mode: 'html',
+  activeTab: 'html',
+  html: `&lt;div style=&quot;max-width:600px;margin:40px auto;padding:20px;font-family:sans-serif;&quot;&gt;
+  &lt;h1 style=&quot;color:#333;&quot;&gt;Bem-vindo ao Playground IA&lt;/h1&gt;
+  &lt;p style=&quot;color:#666;margin:16px 0;&quot;&gt;Cole seu código aqui e veja o resultado ao vivo. A IA lê este código e pode alterá-lo.&lt;/p&gt;
+  &lt;button onclick=&quot;alert('Funcionou!')&quot; style=&quot;padding:10px 24px;font-size:16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;&quot;&gt;Testar&lt;/button&gt;
+&lt;/div&gt;`,
+  css: '',
+  js: `// JavaScript aqui\nconsole.log(&quot;Playground IA — Saulo&quot;);`,
+  jsx: `function App() {
+  const [count, setCount] = React.useState(0);
+  return (
+    &lt;div style={{padding:40,fontFamily:'sans-serif',textAlign:'center'}}&gt;
+      &lt;h1&gt;⚛️ React Playground&lt;/h1&gt;
+      &lt;p&gt;Contador: &lt;strong&gt;{count}&lt;/strong&gt;&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count+1)} style={{padding:'10px 24px',fontSize:16,background:'#3b82f6',color:'white',border:'none',borderRadius:8,cursor:'pointer'}}&gt;+1&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`,
+  python: `# Python — output no preview
+dados = [&quot;João Silva&quot;, &quot;Maria Souza&quot;, &quot;Pedro Lima&quot;]
+print(&quot;=== CLIENTES ===&quot;)
+for i, nome in enumerate(dados, 1):
+    print(f&quot;{i}. {nome}&quot;)
+print(f&quot;\\nTotal: {len(dados)}&quot;)`,
+  title: 'Sem titulo',
+  editorState: 'normal'
+};
+
+// Carrega autosave
+try {
+  const saved = localStorage.getItem(LS_AUTOSAVE);
+  if (saved) Object.assign(state, JSON.parse(saved));
+} catch(e) {}
+
+let apiKey     = localStorage.getItem(LS_APIKEY)    || '';
+let apiProvider= localStorage.getItem(LS_PROVIDER)  || 'gemini';
+let sysPrompt  = localStorage.getItem(LS_SYSPROMPT) || DEFAULT_SYSTEM;
+let autoPreview= true;
+let previewTimer= null;
+let chatVisible = true;
+
+// ═══════════════════════════════════════════════
+// DOM
+// ═══════════════════════════════════════════════
+const editor       = document.getElementById('editor');
+const previewFrame = document.getElementById('previewFrame');
+const lineNumbers  = document.getElementById('lineNumbers');
+const titleInput   = document.getElementById('projectTitle');
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+titleInput.value = state.title;
+updateTabs();
+loadEditorContent();
+updatePreview();
+
+// ═══════════════════════════════════════════════
+// EDITOR EVENTS
+// ═══════════════════════════════════════════════
+editor.addEventListener('input', () =&gt; {
+  saveCurrentTab();
+  updateLineNumbers();
+  autoSave();
+  if (autoPreview) {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(updatePreview, 500);
+  }
+});
+
+editor.addEventListener('scroll', () =&gt; {
+  lineNumbers.scrollTop = editor.scrollTop;
+});
+
+editor.addEventListener('keydown', e =&gt; {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = editor.selectionStart, end = editor.selectionEnd;
+    editor.value = editor.value.substring(0,s) + '  ' + editor.value.substring(end);
+    editor.selectionStart = editor.selectionEnd = s + 2;
+    saveCurrentTab();
+  }
+});
+
+editor.addEventListener('paste', () =&gt; {
+  setTimeout(() =&gt; {
+    const c = editor.value;
+    if (state.mode === 'html') {
+      if (/import\s+React|from\s+['&quot;]react['&quot;]|useState|&lt;[A-Z][a-zA-Z]*[\s/&gt;]/.test(c)) {
+        switchMode('react'); state.jsx = c; loadEditorContent(); showToast('⚛️ React detectado!'); return;
+      }
+      if (/^(def |class |import |from |print\()/im.test(c) &amp;&amp; !c.includes('&lt;')) {
+        switchMode('python'); state.python = c; loadEditorContent(); showToast('🐍 Python detectado!'); return;
+      }
+    }
+    saveCurrentTab(); updatePreview();
+  }, 50);
+});
+
+titleInput.addEventListener('input', () =&gt; { state.title = titleInput.value; autoSave(); });
+
+// ═══════════════════════════════════════════════
+// EDITOR FUNÇÕES
+// ═══════════════════════════════════════════════
+function updateLineNumbers() {
+  const lines = editor.value.split('\n').length;
+  document.getElementById('lineCount').textContent = lines + ' linhas';
+  lineNumbers.textContent = Array.from({length:lines},(_,i)=&gt;i+1).join('\n');
+}
+
+function saveCurrentTab() {
+  const t = state.activeTab;
+  if (state.mode==='react'&amp;&amp;t==='jsx') state.jsx=editor.value;
+  else if (state.mode==='python'&amp;&amp;t==='python') state.python=editor.value;
+  else if (t==='html') state.html=editor.value;
+  else if (t==='css')  state.css=editor.value;
+  else if (t==='js')   state.js=editor.value;
+}
+
+function loadEditorContent() {
+  const t = state.activeTab;
+  if (state.mode==='react'&amp;&amp;t==='jsx') editor.value=state.jsx;
+  else if (state.mode==='python'&amp;&amp;t==='python') editor.value=state.python;
+  else if (t==='html') editor.value=state.html;
+  else if (t==='css')  editor.value=state.css;
+  else if (t==='js')   editor.value=state.js;
+  else editor.value='';
+  updateLineNumbers();
+}
+
+function switchTab(tab) {
+  saveCurrentTab();
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t=&gt;t.classList.remove('active'));
+  const id = 'tab'+tab.charAt(0).toUpperCase()+tab.slice(1);
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  loadEditorContent();
+}
+
+function updateTabs() {
+  const container = document.getElementById('tabsContainer');
+  const badge = document.getElementById('modeBadge');
+  if (state.mode==='html') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='html'?'active':''}&quot; id=&quot;tabHtml&quot; onclick=&quot;switchTab('html')&quot;&gt;📄 HTML&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='js'?'active':''}&quot; id=&quot;tabJs&quot; onclick=&quot;switchTab('js')&quot;&gt;⚙️ JS&lt;/button&gt;`;
+    badge.className='status-badge html'; badge.textContent='HTML';
+  } else if (state.mode==='react') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='jsx'?'active':''}&quot; id=&quot;tabJsx&quot; onclick=&quot;switchTab('jsx')&quot;&gt;⚛️ JSX&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;`;
+    badge.className='status-badge react'; badge.textContent='REACT';
+  } else {
+    container.innerHTML = `&lt;button class=&quot;tab active&quot; id=&quot;tabPython&quot; onclick=&quot;switchTab('python')&quot;&gt;🐍 Python&lt;/button&gt;`;
+    badge.className='status-badge python'; badge.textContent='PYTHON';
+  }
+}
+
+function switchMode(mode) {
+  saveCurrentTab();
+  state.mode = mode;
+  document.querySelectorAll('.btn-mode').forEach(b=&gt;b.classList.remove('active'));
+  document.getElementById('mode'+mode.charAt(0).toUpperCase()+mode.slice(1)).classList.add('active');
+  if (mode==='html') state.activeTab='html';
+  else if (mode==='react') state.activeTab='jsx';
+  else state.activeTab='python';
+  updateTabs(); loadEditorContent(); updatePreview(); autoSave();
+}
+
+// ═══════════════════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════════════════
+function buildDocument() {
+  if (state.mode==='react') {
+    return `&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react@18/umd/react.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react-dom@18/umd/react-dom.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;\/script&gt;
+&lt;style&gt;*{box-sizing:border-box}body{margin:0;font-family:sans-serif}${state.css}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+&lt;script type=&quot;text/babel&quot;&gt;
+const {useState,useEffect,useRef,useCallback,useMemo,Fragment}=React;
+${state.jsx}
+try{ReactDOM.createRoot(document.getElementById('root')).render(&lt;App/&gt;)}
+catch(e){document.getElementById('root').innerHTML='&lt;div style=&quot;color:red;padding:20px;font-family:monospace&quot;&gt;Erro: '+e.message+'&lt;/div&gt;'}
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  if (state.mode==='python') {
+    const esc = state.python.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/&lt;\/script&gt;/g,'&lt;\\/script&gt;');
+    return `&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;style&gt;body{margin:0;background:#0f172a;color:#e2e8f0;font-family:'Consolas',monospace;padding:20px}#output{white-space:pre-wrap;font-size:13px;line-height:1.6}.loading{color:#60a5fa}.error{color:#f87171}.ok{color:#4ade80}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;output&quot;&gt;&lt;span class=&quot;loading&quot;&gt;⟳ Carregando Python...&lt;/span&gt;&lt;/div&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js&quot;&gt;&lt;\/script&gt;
+&lt;script&gt;
+async function run(){
+  const out=document.getElementById('output');
+  try{
+    const py=await loadPyodide();
+    py.runPython('import sys\\nfrom io import StringIO\\nsys.stdout=StringIO()');
+    py.runPython(\`${esc}\`);
+    const stdout=py.runPython('sys.stdout.getvalue()');
+    out.innerHTML='&lt;span class=&quot;ok&quot;&gt;$ python3&lt;/span&gt;\\n'+stdout;
+  }catch(e){out.innerHTML='&lt;span class=&quot;error&quot;&gt;Erro: '+e.message+'&lt;/span&gt;';}
+}run();
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  const lower = state.html.trim().toLowerCase();
+  const isComplete = lower.includes('&lt;!doctype')||(lower.includes('&lt;html')&amp;&amp;lower.includes('&lt;/html&gt;'));
+  if (isComplete) return state.html;
+  return `&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;&gt;
+&lt;style&gt;${state.css}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+${state.html}
+&lt;script&gt;${state.js}&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+}
+
+function updatePreview() {
+  const doc = buildDocument();
+  const blob = new Blob([doc],{type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  previewFrame.src = url;
+  setTimeout(()=&gt;URL.revokeObjectURL(url),5000);
+}
+
+function toggleAuto() {
+  autoPreview = !autoPreview;
+  document.getElementById('autoLabel').textContent = '● AUTO: '+(autoPreview?'ON':'OFF');
+  document.getElementById('autoLabel').style.color = autoPreview ? 'var(--green)' : 'var(--red)';
+  if (autoPreview) updatePreview();
+}
+
+// ═══════════════════════════════════════════════
+// AUTOSAVE
+// ═══════════════════════════════════════════════
+function autoSave() {
+  try {
+    localStorage.setItem(LS_AUTOSAVE, JSON.stringify(state));
+    const el = document.getElementById('save-status');
+    el.textContent = '● auto-salvo';
+    setTimeout(()=&gt;el.textContent='', 1500);
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════
+// AÇÕES DO HEADER
+// ═══════════════════════════════════════════════
+function importFile() {
+  document.getElementById('fileInput').click();
+}
+
+document.getElementById('fileInput').addEventListener('change', e =&gt; {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev =&gt; {
+    const content = ev.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const name = file.name.replace(/\.[^.]+$/,'');
+    if (ext==='py') { switchMode('python'); state.python=content; }
+    else if (ext==='jsx'||ext==='tsx') { switchMode('react'); state.jsx=content; }
+    else if (ext==='css') { state.css=content; if(state.mode==='html') switchTab('css'); }
+    else if (ext==='js') { state.js=content; if(state.mode==='html') switchTab('js'); }
+    else {
+      const lower = content.trim().toLowerCase();
+      if (lower.includes('&lt;!doctype')||lower.includes('&lt;html')) {
+        switchMode('html'); state.html=content; state.css=''; state.js='';
+      } else { state.html=content; }
+      switchMode('html');
+    }
+    state.title=name; titleInput.value=name;
+    loadEditorContent(); updatePreview(); autoSave();
+    showToast('📂 &quot;'+file.name+'&quot; importado!');
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+
+function copyCode() {
+  navigator.clipboard.writeText(buildDocument()).then(()=&gt;showToast('📋 Copiado!'));
+}
+
+function downloadFile() {
+  let content, ext, mime;
+  if (state.mode==='python'){content=state.python;ext='py';mime='text/plain';}
+  else if (state.mode==='react'){content=state.jsx;ext='jsx';mime='text/plain';}
+  else {content=buildDocument();ext='html';mime='text/html';}
+  const blob=new Blob([content],{type:mime});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(state.title||'playground')+'.'+ext;
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('⬇️ Baixado!');
+}
+
+function openFullscreen() {
+  document.getElementById('fs-editor').value = editor.value;
+  document.getElementById('fs-modal').classList.add('open');
+}
+function closeFsEditor() {
+  editor.value = document.getElementById('fs-editor').value;
+  document.getElementById('fs-modal').classList.remove('open');
+  saveCurrentTab(); updateLineNumbers(); autoSave(); updatePreview();
+}
+
+function openPreviewFull() {
+  const doc = buildDocument();
+  const blob = new Blob([doc],{type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  window.open(url,'_blank');
+  setTimeout(()=&gt;URL.revokeObjectURL(url),5000);
+}
+
+function toggleChat() {
+  chatVisible = !chatVisible;
+  document.getElementById('chatPanel').classList.toggle('hidden', !chatVisible);
+  document.getElementById('btnChat').style.color = chatVisible ? 'var(--green)' : 'var(--text2)';
+}
+
+function clearCode() {
+  if (!confirm('Limpar o código?')) return;
+  if (state.mode==='react') state.jsx='';
+  else if (state.mode==='python') state.python='';
+  else { state.html=''; state.css=''; state.js=''; }
+  loadEditorContent(); updatePreview(); autoSave(); showToast('🗑️ Limpo!');
+}
+
+function resetCode() {
+  if (!confirm('Resetar para o exemplo padrão?')) return;
+  if (state.mode==='react') state.jsx=`function App(){\n  return &lt;div style={{padding:40,fontFamily:'sans-serif'}}&gt;&lt;h1&gt;⚛️ React&lt;/h1&gt;&lt;/div&gt;;\n}`;
+  else if (state.mode==='python') state.python=`print(&quot;Hello, Saulo!&quot;)`;
+  else { state.html=`&lt;h1 style=&quot;font-family:sans-serif;padding:40px&quot;&gt;Hello, Saulo!&lt;/h1&gt;`; state.css=''; state.js=''; }
+  loadEditorContent(); updatePreview(); autoSave(); showToast('🔄 Resetado!');
+}
+
+// ═══════════════════════════════════════════════
+// BANCO LOCAL (SALVAR / ABRIR)
+// ═══════════════════════════════════════════════
+function getSnippets() {
+  try { return JSON.parse(localStorage.getItem(LS_SNIPPETS)||'[]'); } catch { return []; }
+}
+function setSnippets(list) {
+  localStorage.setItem(LS_SNIPPETS, JSON.stringify(list));
+}
+
+function saveToLocal() {
+  const snippets = getSnippets();
+  // Verifica se já existe com mesmo título para atualizar
+  const existing = snippets.findIndex(s =&gt; s.title === state.title);
+  const item = {
+    id: existing&gt;=0 ? snippets[existing].id : Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    title: state.title || 'Sem titulo',
+    mode: state.mode,
+    html: state.html, css: state.css, js: state.js,
+    jsx: state.jsx, python: state.python,
+    date: new Date().toISOString()
+  };
+  if (existing&gt;=0) {
+    snippets[existing] = item;
+    showToast('💾 &quot;'+item.title+'&quot; atualizado!');
+  } else {
+    snippets.unshift(item);
+    showToast('💾 &quot;'+item.title+'&quot; salvo!');
+  }
+  setSnippets(snippets);
+}
+
+function openSavedModal() {
+  document.getElementById('savedModal').classList.add('open');
+  document.getElementById('searchInput').value = '';
+  renderSavedList();
+}
+function closeSavedModal() {
+  document.getElementById('savedModal').classList.remove('open');
+}
+
+function renderSavedList() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const snippets = getSnippets().filter(s=&gt;s.title.toLowerCase().includes(query));
+  const container = document.getElementById('savedList');
+  if (snippets.length===0) {
+    container.innerHTML='&lt;p style=&quot;text-align:center;color:var(--text2);font-size:12px;padding:20px;&quot;&gt;Nenhum código salvo ainda.&lt;br&gt;Clique em 💾 Salvar para guardar o atual.&lt;/p&gt;';
+    return;
+  }
+  container.innerHTML = snippets.map(s=&gt;`
+    &lt;div class=&quot;snippet-item&quot; onclick=&quot;loadSnippet('${s.id}')&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;sname&quot;&gt;${escHtml(s.title)}&lt;/div&gt;
+        &lt;div class=&quot;smeta&quot;&gt;${s.mode||'html'} • ${new Date(s.date).toLocaleDateString('pt-BR')} ${new Date(s.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;snippet-actions&quot;&gt;
+        &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();renameSnippet('${s.id}')&quot; title=&quot;Renomear&quot;&gt;✏️&lt;/button&gt;
+        &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();deleteSnippet('${s.id}')&quot; title=&quot;Excluir&quot;&gt;🗑️&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;`).join('');
+}
+
+function loadSnippet(id) {
+  const s = getSnippets().find(x=&gt;x.id===id);
+  if (!s) return;
+  state.title=s.title; state.mode=s.mode||'html';
+  state.html=s.html||''; state.css=s.css||''; state.js=s.js||'';
+  state.jsx=s.jsx||''; state.python=s.python||'';
+  titleInput.value=state.title;
+  switchMode(state.mode);
+  closeSavedModal();
+  showToast('📂 &quot;'+s.title+'&quot; carregado!');
+}
+
+function deleteSnippet(id) {
+  if (!confirm('Excluir este código?')) return;
+  setSnippets(getSnippets().filter(s=&gt;s.id!==id));
+  renderSavedList();
+  showToast('🗑️ Excluído!');
+}
+
+function renameSnippet(id) {
+  const snippets=getSnippets();
+  const s=snippets.find(x=&gt;x.id===id);
+  if (!s) return;
+  const n=prompt('Novo nome:',s.title);
+  if (n&amp;&amp;n.trim()) { s.title=n.trim(); setSnippets(snippets); renderSavedList(); showToast('✏️ Renomeado!'); }
+}
+
+// ═══════════════════════════════════════════════
+// API KEY MODAL
+// ═══════════════════════════════════════════════
+function openApiModal() {
+  document.getElementById('api-key-input').value = apiKey;
+  document.getElementById('api-provider').value = apiProvider;
+  document.getElementById('system-prompt-input').value = sysPrompt;
+  document.getElementById('apiModal').classList.add('open');
+}
+function closeApiModal() {
+  document.getElementById('apiModal').classList.remove('open');
+}
+function saveApiKey() {
+  apiKey      = document.getElementById('api-key-input').value.trim();
+  apiProvider = document.getElementById('api-provider').value;
+  sysPrompt   = document.getElementById('system-prompt-input').value || DEFAULT_SYSTEM;
+  localStorage.setItem(LS_APIKEY, apiKey);
+  localStorage.setItem(LS_PROVIDER, apiProvider);
+  localStorage.setItem(LS_SYSPROMPT, sysPrompt);
+  updateModelTag();
+  closeApiModal();
+  showToast('✅ API Key salva!');
+}
+function updateModelTag() {
+  const p = document.getElementById('api-provider')?.value || apiProvider;
+  document.getElementById('model-tag').textContent = p==='gemini' ? 'Gemini Flash' : 'GPT-4o Mini';
+}
+
+// ═══════════════════════════════════════════════
+// CHAT IA
+// ═══════════════════════════════════════════════
+function handleChatKey(e) {
+  if (e.key==='Enter'&amp;&amp;!e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function addChatMsg(role, text, codeToApply) {
+  const box = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className = 'msg msg-'+role;
+  d.textContent = text;
+  if (codeToApply &amp;&amp; role==='ai') {
+    const btn = document.createElement('button');
+    btn.className = 'apply-btn';
+    btn.textContent = '✅ Aplicar código no editor + Preview';
+    btn.onclick = () =&gt; {
+      // Aplica no editor
+      if (state.mode==='react') { state.jsx=codeToApply; state.activeTab='jsx'; }
+      else if (state.mode==='python') { state.python=codeToApply; state.activeTab='python'; }
+      else { state.html=codeToApply; state.activeTab='html'; }
+      loadEditorContent(); updateLineNumbers(); autoSave(); updatePreview();
+      addChatMsg('system','✅ Código aplicado. Preview atualizado.');
+    };
+    d.appendChild(btn);
+  }
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+function showDots() {
+  const box = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.id='loading-dots'; d.className='dots';
+  d.innerHTML='&lt;div class=&quot;dot-a&quot;&gt;&lt;/div&gt;&lt;div class=&quot;dot-a&quot;&gt;&lt;/div&gt;&lt;div class=&quot;dot-a&quot;&gt;&lt;/div&gt;';
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
+}
+function hideDots() { const el=document.getElementById('loading-dots'); if(el)el.remove(); }
+
+async function sendMsg() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  if (!apiKey) { addChatMsg('system','⚠️ Configure a API Key clicando em &quot;🔑 API Key&quot;.'); return; }
+
+  inp.value='';
+  document.getElementById('chat-send').disabled=true;
+  addChatMsg('user', text);
+
+  // Monta contexto com o código atual
+  const code = buildDocument();
+  const fullMsg = `[CÓDIGO ATUAL NO EDITOR — modo: ${state.mode}, arquivo: ${state.title}]
+\`\`\`
+${code.substring(0,12000)}
+\`\`\`
+
+[PEDIDO DO USUÁRIO]
+${text}`;
+
+  showDots();
+  try {
+    const reply = apiProvider==='gemini' ? await callGemini(fullMsg) : await callOpenAI(fullMsg);
+    hideDots();
+    // Extrai código se vier entre backticks
+    const match = reply.match(/```(?:html|js|javascript|jsx|tsx|css|python)?\n([\s\S]*?)```/);
+    addChatMsg('ai', reply, match ? match[1].trim() : null);
+  } catch(err) {
+    hideDots();
+    addChatMsg('system','❌ '+err.message);
+  }
+  document.getElementById('chat-send').disabled=false;
+}
+
+async function callGemini(msg) {
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const body={
+    system_instruction:{parts:[{text:sysPrompt}]},
+    contents:[{role:'user',parts:[{text:msg}]}],
+    generationConfig:{temperature:0.2,maxOutputTokens:8192}
+  };
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Erro Gemini');}
+  const d=await r.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text||'Sem resposta.';
+}
+
+async function callOpenAI(msg) {
+  const r=await fetch('https://api.openai.com/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+    body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:sysPrompt},{role:'user',content:msg}],temperature:0.2,max_tokens:8192})
+  });
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Erro OpenAI');}
+  const d=await r.json();
+  return d.choices?.[0]?.message?.content||'Sem resposta.';
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function escHtml(s) { return s.replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(/&gt;/g,'&amp;gt;').replace(/&quot;/g,'&amp;quot;'); }
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=&gt;t.classList.remove('show'),2500);
+}
+
+// Fecha modais clicando fora
+['savedModal','apiModal'].forEach(id=&gt;{
+  document.getElementById(id).addEventListener('click',e=&gt;{
+    if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open');
+  });
+});
+
+// Atalhos de teclado
+document.addEventListener('keydown', e=&gt;{
+  if ((e.ctrlKey||e.metaKey)&amp;&amp;e.key==='s') { e.preventDefault(); saveToLocal(); }
+  if ((e.ctrlKey||e.metaKey)&amp;&amp;e.key==='Enter') { e.preventDefault(); updatePreview(); }
+});
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+
+<script>
+function trocarProjeto(index) {
+  // Esconde todos
+  document.querySelectorAll('.project-container').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  // Mostra o selecionado
+  document.getElementById('projeto' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+  
+  // Salva preferência
+  localStorage.setItem('ultimo-projeto', index);
+}
+
+// Restaura último projeto aberto
+window.onload = function() {
+  const ultimo = localStorage.getItem('ultimo-projeto');
+  if (ultimo !== null) trocarProjeto(parseInt(ultimo));
+};
+</script>
+</body>
+</html>

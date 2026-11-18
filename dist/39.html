@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Editor de Peças Jurídicas — Estrutura + Preview</title>
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --panel2:#0b1220;
+      --txt:#e5e7eb; --muted:#9ca3af;
+      --accent:#f59e0b; --good:#22c55e; --bad:#ef4444; --info:#60a5fa;
+      --paper:#ffffff; --ink:#111827;
+      --line:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; background:#e5e7eb;}
+    .wrap{display:flex; gap:14px; padding:14px; min-height:100vh;}
+    .left{width:40%; min-width:340px; background:var(--panel); color:var(--txt); border-radius:12px; padding:14px; overflow:auto;}
+    .right{flex:1; background:#cbd5e1; border-radius:12px; padding:14px; overflow:auto;}
+
+    h1{font-size:13px; margin:0 0 10px; color:var(--accent); letter-spacing:.5px; text-transform:uppercase;}
+    h2{font-size:12px; margin:14px 0 8px; color:var(--txt); text-transform:uppercase; letter-spacing:.5px;}
+    .hint{font-size:12px; color:var(--muted); line-height:1.35; background:rgba(96,165,250,.08); border-left:3px solid var(--info); padding:10px; border-radius:8px;}
+    .small{font-size:11px; color:var(--muted)}
+    .box{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); border-radius:10px; padding:10px;}
+
+    input[type="text"], textarea, select{
+      width:100%; background:var(--panel2); color:var(--txt); border:1px solid rgba(255,255,255,.14);
+      border-radius:8px; padding:10px; outline:none;
+    }
+    textarea{min-height:88px; resize:vertical; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    .btnrow3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+    .btnrow4{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px;}
+
+    button{
+      border:0; border-radius:10px; padding:11px 10px; font-weight:800; cursor:pointer;
+      text-transform:uppercase; letter-spacing:.3px; font-size:12px;
+    }
+    .b1{background:var(--accent); color:#111827;}
+    .b2{background:var(--bad); color:white;}
+    .b3{background:var(--good); color:#052e16;}
+    .b4{background:var(--info); color:#0b1220;}
+    .b5{background:#334155; color:#e2e8f0;}
+
+    .status{white-space:pre-wrap; font-size:12px; color:var(--txt); background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.08); padding:10px; border-radius:10px;}
+
+    .list{display:flex; flex-direction:column; gap:10px;}
+    .card{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px; padding:10px;
+    }
+    .cardHead{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;}
+    .tag{font-size:11px; font-weight:900; letter-spacing:.4px; text-transform:uppercase; padding:5px 8px; border-radius:999px; display:inline-block;}
+    .t-topico{background:rgba(96,165,250,.18); color:#bfdbfe; border:1px solid rgba(96,165,250,.30);}
+    .t-subtopico{background:rgba(245,158,11,.16); color:#fde68a; border:1px solid rgba(245,158,11,.30);}
+    .t-paragrafo{background:rgba(34,197,94,.14); color:#bbf7d0; border:1px solid rgba(34,197,94,.28);}
+    .t-citacao{background:rgba(239,68,68,.12); color:#fecaca; border:1px solid rgba(239,68,68,.28);}
+    .meta{font-size:11px; color:var(--muted)}
+    .controls{display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end;}
+    .controls button{padding:8px 8px; font-size:11px; border-radius:10px; font-weight:900;}
+    .controls .mini{background:#0b1220; color:var(--txt); border:1px solid rgba(255,255,255,.12);}
+    .controls .danger{background:rgba(239,68,68,.90); color:white;}
+    .controls .info{background:rgba(96,165,250,.95); color:#0b1220;}
+    .controls .warn{background:rgba(245,158,11,.95); color:#111827;}
+
+    .paper{
+      background:var(--paper); border-radius:12px; padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+      color:var(--ink);
+    }
+    .paperTop{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px;}
+    .paperTitle{margin:0; font-size:14px;}
+    .paper .doc{
+      font-family:"Times New Roman", Times, serif;
+      font-size:12pt; line-height:1.55;
+      white-space:normal;
+    }
+    .doc p{margin:0 0 10pt 0;}
+    .doc .p-topico{font-weight:700; text-transform:uppercase; text-align:center; margin:0 0 12pt 0; background:#eff6ff; border-left:4px solid #60a5fa; padding:8pt;}
+    .doc .p-subtopico{font-weight:700; margin:0 0 10pt 0; background:#fff7ed; border-left:4px solid #f59e0b; padding:8pt;}
+    .doc .p-paragrafo{text-indent:36pt; background:#f0fdf4; border-left:4px solid #22c55e; padding:8pt;}
+    .doc .p-citacao{
+      margin-left:24pt; border-left:4px solid #ef4444; padding-left:10pt;
+      background:#fef2f2; font-style:italic;
+      text-indent:0; padding:8pt;
+    }
+    .doc .p-obs{font-size:11pt; color:#334155;}
+    .hr{border:0; border-top:1px solid var(--line); margin:10px 0;}
+
+    @media (max-width: 980px){
+      .wrap{flex-direction:column;}
+      .left{width:100%; min-width:unset;}
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="wrap">
+  <div class="left">
+    <h1>Editor de Peças — estrutura + preview (auto-save)</h1>
+
+    <div class="hint">
+      Funciona no celular: você monta a peça por blocos (tópico, subtópico, parágrafo, citação).
+      <br><br>
+      Tudo salva automaticamente no seu navegador. Use <b>Exportar Word</b> para abrir no Word com formatação completa (cabeçalho, fechamento, cores).
+    </div>
+
+    <h2>Dados da peça (opcional)</h2>
+    <div class="box">
+      <div class="row">
+        <div>
+          <label class="small">Título do documento</label>
+          <input id="docTitle" type="text" placeholder="Ex.: EMBARGOS À EXECUÇÃO" />
+        </div>
+        <div>
+          <label class="small">Processo nº</label>
+          <input id="docIdent" type="text" placeholder="Ex.: 0000000-00.0000.0.00.0000" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label class="small">Cidade/UF e data</label>
+          <input id="docDate" type="text" placeholder="Ex.: São Paulo/SP, 14 de fevereiro de 2025" />
+        </div>
+        <div>
+          <label class="small">Assinatura</label>
+          <input id="docSign" type="text" placeholder="Ex.: Fulano de Tal, OAB/SP 000000" />
+        </div>
+      </div>
+    </div>
+
+    <h2>Adicionar blocos</h2>
+    <div class="btnrow4">
+      <button class="b1" id="addTopico">+ Tópico</button>
+      <button class="b1" id="addSubtopico">+ Subtópico</button>
+      <button class="b1" id="addParagrafo">+ Parágrafo</button>
+      <button class="b1" id="addCitacao">+ Citação</button>
+    </div>
+    <div class="small" style="margin-top:8px">
+      Dica: use "Duplicar" para repetir estrutura e só trocar o texto.
+    </div>
+
+    <h2>Estrutura (editar / mover / excluir)</h2>
+    <div class="list" id="list"></div>
+
+    <h2>Copiar / Exportar</h2>
+    <div class="btnrow3">
+      <button class="b4" id="copyText">Copiar texto</button>
+      <button class="b4" id="copyFormatted">Copiar formatado</button>
+      <button class="b3" id="exportWord">Exportar Word</button>
+    </div>
+    <div class="btnrow3" style="margin-top:10px">
+      <button class="b3" id="exportTxt">Exportar TXT</button>
+      <button class="b5" id="exportJson">Exportar JSON</button>
+      <button class="b2" id="clearAll">Limpar tudo</button>
+    </div>
+
+    <h2>Status</h2>
+    <div class="status" id="status">Pronto.</div>
+  </div>
+
+  <div class="right">
+    <div class="paper">
+      <div class="paperTop">
+        <div>
+          <h3 class="paperTitle">Pré-visualização</h3>
+          <div class="small">O que você vê aqui é o que vai para o Word (com cores e formatação).</div>
+        </div>
+        <div class="small" id="autosaveInfo" style="text-align:right"></div>
+      </div>
+      <hr class="hr" />
+      <div class="doc" id="preview"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ========= Estado / Autosave =========
+  const LS_KEY = "editor_peca_v1";
+  const state = {
+    meta: { title:"", ident:"", date:"", sign:"" },
+    blocks: [],
+    lastSavedAt: null
+  };
+
+  function nowISO(){ return new Date().toISOString(); }
+
+  function setStatus(msg){
+    document.getElementById("status").textContent = msg;
+  }
+
+  function save(){
+    state.meta.title = document.getElementById("docTitle").value || "";
+    state.meta.ident = document.getElementById("docIdent").value || "";
+    state.meta.date  = document.getElementById("docDate").value || "";
+    state.meta.sign  = document.getElementById("docSign").value || "";
+    state.lastSavedAt = nowISO();
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    renderAutosaveInfo();
+  }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const st = JSON.parse(raw);
+      if (!st || typeof st !== "object") return;
+      state.meta = st.meta || state.meta;
+      state.blocks = Array.isArray(st.blocks) ? st.blocks : [];
+      state.lastSavedAt = st.lastSavedAt || null;
+
+      document.getElementById("docTitle").value = state.meta.title || "";
+      document.getElementById("docIdent").value = state.meta.ident || "";
+      document.getElementById("docDate").value  = state.meta.date || "";
+      document.getElementById("docSign").value  = state.meta.sign || "";
+    }catch(e){}
+  }
+
+  function renderAutosaveInfo(){
+    const el = document.getElementById("autosaveInfo");
+    if (!state.lastSavedAt){ el.textContent = "Auto-save: —"; return; }
+    const d = new Date(state.lastSavedAt);
+    el.textContent = "Auto-save: " + d.toLocaleString();
+  }
+
+  // ========= Util =========
+  function uid(){
+    return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+  }
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+  function download(filename, data, mime){
+    const blob = new Blob([data], {type:mime});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+  }
+
+  // ========= Blocos =========
+  const TYPES = {
+    topico:   {label:"Tópico",   tagClass:"t-topico",   pClass:"p-topico"},
+    subtopico:{label:"Subtópico",tagClass:"t-subtopico",pClass:"p-subtopico"},
+    paragrafo:{label:"Parágrafo",tagClass:"t-paragrafo",pClass:"p-paragrafo"},
+    citacao:  {label:"Citação",  tagClass:"t-citacao",  pClass:"p-citacao"}
+  };
+
+  function addBlock(type){
+    state.blocks.push({
+      id: uid(),
+      type,
+      text: "",
+      note: ""
+    });
+    save();
+    render();
+    focusLastTextarea();
+  }
+
+  function duplicateBlock(id){
+    const i = state.blocks.findIndex(b=>b.id===id);
+    if (i<0) return;
+    const b = state.blocks[i];
+    state.blocks.splice(i+1, 0, { ...b, id: uid() });
+    save(); render();
+  }
+
+  function removeBlock(id){
+    state.blocks = state.blocks.filter(b=>b.id!==id);
+    save(); render();
+  }
+
+  function moveBlock(id, dir){
+    const i = state.blocks.findIndex(b=>b.id===id);
+    if (i<0) return;
+    const j = i + dir;
+    if (j<0 || j>=state.blocks.length) return;
+    const tmp = state.blocks[i];
+    state.blocks[i] = state.blocks[j];
+    state.blocks[j] = tmp;
+    save(); render();
+  }
+
+  function setType(id, type){
+    const b = state.blocks.find(x=>x.id===id);
+    if (!b) return;
+    b.type = type;
+    save(); render();
+  }
+
+  function updateText(id, text){
+    const b = state.blocks.find(x=>x.id===id);
+    if (!b) return;
+    b.text = text;
+    save(); renderPreviewOnly();
+  }
+
+  // ========= Render =========
+  function render(){
+    renderList();
+    renderPreviewOnly();
+  }
+
+  function renderList(){
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    if (!state.blocks.length){
+      const empty = document.createElement("div");
+      empty.className = "box";
+      empty.innerHTML = `<div class="small">Sem blocos ainda. Use os botões "+" acima para montar a peça.</div>`;
+      list.appendChild(empty);
+      return;
+    }
+
+    state.blocks.forEach((b, idx)=>{
+      const conf = TYPES[b.type] || TYPES.paragrafo;
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="cardHead">
+          <div>
+            <span class="tag ${conf.tagClass}">${escapeHtml(conf.label)}</span>
+            <span class="meta">#${idx+1}</span>
+          </div>
+          <div class="controls">
+            <button class="mini info" data-act="up" title="Mover para cima">↑</button>
+            <button class="mini info" data-act="down" title="Mover para baixo">↓</button>
+            <button class="mini warn" data-act="dup" title="Duplicar">Duplicar</button>
+            <button class="mini danger" data-act="del" title="Excluir">Excluir</button>
+          </div>
+        </div>
+
+        <div class="row" style="margin-bottom:8px">
+          <div>
+            <label class="small">Tipo</label>
+            <select data-act="type">
+              <option value="topico" ${b.type==="topico"?"selected":""}>Tópico</option>
+              <option value="subtopico" ${b.type==="subtopico"?"selected":""}>Subtópico</option>
+              <option value="paragrafo" ${b.type==="paragrafo"?"selected":""}>Parágrafo</option>
+              <option value="citacao" ${b.type==="citacao"?"selected":""}>Citação</option>
+            </select>
+          </div>
+          <div>
+            <label class="small">Atalho de conteúdo</label>
+            <select data-act="preset">
+              <option value="">— escolher —</option>
+              <option value="intro">Introdução</option>
+              <option value="fund">Fundamentação</option>
+              <option value="ped">Pedidos</option>
+              <option value="fecho">Fechamento</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="small">Texto do bloco</label>
+        <textarea data-act="text" placeholder="Digite aqui…">${escapeHtml(b.text)}</textarea>
+      `;
+
+      card.querySelector('[data-act="up"]').addEventListener("click", ()=>moveBlock(b.id, -1));
+      card.querySelector('[data-act="down"]').addEventListener("click", ()=>moveBlock(b.id, +1));
+      card.querySelector('[data-act="dup"]').addEventListener("click", ()=>duplicateBlock(b.id));
+      card.querySelector('[data-act="del"]').addEventListener("click", ()=>removeBlock(b.id));
+
+      card.querySelector('[data-act="type"]').addEventListener("change", (e)=>setType(b.id, e.target.value));
+
+      card.querySelector('[data-act="preset"]').addEventListener("change", (e)=>{
+        const v = e.target.value;
+        if (!v) return;
+        const preset = presets(v);
+        if ((b.text||"").trim().length>0){
+          if (!confirm("Substituir o texto atual por um modelo?")) { e.target.value=""; return; }
+        }
+        b.text = preset;
+        save(); render();
+      });
+
+      card.querySelector('[data-act="text"]').addEventListener("input", (e)=>updateText(b.id, e.target.value));
+
+      list.appendChild(card);
+    });
+  }
+
+  function presets(key){
+    switch(key){
+      case "intro":
+        return "Trata-se de peça a ser apresentada, com fundamento nos arts. aplicáveis, visando a tutela do direito invocado, conforme passa a expor.";
+      case "fund":
+        return "No mérito, a pretensão merece acolhimento. A prova dos autos demonstra que...";
+      case "ped":
+        return "Diante do exposto, requer:\n\na) ...;\n\nb) ...;\n\nc) ...;\n\nProtesta por provar o alegado por todos os meios de prova em direito admitidos.";
+      case "fecho":
+        return "Termos em que,\n\nPede deferimento.";
+      default:
+        return "";
+    }
+  }
+
+  function renderPreviewOnly(){
+    const pv = document.getElementById("preview");
+    const title = (state.meta.title||"").trim();
+    const ident = (state.meta.ident||"").trim();
+    const date  = (state.meta.date||"").trim();
+    const sign  = (state.meta.sign||"").trim();
+
+    let html = "";
+
+    // Cabeçalho jurídico padrão (justificado)
+    html += `<p style="text-align:justify; margin-bottom:14pt;"><b>EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DA ___ VARA ___ DA COMARCA DE ___ - ___</b></p>`;
+    html += `<p style="text-align:justify; margin-bottom:14pt;"><b>Autor/Requerente:</b> _______________</p>`;
+    html += `<p style="text-align:justify; margin-bottom:14pt;"><b>Réu/Requerido:</b> _______________</p>`;
+
+    if (title){
+      html += `<p class="p-topico">${escapeHtml(title)}</p>`;
+    }
+    if (ident){
+      html += `<p class="p-obs" style="text-align:center;margin-top:-6pt;margin-bottom:12pt;"><b>${escapeHtml(ident)}</b></p>`;
+    }
+    if (title || ident) html += `<hr class="hr" />`;
+
+    if (!state.blocks.length){
+      html += `<p class="p-obs">Sem conteúdo ainda.</p>`;
+    } else {
+      for (const b of state.blocks){
+        const conf = TYPES[b.type] || TYPES.paragrafo;
+        const text = (b.text||"").trim();
+        if (!text){
+          html += `<p class="p-obs">[${escapeHtml(conf.label)} vazio]</p>`;
+          continue;
+        }
+        const safe = escapeHtml(text).replace(/\n/g, "<br>");
+        html += `<p class="${conf.pClass}">${safe}</p>`;
+      }
+    }
+
+    // Fechamento jurídico padrão
+    html += `<hr class="hr" />`;
+    html += `<p style="text-align:center; margin-top:14pt; margin-bottom:10pt;">Termos em que,</p>`;
+    html += `<p style="text-align:center; margin-bottom:14pt;">Pede deferimento.</p>`;
+
+    if (date || sign){
+      html += `<hr class="hr" />`;
+      if (date) html += `<p style="text-align:center;margin-bottom:14pt;">${escapeHtml(date)}</p>`;
+      if (sign) html += `<p style="text-align:center;"><b>${escapeHtml(sign)}</b></p>`;
+    }
+
+    pv.innerHTML = html;
+    renderAutosaveInfo();
+  }
+
+  function focusLastTextarea(){
+    const list = document.getElementById("list");
+    const tas = list.querySelectorAll("textarea");
+    if (!tas.length) return;
+    tas[tas.length-1].focus();
+  }
+
+  // ========= Copiar / Exportar =========
+  function buildPlainText(){
+    const parts = [];
+    const title = (state.meta.title||"").trim();
+    const ident = (state.meta.ident||"").trim();
+    const date  = (state.meta.date||"").trim();
+    const sign  = (state.meta.sign||"").trim();
+
+    parts.push("EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DA ___ VARA ___ DA COMARCA DE ___ - ___");
+    parts.push("");
+    parts.push("Autor/Requerente: _______________");
+    parts.push("Réu/Requerido: _______________");
+    parts.push("");
+
+    if (title) parts.push(title.toUpperCase());
+    if (ident) parts.push(ident);
+    if (title || ident) parts.push("");
+
+    for (const b of state.blocks){
+      const t = (b.text||"").trim();
+      if (!t) continue;
+      if (b.type==="topico") parts.push(t.toUpperCase(), "");
+      else parts.push(t, "");
+    }
+
+    parts.push("");
+    parts.push("Termos em que,");
+    parts.push("Pede deferimento.");
+    parts.push("");
+
+    if (date || sign){
+      parts.push("");
+      if (date) parts.push(date);
+      if (sign) parts.push(sign);
+    }
+    return parts.join("\n");
+  }
+
+  function buildWordHtml(){
+    const title = (state.meta.title||"").trim();
+    const ident = (state.meta.ident||"").trim();
+    const date  = (state.meta.date||"").trim();
+    const sign  = (state.meta.sign||"").trim();
+
+    // CSS inline para Word (mantém cores e formatação)
+    const style = `
+body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.55; margin: 2cm; }
+p { margin: 0 0 10pt 0; }
+.p-topico { font-weight: 700; text-transform: uppercase; text-align: center; margin: 0 0 12pt 0; background: #eff6ff; border-left: 4px solid #60a5fa; padding: 8pt; }
+.p-subtopico { font-weight: 700; margin: 0 0 10pt 0; background: #fff7ed; border-left: 4px solid #f59e0b; padding: 8pt; }
+.p-paragrafo { text-indent: 36pt; background: #f0fdf4; border-left: 4px solid #22c55e; padding: 8pt; }
+.p-citacao { margin-left: 24pt; border-left: 4px solid #ef4444; padding-left: 10pt; background: #fef2f2; font-style: italic; text-indent: 0; padding: 8pt; }
+.p-obs { font-size: 11pt; color: #334155; }
+hr { border: 0; border-top: 1px solid #e5e7eb; margin: 10pt 0; }
+`;
+
+    let body = "";
+
+    // Cabeçalho jurídico (justificado)
+    body += `<p style="text-align:justify; margin-bottom:14pt;"><b>EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DA ___ VARA ___ DA COMARCA DE ___ - ___</b></p>`;
+    body += `<p style="text-align:justify; margin-bottom:14pt;"><b>Autor/Requerente:</b> _______________</p>`;
+    body += `<p style="text-align:justify; margin-bottom:14pt;"><b>Réu/Requerido:</b> _______________</p>`;
+
+    if (title) body += `<p class="p-topico">${escapeHtml(title)}</p>`;
+    if (ident) body += `<p class="p-obs" style="text-align:center;margin-top:-6pt;margin-bottom:12pt;"><b>${escapeHtml(ident)}</b></p>`;
+    if (title || ident) body += `<hr />`;
+
+    for (const b of state.blocks){
+      const conf = TYPES[b.type] || TYPES.paragrafo;
+      const text = (b.text||"").trim();
+      if (!text) continue;
+
+      const safe = escapeHtml(text).replace(/\n/g, "<br>");
+      body += `<p class="${conf.pClass}">${safe}</p>`;
+    }
+
+    // Fechamento jurídico
+    body += `<hr />`;
+    body += `<p style="text-align:center; margin-top:14pt; margin-bottom:10pt;">Termos em que,</p>`;
+    body += `<p style="text-align:center; margin-bottom:14pt;">Pede deferimento.</p>`;
+
+    if (date || sign){
+      body += `<hr />`;
+      if (date) body += `<p style="text-align:center;margin-bottom:14pt;">${escapeHtml(date)}</p>`;
+      if (sign) body += `<p style="text-align:center;"><b>${escapeHtml(sign)}</b></p>`;
+    }
+
+    return `<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset='UTF-8'><title>Peça Jurídica</title><style>${style}</style></head>
+<body>${body || "<p>(vazio)</p>"}</body>
+</html>`;
+  }
+
+  async function copyText(){
+    const text = buildPlainText();
+    try{
+      await navigator.clipboard.writeText(text);
+      setStatus("Copiado (texto) — mantendo parágrafos.");
+    }catch(e){
+      alert("Não consegui copiar automaticamente. No celular, tente usar Chrome/Edge e dar permissão.");
+    }
+  }
+
+  async function copyFormatted(){
+    const html = buildWordHtml();
+    try{
+      const blob = new Blob([html], {type:"text/html"});
+      const item = new ClipboardItem({"text/html": blob, "text/plain": new Blob([buildPlainText()], {type:"text/plain"})});
+      await navigator.clipboard.write([item]);
+      setStatus("Copiado (formatado) — cole no Word.");
+    }catch(e){
+      await copyText();
+      setStatus("Seu navegador não permitiu copiar formatado. Copiei texto normal.");
+    }
+  }
+
+  function exportWord(){
+    const html = buildWordHtml();
+    const nameBase = (state.meta.title||"peca").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "peca";
+    download(`${nameBase}.doc`, html, "application/msword");
+    setStatus("Exportado Word (.doc) com cabeçalho, fechamento e cores.");
+  }
+
+  function exportTxt(){
+    const text = buildPlainText();
+    const nameBase = (state.meta.title||"peca").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "peca";
+    download(`${nameBase}.txt`, text, "text/plain;charset=utf-8");
+    setStatus("Exportado TXT.");
+  }
+
+  function exportJson(){
+    const payload = {
+      version: 1,
+      savedAt: nowISO(),
+      meta: state.meta,
+      blocks: state.blocks
+    };
+    const nameBase = (state.meta.title||"peca").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "peca";
+    download(`${nameBase}_backup.json`, JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
+    setStatus("Exportado JSON (backup).");
+  }
+
+  function clearAll(){
+    if (!confirm("Limpar tudo? Isso apaga o conteúdo salvo no navegador.")) return;
+    state.meta = { title:"", ident:"", date:"", sign:"" };
+    state.blocks = [];
+    state.lastSavedAt = null;
+    localStorage.removeItem(LS_KEY);
+    document.getElementById("docTitle").value="";
+    document.getElementById("docIdent").value="";
+    document.getElementById("docDate").value="";
+    document.getElementById("docSign").value="";
+    render();
+    setStatus("Tudo limpo.");
+  }
+
+  // ========= Wire UI =========
+  document.getElementById("addTopico").addEventListener("click", ()=>addBlock("topico"));
+  document.getElementById("addSubtopico").addEventListener("click", ()=>addBlock("subtopico"));
+  document.getElementById("addParagrafo").addEventListener("click", ()=>addBlock("paragrafo"));
+  document.getElementById("addCitacao").addEventListener("click", ()=>addBlock("citacao"));
+
+  document.getElementById("copyText").addEventListener("click", copyText);
+  document.getElementById("copyFormatted").addEventListener("click", copyFormatted);
+  document.getElementById("exportWord").addEventListener("click", exportWord);
+  document.getElementById("exportTxt").addEventListener("click", exportTxt);
+  document.getElementById("exportJson").addEventListener("click", exportJson);
+  document.getElementById("clearAll").addEventListener("click", clearAll);
+
+  ["docTitle","docIdent","docDate","docSign"].forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener("input", ()=>{ save(); renderPreviewOnly(); });
+    el.addEventListener("change", ()=>{ save(); renderPreviewOnly(); });
+  });
+
+  // ========= Boot =========
+  load();
+  render();
+  setStatus("Pronto. Auto-save ativo.");
+</script>
+</body>
+</html>

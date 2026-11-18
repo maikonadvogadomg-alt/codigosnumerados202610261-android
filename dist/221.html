@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico crise </title>
+<style>
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador de Casos Complexos - Mike</title>
+    <style>
+        :root {
+            --oliva: #5d5e53;
+            --bronze: #a3a082;
+            --fundo: #0a0a0a;
+            --painel: #161614;
+            --texto: #e5e7eb;
+            --borda: #2d2d2a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--fundo); color: var(--texto); padding: 20px; }
+
+        .container { max-width: 1000px; margin: auto; }
+        
+        header { border-bottom: 2px solid var(--bronze); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-m { background: var(--bronze); color: var(--fundo); padding: 5px 12px; border-radius: 50%; font-weight: bold; }
+
+        .card-caso { background: var(--painel); border: 1px solid var(--oliva); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        
+        h3 { color: var(--bronze); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 1px solid var(--borda); padding-bottom: 5px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        label { display: block; font-size: 11px; font-weight: bold; color: var(--bronze); margin-top: 10px; }
+        textarea, input { width: 100%; background: #000; border: 1px solid var(--borda); color: #fff; padding: 10px; border-radius: 6px; outline: none; margin-top: 5px; font-size: 13px; }
+        textarea { height: 120px; resize: vertical; }
+
+        .btn { background: var(--bronze); color: var(--fundo); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 20px; transition: 0.3s; }
+        .btn:hover { filter: brightness(1.2); }
+
+        .tags { display: flex; gap: 10px; margin-top: 5px; }
+        .tag { font-size: 10px; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--oliva); cursor: pointer; }
+        .tag.active { background: var(--oliva); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div><span class="logo-m">M</span> <strong>MAIKON CALDEIRA | GESTÃO DE CRISE</strong></div>
+        <a href="index.html" style="color: var(--bronze); text-decoration: none; font-size: 12px;">Sair</a>
+    </header>
+
+    <div class="card-caso">
+        <h3>Diagnóstico do Caso "Terrível"</h3>
+        <div class="grid">
+            <div>
+                <label>Nome do Cliente / Caso</label>
+                <input type="text" id="nome-caso" placeholder="Ex: Caso João - Rural + Especial Contra-Dito">
+                
+                <label>Onde está o erro principal?</label>
+                <textarea id="erro-principal" placeholder="Ex: O INSS ignorou o reconhecimento do NB 123..."></textarea>
+            </div>
+            <div>
+                <label>A Prova que falta / Documento Chave</label>
+                <textarea id="prova-chave" placeholder="Ex: PPP atualizado da empresa X ou Certidão de batismo..."></textarea>
+                
+                <label>Estratégia de Ataque</label>
+                <textarea id="estrategia" placeholder="Ex: Invocar Art. 270 da IN 128 e anular por vício de instrução..."></textarea>
+            </div>
+        </div>
+
+        <button class="btn" onclick="salvarCaso()">Salvar Rascunho do Caso</button>
+    </div>
+
+    <div id="lista-casos"></div>
+</div>
+
+<script>
+    function salvarCaso() {
+        const caso = {
+            nome: document.getElementById('nome-caso').value,
+            erro: document.getElementById('erro-principal').value,
+            prova: document.getElementById('prova-chave').value,
+            estrategia: document.getElementById('estrategia').value,
+            data: new Date().toLocaleDateString()
+        };
+
+        if(!caso.nome) return alert("Dê um nome ao caso!");
+
+        let casos = JSON.parse(localStorage.getItem('casos_mike') || '[]');
+        casos.push(caso);
+        localStorage.setItem('casos_mike', JSON.stringify(casos));
+        
+        renderizarCasos();
+        alert("Caso salvo na memória local!");
+    }
+
+    function renderizarCasos() {
+        const lista = document.getElementById('lista-casos');
+        const casos = JSON.parse(localStorage.getItem('casos_mike') || '[]');
+        lista.innerHTML = '<h3>Casos em Andamento</h3>';
+        
+        casos.reverse().forEach((c, index) => {
+            lista.innerHTML += `
+                <div class="card-caso" style="opacity: 0.9;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong style="color:var(--bronze)">${c.nome}</strong>
+                        <span style="font-size:10px;">${c.data}</span>
+                    </div>
+                    <p style="font-size:12px; margin-top:10px;"><strong>Óbice:</strong> ${c.erro}</p>
+                    <p style="font-size:12px;"><strong>Estratégia:</strong> ${c.estrategia}</p>
+                </div>
+            `;
+        });
+    }
+
+    window.onload = renderizarCasos;
+</script>
+
+</body>
+</html>
+
+
+<script>
+
+</script>
+</body>
+</html>

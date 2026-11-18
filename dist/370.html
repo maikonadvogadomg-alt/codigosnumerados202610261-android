@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧩 Montador Multi-Projetos — PWA Jurídico</title>
+<style>
+:root { --bg:#0a0a0f; --bg2:#12121a; --bg3:#1a1a2e; --text:#e2e8f0; --text2:#94a3b8; --accent:#a3a082; --accent2:#d4d0a8; --green:#4ade80; --blue:#60a5fa; --red:#f87171; --border:#2d2d3a; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+.header { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.header h1 { font-size:18px; color:var(--accent); }
+.header h1 small { display:block; font-size:10px; color:var(--text2); font-weight:400; letter-spacing:2px; }
+
+.container { max-width:1400px; margin:0 auto; padding:20px; }
+
+.workspace { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
+.workspace h2 { font-size:14px; color:var(--accent); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+
+.btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:none; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+.btn-sm { padding:5px 10px; font-size:10px; }
+.btn-primary { background:var(--accent); color:#000; }
+.btn-primary:hover { background:var(--accent2); }
+.btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); }
+.btn-ghost:hover { background:var(--bg3); color:var(--text); }
+.btn-danger { background:rgba(239,68,68,0.2); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+
+.input { width:100%; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px; margin-bottom:12px; }
+.input:focus { outline:none; border-color:var(--accent); }
+
+.code-area { width:100%; min-height:300px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:'Consolas','Fira Code',monospace; font-size:12px; color:var(--text); resize:vertical; line-height:1.6; }
+.code-area:focus { outline:none; border-color:var(--accent); }
+
+.project-card { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+.project-card h3 { color:var(--accent2); font-size:14px; margin-bottom:8px; }
+.project-card .actions { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+
+.status { padding:10px 14px; border-radius:8px; font-size:11px; font-weight:600; margin-bottom:12px; }
+.status-info { background:rgba(96,165,250,0.1); color:var(--blue); border:1px solid rgba(96,165,250,0.2); }
+
+.toast { position:fixed; bottom:20px; right:20px; background:var(--bg2); border:1px solid var(--accent); border-radius:10px; padding:12px 20px; font-size:12px; font-weight:600; color:var(--accent2); z-index:2000; transform:translateY(100px); opacity:0; transition:all 0.3s; }
+
+/* Cores dos projetos */
+.p1 { color:#60a5fa; }
+.p2 { color:#f59e0b; }
+.p3 { color:#f87171; }
+.p4 { color:#4ade80; }
+.p5 { color:#c084fc; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧩 Montador Multi-Projetos <small>PWA JURÍDICO — MAIKON CALDEIRA</small></h1>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="gerarHtmlFinal()">📦 Gerar HTML Final</button>
+    <button class="btn btn-ghost" onclick="exportarBackup()">💾 Backup</button>
+    <button class="btn btn-ghost" onclick="importarBackup()">📂 Importar</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="status status-info">
+    💡 <strong>Como funciona:</strong> Cole até 5 códigos HTML completos. O arquivo gerado terá uma barra de navegação no topo para alternar entre os projetos, cada um isolado e funcionando de forma independente.
+  </div>
+
+  <!-- PROJETO 1 -->
+  <div class="workspace">
+    <h2><span class="p1">🔷</span> Projeto 1</h2>
+    <input type="text" class="input" id="nome1" placeholder="Nome do projeto (ex: Sistema de Processos)" />
+    <textarea class="code-area" id="codigo1" placeholder="Cole aqui o código HTML COMPLETO do projeto 1..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="testarProjeto(1)">👁️ Testar</button>
+      <button class="btn btn-ghost btn-sm" onclick="limparProjeto(1)">🗑️ Limpar</button>
+      <button class="btn btn-ghost btn-sm" onclick="importarArquivo(1)">📂 Importar Arquivo</button>
+    </div>
+  </div>
+
+  <!-- PROJETO 2 -->
+  <div class="workspace">
+    <h2><span class="p2">🔶</span> Projeto 2</h2>
+    <input type="text" class="input" id="nome2" placeholder="Nome do projeto (ex: Gerador de Documentos)" />
+    <textarea class="code-area" id="codigo2" placeholder="Cole aqui o código HTML COMPLETO do projeto 2..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="testarProjeto(2)">👁️ Testar</button>
+      <button class="btn btn-ghost btn-sm" onclick="limparProjeto(2)">🗑️ Limpar</button>
+      <button class="btn btn-ghost btn-sm" onclick="importarArquivo(2)">📂 Importar Arquivo</button>
+    </div>
+  </div>
+
+  <!-- PROJETO 3 -->
+  <div class="workspace">
+    <h2><span class="p3">🔸</span> Projeto 3</h2>
+    <input type="text" class="input" id="nome3" placeholder="Nome do projeto (ex: Consulta Jurisprudência)" />
+    <textarea class="code-area" id="codigo3" placeholder="Cole aqui o código HTML COMPLETO do projeto 3..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="testarProjeto(3)">👁️ Testar</button>
+      <button class="btn btn-ghost btn-sm" onclick="limparProjeto(3)">🗑️ Limpar</button>
+      <button class="btn btn-ghost btn-sm" onclick="importarArquivo(3)">📂 Importar Arquivo</button>
+    </div>
+  </div>
+
+  <!-- PROJETO 4 -->
+  <div class="workspace">
+    <h2><span class="p4">🟢</span> Projeto 4</h2>
+    <input type="text" class="input" id="nome4" placeholder="Nome do projeto (ex: Calculadora Trabalhista)" />
+    <textarea class="code-area" id="codigo4" placeholder="Cole aqui o código HTML COMPLETO do projeto 4..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="testarProjeto(4)">👁️ Testar</button>
+      <button class="btn btn-ghost btn-sm" onclick="limparProjeto(4)">🗑️ Limpar</button>
+      <button class="btn btn-ghost btn-sm" onclick="importarArquivo(4)">📂 Importar Arquivo</button>
+    </div>
+  </div>
+
+  <!-- PROJETO 5 -->
+  <div class="workspace">
+    <h2><span class="p5">🟣</span> Projeto 5</h2>
+    <input type="text" class="input" id="nome5" placeholder="Nome do projeto (ex: Assistente Jurídico)" />
+    <textarea class="code-area" id="codigo5" placeholder="Cole aqui o código HTML COMPLETO do projeto 5..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="testarProjeto(5)">👁️ Testar</button>
+      <button class="btn btn-ghost btn-sm" onclick="limparProjeto(5)">🗑️ Limpar</button>
+      <button class="btn btn-ghost btn-sm" onclick="importarArquivo(5)">📂 Importar Arquivo</button>
+    </div>
+  </div>
+
+  <!-- PROJETOS SALVOS -->
+  <div class="workspace">
+    <h2>💾 Projetos Salvos</h2>
+    <div id="projetosSalvos"></div>
+  </div>
+
+</div>
+
+<!-- Hidden inputs -->
+<input type="file" id="fileInput1" style="display:none" accept=".html,.htm" />
+<input type="file" id="fileInput2" style="display:none" accept=".html,.htm" />
+<input type="file" id="fileInput3" style="display:none" accept=".html,.htm" />
+<input type="file" id="fileInput4" style="display:none" accept=".html,.htm" />
+<input type="file" id="fileInput5" style="display:none" accept=".html,.htm" />
+<input type="file" id="backupInput" style="display:none" accept=".json" />
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LS_KEY = 'multiprojetos-v2';
+const TOTAL = 5;
+
+// ========== STORAGE ==========
+function salvarProjetos() {
+  const data = {};
+  for (let n = 1; n <= TOTAL; n++) {
+    data['p'+n] = {
+      nome: document.getElementById('nome'+n).value,
+      codigo: document.getElementById('codigo'+n).value
+    };
+  }
+  localStorage.setItem(LS_KEY, JSON.stringify(data));
+  mostrarToast('💾 Salvo automaticamente!');
+  renderizarSalvos();
+}
+
+function carregarProjetos() {
+  try {
+    const data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    for (let n = 1; n <= TOTAL; n++) {
+      if (data['p'+n]) {
+        document.getElementById('nome'+n).value = data['p'+n].nome || '';
+        document.getElementById('codigo'+n).value = data['p'+n].codigo || '';
+      }
+    }
+    renderizarSalvos();
+  } catch(e) {}
+}
+
+function renderizarSalvos() {
+  const data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+  const container = document.getElementById('projetosSalvos');
+  const emojis = ['🔷','🔶','🔸','🟢','🟣'];
+
+  const projetos = [];
+  for (let n = 1; n <= TOTAL; n++) {
+    if (data['p'+n] && data['p'+n].codigo && data['p'+n].codigo.trim()) {
+      projetos.push({ n, nome: data['p'+n].nome, codigo: data['p'+n].codigo, emoji: emojis[n-1] });
+    }
+  }
+
+  if (projetos.length === 0) {
+    container.innerHTML = '<p style="color:var(--text2);font-size:12px;">Nenhum projeto salvo ainda.</p>';
+    return;
+  }
+
+  container.innerHTML = projetos.map(p => `
+    <div class="project-card">
+      <h3>${p.emoji} ${escHtml(p.nome || 'Projeto ' + p.n)}</h3>
+      <div style="font-size:11px;color:var(--text2);">${p.codigo.length.toLocaleString()} caracteres</div>
+      <div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="testarProjeto(${p.n})">👁️ Testar</button>
+        <button class="btn btn-ghost btn-sm" onclick="copiarCodigo(${p.n})">📋 Copiar</button>
+        <button class="btn btn-danger btn-sm" onclick="limparProjeto(${p.n})">🗑️ Limpar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== AÇÕES ==========
+function testarProjeto(n) {
+  const codigo = document.getElementById('codigo'+n).value;
+  if (!codigo.trim()) { mostrarToast('❌ Projeto ' + n + ' está vazio!'); return; }
+  const blob = new Blob([codigo], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+function limparProjeto(n) {
+  if (!confirm('Limpar projeto ' + n + '?')) return;
+  document.getElementById('nome'+n).value = '';
+  document.getElementById('codigo'+n).value = '';
+  salvarProjetos();
+}
+
+function copiarCodigo(n) {
+  navigator.clipboard.writeText(document.getElementById('codigo'+n).value);
+  mostrarToast('📋 Código copiado!');
+}
+
+function importarArquivo(n) {
+  document.getElementById('fileInput'+n).click();
+}
+
+for (let n = 1; n <= TOTAL; n++) {
+  (function(num) {
+    document.getElementById('fileInput'+num).addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        document.getElementById('codigo'+num).value = ev.target.result;
+        if (!document.getElementById('nome'+num).value) {
+          document.getElementById('nome'+num).value = file.name.replace(/\.[^.]+$/, '');
+        }
+        salvarProjetos();
+        mostrarToast('📂 Projeto ' + num + ' importado!');
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+  })(n);
+}
+
+// ========== GERAR HTML FINAL (NAVEGAÇÃO MELHORADA) ==========
+function gerarHtmlFinal() {
+  const emojis = ['🔷','🔶','🔸','🟢','🟣'];
+  const projetos = [];
+  for (let n = 1; n <= TOTAL; n++) {
+    const nome = document.getElementById('nome'+n).value || 'Projeto ' + n;
+    const codigo = document.getElementById('codigo'+n).value;
+    if (codigo.trim()) projetos.push({ nome, codigo, emoji: emojis[n-1] });
+  }
+
+  if (projetos.length === 0) {
+    mostrarToast('❌ Adicione pelo menos um projeto!');
+    return;
+  }
+
+  // Calcula altura da nav baseado na quantidade de projetos
+  const navAltura = projetos.length > 3 ? '110px' : '65px';
+
+  const botoesNav = projetos.map((p, i) =>
+    `<button class="nav-btn ${i===0?'active':''}" onclick="trocar(${i})">${p.emoji} ${p.nome}</button>`
+  ).join('\n  ');
+
+  const iframes = projetos.map((p, i) => {
+    const escapado = p.codigo.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    return `<div class="projeto ${i===0?'ativo':''}" id="p${i}"><iframe srcdoc="${escapado}" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"></iframe></div>`;
+  }).join('\n');
+
+  const htmlFinal = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Maikon Caldeira — Advocacia Digital</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#0a0a0f; font-family:system-ui,sans-serif; }
+
+.nav {
+  position:fixed;
+  top:0; left:0; right:0;
+  background:#12121a;
+  border-bottom:2px solid #a3a082;
+  padding:10px 16px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  z-index:9999;
+  box-shadow:0 3px 15px rgba(0,0,0,0.6);
+}
+
+.nav-titulo {
+  font-size:12px;
+  font-weight:700;
+  color:#a3a082;
+  letter-spacing:2px;
+  margin-right:8px;
+  white-space:nowrap;
+}
+
+.nav-btn {
+  padding:8px 16px;
+  background:#1a1a2e;
+  border:1px solid #2d2d3a;
+  border-radius:8px;
+  color:#94a3b8;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  white-space:nowrap;
+}
+
+.nav-btn:hover { background:#a3a082; color:#000; border-color:#a3a082; }
+.nav-btn.active { background:#a3a082; color:#000; border-color:#d4d0a8; }
+
+.projeto { display:none; padding-top:${navAltura}; min-height:100vh; }
+.projeto.ativo { display:block; }
+
+.projeto iframe {
+  width:100%;
+  min-height:calc(100vh - ${navAltura});
+  border:none;
+  display:block;
+}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <span class="nav-titulo">⚖️ MC</span>
+  ${botoesNav}
+</div>
+
+${iframes}
+
+<script>
+function trocar(i) {
+  document.querySelectorAll('.projeto').forEach(function(el){ el.classList.remove('ativo'); });
+  document.querySelectorAll('.nav-btn').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('p'+i).classList.add('ativo');
+  document.querySelectorAll('.nav-btn')[i].classList.add('active');
+  localStorage.setItem('mc-ultimo', i);
+}
+window.onload = function() {
+  var u = localStorage.getItem('mc-ultimo');
+  if (u !== null) trocar(parseInt(u));
+};
+<\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([htmlFinal], { type:'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'painel-maikon-' + new Date().toISOString().slice(0,10) + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast('✅ HTML com ' + projetos.length + ' projeto(s) gerado!');
+}
+
+// ========== BACKUP ==========
+function exportarBackup() {
+  const data = localStorage.getItem(LS_KEY);
+  if (!data) { mostrarToast('❌ Nada para exportar!'); return; }
+  const blob = new Blob([data], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'backup-projetos-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast('💾 Backup exportado!');
+}
+
+function importarBackup() {
+  document.getElementById('backupInput').click();
+}
+
+document.getElementById('backupInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      localStorage.setItem(LS_KEY, ev.target.result);
+      carregarProjetos();
+      mostrarToast('📂 Backup importado com sucesso!');
+    } catch(err) {
+      mostrarToast('❌ Arquivo inválido!');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// ========== UTILS ==========
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.transform = 'translateY(0)';
+  t.style.opacity = '1';
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(function() {
+    t.style.transform = 'translateY(100px)';
+    t.style.opacity = '0';
+  }, 2500);
+}
+
+// Auto-save com debounce
+for (let n = 1; n <= TOTAL; n++) {
+  ['nome'+n, 'codigo'+n].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', function() {
+      clearTimeout(window.autoSaveTimer);
+      window.autoSaveTimer = setTimeout(salvarProjetos, 1200);
+    });
+  });
+}
+
+carregarProjetos();
+</script>
+</body>
+</html>

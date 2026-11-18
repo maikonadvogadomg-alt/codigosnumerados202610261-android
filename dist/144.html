@@ -1,0 +1,2422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Projeto PWA</title>
+<style>
+
+</style>
+</head>
+<body>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Leitor de Projeto PRO - Com Memória</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+
+    .subtitulo {
+      color: #94a3b8;
+      margin-bottom: 20px;
+      font-size: 0.95em;
+    }
+
+    /* ZONA DE UPLOAD */
+    #zona-upload {
+      border: 2px dashed #38bdf8;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+
+    #zona-upload:hover {
+      background: #1e293b;
+      border-color: #4ade80;
+    }
+
+    #zona-upload input {
+      display: none;
+    }
+
+    /* PAINEL DE MEMÓRIA */
+    #painel-memoria {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .memoria-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .memoria-header h3 {
+      color: #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-limpar-memoria {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    .btn-limpar-memoria:hover {
+      background: #ef4444;
+    }
+
+    .lista-notas {
+      display: grid;
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .nota-item {
+      background: #0f172a;
+      border-left: 4px solid #f59e0b;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .nota-item:hover {
+      background: #1e293b;
+      transform: translateX(5px);
+    }
+
+    .nota-info {
+      flex: 1;
+    }
+
+    .nota-nome {
+      font-weight: bold;
+      color: #38bdf8;
+      margin-bottom: 5px;
+    }
+
+    .nota-data {
+      font-size: 0.75em;
+      color: #64748b;
+    }
+
+    .nota-acoes {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-nota {
+      background: #1e3a5f;
+      color: #38bdf8;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+
+    .btn-nota:hover {
+      background: #2563eb;
+    }
+
+    .btn-nota.deletar {
+      background: #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .btn-nota.deletar:hover {
+      background: #dc2626;
+    }
+
+    /* RESUMO */
+    #resumo {
+      display: none;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .grid-resumo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .card-resumo {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .numero-grande {
+      font-size: 2em;
+      color: #38bdf8;
+      font-weight: bold;
+    }
+
+    /* BOTÕES DE AÇÃO */
+    .acoes-principais {
+      display: none;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-acao {
+      background: #1d4ed8;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-acao:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+    }
+
+    .btn-acao.salvar {
+      background: #15803d;
+    }
+
+    .btn-acao.salvar:hover {
+      background: #16a34a;
+    }
+
+    /* FILTROS E BUSCA */
+    #barra-busca {
+      display: none;
+      width: 100%;
+      padding: 12px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: white;
+      font-size: 1em;
+      margin-bottom: 15px;
+    }
+
+    #filtros {
+      display: none;
+      margin-bottom: 20px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-filtro {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.85em;
+      transition: all 0.2s;
+    }
+
+    .btn-filtro.ativo {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    .btn-filtro:not(.ativo) {
+      opacity: 0.4;
+    }
+
+    /* CARDS DE ELEMENTOS */
+    #lista-elementos {
+      display: none;
+    }
+
+    .elemento-card {
+      background: #1e293b;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      overflow: hidden;
+    }
+
+    .elemento-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      cursor: pointer;
+      border-left: 5px solid #38bdf8;
+    }
+
+    .elemento-header:hover {
+      background: #263548;
+    }
+
+    .elemento-header.funcao { border-left-color: #38bdf8; }
+    .elemento-header.html { border-left-color: #f97316; }
+    .elemento-header.css { border-left-color: #a78bfa; }
+    .elemento-header.cerebro { border-left-color: #f59e0b; }
+    .elemento-header.importante { border-left-color: #4ade80; }
+
+    .tag {
+      font-size: 0.75em;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+
+    .tag-funcao { background: #1e3a5f; color: #38bdf8; }
+    .tag-html { background: #7c2d12; color: #f97316; }
+    .tag-css { background: #4c1d95; color: #a78bfa; }
+    .tag-cerebro { background: #78350f; color: #f59e0b; }
+    .tag-importante { background: #166534; color: #4ade80; }
+
+    .elemento-corpo {
+      display: none;
+      padding: 15px;
+      border-top: 1px solid #334155;
+    }
+
+    .elemento-corpo.aberto {
+      display: block;
+    }
+
+    .explicacao {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      font-size: 0.9em;
+      line-height: 1.6;
+    }
+
+    .explicacao strong {
+      color: #38bdf8;
+    }
+
+    pre {
+      background: #020617;
+      border-radius: 8px;
+      padding: 12px;
+      overflow-x: auto;
+      font-size: 0.8em;
+      color: #94a3b8;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .btn-copiar {
+      background: #1d4ed8;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+
+    .btn-copiar:hover {
+      background: #2563eb;
+    }
+
+    .btn-copiar.copiado {
+      background: #166534;
+    }
+
+    /* TOAST DE NOTIFICAÇÃO */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #15803d;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); }
+      to { transform: translateX(0); }
+    }
+
+    .toast.erro {
+      background: #dc2626;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔍 Leitor de Projeto PRO</h1>
+  <p class="subtitulo">
+    Importe qualquer arquivo e eu explico cada parte + salvo na memória para você usar depois
+  </p>
+
+  <!-- PAINEL DE MEMÓRIA -->
+  <div id="painel-memoria">
+    <div class="memoria-header">
+      <h3>🧠 Notas Salvas na Memória</h3>
+      <button class="btn-limpar-memoria" onclick="limparTodasNotas()">🗑️ Limpar Tudo</button>
+    </div>
+    <div class="lista-notas" id="lista-notas"></div>
+  </div>
+
+  <!-- ZONA DE UPLOAD -->
+  <div id="zona-upload" onclick="document.getElementById('input-arquivo').click()">
+    <input type="file" id="input-arquivo" accept=".js,.html,.css,.json,.txt" onchange="lerArquivo(event)">
+    <div style="font-size: 3em;">📂</div>
+    <p style="font-size: 1.2em; margin-top: 10px; color: #38bdf8;">
+      Clique aqui para importar o arquivo
+    </p>
+    <p style="color: #64748b; margin-top: 5px;">
+      Aceita .js, .html, .css, .json, .txt
+    </p>
+  </div>
+
+  <!-- RESUMO -->
+  <div id="resumo">
+    <h2 style="margin-bottom:15px;">📊 Resumo do Arquivo</h2>
+    <div class="grid-resumo">
+      <div class="card-resumo">
+        <div class="numero-grande" id="total-elementos">0</div>
+        <div>Elementos</div>
+      </div>
+      <div class="card-resumo">
+        <div class="numero-grande" id="total-linhas">0</div>
+        <div>Linhas</div>
+      </div>
+      <div class="card-resumo">
+        <div class="numero-grande" id="total-funcoes">0</div>
+        <div style="color:#38bdf8">Funções JS</div>
+      </div>
+      <div class="card-resumo">
+        <div class="numero-grande" id="total-html">0</div>
+        <div style="color:#f97316">Tags HTML</div>
+      </div>
+      <div class="card-resumo">
+        <div class="numero-grande" id="total-css">0</div>
+        <div style="color:#a78bfa">Regras CSS</div>
+      </div>
+      <div class="card-resumo">
+        <div class="numero-grande" id="total-cerebro">0</div>
+        <div style="color:#f59e0b">Cérebro</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AÇÕES PRINCIPAIS -->
+  <div class="acoes-principais" id="acoes-principais">
+    <button class="btn-acao salvar" onclick="salvarNaMemoria()">
+      💾 Salvar Análise na Memória
+    </button>
+    <button class="btn-acao" onclick="exportarJSON()">
+      📥 Exportar como JSON
+    </button>
+    <button class="btn-acao" onclick="copiarTudo()">
+      📋 Copiar Tudo
+    </button>
+  </div>
+
+  <!-- BUSCA -->
+  <input type="text" id="barra-busca" placeholder="🔎 Buscar por nome..." oninput="filtrarBusca(this.value)">
+
+  <!-- FILTROS -->
+  <div id="filtros" style="display:flex">
+    <button class="btn-filtro ativo" style="background:#1e3a5f;color:#38bdf8" onclick="filtrar('todos',this)">
+      Todos
+    </button>
+    <button class="btn-filtro" style="background:#1e3a5f;color:#38bdf8" onclick="filtrar('funcao',this)">
+      ⚡ Funções JS
+    </button>
+    <button class="btn-filtro" style="background:#7c2d12;color:#f97316" onclick="filtrar('html',this)">
+      🏗️ HTML
+    </button>
+    <button class="btn-filtro" style="background:#4c1d95;color:#a78bfa" onclick="filtrar('css',this)">
+      🎨 CSS
+    </button>
+    <button class="btn-filtro" style="background:#78350f;color:#f59e0b" onclick="filtrar('cerebro',this)">
+      🧠 Cérebro
+    </button>
+    <button class="btn-filtro" style="background:#166534;color:#4ade80" onclick="filtrar('importante',this)">
+      ⭐ Importantes
+    </button>
+  </div>
+
+  <!-- LISTA DE ELEMENTOS -->
+  <div id="lista-elementos"></div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let todosElementos = [];
+    let arquivoAtual = null;
+    let filtroAtivo = 'todos';
+
+    // =====================
+    // INICIALIZAR
+    // =====================
+    window.onload = function() {
+      carregarNotas();
+    };
+
+    // =====================
+    // LER ARQUIVO
+    // =====================
+    function lerArquivo(event) {
+      const arquivo = event.target.files[0];
+      if (!arquivo) return;
+
+      arquivoAtual = arquivo.name;
+      const leitor = new FileReader();
+
+      leitor.onload = function(e) {
+        const conteudo = e.target.result;
+        analisarCodigo(conteudo, arquivo.name);
+      };
+
+      leitor.readAsText(arquivo);
+    }
+
+    // =====================
+    // ANALISAR CÓDIGO
+    // =====================
+    function analisarCodigo(texto, nomeArquivo) {
+      const linhas = texto.split('\n');
+      todosElementos = [];
+
+      const extensao = nomeArquivo.split('.').pop().toLowerCase();
+
+      // ANALISAR FUNÇÕES JAVASCRIPT
+      if (extensao === 'js' || extensao === 'html') {
+        analisarFuncoes(linhas);
+      }
+
+      // ANALISAR HTML
+      if (extensao === 'html') {
+        analisarHTML(texto);
+      }
+
+      // ANALISAR CSS
+      if (extensao === 'css' || extensao === 'html') {
+        analisarCSS(texto);
+      }
+
+      // Atualizar resumo
+      const funcoes = todosElementos.filter(e => e.tipo === 'funcao').length;
+      const html = todosElementos.filter(e => e.tipo === 'html').length;
+      const css = todosElementos.filter(e => e.tipo === 'css').length;
+      const cerebro = todosElementos.filter(e => e.cerebro).length;
+
+      document.getElementById('total-elementos').textContent = todosElementos.length;
+      document.getElementById('total-linhas').textContent = linhas.length;
+      document.getElementById('total-funcoes').textContent = funcoes;
+      document.getElementById('total-html').textContent = html;
+      document.getElementById('total-css').textContent = css;
+      document.getElementById('total-cerebro').textContent = cerebro;
+
+      document.getElementById('resumo').style.display = 'block';
+      document.getElementById('acoes-principais').style.display = 'flex';
+      document.getElementById('lista-elementos').style.display = 'block';
+      document.getElementById('barra-busca').style.display = 'block';
+      document.getElementById('filtros').style.display = 'flex';
+
+      renderizarElementos(todosElementos);
+      mostrarToast(`✅ ${todosElementos.length} elementos encontrados!`);
+    }
+
+    // =====================
+    // ANALISAR FUNÇÕES JS
+    // =====================
+    function analisarFuncoes(linhas) {
+      for (let i = 0; i < linhas.length; i++) {
+        const linha = linhas[i];
+        const padroes = [
+          /function\s+(\w+)\s*\(/,
+          /const\s+(\w+)\s*=\s*(?:async\s*)?\(/,
+          /const\s+(\w+)\s*=\s*(?:async\s*)?function/,
+          /(\w+)\s*:\s*(?:async\s*)?function/,
+          /(\w+)\s*=\s*(?:async\s*)?\(.*\)\s*=>/,
+        ];
+
+        for (const padrao of padroes) {
+          const match = linha.match(padrao);
+          if (match) {
+            const nome = match[1];
+            const corpo = pegarCorpo(linhas, i);
+            const cerebro = isCerebro(nome, corpo);
+            const importante = isImportante(nome, corpo);
+            const explicacao = explicarFuncao(nome, corpo, cerebro, importante);
+
+            todosElementos.push({
+              tipo: 'funcao',
+              nome,
+              linha: i + 1,
+              corpo,
+              cerebro,
+              importante,
+              explicacao
+            });
+            break;
+          }
+        }
+      }
+    }
+
+    // =====================
+    // ANALISAR HTML
+    // =====================
+    function analisarHTML(texto) {
+      const regex = /<(\w+)([^>]*)>/g;
+      let match;
+      const tagsIgnorar = ['html', 'head', 'body', 'meta', 'title'];
+
+      while ((match = regex.exec(texto)) !== null) {
+        const tag = match[1];
+        const atributos = match[2];
+
+        if (tagsIgnorar.includes(tag.toLowerCase())) continue;
+
+        const id = atributos.match(/id=["']([^"']+)["']/);
+        const classe = atributos.match(/class=["']([^"']+)["']/);
+
+        const nome = id ? `#${id[1]}` : (classe ? `.${classe[1].split(' ')[0]}` : `<${tag}>`);
+
+        todosElementos.push({
+          tipo: 'html',
+          nome,
+          tag,
+          atributos: atributos.trim(),
+          corpo: match[0],
+          cerebro: false,
+          importante: ['button', 'form', 'input'].includes(tag.toLowerCase()),
+          explicacao: explicarHTML(tag, atributos)
+        });
+      }
+    }
+
+    // =====================
+    // ANALISAR CSS
+    // =====================
+    function analisarCSS(texto) {
+      const regex = /([^{]+)\{([^}]+)\}/g;
+      let match;
+
+      while ((match = regex.exec(texto)) !== null) {
+        const seletor = match[1].trim();
+        const regras = match[2].trim();
+
+        if (seletor.startsWith('@') || seletor.startsWith('*')) continue;
+
+        todosElementos.push({
+          tipo: 'css',
+          nome: seletor,
+          corpo: match[0],
+          regras,
+          cerebro: false,
+          importante: seletor.includes('#') || seletor.includes('.btn'),
+          explicacao: explicarCSS(seletor, regras)
+        });
+      }
+    }
+
+    // =====================
+    // FUNÇÕES AUXILIARES
+    // =====================
+    function pegarCorpo(linhas, inicio) {
+      let corpo = '';
+      let abre = 0;
+      let comecou = false;
+
+      for (let i = inicio; i < Math.min(inicio + 60, linhas.length); i++) {
+        corpo += linhas[i] + '\n';
+        for (const char of linhas[i]) {
+          if (char === '{') { abre++; comecou = true; }
+          if (char === '}') abre--;
+        }
+        if (comecou && abre <= 0) break;
+      }
+      return corpo;
+    }
+
+    function isCerebro(nome, corpo) {
+      const nomeMin = nome.toLowerCase();
+      const corpoMin = corpo.toLowerCase();
+      return nomeMin.includes('memory') || nomeMin.includes('save') || 
+             nomeMin.includes('load') || nomeMin.includes('cerebro') ||
+             corpoMin.includes('localstorage') || corpoMin.includes('json.stringify');
+    }
+
+    function isImportante(nome, corpo) {
+      const nomeMin = nome.toLowerCase();
+      return nomeMin.includes('init') || nomeMin.includes('main') || 
+             nomeMin.includes('start') || nomeMin.includes('chat') ||
+             nomeMin.includes('send') || nomeMin.includes('api');
+    }
+
+    function explicarFuncao(nome, corpo, cerebro, importante) {
+      if (cerebro) {
+        return {
+          oque: `🧠 Função de MEMÓRIA: "${nome}"`,
+          quando: 'Salva ou carrega dados do localStorage',
+          dica: 'COPIE ESTA FUNÇÃO — é essencial para o sistema de memória'
+        };
+      }
+      if (importante) {
+        return {
+          oque: `⭐ Função IMPORTANTE: "${nome}"`,
+          quando: 'Faz parte da lógica principal do aplicativo',
+          dica: 'Recomendado copiar — é uma função central'
+        };
+      }
+      return {
+        oque: `⚡ Função: "${nome}"`,
+        quando: 'Função auxiliar ou de suporte',
+        dica: 'Copie se outras funções dependerem dela'
+      };
+    }
+
+    function explicarHTML(tag, atributos) {
+      const explicacoes = {
+        button: { oque: '🔘 Botão clicável', quando: 'Para ações do usuário', dica: 'Verifique os eventos onclick' },
+        input: { oque: '📝 Campo de entrada', quando: 'Para receber dados do usuário', dica: 'Importante para formulários' },
+        div: { oque: '📦 Container', quando: 'Para organizar layout', dica: 'Verifique o ID/classe para estilização' },
+        form: { oque: '📋 Formulário', quando: 'Para enviar dados', dica: 'Copie se precisar da estrutura de dados' }
+      };
+      return explicacoes[tag.toLowerCase()] || { oque: `🏗️ Tag HTML: <${tag}>`, quando: 'Elemento estrutural', dica: 'Parte da interface' };
+    }
+
+    function explicarCSS(seletor, regras) {
+      return {
+        oque: `🎨 Estilo para: ${seletor}`,
+        quando: 'Define aparência visual',
+        dica: regras.includes('display') ? 'Afeta o layout' : 'Afeta cores/tamanhos'
+      };
+    }
+
+    // =====================
+    // RENDERIZAR ELEMENTOS
+    // =====================
+    function renderizarElementos(lista) {
+      const container = document.getElementById('lista-elementos');
+      container.innerHTML = '';
+
+      if (lista.length === 0) {
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px">Nenhum elemento encontrado</p>';
+        return;
+      }
+
+      lista.forEach((el, index) => {
+        const tipoClasse = el.cerebro ? 'cerebro' : (el.importante ? 'importante' : el.tipo);
+        const tagTexto = el.cerebro ? '🧠 Cérebro' : (el.importante ? '⭐ Importante' : 
+          { funcao: '⚡ Função', html: '🏗️ HTML', css: '🎨 CSS' }[el.tipo]);
+        const tagClasse = el.cerebro ? 'tag-cerebro' : (el.importante ? 'tag-importante' : `tag-${el.tipo}`);
+
+        const div = document.createElement('div');
+        div.className = 'elemento-card';
+        div.dataset.tipo = el.tipo;
+        div.dataset.nome = el.nome.toLowerCase();
+        if (el.cerebro) div.dataset.cerebro = 'true';
+        if (el.importante) div.dataset.importante = 'true';
+
+        div.innerHTML = `
+          <div class="elemento-header ${tipoClasse}" onclick="toggleCorpo(${index})">
+            <div>
+              <strong style="font-size:1.1em">${el.nome}</strong>
+              ${el.linha ? `<span style="color:#64748b;font-size:0.85em;margin-left:10px">linha ${el.linha}</span>` : ''}
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="tag ${tagClasse}">${tagTexto}</span>
+              <span id="seta-${index}">▼</span>
+            </div>
+          </div>
+          <div class="elemento-corpo" id="corpo-${index}">
+            <div class="explicacao">
+              <strong>O que é:</strong> ${el.explicacao.oque}<br><br>
+              <strong>Quando usar:</strong> ${el.explicacao.quando}<br><br>
+              <strong>💡 Dica:</strong> <span style="color:#fde68a">${el.explicacao.dica}</span>
+            </div>
+            <strong style="color:#94a3b8;font-size:0.85em">Código:</strong>
+            <pre id="pre-${index}">${escaparHtml(el.corpo)}</pre>
+            <button class="btn-copiar" onclick="copiar(${index}, this)">📋 Copiar este código</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // =====================
+    // TOGGLE ABRIR/FECHAR
+    // =====================
+    function toggleCorpo(index) {
+      const corpo = document.getElementById(`corpo-${index}`);
+      const seta = document.getElementById(`seta-${index}`);
+      const aberto = corpo.classList.contains('aberto');
+      corpo.classList.toggle('aberto');
+      seta.textContent = aberto ? '▼' : '▲';
+    }
+
+    // =====================
+    // COPIAR CÓDIGO
+    // =====================
+    function copiar(index, btn) {
+      const codigo = todosElementos[index].corpo;
+      navigator.clipboard.writeText(codigo).then(() => {
+        btn.textContent = '✅ Copiado!';
+        btn.classList.add('copiado');
+        setTimeout(() => {
+          btn.textContent = '📋 Copiar este código';
+          btn.classList.remove('copiado');
+        }, 2000);
+      });
+    }
+
+    function copiarTudo() {
+      const tudo = todosElementos.map(el => el.corpo).join('\n\n');
+      navigator.clipboard.writeText(tudo).then(() => {
+        mostrarToast('✅ Todo o código foi copiado!');
+      });
+    }
+
+    // =====================
+    // FILTROS E BUSCA
+    // =====================
+    function filtrar(tipo, btn) {
+      filtroAtivo = tipo;
+      document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('ativo'));
+      btn.classList.add('ativo');
+
+      let filtradas = todosElementos;
+      if (tipo === 'cerebro') filtradas = todosElementos.filter(e => e.cerebro);
+      else if (tipo === 'importante') filtradas = todosElementos.filter(e => e.importante);
+      else if (tipo !== 'todos') filtradas = todosElementos.filter(e => e.tipo === tipo);
+
+      renderizarElementos(filtradas);
+    }
+
+    function filtrarBusca(termo) {
+      const filtradas = termo 
+        ? todosElementos.filter(e => e.nome.toLowerCase().includes(termo.toLowerCase()))
+        : todosElementos;
+      renderizarElementos(filtradas);
+    }
+
+    // =====================
+    // SISTEMA DE MEMÓRIA
+    // =====================
+    function salvarNaMemoria() {
+      if (!arquivoAtual || todosElementos.length === 0) {
+        mostrarToast('❌ Nenhum arquivo analisado!', true);
+        return;
+      }
+
+      const nota = {
+        id: Date.now(),
+        nome: arquivoAtual,
+        data: new Date().toLocaleString('pt-BR'),
+        elementos: todosElementos,
+        resumo: {
+          total: todosElementos.length,
+          funcoes: todosElementos.filter(e => e.tipo === 'funcao').length,
+          html: todosElementos.filter(e => e.tipo === 'html').length,
+          css: todosElementos.filter(e => e.tipo === 'css').length,
+          cerebro: todosElementos.filter(e => e.cerebro).length
+        }
+      };
+
+      const notas = JSON.parse(localStorage.getItem('notasProjeto') || '[]');
+      notas.push(nota);
+      localStorage.setItem('notasProjeto', JSON.stringify(notas));
+
+      carregarNotas();
+      mostrarToast('💾 Análise salva na memória!');
+    }
+
+    function carregarNotas() {
+      const notas = JSON.parse(localStorage.getItem('notasProjeto') || '[]');
+      const container = document.getElementById('lista-notas');
+      const painel = document.getElementById('painel-memoria');
+
+      if (notas.length === 0) {
+        painel.style.display = 'none';
+        return;
+      }
+
+      painel.style.display = 'block';
+      container.innerHTML = '';
+
+      notas.reverse().forEach(nota => {
+        const div = document.createElement('div');
+        div.className = 'nota-item';
+        div.innerHTML = `
+          <div class="nota-info">
+            <div class="nota-nome">📄 ${nota.nome}</div>
+            <div class="nota-data">${nota.data} • ${nota.resumo.total} elementos</div>
+          </div>
+          <div class="nota-acoes">
+            <button class="btn-nota" onclick="carregarNota(${nota.id})">📂 Abrir</button>
+            <button class="btn-nota deletar" onclick="deletarNota(${nota.id})">🗑️</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function carregarNota(id) {
+      const notas = JSON.parse(localStorage.getItem('notasProjeto') || '[]');
+      const nota = notas.find(n => n.id === id);
+      if (!nota) return;
+
+      todosElementos = nota.elementos;
+      arquivoAtual = nota.nome;
+
+      document.getElementById('total-elementos').textContent = nota.resumo.total;
+      document.getElementById('total-funcoes').textContent = nota.resumo.funcoes;
+      document.getElementById('total-html').textContent = nota.resumo.html;
+      document.getElementById('total-css').textContent = nota.resumo.css;
+      document.getElementById('total-cerebro').textContent = nota.resumo.cerebro;
+
+      document.getElementById('resumo').style.display = 'block';
+      document.getElementById('acoes-principais').style.display = 'flex';
+      document.getElementById('lista-elementos').style.display = 'block';
+      document.getElementById('barra-busca').style.display = 'block';
+      document.getElementById('filtros').style.display = 'flex';
+
+      renderizarElementos(todosElementos);
+      mostrarToast(`✅ Nota "${nota.nome}" carregada!`);
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+
+    function deletarNota(id) {
+      if (!confirm('Tem certeza que deseja deletar esta nota?')) return;
+
+      let notas = JSON.parse(localStorage.getItem('notasProjeto') || '[]');
+      notas = notas.filter(n => n.id !== id);
+      localStorage.setItem('notasProjeto', JSON.stringify(notas));
+
+      carregarNotas();
+      mostrarToast('🗑️ Nota deletada!');
+    }
+
+    function limparTodasNotas() {
+      if (!confirm('Tem certeza que deseja limpar TODAS as notas da memória?')) return;
+
+      localStorage.removeItem('notasProjeto');
+      carregarNotas();
+      mostrarToast('🗑️ Memória limpa!');
+    }
+
+    // =====================
+    // EXPORTAR JSON
+    // =====================
+    function exportarJSON() {
+      const dados = {
+        arquivo: arquivoAtual,
+        data: new Date().toISOString(),
+        elementos: todosElementos
+      };
+
+      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `analise-${arquivoAtual}.json`;
+      a.click();
+
+      mostrarToast('📥 JSON exportado!');
+    }
+
+    // =====================
+    // TOAST
+    // =====================
+    function mostrarToast(mensagem, erro = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = mensagem;
+      toast.className = 'toast' + (erro ? ' erro' : '');
+      toast.style.display = 'block';
+
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3000);
+    }
+
+    // =====================
+    // ESCAPAR HTML
+    // =====================
+    function escaparHtml(texto) {
+      return texto
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+  </script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playground Code — Maikon Caldeira</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --bg2: #1e293b;
+  --bg3: #334155;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --accent: #a3a082;
+  --accent2: #d4d0a8;
+  --blue: #3b82f6;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --border: #334155;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+.header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 6px; }
+.header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.header-right { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.logo { font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: -0.5px; }
+.logo small { font-size: 9px; color: var(--text2); font-weight: 400; letter-spacing: 1px; display: block; }
+
+/* Inputs */
+.title-input { background: transparent; border: 1px solid transparent; color: var(--text); font-size: 12px; padding: 4px 8px; border-radius: 6px; width: 140px; transition: border-color 0.2s; }
+.title-input:focus { outline: none; border-color: var(--accent); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn-icon { padding: 6px; border-radius: 6px; background: transparent; border: none; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+.btn-icon:hover { background: var(--bg3); color: var(--text); }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-mode { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.btn-mode.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* Mode selector */
+.mode-group { display: flex; gap: 2px; background: var(--bg); padding: 2px; border-radius: 8px; border: 1px solid var(--border); }
+
+/* Tabs */
+.tabs-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.tabs { display: flex; gap: 2px; }
+.tab { padding: 5px 12px; font-size: 11px; font-weight: 600; border: none; background: transparent; color: var(--text2); cursor: pointer; border-radius: 6px; transition: all 0.15s; }
+.tab.active { background: var(--bg3); color: var(--text); }
+.tab:hover:not(.active) { color: var(--text); }
+.tab-info { font-size: 10px; color: var(--text2); }
+
+/* Main layout */
+.main { display: flex; flex: 1; overflow: hidden; }
+.editor-panel { display: flex; flex-direction: column; width: 50%; border-right: 1px solid var(--border); transition: width 0.3s; }
+.editor-panel.collapsed { width: 0; overflow: hidden; border: none; }
+.editor-panel.expanded { width: 100%; }
+.preview-panel { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.preview-panel.hidden { display: none; }
+
+/* Editor */
+.editor-wrap { flex: 1; position: relative; overflow: hidden; }
+.editor-textarea { width: 100%; height: 100%; resize: none; background: var(--bg); color: var(--text); font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.6; padding: 12px 12px 12px 48px; border: none; outline: none; tab-size: 2; position: absolute; inset: 0; }
+.line-numbers { position: absolute; left: 0; top: 0; bottom: 0; width: 40px; background: rgba(30,41,59,0.5); padding: 12px 6px 12px 0; text-align: right; font-family: 'Consolas', monospace; font-size: 11px; line-height: 1.6; color: var(--text2); opacity: 0.5; overflow: hidden; pointer-events: none; user-select: none; z-index: 1; }
+
+/* Preview */
+.preview-header { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.preview-header .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.preview-frame { flex: 1; border: none; background: #fff; }
+
+/* Dialog/Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 90%; max-width: 480px; max-height: 80vh; overflow-y: auto; }
+.modal h3 { font-size: 16px; margin-bottom: 12px; color: var(--accent); }
+.modal-close { position: absolute; top: 12px; right: 12px; }
+
+/* Snippet list */
+.snippet-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; cursor: pointer; transition: all 0.15s; }
+.snippet-item:hover { border-color: var(--accent); background: var(--bg3); }
+.snippet-item .name { font-size: 12px; font-weight: 600; }
+.snippet-item .meta { font-size: 10px; color: var(--text2); }
+.snippet-actions { display: flex; gap: 2px; }
+
+/* Search */
+.search-input { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; margin-bottom: 12px; }
+.search-input:focus { outline: none; border-color: var(--accent); }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: 12px 20px; font-size: 12px; font-weight: 600; color: var(--accent2); z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main { flex-direction: column; }
+  .editor-panel { width: 100% !important; height: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+  .editor-panel.collapsed { height: 0; }
+  .editor-panel.expanded { height: 100%; }
+  .preview-panel { height: 50%; }
+  .hide-mobile { display: none !important; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+/* Status badge */
+.status-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.status-badge.html { background: rgba(239,68,68,0.15); color: var(--red); }
+.status-badge.react { background: rgba(59,130,246,0.15); color: var(--blue); }
+.status-badge.python { background: rgba(251,191,36,0.15); color: var(--yellow); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">⚡ Playground <small>Maikon Caldeira — Code Editor</small></div>
+    <div class="mode-group">
+      <button class="btn-mode active" id="modeHtml" onclick="switchMode('html')">🌐 HTML</button>
+      <button class="btn-mode" id="modeReact" onclick="switchMode('react')">⚛️ React</button>
+      <button class="btn-mode" id="modePython" onclick="switchMode('python')">🐍 Python</button>
+    </div>
+    <input type="text" class="title-input" id="projectTitle" value="Sem titulo" placeholder="Nome do projeto..." />
+  </div>
+  <div class="header-right">
+    <button class="btn-icon" onclick="importFile()" title="Importar arquivo">📂</button>
+    <button class="btn-icon" onclick="toggleFullscreen()" title="Tela cheia">🔳</button>
+    <button class="btn-icon" onclick="copyCode()" title="Copiar código">📋</button>
+    <button class="btn-icon" onclick="downloadFile()" title="Baixar">⬇️</button>
+    <button class="btn btn-primary" onclick="saveToLocal()" title="Salvar no banco local">💾 Salvar</button>
+    <button class="btn-icon" onclick="openSavedModal()" title="Meus códigos salvos">📁</button>
+    <button class="btn-icon" onclick="resetCode()" title="Resetar">🔄</button>
+    <button class="btn-icon" onclick="clearCode()" title="Limpar">🗑️</button>
+    <button class="btn-icon" onclick="toggleEditor()" id="btnToggleEditor" title="Ampliar/Reduzir editor">⬜</button>
+  </div>
+</header>
+
+<!-- Tabs -->
+<div class="tabs-bar">
+  <div class="tabs" id="tabsContainer">
+    <button class="tab active" id="tabHtml" onclick="switchTab('html')">📄 HTML</button>
+    <button class="tab" id="tabCss" onclick="switchTab('css')">🎨 CSS</button>
+    <button class="tab" id="tabJs" onclick="switchTab('js')">⚙️ JS</button>
+  </div>
+  <div class="tab-info">
+    <span id="lineCount">1 linhas</span>
+    <span class="status-badge html" id="modeBadge">HTML</span>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="editor-panel" id="editorPanel">
+    <div class="editor-wrap">
+      <div class="line-numbers" id="lineNumbers">1</div>
+      <textarea class="editor-textarea" id="editor" spellcheck="false" placeholder="Cole ou digite seu código aqui..."></textarea>
+    </div>
+  </div>
+  <div class="preview-panel" id="previewPanel">
+    <div class="preview-header">
+      <div class="dot"></div>
+      <span style="font-size:11px;color:var(--text2);font-weight:600;">Resultado ao vivo</span>
+      <span id="autoLabel" style="font-size:9px;color:var(--green);margin-left:auto;">● AUTO</span>
+    </div>
+    <iframe class="preview-frame" id="previewFrame" sandbox="allow-scripts allow-modals allow-forms allow-popups"></iframe>
+  </div>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="fileInput" style="display:none" accept=".html,.htm,.css,.js,.jsx,.tsx,.py,.txt,.svg,.xml" />
+
+<!-- Modal: Saved Snippets -->
+<div class="modal-overlay" id="savedModal">
+  <div class="modal">
+    <h3>📁 Meus Códigos Salvos</h3>
+    <input type="text" class="search-input" id="searchInput" placeholder="🔍 Buscar por nome..." oninput="renderSavedList()" />
+    <div id="savedList"></div>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-ghost" onclick="closeSavedModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== STATE ==========
+const LS_KEY = 'playground-snippets-v2';
+const AUTOSAVE_KEY = 'playground-autosave-v2';
+
+let state = {
+  mode: 'html', // html | react | python
+  activeTab: 'html',
+  html: `<div style="max-width:600px;margin:40px auto;padding:20px;font-family:sans-serif;">
+  <h1 style="color:#333;">Bem-vindo ao HTML Playground</h1>
+  <p style="color:#666;margin:16px 0;">Cole seu código HTML aqui e veja o resultado ao vivo!</p>
+  <button onclick="alert('Funcionou!')" style="padding:10px 24px;font-size:16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;">Clique aqui</button>
+</div>`,
+  css: '',
+  js: `// Seu JavaScript aqui
+console.log("Hello from Playground!");`,
+  jsx: `// React Component — use o componente App
+function App() {
+  const [count, setCount] = React.useState(0);
+  return (
+    <div style={{padding:40,fontFamily:'sans-serif',textAlign:'center'}}>
+      <h1>⚛️ React no Playground</h1>
+      <p>Contador: <strong>{count}</strong></p>
+      <button onClick={() => setCount(count + 1)} style={{padding:'10px 24px',fontSize:16,background:'#3b82f6',color:'white',border:'none',borderRadius:8,cursor:'pointer'}}>
+        Incrementar
+      </button>
+    </div>
+  );
+}`,
+  python: `# Python — output aparece no preview
+# (Execução simulada no navegador via Pyodide)
+
+dados = ["João Silva", "Maria Souza", "Pedro Lima"]
+
+print("=== LISTA DE CLIENTES ===")
+for i, nome in enumerate(dados, 1):
+    print(f"{i}. {nome}")
+
+print(f"\\nTotal: {len(dados)} clientes")`,
+  title: 'Sem titulo',
+  editorState: 'normal' // normal | collapsed | expanded
+};
+
+// Load autosave
+try {
+  const saved = localStorage.getItem(AUTOSAVE_KEY);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    Object.assign(state, parsed);
+  }
+} catch(e) {}
+
+// ========== DOM REFS ==========
+const editor = document.getElementById('editor');
+const previewFrame = document.getElementById('previewFrame');
+const lineNumbers = document.getElementById('lineNumbers');
+const titleInput = document.getElementById('projectTitle');
+const editorPanel = document.getElementById('editorPanel');
+const previewPanel = document.getElementById('previewPanel');
+const fileInput = document.getElementById('fileInput');
+
+// ========== INIT ==========
+titleInput.value = state.title;
+updateTabs();
+loadEditorContent();
+updatePreview();
+
+// ========== EDITOR ==========
+editor.addEventListener('input', () => {
+  saveCurrentTab();
+  updateLineNumbers();
+  autoSave();
+  debouncePreview();
+});
+
+editor.addEventListener('scroll', () => {
+  lineNumbers.scrollTop = editor.scrollTop;
+});
+
+editor.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+    editor.selectionStart = editor.selectionEnd = start + 2;
+    saveCurrentTab();
+  }
+});
+
+// Paste detection
+editor.addEventListener('paste', (e) => {
+  setTimeout(() => {
+    const content = editor.value;
+    // Auto-detect mode
+    if (state.activeTab === 'html' || state.mode === 'html') {
+      if (/import\s+React|from\s+['"]react['"]|useState|useEffect|<[A-Z][a-zA-Z]*[\s/>]/.test(content)) {
+        switchMode('react');
+        state.jsx = content;
+        loadEditorContent();
+        showToast('⚛️ React/JSX detectado automaticamente!');
+        return;
+      }
+      if (/^(def |class |import |from |print\(|#.*python)/im.test(content) && !content.includes('<')) {
+        switchMode('python');
+        state.python = content;
+        loadEditorContent();
+        showToast('🐍 Python detectado automaticamente!');
+        return;
+      }
+    }
+    saveCurrentTab();
+    updatePreview();
+  }, 50);
+});
+
+titleInput.addEventListener('input', () => {
+  state.title = titleInput.value;
+  autoSave();
+});
+
+// ========== FUNCTIONS ==========
+let previewTimer = null;
+function debouncePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 400);
+}
+
+function updateLineNumbers() {
+  const lines = editor.value.split('\n').length;
+  document.getElementById('lineCount').textContent = lines + ' linhas';
+  let nums = '';
+  for (let i = 1; i <= lines; i++) nums += i + '\n';
+  lineNumbers.textContent = nums;
+}
+
+function saveCurrentTab() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' && tab === 'jsx') state.jsx = editor.value;
+  else if (state.mode === 'python' && tab === 'python') state.python = editor.value;
+  else if (tab === 'html') state.html = editor.value;
+  else if (tab === 'css') state.css = editor.value;
+  else if (tab === 'js') state.js = editor.value;
+}
+
+function loadEditorContent() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' && tab === 'jsx') editor.value = state.jsx;
+  else if (state.mode === 'python' && tab === 'python') editor.value = state.python;
+  else if (tab === 'html') editor.value = state.html;
+  else if (tab === 'css') editor.value = state.css;
+  else if (tab === 'js') editor.value = state.js;
+  else editor.value = '';
+  updateLineNumbers();
+}
+
+function switchTab(tab) {
+  saveCurrentTab();
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (tabEl) tabEl.classList.add('active');
+  loadEditorContent();
+}
+
+function updateTabs() {
+  const container = document.getElementById('tabsContainer');
+  const badge = document.getElementById('modeBadge');
+  
+  if (state.mode === 'html') {
+    container.innerHTML = `
+      <button class="tab ${state.activeTab==='html'?'active':''}" id="tabHtml" onclick="switchTab('html')">📄 HTML</button>
+      <button class="tab ${state.activeTab==='css'?'active':''}" id="tabCss" onclick="switchTab('css')">🎨 CSS</button>
+      <button class="tab ${state.activeTab==='js'?'active':''}" id="tabJs" onclick="switchTab('js')">⚙️ JS</button>
+    `;
+    badge.className = 'status-badge html';
+    badge.textContent = 'HTML';
+  } else if (state.mode === 'react') {
+    container.innerHTML = `
+      <button class="tab ${state.activeTab==='jsx'?'active':''}" id="tabJsx" onclick="switchTab('jsx')">⚛️ JSX</button>
+      <button class="tab ${state.activeTab==='css'?'active':''}" id="tabCss" onclick="switchTab('css')">🎨 CSS</button>
+    `;
+    badge.className = 'status-badge react';
+    badge.textContent = 'REACT';
+  } else if (state.mode === 'python') {
+    container.innerHTML = `
+      <button class="tab active" id="tabPython" onclick="switchTab('python')">🐍 Python</button>
+    `;
+    badge.className = 'status-badge python';
+    badge.textContent = 'PYTHON';
+  }
+}
+
+function switchMode(mode) {
+  saveCurrentTab();
+  state.mode = mode;
+  
+  document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  
+  if (mode === 'html') state.activeTab = 'html';
+  else if (mode === 'react') state.activeTab = 'jsx';
+  else if (mode === 'python') state.activeTab = 'python';
+  
+  updateTabs();
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+}
+
+function buildDocument() {
+  if (state.mode === 'react') {
+    return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+<style>*{box-sizing:border-box;}body{margin:0;font-family:sans-serif;}${state.css}</style>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo, useContext, createContext, Fragment } = React;
+${state.jsx}
+try {
+  const _root = ReactDOM.createRoot(document.getElementById('root'));
+  _root.render(<App />);
+} catch(e) {
+  document.getElementById('root').innerHTML = '<div style="color:red;padding:20px;font-family:monospace;white-space:pre-wrap">Erro: '+e.message+'</div>';
+}
+<\/script></body></html>`;
+  }
+  
+  if (state.mode === 'python') {
+    // Simulate Python execution in browser using Pyodide
+    const escapedCode = state.python.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/<\/script>/g,'<\\/script>');
+    return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+body{margin:0;background:#0f172a;color:#e2e8f0;font-family:'Consolas',monospace;padding:20px;}
+#output{white-space:pre-wrap;font-size:13px;line-height:1.6;}
+.loading{color:#60a5fa;}
+.error{color:#f87171;}
+.success{color:#4ade80;}
+</style>
+</head><body>
+<div id="output"><span class="loading">⟳ Carregando Pyodide (Python no navegador)...</span></div>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"><\/script>
+<script>
+async function main() {
+  const out = document.getElementById('output');
+  try {
+    const pyodide = await loadPyodide();
+    out.innerHTML = '';
+    // Redirect stdout
+    pyodide.runPython(\`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+\`);
+    pyodide.runPython(\`${escapedCode}\`);
+    const stdout = pyodide.runPython('sys.stdout.getvalue()');
+    out.innerHTML = '<span class="success">$ python3 script.py</span>\\n' + stdout;
+  } catch(e) {
+    out.innerHTML = '<span class="error">Erro: ' + e.message + '</span>';
+  }
+}
+main();
+<\/script></body></html>`;
+  }
+  
+  // HTML mode
+  const lower = state.html.trim().toLowerCase();
+  const isComplete = lower.includes('<!doctype') || (lower.includes('<html') && lower.includes('</html>'));
+  
+  if (isComplete) return state.html;
+  
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>${state.css}</style>
+</head><body>
+${state.html}
+<script>${state.js}<\/script>
+</body></html>`;
+}
+
+function updatePreview() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  previewFrame.src = url;
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+function autoSave() {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+// ========== ACTIONS ==========
+function copyCode() {
+  const doc = buildDocument();
+  navigator.clipboard.writeText(doc).then(() => showToast('📋 Código copiado!'));
+}
+
+function downloadFile() {
+  let content, ext, mime;
+  if (state.mode === 'python') { content = state.python; ext = 'py'; mime = 'text/plain'; }
+  else if (state.mode === 'react') { content = state.jsx; ext = 'jsx'; mime = 'text/plain'; }
+  else { content = buildDocument(); ext = 'html'; mime = 'text/html'; }
+  
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (state.title || 'playground') + '.' + ext;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Arquivo baixado!');
+}
+
+function toggleFullscreen() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+function importFile() {
+  fileInput.click();
+}
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const content = ev.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const name = file.name.replace(/\.[^.]+$/, '');
+    
+    if (ext === 'py') {
+      switchMode('python');
+      state.python = content;
+    } else if (ext === 'jsx' || ext === 'tsx') {
+      switchMode('react');
+      state.jsx = content;
+    } else if (ext === 'css') {
+      state.css = content;
+      if (state.mode === 'html') switchTab('css');
+    } else if (ext === 'js') {
+      state.js = content;
+      if (state.mode === 'html') switchTab('js');
+    } else {
+      // HTML or other text
+      const lower = content.trim().toLowerCase();
+      if (lower.includes('<!doctype') || lower.includes('<html')) {
+        switchMode('html');
+        state.html = content;
+        state.css = '';
+        state.js = '';
+      } else {
+        state.html = content;
+      }
+      switchMode('html');
+    }
+    
+    state.title = name;
+    titleInput.value = name;
+    loadEditorContent();
+    updatePreview();
+    autoSave();
+    showToast('📂 Arquivo "' + file.name + '" importado!');
+  };
+  reader.readAsText(file);
+  fileInput.value = '';
+});
+
+function toggleEditor() {
+  if (state.editorState === 'normal') {
+    // Expand editor (hide preview)
+    state.editorState = 'expanded';
+    editorPanel.classList.add('expanded');
+    previewPanel.classList.add('hidden');
+    document.getElementById('btnToggleEditor').textContent = '◧';
+    document.getElementById('btnToggleEditor').title = 'Mostrar preview';
+  } else if (state.editorState === 'expanded') {
+    // Collapse editor (show only preview)
+    state.editorState = 'collapsed';
+    editorPanel.classList.remove('expanded');
+    editorPanel.classList.add('collapsed');
+    previewPanel.classList.remove('hidden');
+    document.getElementById('btnToggleEditor').textContent = '◨';
+    document.getElementById('btnToggleEditor').title = 'Mostrar editor';
+  } else {
+    // Back to normal
+    state.editorState = 'normal';
+    editorPanel.classList.remove('collapsed', 'expanded');
+    previewPanel.classList.remove('hidden');
+    document.getElementById('btnToggleEditor').textContent = '⬜';
+    document.getElementById('btnToggleEditor').title = 'Ampliar/Reduzir editor';
+  }
+}
+
+function clearCode() {
+  if (state.mode === 'react') state.jsx = '';
+  else if (state.mode === 'python') state.python = '';
+  else { state.html = ''; state.css = ''; state.js = ''; }
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  showToast('🗑️ Código limpo!');
+}
+
+function resetCode() {
+  if (state.mode === 'react') {
+    state.jsx = `function App() {
+  const [count, setCount] = React.useState(0);
+  return (
+    <div style={{padding:40,fontFamily:'sans-serif',textAlign:'center'}}>
+      <h1>⚛️ React no Playground</h1>
+      <p>Contador: <strong>{count}</strong></p>
+      <button onClick={() => setCount(count + 1)} style={{padding:'10px 24px',fontSize:16,background:'#3b82f6',color:'white',border:'none',borderRadius:8,cursor:'pointer'}}>
+        Incrementar
+      </button>
+    </div>
+  );
+}`;
+  } else if (state.mode === 'python') {
+    state.python = `# Python — output aparece no preview
+dados = ["João Silva", "Maria Souza", "Pedro Lima"]
+print("=== LISTA DE CLIENTES ===")
+for i, nome in enumerate(dados, 1):
+    print(f"{i}. {nome}")
+print(f"\\nTotal: {len(dados)} clientes")`;
+  } else {
+    state.html = `<div style="max-width:600px;margin:40px auto;padding:20px;font-family:sans-serif;">
+  <h1 style="color:#333;">Bem-vindo ao HTML Playground</h1>
+  <p style="color:#666;margin:16px 0;">Cole seu código HTML aqui e veja o resultado ao vivo!</p>
+  <button onclick="alert('Funcionou!')" style="padding:10px 24px;font-size:16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;">Clique aqui</button>
+</div>`;
+    state.css = '';
+    state.js = '';
+  }
+  state.title = 'Sem titulo';
+  titleInput.value = 'Sem titulo';
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  showToast('🔄 Código resetado!');
+}
+
+// ========== LOCAL DB (localStorage) ==========
+function getSnippets() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function setSnippets(list) {
+  localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+function saveToLocal() {
+  const snippets = getSnippets();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const item = {
+    id,
+    title: state.title || 'Sem titulo',
+    mode: state.mode,
+    html: state.html,
+    css: state.css,
+    js: state.js,
+    jsx: state.jsx,
+    python: state.python,
+    date: new Date().toISOString()
+  };
+  snippets.unshift(item);
+  setSnippets(snippets);
+  showToast('💾 Salvo no banco local!');
+}
+
+function openSavedModal() {
+  document.getElementById('savedModal').classList.add('open');
+  renderSavedList();
+}
+
+function closeSavedModal() {
+  document.getElementById('savedModal').classList.remove('open');
+}
+
+function renderSavedList() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const snippets = getSnippets().filter(s => s.title.toLowerCase().includes(query));
+  const container = document.getElementById('savedList');
+  
+  if (snippets.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text2);font-size:12px;padding:20px;">Nenhum código salvo.</p>';
+    return;
+  }
+  
+  container.innerHTML = snippets.map(s => `
+    <div class="snippet-item" onclick="loadSnippet('${s.id}')">
+      <div>
+        <div class="name">${escapeHtml(s.title)}</div>
+        <div class="meta">${s.mode || 'html'} • ${new Date(s.date).toLocaleDateString('pt-BR')} ${new Date(s.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <div class="snippet-actions">
+        <button class="btn-icon" onclick="event.stopPropagation();renameSnippet('${s.id}')" title="Renomear">✏️</button>
+        <button class="btn-icon" onclick="event.stopPropagation();deleteSnippet('${s.id}')" title="Excluir">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadSnippet(id) {
+  const snippets = getSnippets();
+  const s = snippets.find(x => x.id === id);
+  if (!s) return;
+  
+  state.title = s.title;
+  state.mode = s.mode || 'html';
+  state.html = s.html || '';
+  state.css = s.css || '';
+  state.js = s.js || '';
+  state.jsx = s.jsx || '';
+  state.python = s.python || '';
+  
+  titleInput.value = state.title;
+  switchMode(state.mode);
+  closeSavedModal();
+  showToast('📂 "' + s.title + '" carregado!');
+}
+
+function deleteSnippet(id) {
+  if (!confirm('Excluir este código?')) return;
+  const snippets = getSnippets().filter(s => s.id !== id);
+  setSnippets(snippets);
+  renderSavedList();
+  showToast('🗑️ Código excluído!');
+}
+
+function renameSnippet(id) {
+  const snippets = getSnippets();
+  const s = snippets.find(x => x.id === id);
+  if (!s) return;
+  const newName = prompt('Novo nome:', s.title);
+  if (newName && newName.trim()) {
+    s.title = newName.trim();
+    setSnippets(snippets);
+    renderSavedList();
+    showToast('✏️ Renomeado!');
+  }
+}
+
+// ========== UTILS ==========
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('savedModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('savedModal')) closeSavedModal();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 's') { e.preventDefault(); saveToLocal(); }
+    if (e.key === 'Enter') { e.preventDefault(); updatePreview(); }
+  }
+});
+</script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧩 Montador de Módulos — PWA Jurídico</title>
+<style>
+:root { --bg:#0a0a0f; --bg2:#12121a; --bg3:#1a1a2e; --text:#e2e8f0; --text2:#94a3b8; --accent:#a3a082; --accent2:#d4d0a8; --green:#4ade80; --blue:#60a5fa; --red:#f87171; --border:#2d2d3a; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+.header { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.header h1 { font-size:18px; color:var(--accent); }
+.header h1 small { display:block; font-size:10px; color:var(--text2); font-weight:400; letter-spacing:2px; }
+
+.container { max-width:1400px; margin:0 auto; padding:20px; }
+
+/* Módulos salvos */
+.modules-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; margin-bottom:24px; }
+.module-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px; transition:all 0.2s; }
+.module-card:hover { border-color:var(--accent); }
+.module-card .card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+.module-card h3 { font-size:13px; color:var(--accent2); margin-bottom:4px; }
+.module-card .desc { font-size:11px; color:var(--text2); margin-bottom:8px; line-height:1.4; }
+.module-card .tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+.tag { font-size:9px; padding:2px 8px; border-radius:4px; background:var(--bg3); color:var(--blue); border:1px solid var(--border); }
+.tag.visual { color:var(--green); }
+.tag.logica { color:var(--accent); }
+.tag.api { color:var(--red); }
+.module-card pre { background:var(--bg); padding:8px; border-radius:6px; font-size:10px; max-height:100px; overflow:hidden; color:var(--text2); font-family:'Consolas',monospace; position:relative; }
+.module-card pre::after { content:''; position:absolute; bottom:0; left:0; right:0; height:30px; background:linear-gradient(transparent, var(--bg)); }
+.card-actions { display:flex; gap:4px; margin-top:8px; }
+
+/* Área de trabalho */
+.workspace { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
+.workspace h2 { font-size:14px; color:var(--accent); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+
+/* Botões */
+.btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:none; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+.btn-sm { padding:5px 10px; font-size:10px; }
+.btn-primary { background:var(--accent); color:#000; }
+.btn-primary:hover { background:var(--accent2); }
+.btn-success { background:var(--green); color:#000; }
+.btn-danger { background:rgba(239,68,68,0.2); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+.btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); }
+.btn-ghost:hover { background:var(--bg3); color:var(--text); }
+.btn-blue { background:rgba(96,165,250,0.15); color:var(--blue); border:1px solid rgba(96,165,250,0.3); }
+
+/* Textarea */
+.code-area { width:100%; min-height:200px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:'Consolas','Fira Code',monospace; font-size:12px; color:var(--text); resize:vertical; line-height:1.6; }
+.code-area:focus { outline:none; border-color:var(--accent); }
+.code-area.large { min-height:400px; }
+
+/* Input */
+.input { width:100%; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px; }
+.input:focus { outline:none; border-color:var(--accent); }
+.input-group { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.input-row { margin-bottom:8px; }
+.input-row label { display:block; font-size:10px; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px; font-weight:600; }
+
+/* Tabs */
+.tabs { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; }
+.tab-btn { padding:8px 16px; border:1px solid var(--border); background:transparent; color:var(--text2); border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; }
+.tab-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
+
+/* Preview */
+.preview-frame { width:100%; height:500px; border:1px solid var(--border); border-radius:8px; background:white; }
+
+/* Status */
+.status { padding:10px 14px; border-radius:8px; font-size:11px; font-weight:600; margin-bottom:12px; }
+.status-info { background:rgba(96,165,250,0.1); color:var(--blue); border:1px solid rgba(96,165,250,0.2); }
+.status-success { background:rgba(74,222,128,0.1); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+
+/* Responsive */
+@media(max-width:768px) {
+  .modules-grid { grid-template-columns:1fr; }
+  .input-group { grid-template-columns:1fr; }
+  .container { padding:12px; }
+}
+
+.empty-state { text-align:center; padding:40px; color:var(--text2); }
+.empty-state .icon { font-size:48px; margin-bottom:12px; }
+
+.section-title { font-size:12px; color:var(--text2); text-transform:uppercase; letter-spacing:2px; font-weight:700; margin:24px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+
+.flex-between { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+
+.checklist { list-style:none; }
+.checklist li { padding:6px 0; font-size:12px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); }
+.checklist li:last-child { border:none; }
+.check { width:18px; height:18px; border-radius:4px; border:2px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; transition:all 0.15s; }
+.check.checked { background:var(--green); border-color:var(--green); color:#000; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧩 Montador de Módulos <small>PWA JURÍDICO — MAIKON CALDEIRA</small></h1>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="exportFinal()">📦 Gerar HTML Final</button>
+    <button class="btn btn-ghost" onclick="exportBackup()">💾 Backup Módulos</button>
+    <button class="btn btn-ghost" onclick="importBackup()">📂 Importar Backup</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Instruções -->
+  <div class="status status-info">
+    💡 <strong>Como usar:</strong> Cole pedaços de código HTML nos módulos abaixo. Dê um nome e descrição para cada um. 
+    Depois marque quais quer incluir e clique em "Gerar HTML Final" para combinar tudo num arquivo só.
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showSection('add')">➕ Adicionar Módulo</button>
+    <button class="tab-btn" onclick="showSection('modules')">📦 Meus Módulos (<span id="moduleCount">0</span>)</button>
+    <button class="tab-btn" onclick="showSection('build')">🔨 Montar Projeto</button>
+    <button class="tab-btn" onclick="showSection('preview')">👁️ Preview</button>
+    <button class="tab-btn" onclick="showSection('guide')">📖 Guia</button>
+  </div>
+
+  <!-- Section: Add Module -->
+  <div id="section-add" class="workspace">
+    <h2>➕ Adicionar Novo Módulo de Código</h2>
+    
+    <div class="input-group">
+      <div class="input-row">
+        <label>Nome do Módulo</label>
+        <input type="text" class="input" id="modName" placeholder="Ex: Importar PDF, Exportar Word, Formulário Cliente..." />
+      </div>
+      <div class="input-row">
+        <label>Tipo</label>
+        <select class="input" id="modType">
+          <option value="funcao">🔧 Função/Lógica (JavaScript)</option>
+          <option value="visual">🎨 Visual/Interface (HTML+CSS)</option>
+          <option value="completo">📄 Bloco Completo (HTML+CSS+JS)</option>
+          <option value="estilo">💅 Apenas CSS/Estilo</option>
+          <option value="dados">📊 Dados/Templates</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="input-row">
+      <label>Descrição (o que esse código faz?)</label>
+      <input type="text" class="input" id="modDesc" placeholder="Ex: Lê arquivo PDF e extrai nome, CPF e endereço do segurado..." />
+    </div>
+    
+    <div class="input-row">
+      <label>Tags (separadas por vírgula)</label>
+      <input type="text" class="input" id="modTags" placeholder="Ex: pdf, importar, inss, dados" />
+    </div>
+    
+    <div class="input-row">
+      <label>Cole o Código Aqui</label>
+      <textarea class="code-area large" id="modCode" placeholder="Cole aqui o pedaço de código HTML/CSS/JS que quer salvar como módulo..."></textarea>
+    </div>
+    
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-primary" onclick="saveModule()">💾 Salvar Módulo</button>
+      <button class="btn btn-ghost" onclick="clearForm()">🗑️ Limpar</button>
+      <button class="btn btn-blue" onclick="importFromFile()">📂 Importar de Arquivo</button>
+    </div>
+  </div>
+
+  <!-- Section: Modules List -->
+  <div id="section-modules" class="workspace" style="display:none;">
+    <div class="flex-between">
+      <h2>📦 Módulos Salvos</h2>
+      <input type="text" class="input" style="width:200px;" placeholder="🔍 Buscar..." oninput="filterModules(this.value)" />
+    </div>
+    <div class="modules-grid" id="modulesGrid"></div>
+  </div>
+
+  <!-- Section: Build -->
+  <div id="section-build" class="workspace" style="display:none;">
+    <h2>🔨 Montar Projeto Final</h2>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px;">
+      Marque os módulos que deseja incluir no HTML final. A ordem importa — arraste ou use as setas para reorganizar.
+    </p>
+    
+    <div class="input-row">
+      <label>Título do Projeto Final</label>
+      <input type="text" class="input" id="buildTitle" value="PWA Jurídico — Maikon Caldeira" />
+    </div>
+    
+    <div class="input-row">
+      <label>CSS Base (opcional — será incluído no &lt;head&gt;)</label>
+      <textarea class="code-area" id="buildBaseCss" style="min-height:80px;" placeholder="/* CSS base que vai em todos os projetos */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; }"></textarea>
+    </div>
+    
+    <div class="section-title">Selecione os Módulos para Incluir</div>
+    <div id="buildChecklist"></div>
+    
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn btn-success" onclick="exportFinal()">📦 Gerar HTML Final</button>
+      <button class="btn btn-ghost" onclick="selectAll()">✅ Selecionar Todos</button>
+      <button class="btn btn-ghost" onclick="deselectAll()">⬜ Desmarcar Todos</button>
+    </div>
+  </div>
+
+  <!-- Section: Preview -->
+  <div id="section-preview" class="workspace" style="display:none;">
+    <div class="flex-between">
+      <h2>👁️ Preview do Projeto Montado</h2>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="refreshPreview()">🔄 Atualizar</button>
+        <button class="btn btn-ghost btn-sm" onclick="openFullPreview()">🔳 Tela Cheia</button>
+      </div>
+    </div>
+    <iframe class="preview-frame" id="previewFrame"></iframe>
+  </div>
+
+  <!-- Section: Guide -->
+  <div id="section-guide" class="workspace" style="display:none;">
+    <h2>📖 Guia — Como Montar seu PWA</h2>
+    
+    <div class="status status-info" style="margin-top:12px;">
+      🎯 <strong>Estratégia:</strong> Em vez de tentar fazer tudo de uma vez, vamos por partes. 
+      Cada funcionalidade vira um "módulo" independente. Depois juntamos.
+    </div>
+    
+    <div class="section-title">Passo a Passo</div>
+    <ol style="font-size:12px;line-height:2;padding-left:20px;color:var(--text2);">
+      <li><strong style="color:var(--text)">Separe os códigos por função</strong> — cada pedaço faz UMA coisa (importar PDF, gerar documento, salvar dados...)</li>
+      <li><strong style="color:var(--text)">Cole cada pedaço como módulo</strong> — use a aba "Adicionar Módulo" e dê nome descritivo</li>
+      <li><strong style="color:var(--text)">Teste individual</strong> — na aba Preview, veja se cada módulo funciona sozinho</li>
+      <li><strong style="color:var(--text)">Monte o projeto</strong> — na aba "Montar", selecione os módulos e gere o HTML final</li>
+      <li><strong style="color:var(--text)">Ajuste conflitos</strong> — se algo quebrar, traga aqui que te ajudo a resolver</li>
+    </ol>
+    
+    <div class="section-title">Tipos de Módulo</div>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px;color:var(--blue);">🔧 Função/Lógica</td>
+        <td style="padding:8px;color:var(--text2);">Código JavaScript puro (funções, cálculos, processamento de dados)</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px;color:var(--green);">🎨 Visual/Interface</td>
+        <td style="padding:8px;color:var(--text2);">HTML + CSS (botões, formulários, layout, cards)</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px;color:var(--accent);">📄 Bloco Completo</td>
+        <td style="padding:8px;color:var(--text2);">HTML + CSS + JS juntos (componente inteiro que funciona sozinho)</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px;color:#c084fc;">💅 Apenas CSS</td>
+        <td style="padding:8px;color:var(--text2);">Estilos visuais (tema, cores, fontes, animações)</td>
+      </tr>
+      <tr>
+        <td style="padding:8px;color:var(--red);">📊 Dados/Templates</td>
+        <td style="padding:8px;color:var(--text2);">Modelos de documentos, arrays de dados, configurações</td>
+      </tr>
+    </table>
+    
+    <div class="section-title">Sobre o Banco de Dados (Neon)</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+      <p>⚠️ <strong style="color:var(--text)">Importante:</strong> Um HTML puro no navegador <strong>NÃO consegue</strong> conectar direto no Neon (PostgreSQL). Precisa de um "servidor" no meio.</p>
+      <p style="margin-top:8px;">🟢 <strong style="color:var(--green)">Alternativa que funciona sem servidor:</strong></p>
+      <ul style="padding-left:16px;margin-top:4px;">
+        <li><strong>localStorage</strong> — salva no navegador (o que estamos usando aqui)</li>
+        <li><strong>IndexedDB</strong> — banco mais robusto no navegador (suporta mais dados)</li>
+        <li><strong>Exportar/Importar JSON</strong> — backup manual dos dados</li>
+      </ul>
+      <p style="margin-top:8px;">🔵 <strong style="color:var(--blue)">Se quiser Neon no futuro:</strong> Precisará de um backend (Vercel Functions, Cloudflare Workers, ou Supabase que já dá tudo pronto).</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Hidden -->
+<input type="file" id="fileInput" style="display:none" accept=".html,.htm,.js,.css,.txt,.json" />
+<input type="file" id="backupInput" style="display:none" accept=".json" />
+
+<!-- Toast -->
+<div class="toast" id="toast" style="position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--accent);border-radius:10px;padding:12px 20px;font-size:12px;font-weight:600;color:var(--accent2);z-index:2000;transform:translateY(100px);opacity:0;transition:all 0.3s;"></div>
+
+<script>
+// ========== STATE ==========
+const LS_MODULES = 'pwa-modules-v1';
+const LS_SELECTED = 'pwa-selected-v1';
+
+function getModules() {
+  try { return JSON.parse(localStorage.getItem(LS_MODULES) || '[]'); } catch { return []; }
+}
+function setModules(list) { localStorage.setItem(LS_MODULES, JSON.stringify(list)); }
+function getSelected() {
+  try { return JSON.parse(localStorage.getItem(LS_SELECTED) || '[]'); } catch { return []; }
+}
+function setSelected(list) { localStorage.setItem(LS_SELECTED, JSON.stringify(list)); }
+
+// ========== UI ==========
+function showSection(name) {
+  ['add','modules','build','preview','guide'].forEach(s => {
+    document.getElementById('section-' + s).style.display = s === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    const sections = ['add','modules','build','preview','guide'];
+    btn.classList.toggle('active', sections[i] === name);
+  });
+  if (name === 'modules') renderModules();
+  if (name === 'build') renderBuildChecklist();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.transform = 'translateY(0)';
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.transform = 'translateY(100px)'; t.style.opacity = '0'; }, 2500);
+}
+
+// ========== MODULES ==========
+function saveModule() {
+  const name = document.getElementById('modName').value.trim();
+  const type = document.getElementById('modType').value;
+  const desc = document.getElementById('modDesc').value.trim();
+  const tags = document.getElementById('modTags').value.split(',').map(t => t.trim()).filter(Boolean);
+  const code = document.getElementById('modCode').value;
+  
+  if (!name) { showToast('❌ Dê um nome ao módulo!'); return; }
+  if (!code.trim()) { showToast('❌ Cole algum código!'); return; }
+  
+  const modules = getModules();
+  modules.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name, type, desc, tags, code,
+    date: new Date().toISOString()
+  });
+  setModules(modules);
+  updateCount();
+  clearForm();
+  showToast('✅ Módulo "' + name + '" salvo!');
+}
+
+function clearForm() {
+  document.getElementById('modName').value = '';
+  document.getElementById('modDesc').value = '';
+  document.getElementById('modTags').value = '';
+  document.getElementById('modCode').value = '';
+}
+
+function renderModules(filter = '') {
+  const modules = getModules().filter(m => 
+    !filter || m.name.toLowerCase().includes(filter.toLowerCase()) || m.tags.some(t => t.toLowerCase().includes(filter.toLowerCase()))
+  );
+  const grid = document.getElementById('modulesGrid');
+  
+  if (modules.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Nenhum módulo salvo ainda.<br>Use a aba "Adicionar Módulo" para começar!</p></div>';
+    return;
+  }
+  
+  grid.innerHTML = modules.map(m => `
+    <div class="module-card">
+      <div class="card-header">
+        <h3>${escHtml(m.name)}</h3>
+        <span class="tag ${m.type === 'visual' ? 'visual' : m.type === 'funcao' ? 'logica' : ''}">${getTypeLabel(m.type)}</span>
+      </div>
+      ${m.desc ? `<div class="desc">${escHtml(m.desc)}</div>` : ''}
+      <div class="tags">${m.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>
+      <pre>${escHtml(m.code.slice(0, 200))}${m.code.length > 200 ? '...' : ''}</pre>
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="viewModule('${m.id}')">👁️ Ver</button>
+        <button class="btn btn-ghost btn-sm" onclick="editModule('${m.id}')">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="copyModule('${m.id}')">📋 Copiar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteModule('${m.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterModules(query) { renderModules(query); }
+
+function deleteModule(id) {
+  if (!confirm('Excluir este módulo?')) return;
+  setModules(getModules().filter(m => m.id !== id));
+  renderModules();
+  updateCount();
+  showToast('🗑️ Módulo excluído!');
+}
+
+function copyModule(id) {
+  const m = getModules().find(x => x.id === id);
+  if (m) { navigator.clipboard.writeText(m.code); showToast('📋 Código copiado!'); }
+}
+
+function viewModule(id) {
+  const m = getModules().find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('modName').value = m.name;
+  document.getElementById('modType').value = m.type;
+  document.getElementById('modDesc').value = m.desc;
+  document.getElementById('modTags').value = m.tags.join(', ');
+  document.getElementById('modCode').value = m.code;
+  showSection('add');
+}
+
+function editModule(id) {
+  const m = getModules().find(x => x.id === id);
+  if (!m) return;
+  // Remove old and let user save as new
+  setModules(getModules().filter(x => x.id !== id));
+  viewModule(id); // This won't find it anymore, so we set manually
+  document.getElementById('modName').value = m.name;
+  document.getElementById('modType').value = m.type;
+  document.getElementById('modDesc').value = m.desc;
+  document.getElementById('modTags').value = m.tags.join(', ');
+  document.getElementById('modCode').value = m.code;
+  showSection('add');
+  updateCount();
+  showToast('✏️ Editando módulo — salve quando terminar!');
+}
+
+// ========== BUILD ==========
+function renderBuildChecklist() {
+  const modules = getModules();
+  const selected = getSelected();
+  const container = document.getElementById('buildChecklist');
+  
+  if (modules.length === 0) {
+    container.innerHTML = '<p style="color:var(--text2);font-size:12px;">Nenhum módulo disponível. Adicione módulos primeiro.</p>';
+    return;
+  }
+  
+  container.innerHTML = '<ul class="checklist">' + modules.map((m, i) => `
+    <li>
+      <div class="check ${selected.includes(m.id)?'checked':''}" onclick="toggleSelect('${m.id}')">
+        ${selected.includes(m.id) ? '✓' : ''}
+      </div>
+      <div style="flex:1;">
+        <strong style="font-size:12px;">${escHtml(m.name)}</strong>
+        <span style="font-size:10px;color:var(--text2);margin-left:8px;">${getTypeLabel(m.type)}</span>
+        ${m.desc ? `<br><span style="font-size:10px;color:var(--text2);">${escHtml(m.desc)}</span>` : ''}
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button class="btn btn-ghost btn-sm" onclick="moveModule(${i},-1)">⬆️</button>
+        <button class="btn btn-ghost btn-sm" onclick="moveModule(${i},1)">⬇️</button>
+      </div>
+    </li>
+  `).join('') + '</ul>';
+}
+
+function toggleSelect(id) {
+  let selected = getSelected();
+  if (selected.includes(id)) selected = selected.filter(x => x !== id);
+  else selected.push(id);
+  setSelected(selected);
+  renderBuildChecklist();
+}
+
+function selectAll() {
+  setSelected(getModules().map(m => m.id));
+  renderBuildChecklist();
+}
+
+function deselectAll() {
+  setSelected([]);
+  renderBuildChecklist();
+}
+
+function moveModule(index, dir) {
+  const modules = getModules();
+  const newIndex = index + dir;
+  if (newIndex < 0 || newIndex >= modules.length) return;
+  [modules[index], modules[newIndex]] = [modules[newIndex], modules[index]];
+  setModules(modules);
+  renderBuildChecklist();
+}
+
+// ========== EXPORT ==========
+function exportFinal() {
+  const modules = getModules();
+  const selected = getSelected();
+  const chosen = modules.filter(m => selected.includes(m.id));
+  
+  if (chosen.length === 0) {
+    showToast('⚠️ Selecione pelo menos um módulo na aba "Montar"!');
+    showSection('build');
+    return;
+  }
+  
+  const title = document.getElementById('buildTitle').value || 'PWA Jurídico';
+  const baseCss = document.getElementById('buildBaseCss').value || '';
+  
+  // Separate by type
+  const styles = chosen.filter(m => m.type === 'estilo').map(m => m.code).join('\n\n');
+  const htmlParts = chosen.filter(m => m.type === 'visual' || m.type === 'completo' || m.type === 'dados').map(m => `\n<!-- === MÓDULO: ${m.name} === -->\n${m.code}`).join('\n');
+  const scripts = chosen.filter(m => m.type === 'funcao').map(m => `\n// === MÓDULO: ${m.name} ===\n${m.code}`).join('\n');
+  
+  // Check if any module is a complete document
+  const completeDoc = chosen.find(m => m.code.trim().toLowerCase().includes('<!doctype') || m.code.trim().toLowerCase().includes('<html'));
+  
+  let finalHtml;
+  if (completeDoc && chosen.length === 1) {
+    finalHtml = completeDoc.code;
+  } else {
+    finalHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(title)}</title>
+<style>
+/* === CSS BASE === */
+${baseCss}
+
+/* === MÓDULOS CSS === */
+${styles}
+</style>
+</head>
+<body>
+
+${htmlParts}
+
+<script>
+${scripts}
+<\/script>
+</body>
+</html>`;
+  }
+  
+  // Download
+  const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (title.replace(/[^a-zA-Z0-9]/g, '_') || 'projeto') + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📦 HTML final gerado e baixado!');
+}
+
+function refreshPreview() {
+  const modules = getModules();
+  const selected = getSelected();
+  const chosen = modules.filter(m => selected.includes(m.id));
+  
+  const title = document.getElementById('buildTitle').value || 'PWA Jurídico';
+  const baseCss = document.getElementById('buildBaseCss').value || '';
+  const styles = chosen.filter(m => m.type === 'estilo').map(m => m.code).join('\n');
+  const htmlParts = chosen.filter(m => m.type === 'visual' || m.type === 'completo' || m.type === 'dados').map(m => m.code).join('\n');
+  const scripts = chosen.filter(m => m.type === 'funcao').map(m => m.code).join('\n');
+  
+  const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${baseCss}\n${styles}</style></head><body>${htmlParts}<script>${scripts}<\/script></body></html>`;
+  
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  document.getElementById('previewFrame').src = url;
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+function openFullPreview() {
+  refreshPreview();
+  const frame = document.getElementById('previewFrame');
+  if (frame.src) window.open(frame.src, '_blank');
+}
+
+// ========== BACKUP ==========
+function exportBackup() {
+  const data = { modules: getModules(), selected: getSelected(), date: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pwa-modulos-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('💾 Backup exportado!');
+}
+
+function importBackup() {
+  document.getElementById('backupInput').click();
+}
+
+document.getElementById('backupInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.modules) {
+        const existing = getModules();
+        const merged = [...existing, ...data.modules.filter(m => !existing.find(e => e.id === m.id))];
+        setModules(merged);
+        if (data.selected) setSelected(data.selected);
+        updateCount();
+        showToast('📂 Backup importado! ' + data.modules.length + ' módulos.');
+      }
+    } catch(err) {
+      showToast('❌ Arquivo inválido!');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// Import code from file
+function importFromFile() {
+  document.getElementById('fileInput').click();
+}
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('modCode').value = ev.target.result;
+    if (!document.getElementById('modName').value) {
+      document.getElementById('modName').value = file.name.replace(/\.[^.]+$/, '');
+    }
+    showToast('📂 Código do arquivo carregado!');
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// ========== UTILS ==========
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getTypeLabel(type) {
+  const labels = { funcao:'🔧 Função', visual:'🎨 Visual', completo:'📄 Completo', estilo:'💅 CSS', dados:'📊 Dados' };
+  return labels[type] || type;
+}
+function updateCount() {
+  document.getElementById('moduleCount').textContent = getModules().length;
+}
+
+// Init
+updateCount();
+</script>
+</body>
+</html>
+
+<script>
+
+</script>
+</body>
+</html>

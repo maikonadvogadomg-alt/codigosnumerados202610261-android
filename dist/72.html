@@ -1,0 +1,3045 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Projetos PWA — Maikon Caldeira</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+.project-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #12121a;
+  border-bottom: 2px solid #a3a082;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  background: #1a1a2e;
+  border: 1px solid #2d2d3a;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #a3a082;
+  color: #000;
+  border-color: #a3a082;
+}
+
+.nav-btn.active {
+  background: #a3a082;
+  color: #000;
+  border-color: #d4d0a8;
+}
+
+.project-container {
+  display: none;
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+.project-container.active {
+  display: block;
+}
+
+/* Isola estilos de cada projeto */
+.project-container iframe {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Navegação -->
+<div class="project-nav">
+  <span style="font-size:14px;font-weight:700;color:#a3a082;margin-right:10px;">📂</span>
+  <button class="nav-btn active" onclick="trocarProjeto(0)">0.Playground</button><button class="nav-btn " onclick="trocarProjeto(1)">1.playground</button><button class="nav-btn " onclick="trocarProjeto(2)">2.playground3</button>
+</div>
+
+<!-- Projetos (cada um em iframe isolado) -->
+
+<div class="project-container active" id="projeto0">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Playground Code — Maikon Caldeira&lt;/title&gt;
+&lt;style&gt;
+:root {
+  --bg: #0f172a;
+  --bg2: #1e293b;
+  --bg3: #334155;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --accent: #a3a082;
+  --accent2: #d4d0a8;
+  --blue: #3b82f6;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --border: #334155;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+.header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 6px; }
+.header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.header-right { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.logo { font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: -0.5px; }
+.logo small { font-size: 9px; color: var(--text2); font-weight: 400; letter-spacing: 1px; display: block; }
+
+/* Inputs */
+.title-input { background: transparent; border: 1px solid transparent; color: var(--text); font-size: 12px; padding: 4px 8px; border-radius: 6px; width: 140px; transition: border-color 0.2s; }
+.title-input:focus { outline: none; border-color: var(--accent); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn-icon { padding: 6px; border-radius: 6px; background: transparent; border: none; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+.btn-icon:hover { background: var(--bg3); color: var(--text); }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-mode { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.btn-mode.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* Mode selector */
+.mode-group { display: flex; gap: 2px; background: var(--bg); padding: 2px; border-radius: 8px; border: 1px solid var(--border); }
+
+/* Tabs */
+.tabs-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.tabs { display: flex; gap: 2px; }
+.tab { padding: 5px 12px; font-size: 11px; font-weight: 600; border: none; background: transparent; color: var(--text2); cursor: pointer; border-radius: 6px; transition: all 0.15s; }
+.tab.active { background: var(--bg3); color: var(--text); }
+.tab:hover:not(.active) { color: var(--text); }
+.tab-info { font-size: 10px; color: var(--text2); }
+
+/* Main layout */
+.main { display: flex; flex: 1; overflow: hidden; }
+.editor-panel { display: flex; flex-direction: column; width: 50%; border-right: 1px solid var(--border); transition: width 0.3s; }
+.editor-panel.collapsed { width: 0; overflow: hidden; border: none; }
+.editor-panel.expanded { width: 100%; }
+.preview-panel { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.preview-panel.hidden { display: none; }
+
+/* Editor */
+.editor-wrap { flex: 1; position: relative; overflow: hidden; }
+.editor-textarea { width: 100%; height: 100%; resize: none; background: var(--bg); color: var(--text); font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.6; padding: 12px 12px 12px 48px; border: none; outline: none; tab-size: 2; position: absolute; inset: 0; }
+.line-numbers { position: absolute; left: 0; top: 0; bottom: 0; width: 40px; background: rgba(30,41,59,0.5); padding: 12px 6px 12px 0; text-align: right; font-family: 'Consolas', monospace; font-size: 11px; line-height: 1.6; color: var(--text2); opacity: 0.5; overflow: hidden; pointer-events: none; user-select: none; z-index: 1; }
+
+/* Preview */
+.preview-header { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.preview-header .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.preview-frame { flex: 1; border: none; background: #fff; }
+
+/* Dialog/Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 90%; max-width: 480px; max-height: 80vh; overflow-y: auto; }
+.modal h3 { font-size: 16px; margin-bottom: 12px; color: var(--accent); }
+.modal-close { position: absolute; top: 12px; right: 12px; }
+
+/* Snippet list */
+.snippet-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; cursor: pointer; transition: all 0.15s; }
+.snippet-item:hover { border-color: var(--accent); background: var(--bg3); }
+.snippet-item .name { font-size: 12px; font-weight: 600; }
+.snippet-item .meta { font-size: 10px; color: var(--text2); }
+.snippet-actions { display: flex; gap: 2px; }
+
+/* Search */
+.search-input { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; margin-bottom: 12px; }
+.search-input:focus { outline: none; border-color: var(--accent); }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: 12px 20px; font-size: 12px; font-weight: 600; color: var(--accent2); z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main { flex-direction: column; }
+  .editor-panel { width: 100% !important; height: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+  .editor-panel.collapsed { height: 0; }
+  .editor-panel.expanded { height: 100%; }
+  .preview-panel { height: 50%; }
+  .hide-mobile { display: none !important; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+/* Status badge */
+.status-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.status-badge.html { background: rgba(239,68,68,0.15); color: var(--red); }
+.status-badge.react { background: rgba(59,130,246,0.15); color: var(--blue); }
+.status-badge.python { background: rgba(251,191,36,0.15); color: var(--yellow); }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- Header --&gt;
+&lt;header class=&quot;header&quot;&gt;
+  &lt;div class=&quot;header-left&quot;&gt;
+    &lt;div class=&quot;logo&quot;&gt;⚡ Playground &lt;small&gt;Maikon Caldeira — Code Editor&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;mode-group&quot;&gt;
+      &lt;button class=&quot;btn-mode active&quot; id=&quot;modeHtml&quot; onclick=&quot;switchMode('html')&quot;&gt;🌐 HTML&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modeReact&quot; onclick=&quot;switchMode('react')&quot;&gt;⚛️ React&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modePython&quot; onclick=&quot;switchMode('python')&quot;&gt;🐍 Python&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;input type=&quot;text&quot; class=&quot;title-input&quot; id=&quot;projectTitle&quot; value=&quot;Sem titulo&quot; placeholder=&quot;Nome do projeto...&quot; /&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;header-right&quot;&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;importFile()&quot; title=&quot;Importar arquivo&quot;&gt;📂&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;toggleFullscreen()&quot; title=&quot;Tela cheia&quot;&gt;🔳&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;copyCode()&quot; title=&quot;Copiar código&quot;&gt;📋&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;downloadFile()&quot; title=&quot;Baixar&quot;&gt;⬇️&lt;/button&gt;
+    &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;saveToLocal()&quot; title=&quot;Salvar no banco local&quot;&gt;💾 Salvar&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openSavedModal()&quot; title=&quot;Meus códigos salvos&quot;&gt;📁&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;resetCode()&quot; title=&quot;Resetar&quot;&gt;🔄&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;clearCode()&quot; title=&quot;Limpar&quot;&gt;🗑️&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;toggleEditor()&quot; id=&quot;btnToggleEditor&quot; title=&quot;Ampliar/Reduzir editor&quot;&gt;⬜&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/header&gt;
+
+&lt;!-- Tabs --&gt;
+&lt;div class=&quot;tabs-bar&quot;&gt;
+  &lt;div class=&quot;tabs&quot; id=&quot;tabsContainer&quot;&gt;
+    &lt;button class=&quot;tab active&quot; id=&quot;tabHtml&quot; onclick=&quot;switchTab('html')&quot;&gt;📄 HTML&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; id=&quot;tabJs&quot; onclick=&quot;switchTab('js')&quot;&gt;⚙️ JS&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;tab-info&quot;&gt;
+    &lt;span id=&quot;lineCount&quot;&gt;1 linhas&lt;/span&gt;
+    &lt;span class=&quot;status-badge html&quot; id=&quot;modeBadge&quot;&gt;HTML&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Main --&gt;
+&lt;div class=&quot;main&quot;&gt;
+  &lt;div class=&quot;editor-panel&quot; id=&quot;editorPanel&quot;&gt;
+    &lt;div class=&quot;editor-wrap&quot;&gt;
+      &lt;div class=&quot;line-numbers&quot; id=&quot;lineNumbers&quot;&gt;1&lt;/div&gt;
+      &lt;textarea class=&quot;editor-textarea&quot; id=&quot;editor&quot; spellcheck=&quot;false&quot; placeholder=&quot;Cole ou digite seu código aqui...&quot;&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;preview-panel&quot; id=&quot;previewPanel&quot;&gt;
+    &lt;div class=&quot;preview-header&quot;&gt;
+      &lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;
+      &lt;span style=&quot;font-size:11px;color:var(--text2);font-weight:600;&quot;&gt;Resultado ao vivo&lt;/span&gt;
+      &lt;span id=&quot;autoLabel&quot; style=&quot;font-size:9px;color:var(--green);margin-left:auto;&quot;&gt;● AUTO&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;iframe class=&quot;preview-frame&quot; id=&quot;previewFrame&quot; sandbox=&quot;allow-scripts allow-modals allow-forms allow-popups&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Hidden file input --&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm,.css,.js,.jsx,.tsx,.py,.txt,.svg,.xml&quot; /&gt;
+
+&lt;!-- Modal: Saved Snippets --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;savedModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;h3&gt;📁 Meus Códigos Salvos&lt;/h3&gt;
+    &lt;input type=&quot;text&quot; class=&quot;search-input&quot; id=&quot;searchInput&quot; placeholder=&quot;🔍 Buscar por nome...&quot; oninput=&quot;renderSavedList()&quot; /&gt;
+    &lt;div id=&quot;savedList&quot;&gt;&lt;/div&gt;
+    &lt;div style=&quot;text-align:right;margin-top:12px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeSavedModal()&quot;&gt;Fechar&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Toast --&gt;
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// ========== STATE ==========
+const LS_KEY = 'playground-snippets-v2';
+const AUTOSAVE_KEY = 'playground-autosave-v2';
+
+let state = {
+  mode: 'html', // html | react | python
+  activeTab: 'html',
+  html: `&lt;div style=&quot;max-width:600px;margin:40px auto;padding:20px;font-family:sans-serif;&quot;&gt;
+  &lt;h1 style=&quot;color:#333;&quot;&gt;Bem-vindo ao HTML Playground&lt;/h1&gt;
+  &lt;p style=&quot;color:#666;margin:16px 0;&quot;&gt;Cole seu código HTML aqui e veja o resultado ao vivo!&lt;/p&gt;
+  &lt;button onclick=&quot;alert('Funcionou!')&quot; style=&quot;padding:10px 24px;font-size:16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;&quot;&gt;Clique aqui&lt;/button&gt;
+&lt;/div&gt;`,
+  css: '',
+  js: `// Seu JavaScript aqui
+console.log(&quot;Hello from Playground!&quot;);`,
+  jsx: `// React Component — use o componente App
+function App() {
+  const [count, setCount] = React.useState(0);
+  return (
+    &lt;div style={{padding:40,fontFamily:'sans-serif',textAlign:'center'}}&gt;
+      &lt;h1&gt;⚛️ React no Playground&lt;/h1&gt;
+      &lt;p&gt;Contador: &lt;strong&gt;{count}&lt;/strong&gt;&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)} style={{padding:'10px 24px',fontSize:16,background:'#3b82f6',color:'white',border:'none',borderRadius:8,cursor:'pointer'}}&gt;
+        Incrementar
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`,
+  python: `# Python — output aparece no preview
+# (Execução simulada no navegador via Pyodide)
+
+dados = [&quot;João Silva&quot;, &quot;Maria Souza&quot;, &quot;Pedro Lima&quot;]
+
+print(&quot;=== LISTA DE CLIENTES ===&quot;)
+for i, nome in enumerate(dados, 1):
+    print(f&quot;{i}. {nome}&quot;)
+
+print(f&quot;\\nTotal: {len(dados)} clientes&quot;)`,
+  title: 'Sem titulo',
+  editorState: 'normal' // normal | collapsed | expanded
+};
+
+// Load autosave
+try {
+  const saved = localStorage.getItem(AUTOSAVE_KEY);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    Object.assign(state, parsed);
+  }
+} catch(e) {}
+
+// ========== DOM REFS ==========
+const editor = document.getElementById('editor');
+const previewFrame = document.getElementById('previewFrame');
+const lineNumbers = document.getElementById('lineNumbers');
+const titleInput = document.getElementById('projectTitle');
+const editorPanel = document.getElementById('editorPanel');
+const previewPanel = document.getElementById('previewPanel');
+const fileInput = document.getElementById('fileInput');
+
+// ========== INIT ==========
+titleInput.value = state.title;
+updateTabs();
+loadEditorContent();
+updatePreview();
+
+// ========== EDITOR ==========
+editor.addEventListener('input', () =&gt; {
+  saveCurrentTab();
+  updateLineNumbers();
+  autoSave();
+  debouncePreview();
+});
+
+editor.addEventListener('scroll', () =&gt; {
+  lineNumbers.scrollTop = editor.scrollTop;
+});
+
+editor.addEventListener('keydown', (e) =&gt; {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+    editor.selectionStart = editor.selectionEnd = start + 2;
+    saveCurrentTab();
+  }
+});
+
+// Paste detection
+editor.addEventListener('paste', (e) =&gt; {
+  setTimeout(() =&gt; {
+    const content = editor.value;
+    // Auto-detect mode
+    if (state.activeTab === 'html' || state.mode === 'html') {
+      if (/import\s+React|from\s+['&quot;]react['&quot;]|useState|useEffect|&lt;[A-Z][a-zA-Z]*[\s/&gt;]/.test(content)) {
+        switchMode('react');
+        state.jsx = content;
+        loadEditorContent();
+        showToast('⚛️ React/JSX detectado automaticamente!');
+        return;
+      }
+      if (/^(def |class |import |from |print\(|#.*python)/im.test(content) &amp;&amp; !content.includes('&lt;')) {
+        switchMode('python');
+        state.python = content;
+        loadEditorContent();
+        showToast('🐍 Python detectado automaticamente!');
+        return;
+      }
+    }
+    saveCurrentTab();
+    updatePreview();
+  }, 50);
+});
+
+titleInput.addEventListener('input', () =&gt; {
+  state.title = titleInput.value;
+  autoSave();
+});
+
+// ========== FUNCTIONS ==========
+let previewTimer = null;
+function debouncePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 400);
+}
+
+function updateLineNumbers() {
+  const lines = editor.value.split('\n').length;
+  document.getElementById('lineCount').textContent = lines + ' linhas';
+  let nums = '';
+  for (let i = 1; i &lt;= lines; i++) nums += i + '\n';
+  lineNumbers.textContent = nums;
+}
+
+function saveCurrentTab() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' &amp;&amp; tab === 'jsx') state.jsx = editor.value;
+  else if (state.mode === 'python' &amp;&amp; tab === 'python') state.python = editor.value;
+  else if (tab === 'html') state.html = editor.value;
+  else if (tab === 'css') state.css = editor.value;
+  else if (tab === 'js') state.js = editor.value;
+}
+
+function loadEditorContent() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' &amp;&amp; tab === 'jsx') editor.value = state.jsx;
+  else if (state.mode === 'python' &amp;&amp; tab === 'python') editor.value = state.python;
+  else if (tab === 'html') editor.value = state.html;
+  else if (tab === 'css') editor.value = state.css;
+  else if (tab === 'js') editor.value = state.js;
+  else editor.value = '';
+  updateLineNumbers();
+}
+
+function switchTab(tab) {
+  saveCurrentTab();
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t =&gt; t.classList.remove('active'));
+  const tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (tabEl) tabEl.classList.add('active');
+  loadEditorContent();
+}
+
+function updateTabs() {
+  const container = document.getElementById('tabsContainer');
+  const badge = document.getElementById('modeBadge');
+  
+  if (state.mode === 'html') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='html'?'active':''}&quot; id=&quot;tabHtml&quot; onclick=&quot;switchTab('html')&quot;&gt;📄 HTML&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='js'?'active':''}&quot; id=&quot;tabJs&quot; onclick=&quot;switchTab('js')&quot;&gt;⚙️ JS&lt;/button&gt;
+    `;
+    badge.className = 'status-badge html';
+    badge.textContent = 'HTML';
+  } else if (state.mode === 'react') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='jsx'?'active':''}&quot; id=&quot;tabJsx&quot; onclick=&quot;switchTab('jsx')&quot;&gt;⚛️ JSX&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+    `;
+    badge.className = 'status-badge react';
+    badge.textContent = 'REACT';
+  } else if (state.mode === 'python') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab active&quot; id=&quot;tabPython&quot; onclick=&quot;switchTab('python')&quot;&gt;🐍 Python&lt;/button&gt;
+    `;
+    badge.className = 'status-badge python';
+    badge.textContent = 'PYTHON';
+  }
+}
+
+function switchMode(mode) {
+  saveCurrentTab();
+  state.mode = mode;
+  
+  document.querySelectorAll('.btn-mode').forEach(b =&gt; b.classList.remove('active'));
+  document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  
+  if (mode === 'html') state.activeTab = 'html';
+  else if (mode === 'react') state.activeTab = 'jsx';
+  else if (mode === 'python') state.activeTab = 'python';
+  
+  updateTabs();
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+}
+
+function buildDocument() {
+  if (state.mode === 'react') {
+    return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react@18/umd/react.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react-dom@18/umd/react-dom.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;\/script&gt;
+&lt;style&gt;*{box-sizing:border-box;}body{margin:0;font-family:sans-serif;}${state.css}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+&lt;script type=&quot;text/babel&quot;&gt;
+const { useState, useEffect, useRef, useCallback, useMemo, useContext, createContext, Fragment } = React;
+${state.jsx}
+try {
+  const _root = ReactDOM.createRoot(document.getElementById('root'));
+  _root.render(&lt;App /&gt;);
+} catch(e) {
+  document.getElementById('root').innerHTML = '&lt;div style=&quot;color:red;padding:20px;font-family:monospace;white-space:pre-wrap&quot;&gt;Erro: '+e.message+'&lt;/div&gt;';
+}
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  if (state.mode === 'python') {
+    // Simulate Python execution in browser using Pyodide
+    const escapedCode = state.python.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/&lt;\/script&gt;/g,'&lt;\\/script&gt;');
+    return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;style&gt;
+body{margin:0;background:#0f172a;color:#e2e8f0;font-family:'Consolas',monospace;padding:20px;}
+#output{white-space:pre-wrap;font-size:13px;line-height:1.6;}
+.loading{color:#60a5fa;}
+.error{color:#f87171;}
+.success{color:#4ade80;}
+&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;div id=&quot;output&quot;&gt;&lt;span class=&quot;loading&quot;&gt;⟳ Carregando Pyodide (Python no navegador)...&lt;/span&gt;&lt;/div&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js&quot;&gt;&lt;\/script&gt;
+&lt;script&gt;
+async function main() {
+  const out = document.getElementById('output');
+  try {
+    const pyodide = await loadPyodide();
+    out.innerHTML = '';
+    // Redirect stdout
+    pyodide.runPython(\`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+\`);
+    pyodide.runPython(\`${escapedCode}\`);
+    const stdout = pyodide.runPython('sys.stdout.getvalue()');
+    out.innerHTML = '&lt;span class=&quot;success&quot;&gt;$ python3 script.py&lt;/span&gt;\\n' + stdout;
+  } catch(e) {
+    out.innerHTML = '&lt;span class=&quot;error&quot;&gt;Erro: ' + e.message + '&lt;/span&gt;';
+  }
+}
+main();
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  // HTML mode
+  const lower = state.html.trim().toLowerCase();
+  const isComplete = lower.includes('&lt;!doctype') || (lower.includes('&lt;html') &amp;&amp; lower.includes('&lt;/html&gt;'));
+  
+  if (isComplete) return state.html;
+  
+  return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;&gt;
+&lt;style&gt;${state.css}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+${state.html}
+&lt;script&gt;${state.js}&lt;\/script&gt;
+&lt;/body&gt;&lt;/html&gt;`;
+}
+
+function updatePreview() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  previewFrame.src = url;
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function autoSave() {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+// ========== ACTIONS ==========
+function copyCode() {
+  const doc = buildDocument();
+  navigator.clipboard.writeText(doc).then(() =&gt; showToast('📋 Código copiado!'));
+}
+
+function downloadFile() {
+  let content, ext, mime;
+  if (state.mode === 'python') { content = state.python; ext = 'py'; mime = 'text/plain'; }
+  else if (state.mode === 'react') { content = state.jsx; ext = 'jsx'; mime = 'text/plain'; }
+  else { content = buildDocument(); ext = 'html'; mime = 'text/html'; }
+  
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (state.title || 'playground') + '.' + ext;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Arquivo baixado!');
+}
+
+function toggleFullscreen() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function importFile() {
+  fileInput.click();
+}
+
+fileInput.addEventListener('change', (e) =&gt; {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) =&gt; {
+    const content = ev.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const name = file.name.replace(/\.[^.]+$/, '');
+    
+    if (ext === 'py') {
+      switchMode('python');
+      state.python = content;
+    } else if (ext === 'jsx' || ext === 'tsx') {
+      switchMode('react');
+      state.jsx = content;
+    } else if (ext === 'css') {
+      state.css = content;
+      if (state.mode === 'html') switchTab('css');
+    } else if (ext === 'js') {
+      state.js = content;
+      if (state.mode === 'html') switchTab('js');
+    } else {
+      // HTML or other text
+      const lower = content.trim().toLowerCase();
+      if (lower.includes('&lt;!doctype') || lower.includes('&lt;html')) {
+        switchMode('html');
+        state.html = content;
+        state.css = '';
+        state.js = '';
+      } else {
+        state.html = content;
+      }
+      switchMode('html');
+    }
+    
+    state.title = name;
+    titleInput.value = name;
+    loadEditorContent();
+    updatePreview();
+    autoSave();
+    showToast('📂 Arquivo &quot;' + file.name + '&quot; importado!');
+  };
+  reader.readAsText(file);
+  fileInput.value = '';
+});
+
+function toggleEditor() {
+  if (state.editorState === 'normal') {
+    // Expand editor (hide preview)
+    state.editorState = 'expanded';
+    editorPanel.classList.add('expanded');
+    previewPanel.classList.add('hidden');
+    document.getElementById('btnToggleEditor').textContent = '◧';
+    document.getElementById('btnToggleEditor').title = 'Mostrar preview';
+  } else if (state.editorState === 'expanded') {
+    // Collapse editor (show only preview)
+    state.editorState = 'collapsed';
+    editorPanel.classList.remove('expanded');
+    editorPanel.classList.add('collapsed');
+    previewPanel.classList.remove('hidden');
+    document.getElementById('btnToggleEditor').textContent = '◨';
+    document.getElementById('btnToggleEditor').title = 'Mostrar editor';
+  } else {
+    // Back to normal
+    state.editorState = 'normal';
+    editorPanel.classList.remove('collapsed', 'expanded');
+    previewPanel.classList.remove('hidden');
+    document.getElementById('btnToggleEditor').textContent = '⬜';
+    document.getElementById('btnToggleEditor').title = 'Ampliar/Reduzir editor';
+  }
+}
+
+function clearCode() {
+  if (state.mode === 'react') state.jsx = '';
+  else if (state.mode === 'python') state.python = '';
+  else { state.html = ''; state.css = ''; state.js = ''; }
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  showToast('🗑️ Código limpo!');
+}
+
+function resetCode() {
+  if (state.mode === 'react') {
+    state.jsx = `function App() {
+  const [count, setCount] = React.useState(0);
+  return (
+    &lt;div style={{padding:40,fontFamily:'sans-serif',textAlign:'center'}}&gt;
+      &lt;h1&gt;⚛️ React no Playground&lt;/h1&gt;
+      &lt;p&gt;Contador: &lt;strong&gt;{count}&lt;/strong&gt;&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)} style={{padding:'10px 24px',fontSize:16,background:'#3b82f6',color:'white',border:'none',borderRadius:8,cursor:'pointer'}}&gt;
+        Incrementar
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`;
+  } else if (state.mode === 'python') {
+    state.python = `# Python — output aparece no preview
+dados = [&quot;João Silva&quot;, &quot;Maria Souza&quot;, &quot;Pedro Lima&quot;]
+print(&quot;=== LISTA DE CLIENTES ===&quot;)
+for i, nome in enumerate(dados, 1):
+    print(f&quot;{i}. {nome}&quot;)
+print(f&quot;\\nTotal: {len(dados)} clientes&quot;)`;
+  } else {
+    state.html = `&lt;div style=&quot;max-width:600px;margin:40px auto;padding:20px;font-family:sans-serif;&quot;&gt;
+  &lt;h1 style=&quot;color:#333;&quot;&gt;Bem-vindo ao HTML Playground&lt;/h1&gt;
+  &lt;p style=&quot;color:#666;margin:16px 0;&quot;&gt;Cole seu código HTML aqui e veja o resultado ao vivo!&lt;/p&gt;
+  &lt;button onclick=&quot;alert('Funcionou!')&quot; style=&quot;padding:10px 24px;font-size:16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;&quot;&gt;Clique aqui&lt;/button&gt;
+&lt;/div&gt;`;
+    state.css = '';
+    state.js = '';
+  }
+  state.title = 'Sem titulo';
+  titleInput.value = 'Sem titulo';
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  showToast('🔄 Código resetado!');
+}
+
+// ========== LOCAL DB (localStorage) ==========
+function getSnippets() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function setSnippets(list) {
+  localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+function saveToLocal() {
+  const snippets = getSnippets();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const item = {
+    id,
+    title: state.title || 'Sem titulo',
+    mode: state.mode,
+    html: state.html,
+    css: state.css,
+    js: state.js,
+    jsx: state.jsx,
+    python: state.python,
+    date: new Date().toISOString()
+  };
+  snippets.unshift(item);
+  setSnippets(snippets);
+  showToast('💾 Salvo no banco local!');
+}
+
+function openSavedModal() {
+  document.getElementById('savedModal').classList.add('open');
+  renderSavedList();
+}
+
+function closeSavedModal() {
+  document.getElementById('savedModal').classList.remove('open');
+}
+
+function renderSavedList() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const snippets = getSnippets().filter(s =&gt; s.title.toLowerCase().includes(query));
+  const container = document.getElementById('savedList');
+  
+  if (snippets.length === 0) {
+    container.innerHTML = '&lt;p style=&quot;text-align:center;color:var(--text2);font-size:12px;padding:20px;&quot;&gt;Nenhum código salvo.&lt;/p&gt;';
+    return;
+  }
+  
+  container.innerHTML = snippets.map(s =&gt; `
+    &lt;div class=&quot;snippet-item&quot; onclick=&quot;loadSnippet('${s.id}')&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;name&quot;&gt;${escapeHtml(s.title)}&lt;/div&gt;
+        &lt;div class=&quot;meta&quot;&gt;${s.mode || 'html'} • ${new Date(s.date).toLocaleDateString('pt-BR')} ${new Date(s.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;snippet-actions&quot;&gt;
+        &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();renameSnippet('${s.id}')&quot; title=&quot;Renomear&quot;&gt;✏️&lt;/button&gt;
+        &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();deleteSnippet('${s.id}')&quot; title=&quot;Excluir&quot;&gt;🗑️&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `).join('');
+}
+
+function loadSnippet(id) {
+  const snippets = getSnippets();
+  const s = snippets.find(x =&gt; x.id === id);
+  if (!s) return;
+  
+  state.title = s.title;
+  state.mode = s.mode || 'html';
+  state.html = s.html || '';
+  state.css = s.css || '';
+  state.js = s.js || '';
+  state.jsx = s.jsx || '';
+  state.python = s.python || '';
+  
+  titleInput.value = state.title;
+  switchMode(state.mode);
+  closeSavedModal();
+  showToast('📂 &quot;' + s.title + '&quot; carregado!');
+}
+
+function deleteSnippet(id) {
+  if (!confirm('Excluir este código?')) return;
+  const snippets = getSnippets().filter(s =&gt; s.id !== id);
+  setSnippets(snippets);
+  renderSavedList();
+  showToast('🗑️ Código excluído!');
+}
+
+function renameSnippet(id) {
+  const snippets = getSnippets();
+  const s = snippets.find(x =&gt; x.id === id);
+  if (!s) return;
+  const newName = prompt('Novo nome:', s.title);
+  if (newName &amp;&amp; newName.trim()) {
+    s.title = newName.trim();
+    setSnippets(snippets);
+    renderSavedList();
+    showToast('✏️ Renomeado!');
+  }
+}
+
+// ========== UTILS ==========
+function escapeHtml(str) {
+  return str.replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(/&gt;/g,'&amp;gt;').replace(/&quot;/g,'&amp;quot;');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() =&gt; toast.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('savedModal').addEventListener('click', (e) =&gt; {
+  if (e.target === document.getElementById('savedModal')) closeSavedModal();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) =&gt; {
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 's') { e.preventDefault(); saveToLocal(); }
+    if (e.key === 'Enter') { e.preventDefault(); updatePreview(); }
+  }
+});
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+<div class="project-container " id="projeto1">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Playground Code Pro — Maikon Caldeira&lt;/title&gt;
+&lt;style&gt;
+:root {
+  --bg: #0f172a;
+  --bg2: #1e293b;
+  --bg3: #334155;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --accent: #a3a082;
+  --accent2: #d4d0a8;
+  --blue: #3b82f6;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --border: #334155;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+.header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 6px; }
+.header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.header-right { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.logo { font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: -0.5px; }
+.logo small { font-size: 9px; color: var(--text2); font-weight: 400; letter-spacing: 1px; display: block; }
+
+/* Inputs */
+.title-input { background: transparent; border: 1px solid transparent; color: var(--text); font-size: 12px; padding: 4px 8px; border-radius: 6px; width: 180px; transition: border-color 0.2s; }
+.title-input:focus { outline: none; border-color: var(--accent); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn-icon { padding: 6px; border-radius: 6px; background: transparent; border: none; color: var(--text2); cursor: pointer; transition: all 0.15s; font-size: 14px; }
+.btn-icon:hover { background: var(--bg3); color: var(--text); }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-mode { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.btn-mode.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* AI Button Special */
+.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; animation: aiPulse 2s infinite; }
+.btn-ai:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+@keyframes aiPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
+
+/* Mode selector */
+.mode-group { display: flex; gap: 2px; background: var(--bg); padding: 2px; border-radius: 8px; border: 1px solid var(--border); }
+
+/* Tabs */
+.tabs-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.tabs { display: flex; gap: 2px; }
+.tab { padding: 5px 12px; font-size: 11px; font-weight: 600; border: none; background: transparent; color: var(--text2); cursor: pointer; border-radius: 6px; transition: all 0.15s; }
+.tab.active { background: var(--bg3); color: var(--text); }
+.tab:hover:not(.active) { color: var(--text); }
+.tab-info { font-size: 10px; color: var(--text2); display: flex; gap: 8px; align-items: center; }
+
+/* Main layout */
+.main { display: flex; flex: 1; overflow: hidden; }
+.editor-panel { display: flex; flex-direction: column; width: 50%; border-right: 1px solid var(--border); transition: width 0.3s; }
+.editor-panel.collapsed { width: 0; overflow: hidden; border: none; }
+.editor-panel.expanded { width: 100%; }
+.preview-panel { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.preview-panel.hidden { display: none; }
+
+/* Editor */
+.editor-wrap { flex: 1; position: relative; overflow: hidden; display: flex; }
+.line-numbers { width: 50px; background: rgba(30,41,59,0.8); padding: 12px 8px 12px 0; text-align: right; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 12px; line-height: 1.65; color: var(--text2); overflow: hidden; user-select: none; border-right: 1px solid var(--border); flex-shrink: 0; }
+.line-numbers .line { padding: 0 4px; cursor: pointer; transition: all 0.15s; }
+.line-numbers .line:hover { background: rgba(163, 160, 130, 0.1); color: var(--accent); }
+.line-numbers .line.current { background: rgba(163, 160, 130, 0.2); color: var(--accent2); font-weight: 700; }
+.editor-textarea { flex: 1; resize: none; background: var(--bg); color: var(--text); font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.65; padding: 12px; border: none; outline: none; tab-size: 2; }
+
+/* Syntax highlight hints (basic) */
+.editor-textarea::selection { background: rgba(163, 160, 130, 0.3); }
+
+/* Preview */
+.preview-header { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.preview-header .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.preview-frame { flex: 1; border: none; background: #fff; }
+
+/* Dialog/Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; position: relative; }
+.modal h3 { font-size: 18px; margin-bottom: 16px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+.modal-close { position: absolute; top: 16px; right: 16px; }
+
+/* Snippet list */
+.snippet-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+.snippet-item:hover { border-color: var(--accent); background: var(--bg3); transform: translateX(4px); }
+.snippet-item .name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.snippet-item .meta { font-size: 10px; color: var(--text2); }
+.snippet-actions { display: flex; gap: 4px; }
+
+/* Search &amp; Go to Line */
+.search-input { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; margin-bottom: 16px; }
+.search-input:focus { outline: none; border-color: var(--accent); }
+
+.goto-line-box { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+.goto-line-box input { flex: 1; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12px; }
+.goto-line-box input:focus { outline: none; border-color: var(--accent); }
+
+/* AI Helper */
+.ai-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; }
+.ai-panel textarea { width: 100%; min-height: 100px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 10px; font-size: 12px; font-family: inherit; resize: vertical; }
+.ai-panel textarea:focus { outline: none; border-color: var(--accent); }
+.ai-response { margin-top: 12px; padding: 12px; background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 6px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: 12px 20px; font-size: 12px; font-weight: 600; color: var(--accent2); z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Status badge */
+.status-badge { font-size: 9px; padding: 3px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.status-badge.html { background: rgba(239,68,68,0.15); color: var(--red); }
+.status-badge.react { background: rgba(59,130,246,0.15); color: var(--blue); }
+.status-badge.python { background: rgba(251,191,36,0.15); color: var(--yellow); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main { flex-direction: column; }
+  .editor-panel { width: 100% !important; height: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+  .editor-panel.collapsed { height: 0; }
+  .editor-panel.expanded { height: 100%; }
+  .preview-panel { height: 50%; }
+  .hide-mobile { display: none !important; }
+  .title-input { width: 120px; }
+}
+
+/* Loading indicator */
+.loading { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- Header --&gt;
+&lt;header class=&quot;header&quot;&gt;
+  &lt;div class=&quot;header-left&quot;&gt;
+    &lt;div class=&quot;logo&quot;&gt;⚡ Playground Pro &lt;small&gt;Maikon Caldeira — Advanced Code Editor&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;mode-group&quot;&gt;
+      &lt;button class=&quot;btn-mode active&quot; id=&quot;modeHtml&quot; onclick=&quot;switchMode('html')&quot;&gt;🌐 HTML&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modeReact&quot; onclick=&quot;switchMode('react')&quot;&gt;⚛️ React&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modePython&quot; onclick=&quot;switchMode('python')&quot;&gt;🐍 Python&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;input type=&quot;text&quot; class=&quot;title-input&quot; id=&quot;projectTitle&quot; value=&quot;Sem titulo&quot; placeholder=&quot;Nome do projeto...&quot; /&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;header-right&quot;&gt;
+    &lt;button class=&quot;btn btn-ai&quot; onclick=&quot;openAIHelper()&quot; title=&quot;Ajuda com IA&quot;&gt;🤖 IA&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openGotoLine()&quot; title=&quot;Ir para linha (Ctrl+G)&quot;&gt;🔍&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;importFile()&quot; title=&quot;Importar arquivo HTML/JS/CSS&quot;&gt;📂&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;toggleFullscreen()&quot; title=&quot;Tela cheia&quot;&gt;🔳&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;copyCode()&quot; title=&quot;Copiar código&quot;&gt;📋&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;downloadFile()&quot; title=&quot;Baixar&quot;&gt;⬇️&lt;/button&gt;
+    &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;saveToLocal()&quot; title=&quot;Salvar projeto&quot;&gt;💾 Salvar&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openSavedModal()&quot; title=&quot;Meus projetos&quot;&gt;📁&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;resetCode()&quot; title=&quot;Resetar&quot;&gt;🔄&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;clearCode()&quot; title=&quot;Limpar&quot;&gt;🗑️&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;toggleEditor()&quot; id=&quot;btnToggleEditor&quot; title=&quot;Ampliar/Reduzir editor&quot;&gt;⬜&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/header&gt;
+
+&lt;!-- Tabs --&gt;
+&lt;div class=&quot;tabs-bar&quot;&gt;
+  &lt;div class=&quot;tabs&quot; id=&quot;tabsContainer&quot;&gt;
+    &lt;button class=&quot;tab active&quot; id=&quot;tabHtml&quot; onclick=&quot;switchTab('html')&quot;&gt;📄 HTML&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; id=&quot;tabJs&quot; onclick=&quot;switchTab('js')&quot;&gt;⚙️ JS&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;tab-info&quot;&gt;
+    &lt;span id=&quot;lineCount&quot;&gt;1 linhas&lt;/span&gt;
+    &lt;span&gt;•&lt;/span&gt;
+    &lt;span id=&quot;cursorPos&quot;&gt;Ln 1, Col 1&lt;/span&gt;
+    &lt;span class=&quot;status-badge html&quot; id=&quot;modeBadge&quot;&gt;HTML&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Main --&gt;
+&lt;div class=&quot;main&quot;&gt;
+  &lt;div class=&quot;editor-panel&quot; id=&quot;editorPanel&quot;&gt;
+    &lt;div class=&quot;editor-wrap&quot;&gt;
+      &lt;div class=&quot;line-numbers&quot; id=&quot;lineNumbers&quot;&gt;&lt;/div&gt;
+      &lt;textarea class=&quot;editor-textarea&quot; id=&quot;editor&quot; spellcheck=&quot;false&quot; placeholder=&quot;Cole ou digite seu código aqui... (Ctrl+G para ir para linha)&quot;&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;preview-panel&quot; id=&quot;previewPanel&quot;&gt;
+    &lt;div class=&quot;preview-header&quot;&gt;
+      &lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;
+      &lt;span style=&quot;font-size:11px;color:var(--text2);font-weight:600;&quot;&gt;Resultado ao vivo&lt;/span&gt;
+      &lt;span id=&quot;autoLabel&quot; style=&quot;font-size:9px;color:var(--green);margin-left:auto;&quot;&gt;● AUTO&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;iframe class=&quot;preview-frame&quot; id=&quot;previewFrame&quot; sandbox=&quot;allow-scripts allow-modals allow-forms allow-popups&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Hidden file input --&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm,.css,.js,.jsx,.tsx,.py,.txt,.svg,.xml&quot; /&gt;
+
+&lt;!-- Modal: Saved Projects --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;savedModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;button class=&quot;btn-icon modal-close&quot; onclick=&quot;closeSavedModal()&quot;&gt;✕&lt;/button&gt;
+    &lt;h3&gt;📁 Meus Projetos Salvos&lt;/h3&gt;
+    &lt;input type=&quot;text&quot; class=&quot;search-input&quot; id=&quot;searchInput&quot; placeholder=&quot;🔍 Buscar por nome...&quot; oninput=&quot;renderSavedList()&quot; /&gt;
+    &lt;div id=&quot;savedList&quot;&gt;&lt;/div&gt;
+    &lt;div style=&quot;text-align:right;margin-top:16px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeSavedModal()&quot;&gt;Fechar&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Modal: Go to Line --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;gotoModal&quot;&gt;
+  &lt;div class=&quot;modal&quot; style=&quot;max-width:400px;&quot;&gt;
+    &lt;button class=&quot;btn-icon modal-close&quot; onclick=&quot;closeGotoLine()&quot;&gt;✕&lt;/button&gt;
+    &lt;h3&gt;🔍 Ir para Linha&lt;/h3&gt;
+    &lt;div class=&quot;goto-line-box&quot;&gt;
+      &lt;input type=&quot;number&quot; id=&quot;gotoLineInput&quot; placeholder=&quot;Número da linha...&quot; min=&quot;1&quot; /&gt;
+      &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;gotoLine()&quot;&gt;Ir&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p style=&quot;font-size:11px;color:var(--text2);&quot;&gt;Dica: Use &lt;strong&gt;Ctrl+G&lt;/strong&gt; para abrir rapidamente&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Modal: AI Helper --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;aiModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;button class=&quot;btn-icon modal-close&quot; onclick=&quot;closeAIHelper()&quot;&gt;✕&lt;/button&gt;
+    &lt;h3&gt;🤖 Assistente IA&lt;/h3&gt;
+    &lt;p style=&quot;font-size:12px;color:var(--text2);margin-bottom:12px;&quot;&gt;Descreva o que você precisa ou pergunte sobre seu código:&lt;/p&gt;
+    &lt;div class=&quot;ai-panel&quot;&gt;
+      &lt;textarea id=&quot;aiPrompt&quot; placeholder=&quot;Ex: Como posso centralizar essa div? Ou: Crie um botão animado...&quot;&gt;&lt;/textarea&gt;
+      &lt;div style=&quot;text-align:right;margin-top:12px;&quot;&gt;
+        &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeAIHelper()&quot; style=&quot;margin-right:8px;&quot;&gt;Cancelar&lt;/button&gt;
+        &lt;button class=&quot;btn btn-ai&quot; onclick=&quot;askAI()&quot;&gt;✨ Perguntar IA&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div id=&quot;aiResponse&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;p style=&quot;font-size:10px;color:var(--text2);margin-top:12px;&quot;&gt;💡 &lt;strong&gt;Nota:&lt;/strong&gt; Esta é uma interface para IA. Para funcionar, você precisaria integrar uma API (OpenAI, Claude, etc). Por enquanto, mostra exemplo de resposta.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Toast --&gt;
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// ========== STATE ==========
+const LS_KEY = 'playground-projects-v3';
+const AUTOSAVE_KEY = 'playground-autosave-v3';
+
+let state = {
+  mode: 'html',
+  activeTab: 'html',
+  html: `&lt;div style=&quot;max-width:600px;margin:40px auto;padding:20px;font-family:sans-serif;&quot;&gt;
+  &lt;h1 style=&quot;color:#333;&quot;&gt;Bem-vindo ao Playground Pro&lt;/h1&gt;
+  &lt;p style=&quot;color:#666;margin:16px 0;&quot;&gt;Cole seu código HTML aqui e veja o resultado ao vivo!&lt;/p&gt;
+  &lt;button onclick=&quot;alert('Funcionou!')&quot; style=&quot;padding:10px 24px;font-size:16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;&quot;&gt;Clique aqui&lt;/button&gt;
+&lt;/div&gt;`,
+  css: '',
+  js: `// Seu JavaScript aqui\nconsole.log(&quot;Hello from Playground Pro!&quot;);`,
+  jsx: `function App() {\n  const [count, setCount] = React.useState(0);\n  return (\n    &lt;div style={{padding:40,fontFamily:'sans-serif',textAlign:'center'}}&gt;\n      &lt;h1&gt;⚛️ React no Playground&lt;/h1&gt;\n      &lt;p&gt;Contador: &lt;strong&gt;{count}&lt;/strong&gt;&lt;/p&gt;\n      &lt;button onClick={() =&gt; setCount(count + 1)} style={{padding:'10px 24px',fontSize:16,background:'#3b82f6',color:'white',border:'none',borderRadius:8,cursor:'pointer'}}&gt;\n        Incrementar\n      &lt;/button&gt;\n    &lt;/div&gt;\n  );\n}`,
+  python: `# Python — output aparece no preview\ndados = [&quot;João Silva&quot;, &quot;Maria Souza&quot;, &quot;Pedro Lima&quot;]\n\nprint(&quot;=== LISTA DE CLIENTES ===&quot;)\nfor i, nome in enumerate(dados, 1):\n    print(f&quot;{i}. {nome}&quot;)\n\nprint(f&quot;\\nTotal: {len(dados)} clientes&quot;)`,
+  title: 'Sem titulo',
+  editorState: 'normal',
+  currentLine: 1
+};
+
+// Load autosave
+try {
+  const saved = localStorage.getItem(AUTOSAVE_KEY);
+  if (saved) Object.assign(state, JSON.parse(saved));
+} catch(e) {}
+
+// ========== DOM REFS ==========
+const editor = document.getElementById('editor');
+const previewFrame = document.getElementById('previewFrame');
+const lineNumbers = document.getElementById('lineNumbers');
+const titleInput = document.getElementById('projectTitle');
+const editorPanel = document.getElementById('editorPanel');
+const previewPanel = document.getElementById('previewPanel');
+const fileInput = document.getElementById('fileInput');
+
+// ========== INIT ==========
+titleInput.value = state.title;
+updateTabs();
+loadEditorContent();
+updatePreview();
+
+// ========== EDITOR EVENTS ==========
+editor.addEventListener('input', () =&gt; {
+  saveCurrentTab();
+  updateLineNumbers();
+  updateCursorPosition();
+  autoSave();
+  debouncePreview();
+});
+
+editor.addEventListener('scroll', () =&gt; {
+  lineNumbers.scrollTop = editor.scrollTop;
+});
+
+editor.addEventListener('click', updateCursorPosition);
+editor.addEventListener('keyup', updateCursorPosition);
+
+editor.addEventListener('keydown', (e) =&gt; {
+  // Tab support
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+    editor.selectionStart = editor.selectionEnd = start + 2;
+    saveCurrentTab();
+  }
+  
+  // Ctrl+G: Go to line
+  if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 'g') {
+    e.preventDefault();
+    openGotoLine();
+  }
+  
+  // Ctrl+S: Save
+  if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 's') {
+    e.preventDefault();
+    saveToLocal();
+  }
+});
+
+// Auto-detect on paste
+editor.addEventListener('paste', (e) =&gt; {
+  setTimeout(() =&gt; {
+    const content = editor.value;
+    if (state.activeTab === 'html' || state.mode === 'html') {
+      if (/import\s+React|from\s+['&quot;]react['&quot;]|useState|useEffect/.test(content)) {
+        switchMode('react');
+        state.jsx = content;
+        loadEditorContent();
+        showToast('⚛️ React/JSX detectado!');
+        return;
+      }
+      if (/^(def |class |import |from |print\(|#.*python)/im.test(content) &amp;&amp; !content.includes('&lt;')) {
+        switchMode('python');
+        state.python = content;
+        loadEditorContent();
+        showToast('🐍 Python detectado!');
+        return;
+      }
+    }
+    saveCurrentTab();
+    updatePreview();
+  }, 50);
+});
+
+titleInput.addEventListener('input', () =&gt; {
+  state.title = titleInput.value;
+  autoSave();
+});
+
+// ========== LINE NUMBERS ==========
+function updateLineNumbers() {
+  const lines = editor.value.split('\n');
+  const totalLines = lines.length;
+  document.getElementById('lineCount').textContent = totalLines + ' linhas';
+  
+  lineNumbers.innerHTML = lines.map((_, i) =&gt; {
+    const lineNum = i + 1;
+    const isCurrent = lineNum === state.currentLine;
+    return `&lt;div class=&quot;line ${isCurrent ? 'current' : ''}&quot; onclick=&quot;jumpToLine(${lineNum})&quot;&gt;${lineNum}&lt;/div&gt;`;
+  }).join('');
+}
+
+function updateCursorPosition() {
+  const pos = editor.selectionStart;
+  const textBefore = editor.value.substring(0, pos);
+  const lines = textBefore.split('\n');
+  const line = lines.length;
+  const col = lines[lines.length - 1].length + 1;
+  
+  state.currentLine = line;
+  document.getElementById('cursorPos').textContent = `Ln ${line}, Col ${col}`;
+  updateLineNumbers();
+}
+
+function jumpToLine(lineNum) {
+  const lines = editor.value.split('\n');
+  let pos = 0;
+  for (let i = 0; i &lt; lineNum - 1 &amp;&amp; i &lt; lines.length; i++) {
+    pos += lines[i].length + 1;
+  }
+  editor.focus();
+  editor.setSelectionRange(pos, pos);
+  updateCursorPosition();
+}
+
+// ========== GO TO LINE ==========
+function openGotoLine() {
+  document.getElementById('gotoModal').classList.add('open');
+  setTimeout(() =&gt; {
+    const input = document.getElementById('gotoLineInput');
+    input.value = '';
+    input.max = editor.value.split('\n').length;
+    input.focus();
+  }, 100);
+}
+
+function closeGotoLine() {
+  document.getElementById('gotoModal').classList.remove('open');
+}
+
+function gotoLine() {
+  const lineNum = parseInt(document.getElementById('gotoLineInput').value);
+  if (lineNum &amp;&amp; lineNum &gt; 0) {
+    jumpToLine(lineNum);
+    closeGotoLine();
+    showToast(`📍 Linha ${lineNum}`);
+  }
+}
+
+// Enter key in goto modal
+document.getElementById('gotoLineInput')?.addEventListener('keydown', (e) =&gt; {
+  if (e.key === 'Enter') gotoLine();
+});
+
+// ========== TABS &amp; MODES ==========
+function saveCurrentTab() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' &amp;&amp; tab === 'jsx') state.jsx = editor.value;
+  else if (state.mode === 'python' &amp;&amp; tab === 'python') state.python = editor.value;
+  else if (tab === 'html') state.html = editor.value;
+  else if (tab === 'css') state.css = editor.value;
+  else if (tab === 'js') state.js = editor.value;
+}
+
+function loadEditorContent() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' &amp;&amp; tab === 'jsx') editor.value = state.jsx;
+  else if (state.mode === 'python' &amp;&amp; tab === 'python') editor.value = state.python;
+  else if (tab === 'html') editor.value = state.html;
+  else if (tab === 'css') editor.value = state.css;
+  else if (tab === 'js') editor.value = state.js;
+  else editor.value = '';
+  updateLineNumbers();
+  updateCursorPosition();
+}
+
+function switchTab(tab) {
+  saveCurrentTab();
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t =&gt; t.classList.remove('active'));
+  const tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (tabEl) tabEl.classList.add('active');
+  loadEditorContent();
+}
+
+function updateTabs() {
+  const container = document.getElementById('tabsContainer');
+  const badge = document.getElementById('modeBadge');
+  
+  if (state.mode === 'html') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='html'?'active':''}&quot; id=&quot;tabHtml&quot; onclick=&quot;switchTab('html')&quot;&gt;📄 HTML&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='js'?'active':''}&quot; id=&quot;tabJs&quot; onclick=&quot;switchTab('js')&quot;&gt;⚙️ JS&lt;/button&gt;
+    `;
+    badge.className = 'status-badge html';
+    badge.textContent = 'HTML';
+  } else if (state.mode === 'react') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='jsx'?'active':''}&quot; id=&quot;tabJsx&quot; onclick=&quot;switchTab('jsx')&quot;&gt;⚛️ JSX&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+    `;
+    badge.className = 'status-badge react';
+    badge.textContent = 'REACT';
+  } else if (state.mode === 'python') {
+    container.innerHTML = `&lt;button class=&quot;tab active&quot; id=&quot;tabPython&quot; onclick=&quot;switchTab('python')&quot;&gt;🐍 Python&lt;/button&gt;`;
+    badge.className = 'status-badge python';
+    badge.textContent = 'PYTHON';
+  }
+}
+
+function switchMode(mode) {
+  saveCurrentTab();
+  state.mode = mode;
+  
+  document.querySelectorAll('.btn-mode').forEach(b =&gt; b.classList.remove('active'));
+  document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  
+  if (mode === 'html') state.activeTab = 'html';
+  else if (mode === 'react') state.activeTab = 'jsx';
+  else if (mode === 'python') state.activeTab = 'python';
+  
+  updateTabs();
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+}
+
+// ========== PREVIEW ==========
+let previewTimer = null;
+function debouncePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 400);
+}
+
+function buildDocument() {
+  if (state.mode === 'react') {
+    return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react@18/umd/react.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react-dom@18/umd/react-dom.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;\/script&gt;
+&lt;style&gt;*{box-sizing:border-box;}body{margin:0;font-family:sans-serif;}${state.css}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+&lt;script type=&quot;text/babel&quot;&gt;
+const { useState, useEffect, useRef, useCallback, useMemo, useContext, createContext, Fragment } = React;
+${state.jsx}
+try {
+  const _root = ReactDOM.createRoot(document.getElementById('root'));
+  _root.render(&lt;App /&gt;);
+} catch(e) {
+  document.getElementById('root').innerHTML = '&lt;div style=&quot;color:red;padding:20px;font-family:monospace;white-space:pre-wrap&quot;&gt;Erro: '+e.message+'&lt;/div&gt;';
+}
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  if (state.mode === 'python') {
+    const escapedCode = state.python.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/&lt;\/script&gt;/g,'&lt;\\/script&gt;');
+    return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;style&gt;
+body{margin:0;background:#0f172a;color:#e2e8f0;font-family:'Consolas',monospace;padding:20px;}
+#output{white-space:pre-wrap;font-size:13px;line-height:1.6;}
+.loading{color:#60a5fa;}
+.error{color:#f87171;}
+.success{color:#4ade80;}
+&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;div id=&quot;output&quot;&gt;&lt;span class=&quot;loading&quot;&gt;⟳ Carregando Pyodide...&lt;/span&gt;&lt;/div&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js&quot;&gt;&lt;\/script&gt;
+&lt;script&gt;
+async function main() {
+  const out = document.getElementById('output');
+  try {
+    const pyodide = await loadPyodide();
+    out.innerHTML = '';
+    pyodide.runPython(\`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+\`);
+    pyodide.runPython(\`${escapedCode}\`);
+    const stdout = pyodide.runPython('sys.stdout.getvalue()');
+    out.innerHTML = '&lt;span class=&quot;success&quot;&gt;$ python3 script.py&lt;/span&gt;\\n' + stdout;
+  } catch(e) {
+    out.innerHTML = '&lt;span class=&quot;error&quot;&gt;Erro: ' + e.message + '&lt;/span&gt;';
+  }
+}
+main();
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  // HTML mode
+  const lower = state.html.trim().toLowerCase();
+  const isComplete = lower.includes('&lt;!doctype') || (lower.includes('&lt;html') &amp;&amp; lower.includes('&lt;/html&gt;'));
+  
+  if (isComplete) return state.html;
+  
+  return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;&gt;
+&lt;style&gt;${state.css}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+${state.html}
+&lt;script&gt;${state.js}&lt;\/script&gt;
+&lt;/body&gt;&lt;/html&gt;`;
+}
+
+function updatePreview() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  previewFrame.src = url;
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function autoSave() {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+// ========== FILE OPERATIONS ==========
+function copyCode() {
+  const doc = buildDocument();
+  navigator.clipboard.writeText(doc).then(() =&gt; showToast('📋 Código copiado!'));
+}
+
+function downloadFile() {
+  let content, ext, mime;
+  if (state.mode === 'python') { content = state.python; ext = 'py'; mime = 'text/plain'; }
+  else if (state.mode === 'react') { content = state.jsx; ext = 'jsx'; mime = 'text/plain'; }
+  else { content = buildDocument(); ext = 'html'; mime = 'text/html'; }
+  
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (state.title || 'playground') + '.' + ext;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Arquivo baixado!');
+}
+
+function toggleFullscreen() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function importFile() {
+  fileInput.click();
+}
+
+fileInput.addEventListener('change', (e) =&gt; {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) =&gt; {
+    const content = ev.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const name = file.name.replace(/\.[^.]+$/, '');
+    
+    if (ext === 'py') {
+      switchMode('python');
+      state.python = content;
+    } else if (ext === 'jsx' || ext === 'tsx') {
+      switchMode('react');
+      state.jsx = content;
+    } else if (ext === 'css') {
+      state.css = content;
+      if (state.mode === 'html') switchTab('css');
+    } else if (ext === 'js') {
+      state.js = content;
+      if (state.mode === 'html') switchTab('js');
+    } else {
+      // HTML or text
+      const lower = content.trim().toLowerCase();
+      if (lower.includes('&lt;!doctype') || lower.includes('&lt;html')) {
+        // Complete HTML document - extract parts
+        const htmlMatch = content.match(/&lt;body[^&gt;]*&gt;([\s\S]*)&lt;\/body&gt;/i);
+        const cssMatch = content.match(/&lt;style[^&gt;]*&gt;([\s\S]*?)&lt;\/style&gt;/i);
+        const jsMatch = content.match(/&lt;script[^&gt;]*&gt;([\s\S]*?)&lt;\/script&gt;/i);
+        
+        state.html = htmlMatch ? htmlMatch[1].trim() : content;
+        state.css = cssMatch ? cssMatch[1].trim() : '';
+        state.js = jsMatch ? jsMatch[1].trim() : '';
+      } else {
+        state.html = content;
+      }
+      switchMode('html');
+    }
+    
+    state.title = name;
+    titleInput.value = name;
+    loadEditorContent();
+    updatePreview();
+    autoSave();
+    showToast('📂 &quot;' + file.name + '&quot; importado!');
+  };
+  reader.readAsText(file);
+  fileInput.value = '';
+});
+
+function toggleEditor() {
+  if (state.editorState === 'normal') {
+    state.editorState = 'expanded';
+    editorPanel.classList.add('expanded');
+    previewPanel.classList.add('hidden');
+    document.getElementById('btnToggleEditor').textContent = '◧';
+  } else if (state.editorState === 'expanded') {
+    state.editorState = 'collapsed';
+    editorPanel.classList.remove('expanded');
+    editorPanel.classList.add('collapsed');
+    previewPanel.classList.remove('hidden');
+    document.getElementById('btnToggleEditor').textContent = '◨';
+  } else {
+    state.editorState = 'normal';
+    editorPanel.classList.remove('collapsed', 'expanded');
+    previewPanel.classList.remove('hidden');
+    document.getElementById('btnToggleEditor').textContent = '⬜';
+  }
+}
+
+function clearCode() {
+  if (!confirm('Limpar todo o código atual?')) return;
+  if (state.mode === 'react') state.jsx = '';
+  else if (state.mode === 'python') state.python = '';
+  else { state.html = ''; state.css = ''; state.js = ''; }
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  showToast('🗑️ Código limpo!');
+}
+
+function resetCode() {
+  if (!confirm('Resetar para o código padrão?')) return;
+  if (state.mode === 'react') {
+    state.jsx = `function App() {\n  const [count, setCount] = React.useState(0);\n  return (\n    &lt;div style={{padding:40,fontFamily:'sans-serif',textAlign:'center'}}&gt;\n      &lt;h1&gt;⚛️ React no Playground&lt;/h1&gt;\n      &lt;p&gt;Contador: &lt;strong&gt;{count}&lt;/strong&gt;&lt;/p&gt;\n      &lt;button onClick={() =&gt; setCount(count + 1)}&gt;\n        Incrementar\n      &lt;/button&gt;\n    &lt;/div&gt;\n  );\n}`;
+  } else if (state.mode === 'python') {
+    state.python = `# Python\ndados = [&quot;João&quot;, &quot;Maria&quot;, &quot;Pedro&quot;]\nfor i, nome in enumerate(dados, 1):\n    print(f&quot;{i}. {nome}&quot;)`;
+  } else {
+    state.html = `&lt;div style=&quot;max-width:600px;margin:40px auto;padding:20px;&quot;&gt;\n  &lt;h1&gt;Bem-vindo!&lt;/h1&gt;\n  &lt;p&gt;Cole seu código aqui.&lt;/p&gt;\n&lt;/div&gt;`;
+    state.css = '';
+    state.js = '';
+  }
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  showToast('🔄 Código resetado!');
+}
+
+// ========== PROJECT MANAGEMENT ==========
+function getProjects() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function setProjects(list) {
+  localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+function saveToLocal() {
+  const projects = getProjects();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const item = {
+    id,
+    title: state.title || 'Sem titulo',
+    mode: state.mode,
+    html: state.html,
+    css: state.css,
+    js: state.js,
+    jsx: state.jsx,
+    python: state.python,
+    date: new Date().toISOString()
+  };
+  projects.unshift(item);
+  setProjects(projects);
+  showToast('💾 Projeto salvo!');
+}
+
+function openSavedModal() {
+  document.getElementById('savedModal').classList.add('open');
+  renderSavedList();
+}
+
+function closeSavedModal() {
+  document.getElementById('savedModal').classList.remove('open');
+}
+
+function renderSavedList() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const projects = getProjects().filter(s =&gt; s.title.toLowerCase().includes(query));
+  const container = document.getElementById('savedList');
+  
+  if (projects.length === 0) {
+    container.innerHTML = '&lt;p style=&quot;text-align:center;color:var(--text2);font-size:12px;padding:20px;&quot;&gt;Nenhum projeto salvo.&lt;/p&gt;';
+    return;
+  }
+  
+  container.innerHTML = projects.map(s =&gt; `
+    &lt;div class=&quot;snippet-item&quot; onclick=&quot;loadProject('${s.id}')&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;name&quot;&gt;${escapeHtml(s.title)}&lt;/div&gt;
+        &lt;div class=&quot;meta&quot;&gt;${s.mode || 'html'} • ${new Date(s.date).toLocaleDateString('pt-BR')} ${new Date(s.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;snippet-actions&quot;&gt;
+        &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();renameProject('${s.id}')&quot; title=&quot;Renomear&quot;&gt;✏️&lt;/button&gt;
+        &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();deleteProject('${s.id}')&quot; title=&quot;Excluir&quot;&gt;🗑️&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `).join('');
+}
+
+function loadProject(id) {
+  const projects = getProjects();
+  const p = projects.find(x =&gt; x.id === id);
+  if (!p) return;
+  
+  Object.assign(state, {
+    title: p.title,
+    mode: p.mode || 'html',
+    html: p.html || '',
+    css: p.css || '',
+    js: p.js || '',
+    jsx: p.jsx || '',
+    python: p.python || ''
+  });
+  
+  titleInput.value = state.title;
+  switchMode(state.mode);
+  closeSavedModal();
+  showToast('📂 &quot;' + p.title + '&quot; carregado!');
+}
+
+function deleteProject(id) {
+  if (!confirm('Excluir este projeto?')) return;
+  const projects = getProjects().filter(s =&gt; s.id !== id);
+  setProjects(projects);
+  renderSavedList();
+  showToast('🗑️ Projeto excluído!');
+}
+
+function renameProject(id) {
+  const projects = getProjects();
+  const p = projects.find(x =&gt; x.id === id);
+  if (!p) return;
+  const newName = prompt('Novo nome:', p.title);
+  if (newName &amp;&amp; newName.trim()) {
+    p.title = newName.trim();
+    setProjects(projects);
+    renderSavedList();
+    showToast('✏️ Renomeado!');
+  }
+}
+
+// ========== AI HELPER ==========
+function openAIHelper() {
+  document.getElementById('aiModal').classList.add('open');
+  document.getElementById('aiResponse').innerHTML = '';
+  setTimeout(() =&gt; document.getElementById('aiPrompt').focus(), 100);
+}
+
+function closeAIHelper() {
+  document.getElementById('aiModal').classList.remove('open');
+}
+
+function askAI() {
+  const prompt = document.getElementById('aiPrompt').value.trim();
+  if (!prompt) {
+    showToast('⚠️ Digite uma pergunta primeiro');
+    return;
+  }
+  
+  const responseDiv = document.getElementById('aiResponse');
+  responseDiv.innerHTML = '&lt;div class=&quot;loading&quot;&gt;&lt;/div&gt; &lt;span style=&quot;color:var(--text2);&quot;&gt;Pensando...&lt;/span&gt;';
+  
+  // Simulate AI response (replace with real API call)
+  setTimeout(() =&gt; {
+    const mockResponse = `🤖 Resposta da IA:\n\nPara &quot;${prompt}&quot;, aqui está uma sugestão:\n\n// Exemplo de código\nconst elemento = document.querySelector('.minha-div');\nelemento.style.display = 'flex';\nelemento.style.justifyContent = 'center';\nelemento.style.alignItems = 'center';\n\n💡 Dica: Você também pode usar Flexbox ou Grid para centralização mais robusta!\n\n⚠️ Nota: Esta é uma resposta simulada. Para respostas reais, integre uma API de IA (OpenAI, Claude, Gemini, etc).`;
+    
+    responseDiv.innerHTML = `&lt;div class=&quot;ai-response&quot;&gt;${escapeHtml(mockResponse)}&lt;/div&gt;`;
+  }, 1500);
+}
+
+// ========== UTILS ==========
+function escapeHtml(str) {
+  return str.replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(/&gt;/g,'&amp;gt;').replace(/&quot;/g,'&amp;quot;');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() =&gt; toast.classList.remove('show'), 2800);
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay =&gt; {
+  overlay.addEventListener('click', (e) =&gt; {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</div>
+
+<div class="project-container " id="projeto2">
+  <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Playground Code Pro + IA — Maikon Caldeira&lt;/title&gt;
+&lt;style&gt;
+:root {
+  --bg: #0f172a;
+  --bg2: #1e293b;
+  --bg3: #334155;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --accent: #a3a082;
+  --accent2: #d4d0a8;
+  --blue: #3b82f6;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --purple: #a78bfa;
+  --border: #334155;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+.header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 6px; }
+.header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.header-right { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.logo { font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: -0.5px; }
+.logo small { font-size: 9px; color: var(--text2); font-weight: 400; letter-spacing: 1px; display: block; }
+
+/* Inputs */
+.title-input { background: transparent; border: 1px solid transparent; color: var(--text); font-size: 12px; padding: 4px 8px; border-radius: 6px; width: 180px; transition: border-color 0.2s; }
+.title-input:focus { outline: none; border-color: var(--accent); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn-icon { padding: 6px; border-radius: 6px; background: transparent; border: none; color: var(--text2); cursor: pointer; transition: all 0.15s; font-size: 14px; }
+.btn-icon:hover { background: var(--bg3); color: var(--text); }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-mode { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.btn-mode.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* AI Button Special */
+.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; animation: aiPulse 2s infinite; }
+.btn-ai:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+.btn-ai.disabled { opacity: 0.5; cursor: not-allowed; animation: none; }
+@keyframes aiPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
+
+/* Settings Button */
+.btn-settings { background: var(--bg3); color: var(--text2); }
+.btn-settings:hover { background: var(--purple); color: white; }
+
+/* Mode selector */
+.mode-group { display: flex; gap: 2px; background: var(--bg); padding: 2px; border-radius: 8px; border: 1px solid var(--border); }
+
+/* Tabs */
+.tabs-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.tabs { display: flex; gap: 2px; }
+.tab { padding: 5px 12px; font-size: 11px; font-weight: 600; border: none; background: transparent; color: var(--text2); cursor: pointer; border-radius: 6px; transition: all 0.15s; }
+.tab.active { background: var(--bg3); color: var(--text); }
+.tab:hover:not(.active) { color: var(--text); }
+.tab-info { font-size: 10px; color: var(--text2); display: flex; gap: 8px; align-items: center; }
+
+/* Main layout */
+.main { display: flex; flex: 1; overflow: hidden; }
+.editor-panel { display: flex; flex-direction: column; width: 50%; border-right: 1px solid var(--border); transition: width 0.3s; }
+.editor-panel.collapsed { width: 0; overflow: hidden; border: none; }
+.editor-panel.expanded { width: 100%; }
+.preview-panel { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.preview-panel.hidden { display: none; }
+
+/* Editor */
+.editor-wrap { flex: 1; position: relative; overflow: hidden; display: flex; }
+.line-numbers { width: 50px; background: rgba(30,41,59,0.8); padding: 12px 8px 12px 0; text-align: right; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 12px; line-height: 1.65; color: var(--text2); overflow: hidden; user-select: none; border-right: 1px solid var(--border); flex-shrink: 0; }
+.line-numbers .line { padding: 0 4px; cursor: pointer; transition: all 0.15s; }
+.line-numbers .line:hover { background: rgba(163, 160, 130, 0.1); color: var(--accent); }
+.line-numbers .line.current { background: rgba(163, 160, 130, 0.2); color: var(--accent2); font-weight: 700; }
+.editor-textarea { flex: 1; resize: none; background: var(--bg); color: var(--text); font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.65; padding: 12px; border: none; outline: none; tab-size: 2; }
+
+/* Preview */
+.preview-header { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.preview-header .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.preview-frame { flex: 1; border: none; background: #fff; }
+
+/* Dialog/Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; position: relative; }
+.modal h3 { font-size: 18px; margin-bottom: 16px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+.modal-close { position: absolute; top: 16px; right: 16px; }
+
+/* Form elements */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+.form-input, .form-select { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; }
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); }
+.form-input::placeholder { color: var(--text2); opacity: 0.5; }
+.form-checkbox { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.form-checkbox input { width: 18px; height: 18px; cursor: pointer; }
+
+/* AI Panel */
+.ai-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; }
+.ai-panel textarea { width: 100%; min-height: 120px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 10px; font-size: 12px; font-family: inherit; resize: vertical; }
+.ai-panel textarea:focus { outline: none; border-color: var(--accent); }
+.ai-response { margin-top: 12px; padding: 14px; background: var(--bg2); border-left: 3px solid var(--purple); border-radius: 6px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+.ai-controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+/* Status indicators */
+.status-indicator { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+.status-indicator.success { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+.status-indicator.error { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+.status-indicator.warning { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+
+/* Snippet list */
+.snippet-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+.snippet-item:hover { border-color: var(--accent); background: var(--bg3); transform: translateX(4px); }
+.snippet-item .name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.snippet-item .meta { font-size: 10px; color: var(--text2); }
+.snippet-actions { display: flex; gap: 4px; }
+
+/* Search */
+.search-input { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; margin-bottom: 16px; }
+.search-input:focus { outline: none; border-color: var(--accent); }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: 12px 20px; font-size: 12px; font-weight: 600; color: var(--accent2); z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Status badge */
+.status-badge { font-size: 9px; padding: 3px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.status-badge.html { background: rgba(239,68,68,0.15); color: var(--red); }
+.status-badge.react { background: rgba(59,130,246,0.15); color: var(--blue); }
+.status-badge.python { background: rgba(251,191,36,0.15); color: var(--yellow); }
+
+/* Loading */
+.loading { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main { flex-direction: column; }
+  .editor-panel { width: 100% !important; height: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+  .editor-panel.collapsed { height: 0; }
+  .editor-panel.expanded { height: 100%; }
+  .preview-panel { height: 50%; }
+  .hide-mobile { display: none !important; }
+  .title-input { width: 120px; }
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- Header --&gt;
+&lt;header class=&quot;header&quot;&gt;
+  &lt;div class=&quot;header-left&quot;&gt;
+    &lt;div class=&quot;logo&quot;&gt;⚡ Playground Pro &lt;small&gt;Maikon Caldeira — AI-Powered Code Editor&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;mode-group&quot;&gt;
+      &lt;button class=&quot;btn-mode active&quot; id=&quot;modeHtml&quot; onclick=&quot;switchMode('html')&quot;&gt;🌐 HTML&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modeReact&quot; onclick=&quot;switchMode('react')&quot;&gt;⚛️ React&lt;/button&gt;
+      &lt;button class=&quot;btn-mode&quot; id=&quot;modePython&quot; onclick=&quot;switchMode('python')&quot;&gt;🐍 Python&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;input type=&quot;text&quot; class=&quot;title-input&quot; id=&quot;projectTitle&quot; value=&quot;Sem titulo&quot; placeholder=&quot;Nome do projeto...&quot; /&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;header-right&quot;&gt;
+    &lt;button class=&quot;btn btn-settings&quot; onclick=&quot;openSettings()&quot; title=&quot;Configurações de IA&quot;&gt;⚙️ Config&lt;/button&gt;
+    &lt;button class=&quot;btn btn-ai&quot; id=&quot;btnAI&quot; onclick=&quot;openAIHelper()&quot; title=&quot;Assistente IA&quot;&gt;🤖 IA&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openGotoLine()&quot; title=&quot;Ir para linha (Ctrl+G)&quot;&gt;🔍&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;importFile()&quot; title=&quot;Importar arquivo&quot;&gt;📂&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;toggleFullscreen()&quot; title=&quot;Tela cheia&quot;&gt;🔳&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;copyCode()&quot; title=&quot;Copiar código&quot;&gt;📋&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;downloadFile()&quot; title=&quot;Baixar&quot;&gt;⬇️&lt;/button&gt;
+    &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;saveToLocal()&quot; title=&quot;Salvar projeto&quot;&gt;💾 Salvar&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;openSavedModal()&quot; title=&quot;Meus projetos&quot;&gt;📁&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;resetCode()&quot; title=&quot;Resetar&quot;&gt;🔄&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;clearCode()&quot; title=&quot;Limpar&quot;&gt;🗑️&lt;/button&gt;
+    &lt;button class=&quot;btn-icon&quot; onclick=&quot;toggleEditor()&quot; id=&quot;btnToggleEditor&quot; title=&quot;Ampliar/Reduzir&quot;&gt;⬜&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/header&gt;
+
+&lt;!-- Tabs --&gt;
+&lt;div class=&quot;tabs-bar&quot;&gt;
+  &lt;div class=&quot;tabs&quot; id=&quot;tabsContainer&quot;&gt;
+    &lt;button class=&quot;tab active&quot; id=&quot;tabHtml&quot; onclick=&quot;switchTab('html')&quot;&gt;📄 HTML&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; id=&quot;tabJs&quot; onclick=&quot;switchTab('js')&quot;&gt;⚙️ JS&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;tab-info&quot;&gt;
+    &lt;span id=&quot;lineCount&quot;&gt;1 linhas&lt;/span&gt;
+    &lt;span&gt;•&lt;/span&gt;
+    &lt;span id=&quot;cursorPos&quot;&gt;Ln 1, Col 1&lt;/span&gt;
+    &lt;span class=&quot;status-badge html&quot; id=&quot;modeBadge&quot;&gt;HTML&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Main --&gt;
+&lt;div class=&quot;main&quot;&gt;
+  &lt;div class=&quot;editor-panel&quot; id=&quot;editorPanel&quot;&gt;
+    &lt;div class=&quot;editor-wrap&quot;&gt;
+      &lt;div class=&quot;line-numbers&quot; id=&quot;lineNumbers&quot;&gt;&lt;/div&gt;
+      &lt;textarea class=&quot;editor-textarea&quot; id=&quot;editor&quot; spellcheck=&quot;false&quot; placeholder=&quot;Cole ou digite seu código aqui...&quot;&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;preview-panel&quot; id=&quot;previewPanel&quot;&gt;
+    &lt;div class=&quot;preview-header&quot;&gt;
+      &lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;
+      &lt;span style=&quot;font-size:11px;color:var(--text2);font-weight:600;&quot;&gt;Resultado ao vivo&lt;/span&gt;
+      &lt;span id=&quot;autoLabel&quot; style=&quot;font-size:9px;color:var(--green);margin-left:auto;&quot;&gt;● AUTO&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;iframe class=&quot;preview-frame&quot; id=&quot;previewFrame&quot; sandbox=&quot;allow-scripts allow-modals allow-forms allow-popups&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Hidden file input --&gt;
+&lt;input type=&quot;file&quot; id=&quot;fileInput&quot; style=&quot;display:none&quot; accept=&quot;.html,.htm,.css,.js,.jsx,.tsx,.py,.txt&quot; /&gt;
+
+&lt;!-- Modal: Settings --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;settingsModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;button class=&quot;btn-icon modal-close&quot; onclick=&quot;closeSettings()&quot;&gt;✕&lt;/button&gt;
+    &lt;h3&gt;⚙️ Configurações de IA&lt;/h3&gt;
+    
+    &lt;div class=&quot;form-group&quot;&gt;
+      &lt;label&gt;Provedor de IA&lt;/label&gt;
+      &lt;select class=&quot;form-select&quot; id=&quot;aiProvider&quot;&gt;
+        &lt;option value=&quot;openai&quot;&gt;OpenAI (GPT-4, GPT-3.5)&lt;/option&gt;
+        &lt;option value=&quot;gemini&quot;&gt;Google Gemini&lt;/option&gt;
+        &lt;option value=&quot;claude&quot;&gt;Anthropic Claude&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+    
+    &lt;div class=&quot;form-group&quot;&gt;
+      &lt;label&gt;Chave da API (API Key)&lt;/label&gt;
+      &lt;input type=&quot;password&quot; class=&quot;form-input&quot; id=&quot;apiKey&quot; placeholder=&quot;sk-...&quot;&gt;
+      &lt;small style=&quot;color:var(--text2);font-size:10px;display:block;margin-top:4px;&quot;&gt;
+        🔒 Sua chave fica salva apenas no seu navegador (localStorage)
+      &lt;/small&gt;
+    &lt;/div&gt;
+    
+    &lt;div class=&quot;form-group&quot;&gt;
+      &lt;label class=&quot;form-checkbox&quot;&gt;
+        &lt;input type=&quot;checkbox&quot; id=&quot;enableWebSearch&quot;&gt;
+        &lt;span&gt;🌐 Habilitar busca na internet&lt;/span&gt;
+      &lt;/label&gt;
+      &lt;small style=&quot;color:var(--text2);font-size:10px;display:block;margin-left:26px;&quot;&gt;
+        A IA poderá buscar informações atualizadas online
+      &lt;/small&gt;
+    &lt;/div&gt;
+    
+    &lt;div class=&quot;form-group&quot;&gt;
+      &lt;label class=&quot;form-checkbox&quot;&gt;
+        &lt;input type=&quot;checkbox&quot; id=&quot;enableTTS&quot;&gt;
+        &lt;span&gt;🔊 Habilitar Text-to-Speech (IA fala)&lt;/span&gt;
+      &lt;/label&gt;
+      &lt;small style=&quot;color:var(--text2);font-size:10px;display:block;margin-left:26px;&quot;&gt;
+        As respostas da IA serão lidas em voz alta
+      &lt;/small&gt;
+    &lt;/div&gt;
+    
+    &lt;div id=&quot;settingsStatus&quot; style=&quot;margin-top:12px;&quot;&gt;&lt;/div&gt;
+    
+    &lt;div style=&quot;display:flex;gap:8px;margin-top:20px;justify-content:flex-end;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeSettings()&quot;&gt;Cancelar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;saveSettings()&quot;&gt;💾 Salvar&lt;/button&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;testAI()&quot;&gt;🧪 Testar&lt;/button&gt;
+    &lt;/div&gt;
+    
+    &lt;div style=&quot;margin-top:20px;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);&quot;&gt;
+      &lt;p style=&quot;font-size:11px;color:var(--text2);line-height:1.6;&quot;&gt;
+        &lt;strong&gt;📚 Como obter sua API Key:&lt;/strong&gt;&lt;br&gt;
+        • &lt;strong&gt;OpenAI:&lt;/strong&gt; &lt;a href=&quot;https://platform.openai.com/api-keys&quot; target=&quot;_blank&quot; style=&quot;color:var(--blue);&quot;&gt;platform.openai.com/api-keys&lt;/a&gt;&lt;br&gt;
+        • &lt;strong&gt;Gemini:&lt;/strong&gt; &lt;a href=&quot;https://makersuite.google.com/app/apikey&quot; target=&quot;_blank&quot; style=&quot;color:var(--blue);&quot;&gt;makersuite.google.com/app/apikey&lt;/a&gt;&lt;br&gt;
+        • &lt;strong&gt;Claude:&lt;/strong&gt; &lt;a href=&quot;https://console.anthropic.com/settings/keys&quot; target=&quot;_blank&quot; style=&quot;color:var(--blue);&quot;&gt;console.anthropic.com/settings/keys&lt;/a&gt;
+      &lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Modal: AI Helper --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;aiModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;button class=&quot;btn-icon modal-close&quot; onclick=&quot;closeAIHelper()&quot;&gt;✕&lt;/button&gt;
+    &lt;h3&gt;🤖 Assistente IA&lt;/h3&gt;
+    
+    &lt;div id=&quot;aiStatusBar&quot; style=&quot;margin-bottom:12px;&quot;&gt;&lt;/div&gt;
+    
+    &lt;div class=&quot;ai-panel&quot;&gt;
+      &lt;textarea id=&quot;aiPrompt&quot; placeholder=&quot;Ex: Como posso centralizar essa div? Ou: Crie um botão animado com hover...&quot;&gt;&lt;/textarea&gt;
+      
+      &lt;div class=&quot;ai-controls&quot;&gt;
+        &lt;button class=&quot;btn btn-ai&quot; onclick=&quot;askAI()&quot; id=&quot;btnAskAI&quot;&gt;
+          &lt;span id=&quot;askBtnText&quot;&gt;✨ Perguntar IA&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;includeCode()&quot; title=&quot;Incluir código atual na pergunta&quot;&gt;
+          📝 Incluir código
+        &lt;/button&gt;
+        &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;clearAIChat()&quot;&gt;🗑️ Limpar&lt;/button&gt;
+        &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeAIHelper()&quot;&gt;Fechar&lt;/button&gt;
+      &lt;/div&gt;
+      
+      &lt;div id=&quot;aiResponse&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Modal: Saved Projects --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;savedModal&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;button class=&quot;btn-icon modal-close&quot; onclick=&quot;closeSavedModal()&quot;&gt;✕&lt;/button&gt;
+    &lt;h3&gt;📁 Meus Projetos&lt;/h3&gt;
+    &lt;input type=&quot;text&quot; class=&quot;search-input&quot; id=&quot;searchInput&quot; placeholder=&quot;🔍 Buscar...&quot; oninput=&quot;renderSavedList()&quot; /&gt;
+    &lt;div id=&quot;savedList&quot;&gt;&lt;/div&gt;
+    &lt;div style=&quot;text-align:right;margin-top:16px;&quot;&gt;
+      &lt;button class=&quot;btn btn-ghost&quot; onclick=&quot;closeSavedModal()&quot;&gt;Fechar&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Modal: Go to Line --&gt;
+&lt;div class=&quot;modal-overlay&quot; id=&quot;gotoModal&quot;&gt;
+  &lt;div class=&quot;modal&quot; style=&quot;max-width:400px;&quot;&gt;
+    &lt;button class=&quot;btn-icon modal-close&quot; onclick=&quot;closeGotoLine()&quot;&gt;✕&lt;/button&gt;
+    &lt;h3&gt;🔍 Ir para Linha&lt;/h3&gt;
+    &lt;div style=&quot;display:flex;gap:8px;margin-bottom:12px;&quot;&gt;
+      &lt;input type=&quot;number&quot; id=&quot;gotoLineInput&quot; class=&quot;form-input&quot; placeholder=&quot;Número da linha...&quot; min=&quot;1&quot; style=&quot;flex:1;&quot; /&gt;
+      &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;gotoLine()&quot;&gt;Ir&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p style=&quot;font-size:11px;color:var(--text2);&quot;&gt;Dica: Use &lt;strong&gt;Ctrl+G&lt;/strong&gt;&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Toast --&gt;
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// ========== STATE ==========
+const LS_KEY = 'playground-projects-v3';
+const AUTOSAVE_KEY = 'playground-autosave-v3';
+const SETTINGS_KEY = 'playground-ai-settings-v3';
+
+let state = {
+  mode: 'html',
+  activeTab: 'html',
+  html: `&lt;div style=&quot;max-width:600px;margin:40px auto;padding:20px;font-family:sans-serif;&quot;&gt;
+  &lt;h1 style=&quot;color:#333;&quot;&gt;Bem-vindo ao Playground Pro&lt;/h1&gt;
+  &lt;p style=&quot;color:#666;margin:16px 0;&quot;&gt;Cole seu código HTML aqui!&lt;/p&gt;
+  &lt;button onclick=&quot;alert('Funcionou!')&quot; style=&quot;padding:10px 24px;font-size:16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;&quot;&gt;Clique&lt;/button&gt;
+&lt;/div&gt;`,
+  css: '',
+  js: `console.log(&quot;Hello from Playground Pro!&quot;);`,
+  jsx: `function App() {\n  const [count, setCount] = React.useState(0);\n  return (\n    &lt;div style={{padding:40,textAlign:'center'}}&gt;\n      &lt;h1&gt;⚛️ React&lt;/h1&gt;\n      &lt;p&gt;Contador: {count}&lt;/p&gt;\n      &lt;button onClick={() =&gt; setCount(count + 1)}&gt;+&lt;/button&gt;\n    &lt;/div&gt;\n  );\n}`,
+  python: `print(&quot;Hello from Python!&quot;)`,
+  title: 'Sem titulo',
+  editorState: 'normal',
+  currentLine: 1
+};
+
+let aiSettings = {
+  provider: 'openai',
+  apiKey: '',
+  enableWebSearch: false,
+  enableTTS: false
+};
+
+// Load saved data
+try {
+  const saved = localStorage.getItem(AUTOSAVE_KEY);
+  if (saved) Object.assign(state, JSON.parse(saved));
+  
+  const savedSettings = localStorage.getItem(SETTINGS_KEY);
+  if (savedSettings) Object.assign(aiSettings, JSON.parse(savedSettings));
+} catch(e) {}
+
+// ========== DOM REFS ==========
+const editor = document.getElementById('editor');
+const previewFrame = document.getElementById('previewFrame');
+const lineNumbers = document.getElementById('lineNumbers');
+const titleInput = document.getElementById('projectTitle');
+const editorPanel = document.getElementById('editorPanel');
+const previewPanel = document.getElementById('previewPanel');
+const fileInput = document.getElementById('fileInput');
+
+// ========== INIT ==========
+titleInput.value = state.title;
+updateTabs();
+loadEditorContent();
+updatePreview();
+updateAIButton();
+
+// ========== EDITOR EVENTS ==========
+editor.addEventListener('input', () =&gt; {
+  saveCurrentTab();
+  updateLineNumbers();
+  updateCursorPosition();
+  autoSave();
+  debouncePreview();
+});
+
+editor.addEventListener('scroll', () =&gt; {
+  lineNumbers.scrollTop = editor.scrollTop;
+});
+
+editor.addEventListener('click', updateCursorPosition);
+editor.addEventListener('keyup', updateCursorPosition);
+
+editor.addEventListener('keydown', (e) =&gt; {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+    editor.selectionStart = editor.selectionEnd = start + 2;
+    saveCurrentTab();
+  }
+  
+  if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 'g') {
+    e.preventDefault();
+    openGotoLine();
+  }
+  
+  if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 's') {
+    e.preventDefault();
+    saveToLocal();
+  }
+});
+
+titleInput.addEventListener('input', () =&gt; {
+  state.title = titleInput.value;
+  autoSave();
+});
+
+// ========== LINE NUMBERS ==========
+function updateLineNumbers() {
+  const lines = editor.value.split('\n');
+  const totalLines = lines.length;
+  document.getElementById('lineCount').textContent = totalLines + ' linhas';
+  
+  lineNumbers.innerHTML = lines.map((_, i) =&gt; {
+    const lineNum = i + 1;
+    const isCurrent = lineNum === state.currentLine;
+    return `&lt;div class=&quot;line ${isCurrent ? 'current' : ''}&quot; onclick=&quot;jumpToLine(${lineNum})&quot;&gt;${lineNum}&lt;/div&gt;`;
+  }).join('');
+}
+
+function updateCursorPosition() {
+  const pos = editor.selectionStart;
+  const textBefore = editor.value.substring(0, pos);
+  const lines = textBefore.split('\n');
+  const line = lines.length;
+  const col = lines[lines.length - 1].length + 1;
+  
+  state.currentLine = line;
+  document.getElementById('cursorPos').textContent = `Ln ${line}, Col ${col}`;
+  updateLineNumbers();
+}
+
+function jumpToLine(lineNum) {
+  const lines = editor.value.split('\n');
+  let pos = 0;
+  for (let i = 0; i &lt; lineNum - 1 &amp;&amp; i &lt; lines.length; i++) {
+    pos += lines[i].length + 1;
+  }
+  editor.focus();
+  editor.setSelectionRange(pos, pos);
+  updateCursorPosition();
+}
+
+function openGotoLine() {
+  document.getElementById('gotoModal').classList.add('open');
+  setTimeout(() =&gt; {
+    const input = document.getElementById('gotoLineInput');
+    input.value = '';
+    input.max = editor.value.split('\n').length;
+    input.focus();
+  }, 100);
+}
+
+function closeGotoLine() {
+  document.getElementById('gotoModal').classList.remove('open');
+}
+
+function gotoLine() {
+  const lineNum = parseInt(document.getElementById('gotoLineInput').value);
+  if (lineNum &amp;&amp; lineNum &gt; 0) {
+    jumpToLine(lineNum);
+    closeGotoLine();
+    showToast(`📍 Linha ${lineNum}`);
+  }
+}
+
+// ========== TABS &amp; MODES ==========
+function saveCurrentTab() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' &amp;&amp; tab === 'jsx') state.jsx = editor.value;
+  else if (state.mode === 'python' &amp;&amp; tab === 'python') state.python = editor.value;
+  else if (tab === 'html') state.html = editor.value;
+  else if (tab === 'css') state.css = editor.value;
+  else if (tab === 'js') state.js = editor.value;
+}
+
+function loadEditorContent() {
+  const tab = state.activeTab;
+  if (state.mode === 'react' &amp;&amp; tab === 'jsx') editor.value = state.jsx;
+  else if (state.mode === 'python' &amp;&amp; tab === 'python') editor.value = state.python;
+  else if (tab === 'html') editor.value = state.html;
+  else if (tab === 'css') editor.value = state.css;
+  else if (tab === 'js') editor.value = state.js;
+  else editor.value = '';
+  updateLineNumbers();
+  updateCursorPosition();
+}
+
+function switchTab(tab) {
+  saveCurrentTab();
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t =&gt; t.classList.remove('active'));
+  const tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (tabEl) tabEl.classList.add('active');
+  loadEditorContent();
+}
+
+function updateTabs() {
+  const container = document.getElementById('tabsContainer');
+  const badge = document.getElementById('modeBadge');
+  
+  if (state.mode === 'html') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='html'?'active':''}&quot; id=&quot;tabHtml&quot; onclick=&quot;switchTab('html')&quot;&gt;📄 HTML&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='js'?'active':''}&quot; id=&quot;tabJs&quot; onclick=&quot;switchTab('js')&quot;&gt;⚙️ JS&lt;/button&gt;
+    `;
+    badge.className = 'status-badge html';
+    badge.textContent = 'HTML';
+  } else if (state.mode === 'react') {
+    container.innerHTML = `
+      &lt;button class=&quot;tab ${state.activeTab==='jsx'?'active':''}&quot; id=&quot;tabJsx&quot; onclick=&quot;switchTab('jsx')&quot;&gt;⚛️ JSX&lt;/button&gt;
+      &lt;button class=&quot;tab ${state.activeTab==='css'?'active':''}&quot; id=&quot;tabCss&quot; onclick=&quot;switchTab('css')&quot;&gt;🎨 CSS&lt;/button&gt;
+    `;
+    badge.className = 'status-badge react';
+    badge.textContent = 'REACT';
+  } else if (state.mode === 'python') {
+    container.innerHTML = `&lt;button class=&quot;tab active&quot; id=&quot;tabPython&quot; onclick=&quot;switchTab('python')&quot;&gt;🐍 Python&lt;/button&gt;`;
+    badge.className = 'status-badge python';
+    badge.textContent = 'PYTHON';
+  }
+}
+
+function switchMode(mode) {
+  saveCurrentTab();
+  state.mode = mode;
+  
+  document.querySelectorAll('.btn-mode').forEach(b =&gt; b.classList.remove('active'));
+  document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  
+  if (mode === 'html') state.activeTab = 'html';
+  else if (mode === 'react') state.activeTab = 'jsx';
+  else if (mode === 'python') state.activeTab = 'python';
+  
+  updateTabs();
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+}
+
+// ========== PREVIEW ==========
+let previewTimer = null;
+function debouncePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 400);
+}
+
+function buildDocument() {
+  if (state.mode === 'react') {
+    return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react@18/umd/react.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script crossorigin src=&quot;https://unpkg.com/react-dom@18/umd/react-dom.development.js&quot;&gt;&lt;\/script&gt;
+&lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;\/script&gt;
+&lt;style&gt;*{box-sizing:border-box;}body{margin:0;font-family:sans-serif;}${state.css}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+&lt;script type=&quot;text/babel&quot;&gt;
+const { useState, useEffect, useRef } = React;
+${state.jsx}
+try {
+  const _root = ReactDOM.createRoot(document.getElementById('root'));
+  _root.render(&lt;App /&gt;);
+} catch(e) {
+  document.getElementById('root').innerHTML = '&lt;div style=&quot;color:red;padding:20px&quot;&gt;Erro: '+e.message+'&lt;/div&gt;';
+}
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  if (state.mode === 'python') {
+    const escapedCode = state.python.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/&lt;\/script&gt;/g,'&lt;\\/script&gt;');
+    return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;style&gt;body{margin:0;background:#0f172a;color:#e2e8f0;font-family:monospace;padding:20px;}#output{white-space:pre-wrap;}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;div id=&quot;output&quot;&gt;⟳ Carregando Python...&lt;/div&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js&quot;&gt;&lt;\/script&gt;
+&lt;script&gt;
+async function main() {
+  const out = document.getElementById('output');
+  try {
+    const pyodide = await loadPyodide();
+    out.innerHTML = '';
+    pyodide.runPython('import sys; from io import StringIO; sys.stdout = StringIO()');
+    pyodide.runPython(\`${escapedCode}\`);
+    const stdout = pyodide.runPython('sys.stdout.getvalue()');
+    out.textContent = stdout || '(sem output)';
+  } catch(e) {
+    out.innerHTML = '&lt;span style=&quot;color:#f87171&quot;&gt;Erro: ' + e.message + '&lt;/span&gt;';
+  }
+}
+main();
+&lt;\/script&gt;&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  const lower = state.html.trim().toLowerCase();
+  const isComplete = lower.includes('&lt;!doctype') || (lower.includes('&lt;html') &amp;&amp; lower.includes('&lt;/html&gt;'));
+  
+  if (isComplete) return state.html;
+  
+  return `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;style&gt;${state.css}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+${state.html}
+&lt;script&gt;${state.js}&lt;\/script&gt;
+&lt;/body&gt;&lt;/html&gt;`;
+}
+
+function updatePreview() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  previewFrame.src = url;
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function autoSave() {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+// ========== FILE OPERATIONS ==========
+function copyCode() {
+  const doc = buildDocument();
+  navigator.clipboard.writeText(doc).then(() =&gt; showToast('📋 Copiado!'));
+}
+
+function downloadFile() {
+  let content, ext, mime;
+  if (state.mode === 'python') { content = state.python; ext = 'py'; mime = 'text/plain'; }
+  else if (state.mode === 'react') { content = state.jsx; ext = 'jsx'; mime = 'text/plain'; }
+  else { content = buildDocument(); ext = 'html'; mime = 'text/html'; }
+  
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (state.title || 'playground') + '.' + ext;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Baixado!');
+}
+
+function toggleFullscreen() {
+  const doc = buildDocument();
+  const blob = new Blob([doc], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() =&gt; URL.revokeObjectURL(url), 5000);
+}
+
+function importFile() {
+  fileInput.click();
+}
+
+fileInput.addEventListener('change', (e) =&gt; {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) =&gt; {
+    const content = ev.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const name = file.name.replace(/\.[^.]+$/, '');
+    
+    if (ext === 'py') {
+      switchMode('python');
+      state.python = content;
+    } else if (ext === 'jsx' || ext === 'tsx') {
+      switchMode('react');
+      state.jsx = content;
+    } else if (ext === 'css') {
+      state.css = content;
+      if (state.mode === 'html') switchTab('css');
+    } else if (ext === 'js') {
+      state.js = content;
+      if (state.mode === 'html') switchTab('js');
+    } else {
+      const lower = content.trim().toLowerCase();
+      if (lower.includes('&lt;!doctype') || lower.includes('&lt;html')) {
+        const htmlMatch = content.match(/&lt;body[^&gt;]*&gt;([\s\S]*)&lt;\/body&gt;/i);
+        const cssMatch = content.match(/&lt;style[^&gt;]*&gt;([\s\S]*?)&lt;\/style&gt;/i);
+        const jsMatch = content.match(/&lt;script[^&gt;]*&gt;([\s\S]*?)&lt;\/script&gt;/i);
+        
+        state.html = htmlMatch ? htmlMatch[1].trim() : content;
+        state.css = cssMatch ? cssMatch[1].trim() : '';
+        state.js = jsMatch ? jsMatch[1].trim() : '';
+      } else {
+        state.html = content;
+      }
+      switchMode('html');
+    }
+    
+    state.title = name;
+    titleInput.value = name;
+    loadEditorContent();
+    updatePreview();
+    autoSave();
+    showToast('📂 Importado!');
+  };
+  reader.readAsText(file);
+  fileInput.value = '';
+});
+
+function toggleEditor() {
+  if (state.editorState === 'normal') {
+    state.editorState = 'expanded';
+    editorPanel.classList.add('expanded');
+    previewPanel.classList.add('hidden');
+    document.getElementById('btnToggleEditor').textContent = '◧';
+  } else if (state.editorState === 'expanded') {
+    state.editorState = 'collapsed';
+    editorPanel.classList.remove('expanded');
+    editorPanel.classList.add('collapsed');
+    previewPanel.classList.remove('hidden');
+    document.getElementById('btnToggleEditor').textContent = '◨';
+  } else {
+    state.editorState = 'normal';
+    editorPanel.classList.remove('collapsed', 'expanded');
+    previewPanel.classList.remove('hidden');
+    document.getElementById('btnToggleEditor').textContent = '⬜';
+  }
+}
+
+function clearCode() {
+  if (!confirm('Limpar código?')) return;
+  if (state.mode === 'react') state.jsx = '';
+  else if (state.mode === 'python') state.python = '';
+  else { state.html = ''; state.css = ''; state.js = ''; }
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  showToast('🗑️ Limpo!');
+}
+
+function resetCode() {
+  if (!confirm('Resetar?')) return;
+  if (state.mode === 'react') {
+    state.jsx = `function App() {\n  return &lt;div&gt;React App&lt;/div&gt;;\n}`;
+  } else if (state.mode === 'python') {
+    state.python = `print(&quot;Hello Python!&quot;)`;
+  } else {
+    state.html = `&lt;h1&gt;Hello World&lt;/h1&gt;`;
+    state.css = '';
+    state.js = '';
+  }
+  loadEditorContent();
+  updatePreview();
+  autoSave();
+  showToast('🔄 Resetado!');
+}
+
+// ========== PROJECT MANAGEMENT ==========
+function getProjects() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function setProjects(list) {
+  localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+function saveToLocal() {
+  const projects = getProjects();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const item = {
+    id,
+    title: state.title || 'Sem titulo',
+    mode: state.mode,
+    html: state.html,
+    css: state.css,
+    js: state.js,
+    jsx: state.jsx,
+    python: state.python,
+    date: new Date().toISOString()
+  };
+  projects.unshift(item);
+  setProjects(projects);
+  showToast('💾 Salvo!');
+}
+
+function openSavedModal() {
+  document.getElementById('savedModal').classList.add('open');
+  renderSavedList();
+}
+
+function closeSavedModal() {
+  document.getElementById('savedModal').classList.remove('open');
+}
+
+function renderSavedList() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const projects = getProjects().filter(s =&gt; s.title.toLowerCase().includes(query));
+  const container = document.getElementById('savedList');
+  
+  if (projects.length === 0) {
+    container.innerHTML = '&lt;p style=&quot;text-align:center;color:var(--text2);padding:20px;&quot;&gt;Nenhum projeto.&lt;/p&gt;';
+    return;
+  }
+  
+  container.innerHTML = projects.map(s =&gt; `
+    &lt;div class=&quot;snippet-item&quot; onclick=&quot;loadProject('${s.id}')&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;name&quot;&gt;${escapeHtml(s.title)}&lt;/div&gt;
+        &lt;div class=&quot;meta&quot;&gt;${s.mode || 'html'} • ${new Date(s.date).toLocaleDateString('pt-BR')}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;snippet-actions&quot;&gt;
+        &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();renameProject('${s.id}')&quot;&gt;✏️&lt;/button&gt;
+        &lt;button class=&quot;btn-icon&quot; onclick=&quot;event.stopPropagation();deleteProject('${s.id}')&quot;&gt;🗑️&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `).join('');
+}
+
+function loadProject(id) {
+  const p = getProjects().find(x =&gt; x.id === id);
+  if (!p) return;
+  
+  Object.assign(state, {
+    title: p.title,
+    mode: p.mode || 'html',
+    html: p.html || '',
+    css: p.css || '',
+    js: p.js || '',
+    jsx: p.jsx || '',
+    python: p.python || ''
+  });
+  
+  titleInput.value = state.title;
+  switchMode(state.mode);
+  closeSavedModal();
+  showToast('📂 Carregado!');
+}
+
+function deleteProject(id) {
+  if (!confirm('Excluir?')) return;
+  setProjects(getProjects().filter(s =&gt; s.id !== id));
+  renderSavedList();
+  showToast('🗑️ Excluído!');
+}
+
+function renameProject(id) {
+  const p = getProjects().find(x =&gt; x.id === id);
+  if (!p) return;
+  const newName = prompt('Novo nome:', p.title);
+  if (newName &amp;&amp; newName.trim()) {
+    p.title = newName.trim();
+    setProjects(getProjects());
+    renderSavedList();
+    showToast('✏️ Renomeado!');
+  }
+}
+
+// ========== AI SETTINGS ==========
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('open');
+  document.getElementById('aiProvider').value = aiSettings.provider;
+  document.getElementById('apiKey').value = aiSettings.apiKey;
+  document.getElementById('enableWebSearch').checked = aiSettings.enableWebSearch;
+  document.getElementById('enableTTS').checked = aiSettings.enableTTS;
+  updateSettingsStatus();
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
+function saveSettings() {
+  aiSettings.provider = document.getElementById('aiProvider').value;
+  aiSettings.apiKey = document.getElementById('apiKey').value.trim();
+  aiSettings.enableWebSearch = document.getElementById('enableWebSearch').checked;
+  aiSettings.enableTTS = document.getElementById('enableTTS').checked;
+  
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(aiSettings));
+    showToast('⚙️ Configurações salvas!');
+    updateSettingsStatus();
+    updateAIButton();
+  } catch(e) {
+    showToast('❌ Erro ao salvar');
+  }
+}
+
+function updateSettingsStatus() {
+  const statusDiv = document.getElementById('settingsStatus');
+  if (aiSettings.apiKey) {
+    const masked = aiSettings.apiKey.substring(0, 8) + '...' + aiSettings.apiKey.slice(-4);
+    statusDiv.innerHTML = `&lt;div class=&quot;status-indicator success&quot;&gt;✓ API Key configurada: ${masked}&lt;/div&gt;`;
+  } else {
+    statusDiv.innerHTML = `&lt;div class=&quot;status-indicator warning&quot;&gt;⚠ Configure sua API Key para usar a IA&lt;/div&gt;`;
+  }
+}
+
+function updateAIButton() {
+  const btn = document.getElementById('btnAI');
+  if (aiSettings.apiKey) {
+    btn.classList.remove('disabled');
+    btn.title = 'Assistente IA (configurado)';
+  } else {
+    btn.classList.add('disabled');
+    btn.title = 'Configure a API Key primeiro';
+  }
+}
+
+async function testAI() {
+  if (!aiSettings.apiKey) {
+    showToast('⚠️ Configure a API Key primeiro');
+    return;
+  }
+  
+  const statusDiv = document.getElementById('settingsStatus');
+  statusDiv.innerHTML = `&lt;div class=&quot;status-indicator&quot;&gt;&lt;div class=&quot;loading&quot;&gt;&lt;/div&gt; Testando conexão...&lt;/div&gt;`;
+  
+  try {
+    const response = await callAI('Responda apenas &quot;OK&quot; se você estiver funcionando.', false);
+    if (response) {
+      statusDiv.innerHTML = `&lt;div class=&quot;status-indicator success&quot;&gt;✓ Conexão OK! IA funcionando.&lt;/div&gt;`;
+      showToast('✅ IA testada com sucesso!');
+    } else {
+      throw new Error('Sem resposta');
+    }
+  } catch(e) {
+    statusDiv.innerHTML = `&lt;div class=&quot;status-indicator error&quot;&gt;✗ Erro: ${e.message}&lt;/div&gt;`;
+    showToast('❌ Erro ao testar IA');
+  }
+}
+
+// ========== AI HELPER ==========
+function openAIHelper() {
+  if (!aiSettings.apiKey) {
+    showToast('⚠️ Configure a API Key nas configurações primeiro!');
+    openSettings();
+    return;
+  }
+  
+  document.getElementById('aiModal').classList.add('open');
+  updateAIStatus();
+  setTimeout(() =&gt; document.getElementById('aiPrompt').focus(), 100);
+}
+
+function closeAIHelper() {
+  document.getElementById('aiModal').classList.remove('open');
+}
+
+function updateAIStatus() {
+  const statusBar = document.getElementById('aiStatusBar');
+  const features = [];
+  if (aiSettings.enableWebSearch) features.push('🌐 Busca Web');
+  if (aiSettings.enableTTS) features.push('🔊 TTS');
+  
+  statusBar.innerHTML = `
+    &lt;div class=&quot;status-indicator success&quot;&gt;
+      ✓ ${aiSettings.provider.toUpperCase()} conectado
+      ${features.length ? ' • ' + features.join(' • ') : ''}
+    &lt;/div&gt;
+  `;
+}
+
+function includeCode() {
+  const currentCode = editor.value;
+  const prompt = document.getElementById('aiPrompt');
+  if (currentCode) {
+    prompt.value = `Meu código atual:\n\`\`\`\n${currentCode}\n\`\`\`\n\n${prompt.value}`;
+    showToast('📝 Código incluído na pergunta');
+  }
+}
+
+function clearAIChat() {
+  document.getElementById('aiPrompt').value = '';
+  document.getElementById('aiResponse').innerHTML = '';
+  showToast('🗑️ Chat limpo');
+}
+
+async function askAI() {
+  const prompt = document.getElementById('aiPrompt').value.trim();
+  if (!prompt) {
+    showToast('⚠️ Digite uma pergunta');
+    return;
+  }
+  
+  if (!aiSettings.apiKey) {
+    showToast('⚠️ Configure a API Key primeiro');
+    openSettings();
+    return;
+  }
+  
+  const responseDiv = document.getElementById('aiResponse');
+  const btnAskAI = document.getElementById('btnAskAI');
+  const originalText = document.getElementById('askBtnText').textContent;
+  
+  btnAskAI.disabled = true;
+  document.getElementById('askBtnText').innerHTML = '&lt;div class=&quot;loading&quot;&gt;&lt;/div&gt; Pensando...';
+  responseDiv.innerHTML = '&lt;div style=&quot;color:var(--text2);&quot;&gt;&lt;div class=&quot;loading&quot;&gt;&lt;/div&gt; Consultando IA...&lt;/div&gt;';
+  
+  try {
+    const response = await callAI(prompt, aiSettings.enableWebSearch);
+    
+    responseDiv.innerHTML = `&lt;div class=&quot;ai-response&quot;&gt;🤖 &lt;strong&gt;Resposta:&lt;/strong&gt;\n\n${escapeHtml(response)}&lt;/div&gt;`;
+    
+    // TTS (Text-to-Speech)
+    if (aiSettings.enableTTS) {
+      speakText(response);
+    }
+    
+  } catch(e) {
+    responseDiv.innerHTML = `&lt;div class=&quot;ai-response&quot; style=&quot;border-left-color:var(--red);&quot;&gt;❌ &lt;strong&gt;Erro:&lt;/strong&gt;\n\n${escapeHtml(e.message)}&lt;/div&gt;`;
+    showToast('❌ Erro na IA');
+  } finally {
+    btnAskAI.disabled = false;
+    document.getElementById('askBtnText').textContent = originalText;
+  }
+}
+
+// ========== AI API CALLS ==========
+async function callAI(prompt, useWebSearch) {
+  const provider = aiSettings.provider;
+  
+  if (provider === 'openai') {
+    return await callOpenAI(prompt, useWebSearch);
+  } else if (provider === 'gemini') {
+    return await callGemini(prompt, useWebSearch);
+  } else if (provider === 'claude') {
+    return await callClaude(prompt, useWebSearch);
+  }
+  
+  throw new Error('Provedor não suportado');
+}
+
+async function callOpenAI(prompt, useWebSearch) {
+  const messages = [
+    {
+      role: 'system',
+      content: 'Você é um assistente de programação especializado em HTML, CSS, JavaScript, React e Python. Seja direto e prático.'
+    },
+    {
+      role: 'user',
+      content: prompt
+    }
+  ];
+  
+  // Se busca web estiver ativada, adiciona contexto
+  if (useWebSearch) {
+    try {
+      const searchResults = await searchWeb(prompt);
+      messages[0].content += `\n\nInformações da web: ${searchResults}`;
+    } catch(e) {
+      console.warn('Busca web falhou:', e);
+    }
+  }
+  
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${aiSettings.apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini', // Modelo mais barato e rápido
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 1000
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || 'Erro na API OpenAI');
+  }
+  
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+
+async function callGemini(prompt, useWebSearch) {
+  let fullPrompt = prompt;
+  
+  if (useWebSearch) {
+    try {
+      const searchResults = await searchWeb(prompt);
+      fullPrompt = `Contexto da web: ${searchResults}\n\nPergunta: ${prompt}`;
+    } catch(e) {
+      console.warn('Busca web falhou:', e);
+    }
+  }
+  
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${aiSettings.apiKey}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{
+          text: fullPrompt
+        }]
+      }]
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || 'Erro na API Gemini');
+  }
+  
+  const data = await response.json();
+  return data.candidates[0].content.parts[0].text;
+}
+
+async function callClaude(prompt, useWebSearch) {
+  let fullPrompt = prompt;
+  
+  if (useWebSearch) {
+    try {
+      const searchResults = await searchWeb(prompt);
+      fullPrompt = `Contexto da web: ${searchResults}\n\nPergunta: ${prompt}`;
+    } catch(e) {
+      console.warn('Busca web falhou:', e);
+    }
+  }
+  
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': aiSettings.apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-3-haiku-20240307', // Modelo mais barato
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: fullPrompt
+      }]
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || 'Erro na API Claude');
+  }
+  
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+// ========== WEB SEARCH ==========
+async function searchWeb(query) {
+  // Usando DuckDuckGo Instant Answer API (gratuita, sem API key)
+  try {
+    const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&amp;format=json&amp;no_html=1&amp;skip_disambig=1`);
+    const data = await response.json();
+    
+    let results = '';
+    if (data.AbstractText) results += data.AbstractText + '\n';
+    if (data.RelatedTopics &amp;&amp; data.RelatedTopics.length &gt; 0) {
+      results += data.RelatedTopics.slice(0, 3).map(t =&gt; t.Text).filter(Boolean).join('\n');
+    }
+    
+    return results || 'Nenhum resultado encontrado';
+  } catch(e) {
+    console.error('Erro na busca:', e);
+    return '';
+  }
+}
+// ========== TEXT-TO-SPEECH ==========
+function speakText(text) {
+  if (!window.speechSynthesis) {
+    console.warn('TTS não suportado neste navegador');
+    return;
+  }
+  
+  // Cancela qualquer fala anterior
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'pt-BR';
+  utterance.rate = 1.0;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+  
+  // Tenta usar uma voz em português
+  const voices = window.speechSynthesis.getVoices();
+  const ptVoice = voices.find(v =&gt; v.lang.startsWith('pt'));
+  if (ptVoice) utterance.voice = ptVoice;
+  
+  window.speechSynthesis.speak(utterance);
+  showToast('🔊 Reproduzindo áudio...');
+}
+
+// Carrega vozes disponíveis
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () =&gt; {
+    window.speechSynthesis.getVoices();
+  };
+}
+
+// ========== UTILS ==========
+function escapeHtml(str) {
+  return str.replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(/&gt;/g,'&amp;gt;').replace(/&quot;/g,'&amp;quot;');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() =&gt; toast.classList.remove('show'), 2800);
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay =&gt; {
+  overlay.addEventListener('click', (e) =&gt; {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// Enter key shortcuts
+document.getElementById('gotoLineInput')?.addEventListener('keydown', (e) =&gt; {
+  if (e.key === 'Enter') gotoLine();
+});
+
+document.getElementById('aiPrompt')?.addEventListener('keydown', (e) =&gt; {
+  if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 'Enter') {
+    askAI();
+  }
+});
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;"></iframe>
+</div>
+
+
+<script>
+function trocarProjeto(index) {
+  // Esconde todos
+  document.querySelectorAll('.project-container').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  // Mostra o selecionado
+  document.getElementById('projeto' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+  
+  // Salva preferência
+  localStorage.setItem('ultimo-projeto', index);
+}
+
+// Restaura último projeto aberto
+window.onload = function() {
+  const ultimo = localStorage.getItem('ultimo-projeto');
+  if (ultimo !== null) trocarProjeto(parseInt(ultimo));
+};
+</script>
+</body>
+</html>

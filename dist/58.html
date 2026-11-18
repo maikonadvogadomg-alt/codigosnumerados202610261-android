@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Prompt Manager — Templates + Histórico</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0a0e27;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar {
+      width: 300px;
+      background: #0f1419;
+      border-right: 1px solid #1e2139;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #1e2139;
+      background: #0a0e27;
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-section {
+      padding: 12px;
+      border-bottom: 1px solid #1e2139;
+    }
+
+    .sidebar-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #6e7681;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-btn {
+      width: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      border: 1px solid #1e2139;
+      border-radius: 6px;
+      color: #c9d1d9;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+      text-align: left;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-btn:hover {
+      background: #161b22;
+      border-color: #3b82f6;
+      color: #58a6ff;
+    }
+
+    .sidebar-btn.active {
+      background: #1f6feb;
+      border-color: #1f6feb;
+      color: white;
+    }
+
+    /* ═══ MAIN ═══ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #0a0e27;
+    }
+
+    .header {
+      padding: 16px;
+      background: #0f1419;
+      border-bottom: 1px solid #1e2139;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c9d1d9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      background: transparent;
+      border: 1px solid #1e2139;
+      border-radius: 6px;
+      color: #8b949e;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: #161b22;
+      border-color: #3b82f6;
+      color: #58a6ff;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section {
+      background: #0f1419;
+      border: 1px solid #1e2139;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #c9d1d9;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      padding: 10px 12px;
+      background: #0a0e27;
+      border: 1px solid #1e2139;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 12px;
+      font-family: inherit;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(31, 110, 251, 0.1);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      background: #1f6feb;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #388bfd;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid #1e2139;
+      color: #8b949e;
+    }
+
+    .btn.secondary:hover {
+      background: #161b22;
+      border-color: #3b82f6;
+      color: #58a6ff;
+    }
+
+    .btn.danger {
+      background: #da3633;
+    }
+
+    .btn.danger:hover {
+      background: #f85149;
+    }
+
+    .list-item {
+      background: #0a0e27;
+      border: 1px solid #1e2139;
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .list-item-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .list-item-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #c9d1d9;
+    }
+
+    .list-item-meta {
+      font-size: 10px;
+      color: #6e7681;
+    }
+
+    .list-item-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-small {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: 1px solid #1e2139;
+      border-radius: 4px;
+      color: #8b949e;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .btn-small:hover {
+      background: #161b22;
+      border-color: #3b82f6;
+      color: #58a6ff;
+    }
+
+    .btn-small.delete:hover {
+      background: #da3633;
+      border-color: #da3633;
+      color: white;
+    }
+
+    /* ═══ MODAL ═══ */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #0f1419;
+      border: 1px solid #1e2139;
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c9d1d9;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1e2139;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #30363d;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #1f6feb;
+      color: white;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">🎯 SK-Prompt</div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Templates</div>
+        <button class="sidebar-btn" onclick="selectTemplate('juridico')">📋 Jurídico</button>
+        <button class="sidebar-btn" onclick="selectTemplate('html')">💻 HTML/CSS</button>
+        <button class="sidebar-btn" onclick="selectTemplate('python')">🐍 Python</button>
+        <button class="sidebar-btn" onclick="selectTemplate('sql')">📊 SQL</button>
+        <button class="sidebar-btn" onclick="selectTemplate('nodejs')">⚡ Node.js</button>
+        <button class="sidebar-btn" onclick="selectTemplate('react')">⚛️ React</button>
+        <button class="sidebar-btn" onclick="selectTemplate('devops')">🔧 DevOps</button>
+        <button class="sidebar-btn" onclick="selectTemplate('design')">🎨 Design</button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Ações</div>
+        <button class="sidebar-btn" onclick="openNewPrompt()">➕ Novo Prompt</button>
+        <button class="sidebar-btn" onclick="viewHistorico()">📜 Histórico</button>
+        <button class="sidebar-btn" onclick="exportAll()">📤 Exportar Tudo</button>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="header">
+        <div class="header-title" id="headerTitle">🎯 Gerenciador de Prompts</div>
+        <div class="header-actions">
+          <button class="btn-icon" title="Salvar" onclick="savePrompt()">💾</button>
+          <button class="btn-icon" title="Limpar" onclick="clearForm()">🗑️</button>
+        </div>
+      </div>
+
+      <div class="content" id="mainContent">
+        <!-- EDITOR DE PROMPT -->
+        <div class="section">
+          <div class="section-title">📝 Editor de Prompt</div>
+          <div class="form-group">
+            <label class="form-label">Nome do Prompt</label>
+            <input type="text" id="promptName" class="form-input" placeholder="Ex: Análise de Código Python">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select id="promptType" class="form-select">
+              <option value="juridico">📋 Jurídico</option>
+              <option value="html">💻 HTML/CSS</option>
+              <option value="python">🐍 Python</option>
+              <option value="sql">📊 SQL</option>
+              <option value="nodejs">⚡ Node.js</option>
+              <option value="react">⚛️ React</option>
+              <option value="devops">🔧 DevOps</option>
+              <option value="design">🎨 Design</option>
+              <option value="custom">✨ Customizado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">O que você quer (Objetivo)</label>
+            <textarea id="promptWhat" class="form-textarea" placeholder="Ex: Quero um chat com memória que funcione em HTML..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">O que você NÃO quer (Restrições)</label>
+            <textarea id="promptNotWant" class="form-textarea" placeholder="Ex: Não quero código em pedaços, não quero APIs pagas..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Por quê (Justificativa)</label>
+            <textarea id="promptWhy" class="form-textarea" placeholder="Ex: Porque preciso de algo pronto para usar agora..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contexto Adicional</label>
+            <textarea id="promptContext" class="form-textarea" placeholder="Ex: Já tentei X, Y, Z... Preciso de algo diferente..."></textarea>
+          </div>
+          <div class="btn-group">
+            <button class="btn" onclick="generatePrompt()">🚀 Gerar Prompt Final</button>
+            <button class="btn secondary" onclick="loadTemplate()">📂 Carregar Template</button>
+          </div>
+        </div>
+
+        <!-- PROMPT GERADO -->
+        <div class="section">
+          <div class="section-title">✨ Prompt Final Gerado</div>
+          <div style="background: #0a0e27; border: 1px solid #1e2139; border-radius: 6px; padding: 12px; min-height: 150px; max-height: 300px; overflow-y: auto;">
+            <div id="promptOutput" style="font-size: 12px; color: #c9d1d9; line-height: 1.6; white-space: pre-wrap; word-break: break-word;"></div>
+          </div>
+          <div class="btn-group">
+            <button class="btn" onclick="copyPrompt()">📋 Copiar Prompt</button>
+            <button class="btn secondary" onclick="saveAsTemplate()">⭐ Salvar como Template</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: HISTÓRICO -->
+  <div class="modal" id="historicoModal">
+    <div class="modal-content">
+      <div class="modal-title">📜 Histórico de Prompts</div>
+      <div id="historicoList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      <div class="modal-buttons">
+        <button class="btn secondary" onclick="closeHistorico()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY_PROMPTS = "sk-prompts";
+    const STORAGE_KEY_TEMPLATES = "sk-templates";
+
+    let prompts = [];
+    let templates = {};
+
+    // ═══════════════════════════════════════════════════════════════
+    // TEMPLATES PRÉ-DEFINIDOS
+    // ═══════════════════════════════════════════════════════════════
+
+    const DEFAULT_TEMPLATES = {
+      juridico: {
+        name: "Jurídico",
+        what: "Preciso de um documento jurídico profissional",
+        notWant: "Não quero termos genéricos, não quero ambiguidades",
+        why: "Precisa ser válido legalmente",
+        context: "Para uso profissional em contrato"
+      },
+      html: {
+        name: "HTML/CSS",
+        what: "Quero um componente HTML/CSS responsivo",
+        notWant: "Não quero frameworks, não quero JavaScript complexo",
+        why: "Precisa ser leve e rápido",
+        context: "Para integrar em projeto existente"
+      },
+      python: {
+        name: "Python",
+        what: "Quero um script Python funcional",
+        notWant: "Não quero código incompleto, não quero dependências pesadas",
+        why: "Precisa rodar direto sem configuração",
+        context: "Para automação de tarefas"
+      },
+      sql: {
+        name: "SQL",
+        what: "Quero queries SQL otimizadas",
+        notWant: "Não quero N+1 queries, não quero joins desnecessários",
+        why: "Precisa ser eficiente",
+        context: "Para banco de dados em produção"
+      },
+      nodejs: {
+        name: "Node.js",
+        what: "Quero um servidor Node.js pronto",
+        notWant: "Não quero código espaguete, não quero callbacks aninhados",
+        why: "Precisa ser escalável",
+        context: "Para API REST"
+      },
+      react: {
+        name: "React",
+        what: "Quero um componente React funcional",
+        notWant: "Não quero class components, não quero prop drilling",
+        why: "Precisa ser moderno e eficiente",
+        context: "Para aplicação SPA"
+      },
+      devops: {
+        name: "DevOps",
+        what: "Quero configuração de infraestrutura",
+        notWant: "Não quero configurações manuais, não quero segurança fraca",
+        why: "Precisa ser automatizado e seguro",
+        context: "Para produção"
+      },
+      design: {
+        name: "Design",
+        what: "Quero um design profissional",
+        notWant: "Não quero cores genéricas, não quero fontes ruins",
+        why: "Precisa ser atrativo",
+        context: "Para apresentação ao cliente"
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // CARREGAR/SALVAR
+    // ═══════════════════════════════════════════════════════════════
+
+    function loadData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_PROMPTS);
+        prompts = saved ? JSON.parse(saved) : [];
+        
+        const savedTemplates = localStorage.getItem(STORAGE_KEY_TEMPLATES);
+        templates = savedTemplates ? JSON.parse(savedTemplates) : DEFAULT_TEMPLATES;
+      } catch (e) {
+        console.error("Erro ao carregar:", e);
+        templates = DEFAULT_TEMPLATES;
+      }
+    }
+
+    function savePrompts() {
+      localStorage.setItem(STORAGE_KEY_PROMPTS, JSON.stringify(prompts));
+    }
+
+    function saveTemplates() {
+      localStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(templates));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // TEMPLATES
+    // ═══════════════════════════════════════════════════════════════
+
+    function selectTemplate(type) {
+      const template = templates[type];
+      if (template) {
+        document.getElementById("promptType").value = type;
+        document.getElementById("promptWhat").value = template.what || "";
+        document.getElementById("promptNotWant").value = template.notWant || "";
+        document.getElementById("promptWhy").value = template.why || "";
+        document.getElementById("promptName").value = template.name || "";
+      }
+    }
+
+    function loadTemplate() {
+      selectTemplate(document.getElementById("promptType").value);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // GERAR PROMPT
+    // ═══════════════════════════════════════════════════════════════
+
+    function generatePrompt() {
+      const name = document.getElementById("promptName").value || "Sem nome";
+      const type = document.getElementById("promptType").value;
+      const what = document.getElementById("promptWhat").value;
+      const notWant = document.getElementById("promptNotWant").value;
+      const why = document.getElementById("promptWhy").value;
+      const context = document.getElementById("promptContext").value;
+
+      const prompt = `
+=== PROMPT FINAL ===
+Nome: ${name}
+Tipo: ${type}
+Data: ${new Date().toLocaleString("pt-BR")}
+
+--- O QUE EU QUERO ---
+${what || "Não especificado"}
+
+--- O QUE EU NÃO QUERO ---
+${notWant || "Nenhuma restrição especificada"}
+
+--- POR QUÊ ---
+${why || "Não especificado"}
+
+--- CONTEXTO ADICIONAL ---
+${context || "Nenhum contexto adicional"}
+
+--- INSTRUÇÕES PARA A IA ---
+1. Leia atentamente o que eu quero
+2. Respeite TODAS as restrições
+3. Entenda o contexto e a justificativa
+4. Não sugira alternativas que violem as restrições
+5. Forneça uma solução COMPLETA e PRONTA
+6. Não deixe nada para o usuário integrar
+7. Teste a solução antes de entregar
+
+Responda de forma profissional e estruturada.
+      `;
+
+      document.getElementById("promptOutput").textContent = prompt;
+    }
+
+    function copyPrompt() {
+      const text = document.getElementById("promptOutput").textContent;
+      if (!text.trim()) {
+        alert("Gere um prompt primeiro!");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        alert("✅ Prompt copiado!");
+      });
+    }
+
+    function savePrompt() {
+      const name = document.getElementById("promptName").value;
+      if (!name) {
+        alert("Digite um nome para o prompt!");
+        return;
+      }
+
+      const prompt = {
+        id: Date.now(),
+        name,
+        type: document.getElementById("promptType").value,
+        what: document.getElementById("promptWhat").value,
+        notWant: document.getElementById("promptNotWant").value,
+        why: document.getElementById("promptWhy").value,
+        context: document.getElementById("promptContext").value,
+        timestamp: new Date().toLocaleString("pt-BR")
+      };
+
+      prompts.push(prompt);
+      savePrompts();
+      alert("✅ Prompt salvo!");
+      clearForm();
+    }
+
+    function saveAsTemplate() {
+      const type = document.getElementById("promptType").value;
+      if (type === "custom") {
+        const name = prompt("Nome do template:");
+        if (!name) return;
+        templates[name.toLowerCase()] = {
+          name,
+          what: document.getElementById("promptWhat").value,
+          notWant: document.getElementById("promptNotWant").value,
+          why: document.getElementById("promptWhy").value,
+          context: document.getElementById("promptContext").value
+        };
+      } else {
+        templates[type] = {
+          name: document.getElementById("promptName").value,
+          what: document.getElementById("promptWhat").value,
+          notWant: document.getElementById("promptNotWant").value,
+          why: document.getElementById("promptWhy").value,
+          context: document.getElementById("promptContext").value
+        };
+      }
+      saveTemplates();
+      alert("✅ Template salvo!");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // HISTÓRICO
+    // ═══════════════════════════════════════════════════════════════
+
+    function viewHistorico() {
+      const list = document.getElementById("historicoList");
+      if (prompts.length === 0) {
+        list.innerHTML = "<p style='color: #6e7681;'>Nenhum prompt salvo ainda.</p>";
+      } else {
+        list.innerHTML = prompts.map(p => `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-title">${p.name}</div>
+              <div class="list-item-meta">${p.type} • ${p.timestamp}</div>
+            </div>
+            <div class="list-item-actions">
+              <button class="btn-small" onclick="loadPromptFromHistorico(${p.id})" title="Carregar">📂</button>
+              <button class="btn-small delete" onclick="deletePrompt(${p.id})" title="Deletar">🗑️</button>
+            </div>
+          </div>
+        `).join("");
+      }
+      document.getElementById("historicoModal").classList.add("open");
+    }
+
+    function loadPromptFromHistorico(id) {
+      const prompt = prompts.find(p => p.id === id);
+      if (prompt) {
+        document.getElementById("promptName").value = prompt.name;
+        document.getElementById("promptType").value = prompt.type;
+        document.getElementById("promptWhat").value = prompt.what;
+        document.getElementById("promptNotWant").value = prompt.notWant;
+        document.getElementById("promptWhy").value = prompt.why;
+        document.getElementById("promptContext").value = prompt.context;
+        closeHistorico();
+        generatePrompt();
+      }
+    }
+
+    function deletePrompt(id) {
+      if (confirm("Deletar esse prompt?")) {
+        prompts = prompts.filter(p => p.id !== id);
+        savePrompts();
+        viewHistorico();
+      }
+    }
+
+    function closeHistorico() {
+      document.getElementById("historicoModal").classList.remove("open");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // AÇÕES
+    // ═══════════════════════════════════════════════════════════════
+
+    function clearForm() {
+      document.getElementById("promptName").value = "";
+      document.getElementById("promptWhat").value = "";
+      document.getElementById("promptNotWant").value = "";
+      document.getElementById("promptWhy").value = "";
+      document.getElementById("promptContext").value = "";
+      document.getElementById("promptOutput").textContent = "";
+    }
+
+    function openNewPrompt() {
+      clearForm();
+    }
+
+    function exportAll() {
+      const data = {
+        prompts,
+        templates,
+        exportedAt: new Date().toLocaleString("pt-BR")
+      };
+
+      const content = JSON.stringify(data, null, 2);
+      const blob = new Blob([content], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sk-prompts-${Date.now()}.json`;
+      a.click();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INICIALIZAÇÃO
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadData();
+    });
+  </script>
+</body>
+</html>

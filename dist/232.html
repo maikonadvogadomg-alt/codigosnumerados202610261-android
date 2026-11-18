@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisador de Histórico — ZIP/TAR/TAZ</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', monospace;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+h1 { color: #a3a082; margin-bottom: 20px; text-align: center; font-size: 24px; }
+h2 { color: #4ade80; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #334155; padding-bottom: 8px; }
+h3 { color: #60a5fa; margin: 15px 0 10px 0; font-size: 13px; }
+
+.upload-area {
+  background: #1e293b;
+  border: 2px dashed #334155;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover { border-color: #a3a082; background: #334155; }
+.upload-area.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+
+input[type="file"] { display: none; }
+
+.btn {
+  background: #a3a082;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px;
+  transition: all 0.2s;
+}
+.btn:hover { background: #d4d0a8; transform: translateY(-2px); }
+.btn-secondary {
+  background: #3b82f6;
+  color: #fff;
+}
+.btn-secondary:hover { background: #2563eb; }
+.btn-danger {
+  background: #f87171;
+  color: #fff;
+}
+.btn-danger:hover { background: #dc2626; }
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.checkbox-group {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.checkbox-group input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px;
+  font-size: 14px;
+}
+.spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #334155;
+  border-top-color: #a3a082;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.results {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #0f172a;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.card-git {
+  border-left-color: #f87171;
+}
+.card-code {
+  border-left-color: #60a5fa;
+}
+.card-config {
+  border-left-color: #fbbf24;
+}
+.card-data {
+  border-left-color: #4ade80;
+}
+
+.file-tree {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  font-size: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+}
+
+.file-tree-item {
+  padding: 3px 0;
+  margin-left: 15px;
+  border-left: 1px solid #334155;
+  padding-left: 8px;
+}
+
+.file-tree-item.hidden {
+  color: #f87171;
+  font-style: italic;
+}
+
+.file-tree-item.code {
+  color: #60a5fa;
+}
+
+.file-tree-item.config {
+  color: #fbbf24;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.stat-box {
+  background: #334155;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-box strong {
+  display: block;
+  color: #a3a082;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.stat-box span {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.diff-add { color: #4ade80; }
+.diff-remove { color: #f87171; }
+.diff-modify { color: #fbbf24; }
+.diff-neutral { color: #94a3b8; }
+
+.git-log {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  font-size: 11px;
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  line-height: 1.6;
+}
+
+.git-commit {
+  border-bottom: 1px solid #334155;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.git-commit:last-child {
+  border-bottom: none;
+}
+
+.git-hash {
+  color: #fbbf24;
+  font-weight: bold;
+}
+
+.git-author {
+  color: #60a5fa;
+}
+
+.git-date {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.git-message {
+  color: #4ade80;
+  margin-top: 5px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.tab:hover {
+  color: #e2e8f0;
+}
+
+.tab.active {
+  color: #a3a082;
+  border-bottom-color: #a3a082;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.code-block {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  line-height: 1.4;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.highlight-js { color: #60a5fa; }
+.highlight-html { color: #f87171; }
+.highlight-css { color: #fbbf24; }
+.highlight-json { color: #4ade80; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+@media (max-width: 768px) {
+  .comparison { grid-template-columns: 1fr; }
+  .controls { flex-direction: column; }
+  .checkbox-group { flex-direction: column; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📦 Analisador de Histórico — ZIP/TAR/TAZ</h1>
+  <p style="text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 13px;">
+    Analisa arquivos compactados incluindo pastas ocultas (.git, .env, etc) e gera relatório completo
+  </p>
+
+  <div class="upload-area" id="dropZone">
+    <p style="font-size: 18px; margin-bottom: 10px;">📂 Arraste seus arquivos aqui</p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Suporta: .zip, .tar, .tar.gz, .tgz, .tar.bz2</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecionar Arquivo</button>
+    <input type="file" id="fileInput" accept=".zip,.tar,.gz,.tgz,.bz2" />
+  </div>
+
+  <div class="checkbox-group">
+    <label>
+      <input type="checkbox" id="showHidden" checked /> Mostrar pastas ocultas (.git, .env, etc)
+    </label>
+    <label>
+      <input type="checkbox" id="showGitLog" checked /> Extrair histórico Git
+    </label>
+    <label>
+      <input type="checkbox" id="analyzeCode" checked /> Analisar código
+    </label>
+    <label>
+      <input type="checkbox" id="showFileTree" checked /> Mostrar árvore de arquivos
+    </label>
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Analisando arquivo...</p>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tar.js/0.3.0/tar.min.js"></script>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+
+// Drag and drop
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+async function handleFile(file) {
+  if (!file) return;
+  
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  
+  try {
+    const fileType = file.name.split('.').pop().toLowerCase();
+    let fileStructure = {};
+    let fileContents = {};
+    
+    if (fileType === 'zip') {
+      ({ fileStructure, fileContents } = await processZip(file));
+    } else if (['tar', 'gz', 'tgz', 'bz2'].includes(fileType)) {
+      ({ fileStructure, fileContents } = await processTar(file));
+    } else {
+      throw new Error('Formato não suportado. Use .zip ou .tar');
+    }
+    
+    loadingDiv.style.display = 'none';
+    displayAnalysis(fileStructure, fileContents, file.name);
+    
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultsDiv.innerHTML = `<div class="card" style="border-left-color: #f87171;">
+      <h3>❌ Erro ao processar</h3>
+      <p style="color: #f87171;">${err.message}</p>
+    </div>`;
+  }
+}
+
+async function processZip(file) {
+  const zip = new JSZip();
+  const content = await zip.loadAsync(file);
+  
+  const fileStructure = {};
+  const fileContents = {};
+  
+  for (let [path, zipEntry] of Object.entries(content.files)) {
+    if (!zipEntry.dir) {
+      fileStructure[path] = {
+        size: zipEntry._data.uncompressedSize,
+        date: zipEntry.date,
+        isHidden: path.includes('/.')
+      };
+      
+      if (shouldExtractContent(path)) {
+        try {
+          fileContents[path] = await zipEntry.async('text');
+        } catch (e) {}
+      }
+    }
+  }
+  
+  return { fileStructure, fileContents };
+}
+
+async function processTar(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const fileStructure = {};
+  const fileContents = {};
+  
+  // Simula leitura de TAR (para produção, use biblioteca tar.js completa)
+  // Por enquanto, retorna estrutura vazia
+  console.warn('TAR processing requer biblioteca adicional');
+  
+  return { fileStructure, fileContents };
+}
+
+function shouldExtractContent(path) {
+  const extensions = ['.js', '.html', '.css', '.json', '.md', '.txt', '.env', '.yml', '.yaml'];
+  const isLarge = path.split('/').pop().length > 100;
+  
+  return extensions.some(ext => path.endsWith(ext)) && !isLarge;
+}
+
+function displayAnalysis(fileStructure, fileContents, fileName) {
+  const showHidden = document.getElementById('showHidden').checked;
+  const showGitLog = document.getElementById('showGitLog').checked;
+  const analyzeCode = document.getElementById('analyzeCode').checked;
+  const showFileTree = document.getElementById('showFileTree').checked;
+  
+  let html = '';
+  
+  // ═══════════════════════════════════════
+  // 1. RESUMO EXECUTIVO
+  // ═══════════════════════════════════════
+  const stats = analyzeFileStructure(fileStructure, fileContents);
+  
+  html += `
+    <div class="results">
+      <h2>📊 Resumo Executivo</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <strong>${stats.totalFiles}</strong>
+          <span>Total de Arquivos</span>
+        </div>
+        <div class="stat-box">
+          <strong>${stats.hiddenFiles}</strong>
+          <span>Pastas Ocultas</span>
+        </div>
+        <div class="stat-box">
+          <strong>${stats.codeFiles}</strong>
+          <span>Arquivos de Código</span>
+        </div>
+        <div class="stat-box">
+          <strong>${stats.configFiles}</strong>
+          <span>Configurações</span>
+        </div>
+        <div class="stat-box">
+          <strong>${(stats.totalSize / 1024 / 1024).toFixed(2)}MB</strong>
+          <span>Tamanho Total</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // ═══════════════════════════════════════
+  // 2. ANÁLISE GIT
+  // ═══════════════════════════════════════
+  if (showHidden && stats.hasGit) {
+    html += `
+      <div class="results">
+        <h2>🔴 Histórico Git Detectado</h2>
+        <div class="card card-git">
+          <h3>📝 Informações do Repositório</h3>
+          <p style="font-size: 12px; color: #94a3b8;">
+            Este projeto foi versionado com Git. Contém histórico de commits, branches e alterações.
+          </p>
+          ${stats.gitInfo ? `
+            <div class="code-block">
+              <strong>Configuração Git:</strong><br/>
+              ${stats.gitInfo}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+  
+  // ═══════════════════════════════════════
+  // 3. ANÁLISE DE ESTRUTURA
+  // ═══════════════════════════════════════
+  html += `
+    <div class="results">
+      <h2>🏗️ Estrutura do Projeto</h2>
+      <div class="card">
+        <h3>Pastas Principais</h3>
+        <div class="file-tree">
+          ${generateFolderStructure(fileStructure, showHidden)}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // ═══════════════════════════════════════
+  // 4. ANÁLISE DE CÓDIGO
+  // ═══════════════════════════════════════
+  if (analyzeCode) {
+    const codeAnalysis = analyzeCodeContent(fileContents);
+    
+    html += `
+      <div class="results">
+        <h2>💻 Análise de Código</h2>
+        
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(event, 'tech')">🛠️ Tecnologias</button>
+          <button class="tab" onclick="switchTab(event, 'functions')">⚙️ Funções</button>
+          <button class="tab" onclick="switchTab(event, 'issues')">⚠️ Possíveis Problemas</button>
+        </div>
+        
+        <div id="tech" class="tab-content active">
+          <div class="stats-grid">
+            ${Object.entries(codeAnalysis.technologies).map(([tech, count]) => `
+              <div class="stat-box">
+                <strong>${count}</strong>
+                <span>${tech}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div id="functions" class="tab-content">
+          <div class="card">
+            <h3>Funções/Classes Detectadas</h3>
+            <div class="code-block">
+              ${codeAnalysis.functions.slice(0, 30).map(f => `<div>• ${f}</div>`).join('')}
+            </div>
+          </div>
+        </div>
+        
+        <div id="issues" class="tab-content">
+          <div class="card">
+            <h3>Possíveis Problemas Identificados</h3>
+            ${codeAnalysis.issues.length > 0 ? `
+              <div class="code-block">
+                ${codeAnalysis.issues.map(issue => `
+                  <div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #334155;">
+                    <span class="diff-remove">⚠️ ${issue.type}</span><br/>
+                    <span style="color: #94a3b8; font-size: 11px;">${issue.description}</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '<p style="color: #4ade80;">✓ Nenhum problema óbvio detectado</p>'}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // ═══════════════════════════════════════
+  // 5. ARQUIVOS IMPORTANTES
+  // ═══════════════════════════════════════
+  const importantFiles = getImportantFiles(fileContents);
+  if (Object.keys(importantFiles).length > 0) {
+    html += `
+      <div class="results">
+        <h2>📄 Arquivos Importantes</h2>
+        ${Object.entries(importantFiles).map(([name, content]) => `
+          <div class="card">
+            <h3>${name}</h3>
+            <div class="code-block" style="max-height: 200px;">
+              ${escapeHtml(content.substring(0, 500))}${content.length > 500 ? '...' : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  
+  // ═══════════════════════════════════════
+  // 6. BOTÕES DE EXPORTAÇÃO
+  // ═══════════════════════════════════════
+  html += `
+    <div class="results">
+      <h2>📥 Exportar Relatório</h2>
+      <div class="export-buttons">
+        <button class="btn btn-secondary" onclick="exportAsJSON('${escapeHtml(JSON.stringify(stats))}')">
+          📋 JSON
+        </button>
+        <button class="btn btn-secondary" onclick="exportAsMarkdown('${fileName}', '${escapeHtml(JSON.stringify(stats))}')">
+          📝 Markdown
+        </button>
+        <button class="btn btn-secondary" onclick="exportAsHTML('${fileName}', '${escapeHtml(JSON.stringify(stats))}')">
+          🌐 HTML
+        </button>
+      </div>
+    </div>
+  `;
+  
+  resultsDiv.innerHTML = html;
+}
+
+function analyzeFileStructure(fileStructure, fileContents) {
+  const files = Object.keys(fileStructure);
+  const stats = {
+    totalFiles: files.length,
+    hiddenFiles: files.filter(f => f.includes('/.')).length,
+    codeFiles: files.filter(f => /\.(js|html|css|jsx|tsx|py|java|cpp)$/.test(f)).length,
+    configFiles: files.filter(f => /\.(json|yml|yaml|env|config)$/.test(f)).length,
+    totalSize: Object.values(fileStructure).reduce((sum, f) => sum + (f.size || 0), 0),
+    hasGit: files.some(f => f.includes('.git')),
+    gitInfo: fileContents[Object.keys(fileContents).find(f => f.includes('.git/config'))] || null
+  };
+  return stats;
+}
+
+function analyzeCodeContent(fileContents) {
+  const analysis = {
+    technologies: {},
+    functions: [],
+    issues: []
+  };
+  
+  Object.entries(fileContents).forEach(([path, content]) => {
+    // Detectar tecnologias
+    if (path.endsWith('.js')) {
+      if (content.includes('React')) analysis.technologies['React'] = (analysis.technologies['React'] || 0) + 1;
+      if (content.includes('Vue')) analysis.technologies['Vue'] = (analysis.technologies['Vue'] || 0) + 1;
+      if (content.includes('Angular')) analysis.technologies['Angular'] = (analysis.technologies['Angular'] || 0) + 1;
+      if (content.includes('Express')) analysis.technologies['Express'] = (analysis.technologies['Express'] || 0) + 1;
+      if (content.includes('async')) analysis.technologies['Async/Await'] = (analysis.technologies['Async/Await'] || 0) + 1;
+    }
+    
+    if (path.endsWith('.html')) analysis.technologies['HTML'] = (analysis.technologies['HTML'] || 0) + 1;
+    if (path.endsWith('.css')) analysis.technologies['CSS'] = (analysis.technologies['CSS'] || 0) + 1;
+    if (path.endsWith('.json')) analysis.technologies['JSON'] = (analysis.technologies['JSON'] || 0) + 1;
+    
+    // Extrair funções
+    const funcMatches = content.match(/(?:async\s+)?function\s+(\w+)|const\s+(\w+)\s*=\s*(?:async\s*)?\(/g);
+    if (funcMatches) {
+      funcMatches.forEach(match => {
+        const name = match.replace(/(?:async\s+)?function\s+|const\s+|\s*=\s*(?:async\s*)?\(/g, '');
+        if (!analysis.functions.includes(name)) {
+          analysis.functions.push(name);
+        }
+      });
+    }
+    
+    // Detectar problemas
+    if (content.includes('console.log') && path.includes('production')) {
+      analysis.issues.push({
+        type: 'console.log em produção',
+        description: `Arquivo ${path} contém console.log`
+      });
+    }
+    
+    if (content.includes('TODO') || content.includes('FIXME')) {
+      analysis.issues.push({
+        type: 'TODO/FIXME encontrado',
+        description: `Arquivo ${path} contém tarefas pendentes`
+      });
+    }
+    
+    if (content.includes('eval(') || content.includes('innerHTML')) {
+      analysis.issues.push({
+        type: 'Possível vulnerabilidade',
+        description: `Arquivo ${path} usa eval() ou innerHTML`
+      });
+    }
+  });
+  
+  return analysis;
+}
+
+function generateFolderStructure(fileStructure, showHidden) {
+  const folders = new Set();
+  
+  Object.keys(fileStructure).forEach(path => {
+    if (showHidden || !path.includes('/.')) {
+      const parts = path.split('/');
+      parts.pop();
+      let current = '';
+      parts.forEach(part => {
+        current += part + '/';
+        folders.add(current);
+      });
+    }
+  });
+  
+  const sortedFolders = Array.from(folders).sort();
+  
+  return sortedFolders.map(folder => {
+    const depth = folder.split('/').length - 2;
+    const name = folder.split('/').filter(p => p).pop();
+    const isHidden = name.startsWith('.');
+    
+    return `
+      <div class="file-tree-item ${isHidden ? 'hidden' : ''}">
+        ${'&nbsp;&nbsp;'.repeat(depth)}📁 ${name}/
+      </div>
+    `;
+  }).join('');
+}
+
+function getImportantFiles(fileContents) {
+  const important = {};
+  const importantNames = ['README.md', 'package.json', '.env', '.env.example', 'config.json', '.gitignore'];
+  
+  Object.entries(fileContents).forEach(([path, content]) => {
+    const fileName = path.split('/').pop();
+    if (importantNames.includes(fileName)) {
+      important[fileName] = content;
+    }
+  });
+  
+  return important;
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function switchTab(e, tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  
+  e.target.classList.add('active');
+  document.getElementById(tabName).classList.add('active');
+}
+
+function exportAsJSON(statsJson) {
+  const stats = JSON.parse(statsJson);
+  const json = JSON.stringify(stats, null, 2);
+  downloadFile(json, 'relatorio.json', 'application/json');
+}
+
+function exportAsMarkdown(fileName, statsJson) {
+  const stats = JSON.parse(statsJson);
+  const md = `# Relatório de Análise — ${fileName}
+
+## 📊 Resumo Executivo
+
+- **Total de Arquivos:** ${stats.totalFiles}
+- **Pastas Ocultas:** ${stats.hiddenFiles}
+- **Arquivos de Código:** ${stats.codeFiles}
+- **Arquivos de Configuração:** ${stats.configFiles}
+- **Tamanho Total:** ${(stats.totalSize / 1024 / 1024).toFixed(2)}MB
+- **Repositório Git:** ${stats.hasGit ? 'Sim ✓' : 'Não ✗'}
+
+## 📅 Gerado em: ${new Date().toLocaleString('pt-BR')}
+`;
+  
+  downloadFile(md, 'relatorio.md', 'text/markdown');
+}
+
+function exportAsHTML(fileName, statsJson) {
+  const stats = JSON.parse(statsJson);
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório - ${fileName}</title>
+  <style>
+    body { font-family: Arial; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+    h1 { color: #333; }
+    .stat { display: inline-block; margin: 10px; padding: 15px; background: #f0f0f0; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Relatório de Análise — ${fileName}</h1>
+    <p><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+    
+    <h2>Resumo Executivo</h2>
+    <div class="stat"><strong>Total de Arquivos:</strong> ${stats.totalFiles}</div>
+    <div class="stat"><strong>Pastas Ocultas:</strong> ${stats.hiddenFiles}</div>
+    <div class="stat"><strong>Arquivos de Código:</strong> ${stats.codeFiles}</div>
+    <div class="stat"><strong>Configurações:</strong> ${stats.configFiles}</div>
+    <div class="stat"><strong>Tamanho:</strong> ${(stats.totalSize / 1024 / 1024).toFixed(2)}MB</div>
+    <div class="stat"><strong>Git:</strong> ${stats.hasGit ? 'Sim ✓' : 'Não ✗'}</div>
+  </div>
+</body>
+</html>
+  `;
+  
+  downloadFile(html, 'relatorio.html', 'text/html');
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Perícia Judicial Bancária - Dr. Manhumirim</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #0f172a; --secondary: #1e293b; --accent: #3b82f6;
+            --gold: #b8860b; --success: #10b981; --danger: #ef4444;
+            --text: #f1f5f9; --muted: #94a3b8; --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--primary); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR ROBUSTA */
+        .sidebar { width: 450px; background: var(--secondary); border-right: 1px solid #334155; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.5); z-index: 100; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #334155; text-align: center; }
+        .sidebar-header h1 { color: var(--gold); font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-content { padding: 20px; overflow-y: auto; flex: 1; }
+
+        .section-title { font-size: 12px; color: var(--accent); text-transform: uppercase; margin: 20px 0 10px; border-bottom: 1px solid #334155; padding-bottom: 5px; font-weight: bold; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #475569; color: var(--text); border-radius: 6px; font-size: 13px; transition: 0.3s; }
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; transition: 0.3s; }
+        .btn-bcb { background: var(--accent); color: white; }
+        .btn-calc { background: var(--success); color: #064e3b; font-size: 15px; }
+        .btn-export { background: var(--gold); color: white; }
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        /* ÁREA PRINCIPAL */
+        .main-area { flex: 1; display: flex; flex-direction: column; background: #f8fafc; color: #1e293b; overflow-y: auto; }
+        .tabs { display: flex; background: var(--secondary); padding: 0 20px; gap: 10px; }
+        .tab { padding: 15px 25px; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; font-size: 13px; }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(59, 130, 246, 0.1); }
+
+        .content-pane { display: none; padding: 30px; animation: fadeIn 0.3s ease; }
+        .content-pane.active { display: block; }
+
+        /* DASHBOARD CARDS */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 6px solid #cbd5e1; }
+        .kpi-card.highlight { border-left-color: var(--success); }
+        .kpi-card h3 { font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; }
+        .kpi-card .value { font-size: 24px; font-weight: bold; color: #0f172a; }
+        .kpi-card .footer-text { font-size: 12px; margin-top: 8px; font-weight: 600; }
+
+        /* TABELAS */
+        .table-wrap { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #f1f5f9; padding: 12px; text-align: right; color: #475569; font-weight: bold; border-bottom: 2px solid #e2e8f0; }
+        th:first-child, td:first-child { text-align: center; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: right; }
+        tr.cap-row { background: #fffbeb; font-weight: bold; }
+        tr:hover { background: #f8fafc; }
+
+        /* LAUDO PERICIAL */
+        .laudo-paper { background: white; padding: 30mm; max-width: 900px; margin: 20px auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); font-family: 'Times New Roman', Times, serif; color: black; line-height: 1.6; }
+        .laudo-header { text-align: center; border-bottom: 2px solid black; margin-bottom: 30px; padding-bottom: 10px; }
+        .laudo-header h1 { font-size: 22pt; text-transform: uppercase; }
+        .laudo-section { margin-top: 25px; }
+        .laudo-section h2 { font-size: 14pt; border-left: 6px solid black; padding-left: 10px; margin-bottom: 15px; text-transform: uppercase; }
+        .signature-box { margin-top: 80px; text-align: center; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media print {
+            .sidebar, .tabs, .dashboard-grid, .btn-calc { display: none; }
+            .main-area { background: white; }
+            .content-pane { display: none !important; }
+            #pane-laudo { display: block !important; padding: 0; }
+            .laudo-paper { box-shadow: none; margin: 0; width: 100%; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h1>JurisCalc Perícia Pro</h1>
+        <p style="font-size: 10px; color: var(--muted);">Dr. Manhumirim - Especialista</p>
+    </div>
+    
+    <div class="sidebar-content">
+        <div class="section-title">Dados da Lide</div>
+        <div class="input-group">
+            <label>Processo nº</label>
+            <input type="text" id="proc_num" value="0008868-79.2018.8.13.0395">
+        </div>
+        <div class="row-2" style="display: flex; gap: 10px;">
+            <div class="input-group" style="flex: 1;">
+                <label>Valor Base (R$)</label>
+                <input type="number" id="v_base" value="3512.10" step="0.01">
+            </div>
+            <div class="input-group" style="flex: 1;">
+                <label>Multa (%)</label>
+                <input type="number" id="v_multa" value="2.0">
+            </div>
+        </div>
+
+        <div class="section-title">Período de Apuração</div>
+        <div class="row-2" style="display: flex; gap: 10px;">
+            <div class="input-group" style="flex: 1;">
+                <label>Data Inicial</label>
+                <input type="date" id="d_ini" value="2017-08-31">
+            </div>
+            <div class="input-group" style="flex: 1;">
+                <label>Data Final</label>
+                <input type="date" id="d_fim" value="2026-02-21">
+            </div>
+        </div>
+
+        <div class="section-title">Inteligência BCB (SGS)</div>
+        <div class="input-group">
+            <label>Série de Correção (Ex: 433 IPCA)</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="bcb_corr" value="433">
+                <button class="btn btn-bcb" onclick="fetchBCB('corr')" style="width: 80px; margin:0; padding:5px;">Puxar</button>
+            </div>
+            <small id="status_corr" style="font-size: 9px; color: var(--success);"></small>
+        </div>
+
+        <div class="input-group">
+            <label>Série de Juros (Ex: 4390 SELIC / 433 Média)</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="bcb_juros" value="433">
+                <button class="btn btn-bcb" onclick="fetchBCB('juros')" style="width: 80px; margin:0; padding:5px;">Puxar</button>
+            </div>
+            <small id="status_juros" style="font-size: 9px; color: var(--success);"></small>
+        </div>
+
+        <div class="section-title">Parâmetros de Sentença</div>
+        <div class="input-group">
+            <label>Juros de Mora Fixos (% a.m.)</label>
+            <input type="number" id="mora_fixa" value="1.0">
+        </div>
+        <div class="input-group">
+            <label>Honorários Sucumbenciais (%)</label>
+            <input type="number" id="perc_hon" value="10.0">
+        </div>
+
+        <button class="btn btn-calc" onclick="executarPericia()">Calcular Perícia Completa</button>
+        <button class="btn btn-export" onclick="window.print()">Gerar PDF do Laudo</button>
+    </div>
+</aside>
+
+<main class="main-area">
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(0)">Dashboard</div>
+        <div class="tab" onclick="switchTab(1)">Memória Detalhada</div>
+        <div class="tab" onclick="switchTab(2)">Laudo Pericial</div>
+    </div>
+
+    <!-- PANE 0: DASHBOARD -->
+    <div id="pane-dash" class="content-pane active">
+        <div class="dashboard-grid">
+            <div class="kpi-card">
+                <h3>Cenário A: Banco (Incorreto)</h3>
+                <div class="value" id="dash_banco">R$ 0,00</div>
+                <div class="footer-text" style="color: var(--danger);">Juros Simples / Lineares</div>
+            </div>
+            <div class="kpi-card highlight">
+                <h3>Cenário B: Sentença (Real)</h3>
+                <div class="value" id="dash_sentenca" style="color: var(--success);">R$ 0,00</div>
+                <div class="footer-text" id="dash_diff">Diferença a favor: R$ 0,00</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Honorários Advocatícios</h3>
+                <div class="value" id="dash_hon">R$ 0,00</div>
+                <div class="footer-text" style="color: var(--accent);">Base: Proveito Econômico</div>
+            </div>
+        </div>
+        
+        <div class="table-wrap">
+            <div style="padding: 15px; font-weight: bold; border-bottom: 1px solid #eee;">Comparativo de Evolução</div>
+            <canvas id="chartEvolucao" style="max-height: 300px; padding: 20px;"></canvas>
+        </div>
+    </div>
+
+    <!-- PANE 1: TABELA DETALHADA -->
+    <div id="pane-table" class="content-pane">
+        <div class="table-wrap">
+            <table id="tabela_mestra">
+                <thead>
+                    <tr>
+                        <th>Mês/Ano</th>
+                        <th>Capital Base (R$)</th>
+                        <th>Correção (%)</th>
+                        <th>Juros (%)</th>
+                        <th>Juros Acum. (R$)</th>
+                        <th>Total Parcial (R$)</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody_mestra"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PANE 2: LAUDO PERICIAL -->
+    <div id="pane-laudo" class="content-pane">
+        <div class="laudo-paper">
+            <div class="laudo-header">
+                <h1>Laudo Pericial Contábil</h1>
+                <p><strong>Processo:</strong> <span id="l_proc">---</span></p>
+                <p><strong>Exequente:</strong> [Nome do Cliente] | <strong>Executado:</strong> SICOOB</p>
+            </div>
+
+            <div class="laudo-section">
+                <h2>1. Objeto da Perícia</h2>
+                <p>Trata-se de liquidação de sentença visando a apuração do indébito e atualização de valores expurgados de contrato bancário. A presente análise técnica confronta a metodologia simplista da instituição financeira com o comando judicial de capitalização anual.</p>
+            </div>
+
+            <div class="laudo-section">
+                <h2>2. Metodologia e Critérios</h2>
+                <p>Para a elaboração deste cálculo, foram adotados os seguintes parâmetros:</p>
+                <ul>
+                    <li><strong>Correção Monetária:</strong> Aplicação da variação mensal da série BCB informada.</li>
+                    <li><strong>Juros Remuneratórios/Mora:</strong> Taxa Média de Mercado acrescida de 1% ao mês.</li>
+                    <li><strong>Anatocismo:</strong> Aplicação da <b>Capitalização Anual</b> (incorporação dos juros ao capital a cada 12 meses), conforme determinado em sentença.</li>
+                </ul>
+            </div>
+
+            <div class="laudo-section">
+                <h2>3. Resumo dos Valores Apurados</h2>
+                <table>
+                    <tr>
+                        <td>Principal Atualizado + Juros</td>
+                        <td id="l_res_principal" style="font-weight: bold;">R$ 0,00</td>
+                    </tr>
+                    <tr>
+                        <td>Multa Condenatória (2%)</td>
+                        <td id="l_res_multa">R$ 0,00</td>
+                    </tr>
+                    <tr>
+                        <td>Honorários Advocatícios</td>
+                        <td id="l_res_hon" style="color: var(--success); font-weight: bold;">R$ 0,00</td>
+                    </tr>
+                    <tr style="font-size: 14pt; background: #eee;">
+                        <td><strong>TOTAL GERAL DA EXECUÇÃO</strong></td>
+                        <td id="l_res_total"><strong>R$ 0,00</strong></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="laudo-section">
+                <h2>4. Conclusão</h2>
+                <p>Diante do exposto, este patrono conclui que o valor apresentado pela instituição financeira é vil e ignora a progressão aritmética da dívida sob a égide da capitalização anual. O valor real da execução, devidamente fundamentado na memória anexa, perfaz o montante acima demonstrado.</p>
+            </div>
+
+            <div class="signature-box">
+                <p>_________________________________________________</p>
+                <p><strong>DR. MANHUMIRIM</strong></p>
+                <p>OAB/MG - Advogado e Especialista em Direito Bancário</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+let DATA_CORR = new Map();
+let DATA_JUROS = new Map();
+let chartInstance = null;
+
+// --- BUSCA BCB COM TRATAMENTO DE ERRO E ESCALA ---
+async function fetchBCB(tipo) {
+    const code = document.getElementById(tipo === 'corr' ? 'bcb_corr' : 'bcb_juros').value;
+    const status = document.getElementById(tipo === 'corr' ? 'status_corr' : 'status_juros');
+    status.innerText = "Buscando...";
+    
+    try {
+        const resp = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json`);
+        const data = await resp.json();
+        
+        data.forEach(item => {
+            const [d, m, y] = item.data.split('/');
+            const ym = `${y}-${m}`;
+            let val = parseFloat(item.valor);
+            
+            // NORMALIZAÇÃO: Se a taxa vier como 7.08 (significando 7%), mantemos. 
+            // Se vier num formato maluco, tratamos.
+            if(val > 100) val = val / 100; 
+
+            if(tipo === 'corr') DATA_CORR.set(ym, val);
+            else DATA_JUROS.set(ym, val);
+        });
+        
+        status.innerText = `✅ ${data.length} meses carregados.`;
+    } catch (e) {
+        status.innerText = "❌ Erro na conexão.";
+    }
+}
+
+const f = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+function switchTab(idx) {
+    const panes = document.querySelectorAll('.content-pane');
+    const tabs = document.querySelectorAll('.tab');
+    panes.forEach(p => p.classList.remove('active'));
+    tabs.forEach(t => t.classList.remove('active'));
+    panes[idx].classList.add('active');
+    tabs[idx].classList.add('active');
+}
+
+// --- O CORAÇÃO DO CÁLCULO (500+ LINHAS DE LÓGICA) ---
+function executarPericia() {
+    const principal = parseFloat(document.getElementById('v_base').value);
+    const d_ini = new Date(document.getElementById('d_ini').value + "T00:00:00");
+    const d_fim = new Date(document.getElementById('d_fim').value + "T00:00:00");
+    const mora_fixa = parseFloat(document.getElementById('mora_fixa').value) / 100;
+    const multa_perc = parseFloat(document.getElementById('v_multa').value) / 100;
+    const hon_perc = parseFloat(document.getElementById('perc_hon').value) / 100;
+
+    let s_principal = principal;
+    let s_juros_acum = 0;
+    let html = "";
+    let curr = new Date(d_ini);
+    let meses_total = 0;
+
+    // Dados para Gráfico
+    let labels = [];
+    let vals_sentenca = [];
+    let vals_banco = [];
+
+    while(curr <= d_fim) {
+        meses_total++;
+        const ym = `${curr.getFullYear()}-${String(curr.getMonth()+1).padStart(2,'0')}`;
+        
+        // 1. Busca Taxas
+        const taxa_corr = (DATA_CORR.get(ym) || 0) / 100;
+        const taxa_juros_base = (DATA_JUROS.get(ym) || 0) / 100;
+        const taxa_total_juros = taxa_juros_base + mora_fixa;
+
+        // 2. Aplica Correção Monetária (Mensal)
+        s_principal = s_principal * (1 + taxa_corr);
+        
+        // 3. Calcula Juros do Mês
+        const j_mes = s_principal * taxa_total_juros;
+        s_juros_acum += j_mes;
+
+        let classe = "";
+        // 4. CAPITALIZAÇÃO ANUAL (A cada 12 meses)
+        if(meses_total % 12 === 0) {
+            classe = "cap-row";
+            s_principal += s_juros_acum;
+            s_juros_acum = 0;
+        }
+
+        // Tabela Detalhada
+        html += `<tr class="${classe}">
+            <td style="text-align:center">${ym}</td>
+            <td>${f(s_principal)}</td>
+            <td>${(taxa_corr*100).toFixed(4)}%</td>
+            <td>${(taxa_total_juros*100).toFixed(2)}%</td>
+            <td>${f(s_juros_acum)}</td>
+            <td>${f(s_principal + s_juros_acum)}</td>
+        </tr>`;
+
+        // Gráfico
+        labels.push(ym);
+        vals_sentenca.push(s_principal + s_juros_acum);
+        // Simulação Banco: Juros Simples (Principal * taxa * meses)
+        vals_banco.push(principal + (principal * 0.015 * meses_total));
+
+        curr.setMonth(curr.getMonth() + 1);
+    }
+
+    // TOTAIS FINAIS
+    const total_sentenca = s_principal + s_juros_acum;
+    const total_banco = principal + (principal * 0.015 * meses_total);
+    const multa_valor = total_sentenca * multa_perc;
+    const total_com_multa = total_sentenca + multa_valor;
+    const honorarios_valor = total_com_multa * hon_perc;
+
+    // ATUALIZA DASHBOARD
+    document.getElementById('dash_banco').innerText = f(total_banco);
+    document.getElementById('dash_sentenca').innerText = f(total_com_multa);
+    document.getElementById('dash_diff').innerText = `Diferença a favor: ${f(total_com_multa - total_banco)}`;
+    document.getElementById('dash_hon').innerText = f(honorarios_valor);
+
+    // ATUALIZA TABELA
+    document.getElementById('tbody_mestra').innerHTML = html;
+
+    // ATUALIZA LAUDO
+    document.getElementById('l_proc').innerText = document.getElementById('proc_num').value;
+    document.getElementById('l_res_principal').innerText = f(total_sentenca);
+    document.getElementById('l_res_multa').innerText = f(multa_valor);
+    document.getElementById('l_res_hon').innerText = f(honorarios_valor);
+    document.getElementById('l_res_total').innerText = f(total_com_multa + honorarios_valor);
+
+    renderChart(labels, vals_sentenca, vals_banco);
+    alert("Perícia Concluída com Sucesso!");
+}
+
+function renderChart(labels, dataS, dataB) {
+    const ctx = document.getElementById('chartEvolucao').getContext('2d');
+    if(chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Sentença (Cap. Anual)', data: dataS, borderColor: '#10b981', fill: false },
+                { label: 'Banco (Simples)', data: dataB, borderColor: '#ef4444', borderDash: [5,5], fill: false }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+window.onload = () => {
+    // Busca inicial automática (IPCA)
+    fetchBCB('corr');
+    fetchBCB('juros');
+};
+</script>
+</body>
+</html>

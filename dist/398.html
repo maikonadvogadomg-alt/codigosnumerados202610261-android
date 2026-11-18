@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisador de Versões PWA Jurídico</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+h1 {
+  color: #a3a082;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.upload-area {
+  background: #1e293b;
+  border: 2px dashed #334155;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover {
+  border-color: #a3a082;
+  background: #334155;
+}
+.upload-area.dragover {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+input[type="file"] { display: none; }
+.btn {
+  background: #a3a082;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px;
+}
+.btn:hover { background: #d4d0a8; }
+.btn-ghost {
+  background: transparent;
+  color: #a3a082;
+  border: 1px solid #a3a082;
+}
+.results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+.card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 15px;
+  overflow: auto;
+  max-height: 400px;
+}
+.card h3 {
+  color: #4ade80;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.card pre {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #94a3b8;
+  overflow-x: auto;
+}
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 20px;
+}
+.diff-add { color: #4ade80; }
+.diff-remove { color: #f87171; }
+.diff-neutral { color: #94a3b8; }
+.stats {
+  background: #1e293b;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+.stats p {
+  font-size: 13px;
+  margin: 5px 0;
+}
+.highlight {
+  background: rgba(163, 160, 130, 0.2);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+.loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 20px;
+}
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #334155;
+  border-top-color: #a3a082;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔍 Analisador de Versões — PWA Jurídico</h1>
+  
+  <div class="upload-area" id="dropZone">
+    <p style="font-size: 18px; margin-bottom: 10px;">📦 Arraste seus ZIPs aqui</p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">ou clique para selecionar múltiplos arquivos</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecionar ZIPs</button>
+    <input type="file" id="fileInput" multiple accept=".zip" />
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Analisando arquivos...</p>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+
+// Drag and drop
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', e => {
+  handleFiles(e.target.files);
+});
+
+async function handleFiles(files) {
+  if (files.length === 0) return;
+  
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  
+  const versions = [];
+  
+  try {
+    for (let file of files) {
+      const zip = new JSZip();
+      const content = await zip.loadAsync(file);
+      const versionName = file.name.replace('.zip', '');
+      
+      const fileStructure = {};
+      const fileContents = {};
+      
+      for (let [path, zipEntry] of Object.entries(content.files)) {
+        if (!zipEntry.dir) {
+          fileStructure[path] = zipEntry.date;
+          
+          // Lê arquivos importantes
+          if (path.includes('.js') || path.includes('.html') || path.includes('.json')) {
+            try {
+              fileContents[path] = await zipEntry.async('text');
+            } catch (e) {}
+          }
+        }
+      }
+      
+      versions.push({
+        name: versionName,
+        fileStructure,
+        fileContents,
+        fileCount: Object.keys(fileStructure).length
+      });
+    }
+    
+    loadingDiv.style.display = 'none';
+    displayAnalysis(versions);
+    
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultsDiv.innerHTML = `<div class="card" style="border-color: #f87171;"><h3>❌ Erro ao processar</h3><pre>${err.message}</pre></div>`;
+  }
+}
+
+function displayAnalysis(versions) {
+  let html = '';
+  
+  // 1. RESUMO DE CADA VERSÃO
+  html += '<h2 style="color: #a3a082; margin: 20px 0 15px 0; font-size: 16px;">📊 Resumo das Versões</h2>';
+  html += '<div class="results">';
+  
+  versions.forEach(v => {
+    const jsFiles = Object.keys(v.fileContents).filter(f => f.endsWith('.js'));
+    const hasBackend = Object.keys(v.fileStructure).some(f => f.includes('server') || f.includes('backend') || f.includes('api'));
+    const hasDb = Object.keys(v.fileStructure).some(f => f.includes('database') || f.includes('db') || f.includes('sql'));
+    
+    html += `
+      <div class="card">
+        <h3>📦 ${v.name}</h3>
+        <div class="stats">
+          <p><strong>Total de arquivos:</strong> <span class="highlight">${v.fileCount}</span></p>
+          <p><strong>Arquivos JS:</strong> <span class="highlight">${jsFiles.length}</span></p>
+          <p><strong>Backend:</strong> ${hasBackend ? '<span class="diff-add">✓ SIM</span>' : '<span class="diff-remove">✗ NÃO</span>'}</p>
+          <p><strong>Banco de dados:</strong> ${hasDb ? '<span class="diff-add">✓ SIM</span>' : '<span class="diff-remove">✗ NÃO</span>'}</p>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  
+  // 2. COMPARAÇÃO DE ARQUIVOS
+  if (versions.length >= 2) {
+    html += '<h2 style="color: #a3a082; margin: 20px 0 15px 0; font-size: 16px;">🔄 Comparação entre Versões</h2>';
+    
+    const v1 = versions[0];
+    const v2 = versions[1];
+    
+    const files1 = new Set(Object.keys(v1.fileStructure));
+    const files2 = new Set(Object.keys(v2.fileStructure));
+    
+    const added = [...files2].filter(f => !files1.has(f));
+    const removed = [...files1].filter(f => !files2.has(f));
+    const common = [...files1].filter(f => files2.has(f));
+    
+    html += `
+      <div class="stats">
+        <p><span class="diff-add">✓ Adicionados:</span> ${added.length} arquivos</p>
+        <p><span class="diff-remove">✗ Removidos:</span> ${removed.length} arquivos</p>
+        <p><span class="diff-neutral">= Mantidos:</span> ${common.length} arquivos</p>
+      </div>
+    `;
+    
+    if (added.length > 0) {
+      html += `<div class="card"><h3 class="diff-add">✓ Arquivos Novos</h3><pre>${added.slice(0, 20).join('\n')}</pre></div>`;
+    }
+    
+    if (removed.length > 0) {
+      html += `<div class="card"><h3 class="diff-remove">✗ Arquivos Removidos</h3><pre>${removed.slice(0, 20).join('\n')}</pre></div>`;
+    }
+  }
+  
+  // 3. ANÁLISE DE CÓDIGO
+  html += '<h2 style="color: #a3a082; margin: 20px 0 15px 0; font-size: 16px;">🔎 Análise de Código</h2>';
+  
+  versions.forEach((v, idx) => {
+    const jsFiles = Object.keys(v.fileContents).filter(f => f.endsWith('.js'));
+    
+    let analysis = {
+      hasHistorico: false,
+      hasMinuta: false,
+      hasResumo: false,
+      hasAPI: false,
+      hasDatabase: false,
+      hasAuth: false,
+      functions: []
+    };
+    
+    jsFiles.forEach(file => {
+      const code = v.fileContents[file];
+      
+      if (code.includes('historico') || code.includes('history')) analysis.hasHistorico = true;
+      if (code.includes('minuta') || code.includes('minute')) analysis.hasMinuta = true;
+      if (code.includes('resumo') || code.includes('summary')) analysis.hasResumo = true;
+      if (code.includes('fetch') || code.includes('axios')) analysis.hasAPI = true;
+      if (code.includes('database') || code.includes('db.')) analysis.hasDatabase = true;
+      if (code.includes('auth') || code.includes('token')) analysis.hasAuth = true;
+      
+      // Extrai funções principais
+      const funcMatches = code.match(/(?:async\s+)?function\s+(\w+)|const\s+(\w+)\s*=\s*(?:async\s*)?\(/g);
+      if (funcMatches) {
+        analysis.functions.push(...funcMatches.slice(0, 5));
+      }
+    });
+    
+    html += `
+      <div class="card">
+        <h3>🔧 ${v.name}</h3>
+        <div class="stats">
+          <p><strong>Histórico:</strong> ${analysis.hasHistorico ? '<span class="diff-add">✓</span>' : '<span class="diff-remove">✗</span>'}</p>
+          <p><strong>Minuta:</strong> ${analysis.hasMinuta ? '<span class="diff-add">✓</span>' : '<span class="diff-remove">✗</span>'}</p>
+          <p><strong>Resumo:</strong> ${analysis.hasResumo ? '<span class="diff-add">✓</span>' : '<span class="diff-remove">✗</span>'}</p>
+          <p><strong>API:</strong> ${analysis.hasAPI ? '<span class="diff-add">✓</span>' : '<span class="diff-remove">✗</span>'}</p>
+          <p><strong>Database:</strong> ${analysis.hasDatabase ? '<span class="diff-add">✓</span>' : '<span class="diff-remove">✗</span>'}</p>
+          <p><strong>Auth:</strong> ${analysis.hasAuth ? '<span class="diff-add">✓</span>' : '<span class="diff-remove">✗</span>'}</p>
+        </div>
+      </div>
+    `;
+  });
+  
+  resultsDiv.innerHTML = html;
+}
+</script>
+
+</body>
+</html>

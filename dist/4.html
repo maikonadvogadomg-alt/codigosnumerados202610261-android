@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playground Visual</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f1117; color: #e0e0e0; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* TOPO */
+.topo {
+  background: #1a1d27; border-bottom: 1px solid #2a2d3e;
+  padding: 8px 14px; display: flex; align-items: center;
+  gap: 10px; flex-wrap: wrap; flex-shrink: 0;
+}
+.topo h1 { color: #00c7b7; font-size: 1rem; margin-right: 6px; }
+.btn {
+  padding: 6px 14px; border-radius: 6px; border: none;
+  font-size: 0.78rem; font-weight: bold; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-teal  { background: #00c7b7; color: #0f1117; }
+.btn-teal:hover { background: #00e5d3; }
+.btn-roxo  { background: #c87cff; color: #0f1117; }
+.btn-roxo:hover { background: #d89fff; }
+.btn-amarelo { background: #ffcc44; color: #0f1117; }
+.btn-amarelo:hover { background: #ffe066; }
+.btn-vermelho { background: transparent; color: #ff7c7c; border: 1px solid #ff7c7c; }
+.btn-vermelho:hover { background: #ff7c7c; color: #0f1117; }
+.btn-cinza { background: transparent; color: #888; border: 1px solid #2a2d3e; }
+.btn-cinza:hover { background: #2a2d3e; color: #e0e0e0; }
+
+.tipo-badge {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: bold;
+}
+.t-html { background: #002a00; color: #7fff7f; }
+.t-tsx  { background: #001a2a; color: #7c9fff; }
+.t-md   { background: #1a1000; color: #ffcc44; }
+.t-js   { background: #1a0020; color: #c87cff; }
+.t-css  { background: #002020; color: #00c7b7; }
+
+/* ABAS DE ARQUIVOS */
+.abas-arquivos {
+  background: #13151f; border-bottom: 1px solid #2a2d3e;
+  display: flex; gap: 2px; padding: 0 10px;
+  overflow-x: auto; flex-shrink: 0; min-height: 36px;
+  align-items: flex-end;
+}
+.aba-arq {
+  padding: 6px 14px; border-radius: 6px 6px 0 0;
+  border: 1px solid #2a2d3e; border-bottom: none;
+  background: #1a1d27; color: #888;
+  font-size: 0.75rem; cursor: pointer;
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+  transition: all 0.2s;
+}
+.aba-arq:hover { color: #e0e0e0; }
+.aba-arq.ativa { background: #0f1117; color: #00c7b7; border-color: #00c7b7; }
+.aba-fechar {
+  color: #555; font-size: 0.7rem; cursor: pointer;
+  padding: 0 2px; border-radius: 3px;
+}
+.aba-fechar:hover { color: #ff7c7c; background: #2a0000; }
+
+/* LAYOUT PRINCIPAL */
+.principal {
+  display: flex; flex: 1; overflow: hidden;
+}
+
+/* PAINEL ESQUERDO — EDITOR */
+.painel-editor {
+  width: 50%; display: flex; flex-direction: column;
+  border-right: 1px solid #2a2d3e;
+  transition: width 0.3s;
+}
+.painel-editor.expandido { width: 100%; }
+.painel-editor.recolhido { width: 0; overflow: hidden; }
+
+.editor-topo {
+  background: #1a1d27; border-bottom: 1px solid #2a2d3e;
+  padding: 6px 12px; display: flex; align-items: center;
+  gap: 8px; flex-shrink: 0;
+}
+.editor-topo span { color: #555; font-size: 0.75rem; flex: 1; }
+
+#editor {
+  flex: 1; background: #0a0c12; color: #c8f0a0;
+  border: none; outline: none; padding: 14px;
+  font-family: 'Courier New', monospace; font-size: 0.82rem;
+  line-height: 1.7; resize: none; tab-size: 2;
+}
+
+/* PAINEL DIREITO — PREVIEW */
+.painel-preview {
+  width: 50%; display: flex; flex-direction: column;
+  transition: width 0.3s;
+}
+.painel-preview.expandido { width: 100%; }
+.painel-preview.recolhido { width: 0; overflow: hidden; }
+
+.preview-topo {
+  background: #1a1d27; border-bottom: 1px solid #2a2d3e;
+  padding: 6px 12px; display: flex; align-items: center;
+  gap: 8px; flex-shrink: 0;
+}
+.preview-topo span { color: #555; font-size: 0.75rem; flex: 1; }
+
+#preview-frame {
+  flex: 1; border: none; background: #fff;
+}
+
+/* PAINEL MD */
+#preview-md {
+  flex: 1; padding: 20px; overflow-y: auto;
+  background: #0f1117; display: none;
+  font-size: 0.88rem; line-height: 1.8;
+}
+#preview-md h1,#preview-md h2,#preview-md h3 { color: #00c7b7; margin: 16px 0 8px; }
+#preview-md h1 { font-size: 1.4rem; border-bottom: 1px solid #2a2d3e; padding-bottom: 6px; }
+#preview-md h2 { font-size: 1.15rem; }
+#preview-md h3 { font-size: 1rem; color: #c87cff; }
+#preview-md p  { color: #ccc; margin-bottom: 10px; }
+#preview-md code {
+  background: #1a1d27; padding: 2px 6px;
+  border-radius: 4px; color: #c8f0a0; font-size: 0.8rem;
+}
+#preview-md pre {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 6px; padding: 12px; margin: 10px 0;
+  overflow-x: auto;
+}
+#preview-md pre code { background: none; padding: 0; }
+#preview-md ul,#preview-md ol { color: #ccc; padding-left: 20px; margin-bottom: 10px; }
+#preview-md li { margin-bottom: 4px; }
+#preview-md blockquote {
+  border-left: 3px solid #00c7b7; padding-left: 12px;
+  color: #888; margin: 10px 0;
+}
+#preview-md table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+#preview-md th { background: #1a1d27; color: #00c7b7; padding: 8px; border: 1px solid #2a2d3e; }
+#preview-md td { padding: 8px; border: 1px solid #2a2d3e; color: #ccc; }
+#preview-md a  { color: #7c9fff; }
+#preview-md hr { border: none; border-top: 1px solid #2a2d3e; margin: 16px 0; }
+#preview-md strong { color: #ffcc44; }
+#preview-md em { color: #c87cff; }
+
+/* BARRA DE ERROS */
+.barra-erros {
+  background: #1a0000; border-top: 1px solid #3a0000;
+  padding: 6px 14px; display: none; align-items: center;
+  gap: 10px; flex-shrink: 0;
+}
+.barra-erros.visivel { display: flex; }
+.erro-count {
+  background: #ff4444; color: #fff;
+  border-radius: 20px; padding: 2px 10px;
+  font-size: 0.72rem; font-weight: bold;
+  cursor: pointer; animation: pulsar 1.5s infinite;
+}
+@keyframes pulsar {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.erro-txt { color: #ff7c7c; font-size: 0.78rem; flex: 1; }
+
+/* MODAL ERROS */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: none; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-overlay.aberto { display: flex; }
+.modal {
+  background: #1a1d27; border: 1px solid #2a2d3e;
+  border-radius: 12px; padding: 20px;
+  width: 90%; max-width: 600px; max-height: 80vh;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.modal h2 { color: #ff7c7c; font-size: 1rem; }
+.modal-lista {
+  overflow-y: auto; flex: 1;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.erro-item {
+  background: #0f0000; border: 1px solid #3a0000;
+  border-radius: 6px; padding: 10px;
+}
+.erro-item .ei-hora { color: #555; font-size: 0.7rem; }
+.erro-item .ei-tipo { color: #ff7c7c; font-size: 0.78rem; font-weight: bold; }
+.erro-item .ei-msg  { color: #aaa; font-size: 0.78rem; margin-top: 4px; font-family: monospace; }
+.modal-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* MODAL CONECTAR */
+.modal-conectar { max-width: 500px; }
+.arq-item-check {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 6px; padding: 8px 12px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+}
+.arq-item-check:hover { border-color: #00c7b7; }
+.arq-item-check input { cursor: pointer; }
+
+/* TELA VAZIA */
+.tela-vazia {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px; color: #555;
+}
+.tela-vazia h2 { color: #2a2d3e; font-size: 1.5rem; }
+.tela-vazia p  { font-size: 0.85rem; text-align: center; max-width: 300px; }
+.drop-zone {
+  border: 2px dashed #2a2d3e; border-radius: 12px;
+  padding: 30px 40px; text-align: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: #00c7b7; color: #00c7b7;
+}
+.drop-zone p { color: #555; font-size: 0.82rem; margin-top: 8px; }
+
+/* STATUS BAR */
+.statusbar {
+  background: #00c7b7; color: #0f1117;
+  padding: 3px 14px; font-size: 0.7rem;
+  display: flex; gap: 16px; flex-shrink: 0;
+}
+.statusbar span { opacity: 0.8; }
+.statusbar .sb-nome { font-weight: bold; opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- TOPO -->
+<div class="topo">
+  <h1>🎮 Playground Visual</h1>
+  <button class="btn btn-teal" onclick="abrirArquivos()">📂 Abrir Arquivo</button>
+  <button class="btn btn-roxo"  onclick="abrirConectar()" id="btnConectar" style="display:none">🔗 Conectar</button>
+  <button class="btn btn-amarelo" onclick="atualizar()">🔄 Atualizar</button>
+  <button class="btn btn-cinza" onclick="alternarLayout()" id="btnLayout">◧ Só Preview</button>
+  <button class="btn btn-cinza" onclick="novoArquivo()">✏️ Novo</button>
+  <input type="file" id="inputArq" multiple accept=".html,.htm,.tsx,.ts,.jsx,.js,.md,.css,.json" style="display:none" onchange="carregarArquivos(this.files)"/>
+</div>
+
+<!-- ABAS -->
+<div class="abas-arquivos" id="abasArquivos">
+  <div style="color:#555;font-size:0.75rem;padding:8px 4px;align-self:center">Nenhum arquivo aberto</div>
+</div>
+
+<!-- PRINCIPAL -->
+<div class="principal" id="principal">
+
+  <!-- TELA VAZIA -->
+  <div class="tela-vazia" id="telaVazia">
+    <div class="drop-zone" id="dropZone"
+      ondragover="ev(event)" ondragleave="evLeave(event)" ondrop="evDrop(event)"
+      onclick="abrirArquivos()">
+      <div style="font-size:2.5rem">📁</div>
+      <div style="color:#888;margin-top:8px;font-size:0.9rem">Arraste arquivos aqui</div>
+      <p>HTML · TSX · JS · MD · CSS<br>ou clique para selecionar</p>
+    </div>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="painel-editor" id="painelEditor" style="display:none">
+    <div class="editor-topo">
+      <span id="editorNome">—</span>
+      <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem" onclick="copiarEditor()">📋</button>
+      <button class="btn btn-teal"  style="padding:3px 8px;font-size:0.7rem" onclick="salvarArquivo()">💾</button>
+    </div>
+    <textarea id="editor" spellcheck="false"
+      oninput="onEdit()" onkeydown="tabEditor(event)"></textarea>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="painel-preview" id="painelPreview" style="display:none">
+    <div class="preview-topo">
+      <span id="previewNome">Preview</span>
+      <span id="previewTipo"></span>
+      <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem" onclick="abrirNovaJanela()">↗️</button>
+    </div>
+    <iframe id="preview-frame"></iframe>
+    <div id="preview-md"></div>
+  </div>
+
+</div>
+
+<!-- BARRA DE ERROS -->
+<div class="barra-erros" id="barraErros">
+  <span class="erro-count" id="erroCount" onclick="abrirModalErros()">0 erros</span>
+  <span class="erro-txt" id="erroTxt">—</span>
+  <button class="btn btn-vermelho" style="padding:3px 10px;font-size:0.7rem" onclick="abrirModalErros()">Ver todos</button>
+  <button class="btn btn-cinza"   style="padding:3px 10px;font-size:0.7rem" onclick="limparErros()">✕</button>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar" id="statusbar" style="display:none">
+  <span class="sb-nome" id="sbNome">—</span>
+  <span id="sbTipo">—</span>
+  <span id="sbLinhas">0 linhas</span>
+  <span id="sbTamanho">0 bytes</span>
+</div>
+
+<!-- MODAL ERROS -->
+<div class="modal-overlay" id="modalErros">
+  <div class="modal">
+    <h2>🐛 Registro de Erros</h2>
+    <div class="modal-lista" id="listaErros"></div>
+    <div class="modal-btns">
+      <button class="btn btn-teal"     onclick="baixarErros()">⬇️ Baixar Relatório</button>
+      <button class="btn btn-vermelho" onclick="limparErros()">🗑️ Limpar</button>
+      <button class="btn btn-cinza"    onclick="fecharModal('modalErros')">✕ Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONECTAR -->
+<div class="modal-overlay" id="modalConectar">
+  <div class="modal modal-conectar">
+    <h2>🔗 Conectar Arquivos</h2>
+    <p style="color:#aaa;font-size:0.82rem">Selecione os arquivos que serão injetados no preview do arquivo atual:</p>
+    <div class="modal-lista" id="listaConectar"></div>
+    <div class="modal-btns">
+      <button class="btn btn-teal"  onclick="aplicarConexoes()">✅ Aplicar</button>
+      <button class="btn btn-cinza" onclick="fecharModal('modalConectar')">✕ Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════════════════════
+const estado = {
+  arquivos: {},      // { id: { nome, tipo, conteudo, conectados:[] } }
+  abaAtiva: null,
+  layout: 'dividido', // dividido | soEditor | soPreview
+  erros: [],
+  timer: null
+};
+
+let idCounter = 0;
+function novoId() { return 'arq_' + (++idCounter); }
+
+// ══════════════════════════════════════════════════════
+// DETECTAR TIPO
+// ══════════════════════════════════════════════════════
+function detectarTipo(nome) {
+  const ext = nome.split('.').pop().toLowerCase();
+  const mapa = {
+    html:'html', htm:'html',
+    tsx:'tsx', ts:'tsx', jsx:'tsx',
+    js:'js',
+    md:'md', markdown:'md',
+    css:'css',
+    json:'json'
+  };
+  return mapa[ext] || 'txt';
+}
+
+function corTipo(tipo) {
+  const c = { html:'t-html', tsx:'t-tsx', md:'t-md', js:'t-js', css:'t-css' };
+  return c[tipo] || 't-html';
+}
+
+function emojiTipo(tipo) {
+  const e = { html:'🌐', tsx:'⚛️', md:'📝', js:'📜', css:'🎨', json:'📋' };
+  return e[tipo] || '📄';
+}
+
+// ══════════════════════════════════════════════════════
+// ABRIR ARQUIVOS
+// ══════════════════════════════════════════════════════
+function abrirArquivos() {
+  document.getElementById('inputArq').click();
+}
+
+function carregarArquivos(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const id = novoId();
+      estado.arquivos[id] = {
+        nome: file.name,
+        tipo: detectarTipo(file.name),
+        conteudo: e.target.result,
+        conectados: []
+      };
+      renderAbas();
+      ativarAba(id);
+    };
+    reader.readAsText(file);
+  });
+}
+
+// Drag and drop
+function ev(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('dragover');
+}
+function evLeave(e) {
+  document.getElementById('dropZone').classList.remove('dragover');
+}
+function evDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  carregarArquivos(e.dataTransfer.files);
+}
+
+// ══════════════════════════════════════════════════════
+// NOVO ARQUIVO
+// ══════════════════════════════════════════════════════
+function novoArquivo() {
+  const nome = prompt('Nome do arquivo (ex: index.html, app.tsx, notas.md):');
+  if (!nome) return;
+  const id = novoId();
+  const tipo = detectarTipo(nome);
+  const templates = {
+    html: '<!DOCTYPE html>\n<html lang="pt-BR">\n<head>\n<meta charset="UTF-8">\n<title>Novo</title>\n</head>\n<body>\n\n</body>\n</html>',
+    tsx:  'import React from "react";\n\nexport default function App() {\n  return (\n    <div>\n      <h1>Olá!</h1>\n    </div>\n  );\n}',
+    md:   '# Título\n\nConteúdo aqui...',
+    js:   '// JavaScript\nconsole.log("Olá!");',
+    css:  '/* CSS */\nbody {\n  margin: 0;\n  padding: 0;\n}'
+  };
+  estado.arquivos[id] = {
+    nome, tipo,
+    conteudo: templates[tipo] || '',
+    conectados: []
+  };
+  renderAbas();
+  ativarAba(id);
+}
+
+// ══════════════════════════════════════════════════════
+// ABAS
+// ══════════════════════════════════════════════════════
+function renderAbas() {
+  const div = document.getElementById('abasArquivos');
+  const ids = Object.keys(estado.arquivos);
+
+  if (!ids.length) {
+    div.innerHTML = '<div style="color:#555;font-size:0.75rem;padding:8px 4px;align-self:center">Nenhum arquivo aberto</div>';
+    return;
+  }
+
+  div.innerHTML = ids.map(id => {
+    const arq = estado.arquivos[id];
+    const ativa = id === estado.abaAtiva ? 'ativa' : '';
+    return `
+      <div class="aba-arq ${ativa}" onclick="ativarAba('${id}')" id="aba-${id}">
+        ${emojiTipo(arq.tipo)} ${arq.nome}
+        <span class="aba-fechar" onclick="fecharAba(event,'${id}')">✕</span>
+      </div>`;
+  }).join('');
+}
+
+function ativarAba(id) {
+  if (!estado.arquivos[id]) return;
+
+  // Salvar conteúdo da aba atual
+  if (estado.abaAtiva && estado.arquivos[estado.abaAtiva]) {
+    estado.arquivos[estado.abaAtiva].conteudo = document.getElementById('editor').value;
+  }
+
+  estado.abaAtiva = id;
+  const arq = estado.arquivos[id];
+
+  // Mostrar painéis
+  document.getElementById('telaVazia').style.display = 'none';
+  document.getElementById('painelEditor').style.display = 'flex';
+  document.getElementById('painelPreview').style.display = 'flex';
+  document.getElementById('statusbar').style.display = 'flex';
+
+  // Botão conectar só para html/tsx
+  document.getElementById('btnConectar').style.display =
+    ['html','tsx','js'].includes(arq.tipo) ? 'inline-block' : 'none';
+
+  // Editor
+  document.getElementById('editor').value = arq.conteudo;
+  document.getElementById('editorNome').textContent = arq.nome;
+
+  // Preview
+  document.getElementById('previewNome').textContent = 'Preview — ' + arq.nome;
+  document.getElementById('previewTipo').innerHTML =
+    `<span class="tipo-badge ${corTipo(arq.tipo)}">${arq.tipo.toUpperCase()}</span>`;
+
+  // Status bar
+  document.getElementById('sbNome').textContent = arq.nome;
+  document.getElementById('sbTipo').textContent = arq.tipo.toUpperCase();
+  atualizarStatus();
+
+  renderAbas();
+  renderPreview();
+}
+
+function fecharAba(e, id) {
+  e.stopPropagation();
+  delete estado.arquivos[id];
+  const ids = Object.keys(estado.arquivos);
+  if (!ids.length) {
+    estado.abaAtiva = null;
+    document.getElementById('telaVazia').style.display = 'flex';
+    document.getElementById('painelEditor').style.display = 'none';
+    document.getElementById('painelPreview').style.display = 'none';
+    document.getElementById('statusbar').style.display = 'none';
+  } else {
+    ativarAba(ids[ids.length - 1]);
+  }
+  renderAbas();
+}
+
+// ══════════════════════════════════════════════════════
+// EDITOR
+// ══════════════════════════════════════════════════════
+function onEdit() {
+  if (!estado.abaAtiva) return;
+  estado.arquivos[estado.abaAtiva].conteudo = document.getElementById('editor').value;
+  atualizarStatus();
+  clearTimeout(estado.timer);
+  estado.timer = setTimeout(renderPreview, 800);
+}
+
+function tabEditor(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const t = e.target;
+    const s = t.selectionStart;
+    t.value = t.value.substring(0,s) + '  ' + t.value.substring(t.selectionEnd);
+    t.selectionStart = t.selectionEnd = s + 2;
+    onEdit();
+  }
+}
+
+function atualizarStatus() {
+  if (!estado.abaAtiva) return;
+  const c = document.getElementById('editor').value;
+  document.getElementById('sbLinhas').textContent = c.split('\n').length + ' linhas';
+  document.getElementById('sbTamanho').textContent = (new Blob([c]).size / 1024).toFixed(1) + ' KB';
+}
+
+function copiarEditor() {
+  navigator.clipboard.writeText(document.getElementById('editor').value)
+    .then(() => { const b = document.querySelector('.editor-topo .btn-cinza'); b.textContent='✅'; setTimeout(()=>b.textContent='📋',2000); });
+}
+
+function salvarArquivo() {
+  if (!estado.abaAtiva) return;
+  const arq = estado.arquivos[estado.abaAtiva];
+  const blob = new Blob([arq.conteudo], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = arq.nome;
+  a.click();
+}
+
+function atualizar() {
+  renderPreview();
+}
+
+// ══════════════════════════════════════════════════════
+// PREVIEW
+// ══════════════════════════════════════════════════════
+function renderPreview() {
+  if (!estado.abaAtiva) return;
+  const arq = estado.arquivos[estado.abaAtiva];
+  const frame = document.getElementById('preview-frame');
+  const mdDiv = document.getElementById('preview-md');
+
+  if (arq.tipo === 'md') {
+    frame.style.display = 'none';
+    mdDiv.style.display = 'block';
+    mdDiv.innerHTML = converterMD(arq.conteudo);
+    return;
+  }
+
+  frame.style.display = 'block';
+  mdDiv.style.display = 'none';
+
+  let html = arq.conteudo;
+
+  if (arq.tipo === 'tsx' || arq.tipo === 'jsx') {
+    html = gerarHTMLparaTSX(arq.conteudo, arq);
+  } else if (arq.tipo === 'js') {
+    html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>body{background:#0f1117;color:#c8f0a0;font-family:monospace;padding:16px;}
+.log{padding:4px 0;border-bottom:1px solid #1a1d27;}
+.log-err{color:#ff7c7c;}.log-warn{color:#ffcc44;}</style></head>
+<body><div id="out"></div><script>
+const _out=document.getElementById('out');
+const _log=(t,c)=>{const d=document.createElement('div');d.className='log '+c;d.textContent=t;_out.appendChild(d);};
+const _c=console.log;const _e=console.error;const _w=console.warn;
+console.log=(...a)=>{_log(a.join(' '),'');_c(...a);};
+console.error=(...a)=>{_log('❌ '+a.join(' '),'log-err');_e(...a);};
+console.warn=(...a)=>{_log('⚠️ '+a.join(' '),'log-warn');_w(...a);};
+try{${arq.conteudo}}catch(e){console.error(e.message);}
+<\/script></body></html>`;
+  } else if (arq.tipo === 'css') {
+    html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>${arq.conteudo}</style></head>
+<body>
+<h1>Preview CSS</h1><p>Este é um parágrafo de exemplo.</p>
+<button>Botão</button>
+<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>
+<input type="text" placeholder="Campo de texto"/>
+<div class="card" style="margin-top:12px;padding:12px;border:1px solid #ccc">Card de exemplo</div>
+</body></html>`;
+  }
+
+  // Injetar arquivos conectados
+  if (arq.conectados && arq.conectados.length) {
+    html = injetarConectados(html, arq.conectados);
+  }
+
+  // Injetar capturador de erros
+  html = injetarCapturadorErros(html);
+
+  try {
+    const blob = new Blob([html], { type: 'text/html' });
+    const url  = URL.createObjectURL(blob);
+    frame.src  = url;
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  } catch(e) {
+    registrarErro('Preview', e.message);
+  }
+}
+
+// ── TSX via Babel ──
+function gerarHTMLparaTSX(codigo, arq) {
+  // Coletar CSS conectados
+  let cssExtra = '';
+  if (arq.conectados) {
+    arq.conectados.forEach(id => {
+      const c = estado.arquivos[id];
+      if (c && c.tipo === 'css') cssExtra += `<style>${c.conteudo}</style>\n`;
+    });
+  }
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+<script src="https://cdn.tailwindcss.com"><\/script>
+<style>
+  body { margin:0; font-family:sans-serif; }
+  * { box-sizing:border-box; }
+</style>
+${cssExtra}
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+${codigo}
+
+// Tentar renderizar o componente principal
+try {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  // Detectar export default
+  const nomes = ['App','Main','Home','Index','Component','Page'];
+  let Comp = null;
+  for(const n of nomes) {
+    try { if(typeof eval(n) === 'function') { Comp = eval(n); break; } } catch(e) {}
+  }
+  if(Comp) {
+    root.render(React.createElement(Comp));
+  } else {
+    document.getElementById('root').innerHTML =
+      '<div style="padding:20px;color:#ffcc44;font-family:monospace">⚠️ Componente renderizado.<br>Exporte como: export default function App()</div>';
+  }
+} catch(e) {
+  document.getElementById('root').innerHTML =
+    '<div style="padding:20px;color:#ff7c7c;font-family:monospace">❌ Erro: '+e.message+'</div>';
+}
+<\/script>
+</body>
+</html>`;
+}
+
+// ── Injetar conectados ──
+function injetarConectados(html, ids) {
+  let cssInject = '';
+  let jsInject  = '';
+
+  ids.forEach(id => {
+    const arq = estado.arquivos[id];
+    if (!arq) return;
+    if (arq.tipo === 'css') {
+      cssInject += `<style>/* ${arq.nome} */\n${arq.conteudo}</style>\n`;
+    } else if (arq.tipo === 'js') {
+      jsInject += `<script>/* ${arq.nome} */\n${arq.conteudo}<\/script>\n`;
+    }
+  });
+
+  html = html.replace('</head>', cssInject + '</head>');
+  html = html.replace('</body>', jsInject + '</body>');
+  return html;
+}
+
+// ── Capturador de erros no iframe ──
+function injetarCapturadorErros(html) {
+  const script = `<script>
+window.onerror = function(msg,src,linha,col,err) {
+  window.parent.postMessage({tipo:'erro',msg:msg,src:src,linha:linha},'*');
+};
+window.addEventListener('unhandledrejection',function(e){
+  window.parent.postMessage({tipo:'erro',msg:'Promise rejeitada: '+e.reason,'*');
+});
+<\/script>`;
+  return html.replace('<head>', '<head>' + script);
+}
+
+// Receber erros do iframe
+window.addEventListener('message', e => {
+  if (e.data && e.data.tipo === 'erro') {
+    registrarErro(e.data.src || 'Preview', e.data.msg + (e.data.linha ? ' (linha ' + e.data.linha + ')' : ''));
+  }
+});
+
+// ══════════════════════════════════════════════════════
+// MARKDOWN
+// ══════════════════════════════════════════════════════
+function converterMD(txt) {
+  let h = txt
+    // Escapar HTML
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    // Blocos de código
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_,lang,code) =>
+      `<pre><code class="lang-${lang}">${code.trim()}</code></pre>`)
+    // Código inline
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Negrito + itálico
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    // Títulos
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    // HR
+    .replace(/^---$/gm,'<hr>')
+    // Blockquote
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    // Links
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank">$1</a>')
+    // Imagens
+    .replace(/!\[(.+?)\]\((.+?)\)/g,'<img src="$2" alt="$1" style="max-width:100%">')
+    // Listas não ordenadas
+    .replace(/^\- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g,'<ul>$&</ul>')
+    // Listas ordenadas
+    .replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    // Parágrafos
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/^(?!<[hupbli]|<\/|<pre|<blockquote)(.+)$/gm,'$1');
+
+  return '<p>' + h + '</p>';
+}
+
+// ══════════════════════════════════════════════════════
+// CONECTAR ARQUIVOS
+// ══════════════════════════════════════════════════════
+function abrirConectar() {
+  if (!estado.abaAtiva) return;
+  const arqAtual = estado.arquivos[estado.abaAtiva];
+  const ids = Object.keys(estado.arquivos).filter(id => id !== estado.abaAtiva);
+  const div = document.getElementById('listaConectar');
+
+  if (!ids.length) {
+    div.innerHTML = '<p style="color:#555;font-size:0.82rem">Abra mais arquivos para conectar.</p>';
+  } else {
+    div.innerHTML = ids.map(id => {
+      const arq = estado.arquivos[id];
+      const checked = arqAtual.conectados.includes(id) ? 'checked' : '';
+      return `
+        <label class="arq-item-check">
+          <input type="checkbox" value="${id}" ${checked}>
+          <span>${emojiTipo(arq.tipo)} ${arq.nome}</span>
+          <span class="tipo-badge ${corTipo(arq.tipo)}" style="margin-left:auto">${arq.tipo}</span>
+        </label>`;
+    }).join('');
+  }
+
+  document.getElementById('modalConectar').classList.add('aberto');
+}
+
+function aplicarConexoes() {
+  if (!estado.abaAtiva) return;
+  const checks = document.querySelectorAll('#listaConectar input[type=checkbox]');
+  estado.arquivos[estado.abaAtiva].conectados = Array.from(checks)
+    .filter(c => c.checked).map(c => c.value);
+  fecharModal('modalConectar');
+  renderPreview();
+}
+
+// ══════════════════════════════════════════════════════
+// ERROS
+// ══════════════════════════════════════════════════════
+function registrarErro(origem, msg) {
+  const erro = {
+    hora: new Date().toLocaleTimeString(),
+    origem,
+    msg
+  };
+  estado.erros.push(erro);
+  atualizarBarraErros();
+}
+
+function atualizarBarraErros() {
+  const barra = document.getElementById('barraErros');
+  const count = document.getElementById('erroCount');
+  const txt   = document.getElementById('erroTxt');
+  const n = estado.erros.length;
+
+  if (!n) { barra.classList.remove('visivel'); return; }
+
+  barra.classList.add('visivel');
+  count.textContent = n + (n === 1 ? ' erro' : ' erros');
+  txt.textContent = estado.erros[n-1].msg.substring(0, 80) + (estado.erros[n-1].msg.length > 80 ? '...' : '');
+}
+
+function abrirModalErros() {
+  const lista = document.getElementById('listaErros');
+  if (!estado.erros.length) {
+    lista.innerHTML = '<p style="color:#555;font-size:0.82rem">Nenhum erro registrado.</p>';
+  } else {
+    lista.innerHTML = [...estado.erros].reverse().map(e => `
+      <div class="erro-item">
+        <div class="ei-hora">${e.hora} — ${e.origem}</div>
+        <div class="ei-msg">${e.msg}</div>
+      </div>`).join('');
+  }
+  document.getElementById('modalErros').classList.add('aberto');
+}
+
+function limparErros() {
+  estado.erros = [];
+  atualizarBarraErros();
+  fecharModal('modalErros');
+}
+
+function baixarErros() {
+  if (!estado.erros.length) { alert('Nenhum erro para baixar.'); return; }
+  const txt = estado.erros.map(e =>
+    `[${e.hora}] ${e.origem}\n${e.msg}\n${'─'.repeat(40)}`
+  ).join('\n\n');
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'erros_' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+}
+
+// ══════════════════════════════════════════════════════
+// LAYOUT
+// ══════════════════════════════════════════════════════
+function alternarLayout() {
+  const btn = document.getElementById('btnLayout');
+  const ed  = document.getElementById('painelEditor');
+  const pv  = document.getElementById('painelPreview');
+
+  if (estado.layout === 'dividido') {
+    estado.layout = 'soPreview';
+    ed.style.width = '0'; ed.style.overflow = 'hidden';
+    pv.style.width = '100%';
+    btn.textContent = '◨ Só Editor';
+  } else if (estado.layout === 'soPreview') {
+    estado.layout = 'soEditor';
+    pv.style.width = '0'; pv.style.overflow = 'hidden';
+    ed.style.width = '100%'; ed.style.overflow = '';
+    btn.textContent = '◧ Dividido';
+  } else {
+    estado.layout = 'dividido';
+    ed.style.width = '50%'; ed.style.overflow = '';
+    pv.style.width = '50%'; pv.style.overflow = '';
+    btn.textContent = '◧ Só Preview';
+  }
+}
+
+function abrirNovaJanela() {
+  if (!estado.abaAtiva) return;
+  const arq = estado.arquivos[estado.abaAtiva];
+  const blob = new Blob([arq.conteudo], { type: 'text/html' });
+  window.open(URL.createObjectURL(blob), '_blank');
+}
+
+// ══════════════════════════════════════════════════════
+// MODAIS
+// ══════════════════════════════════════════════════════
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('aberto');
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('aberto'); });
+});
+</script>
+</body>
+</html>

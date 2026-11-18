@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mike Legal AI - Importador Universal</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg: #0f172a; --panel: #1e293b; --text: #f1f5f9; 
+            --accent: #8b5cf6; /* Roxo Jurídico */
+            --success: #10b981; --danger: #ef4444; 
+            --border: #334155; --muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 50px; font-size: 13px; }
+        
+        .app { display: grid; grid-template-columns: 350px 1fr; gap: 20px; padding: 20px; max-width: 1800px; margin: 0 auto; }
+        
+        /* Sidebar */
+        .sidebar { background: var(--panel); padding: 15px; border-radius: 8px; border: 1px solid var(--border); height: fit-content; max-height: 95vh; overflow-y: auto; }
+        .sidebar h2 { font-size: 12px; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin: 15px 0 10px; font-weight: 700; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; color: var(--muted); margin-bottom: 4px; font-size: 11px; font-weight: 600; }
+        input, select, textarea { width: 100%; background: #020617; border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 4px; font-size: 13px; }
+        textarea { height: 80px; font-family: monospace; font-size: 11px; resize: vertical; }
+        
+        /* Buttons */
+        .btn { width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; text-transform: uppercase; transition: 0.2s; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #7c3aed; }
+        .btn-success { background: var(--success); color: #022c22; }
+        .btn-sec { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+        .btn-sec:hover { border-color: var(--text); color: var(--text); }
+        
+        .status-box { font-size: 11px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; margin-top: 5px; color: var(--muted); border-left: 3px solid var(--border); }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 5px; margin-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 6px; background: #0f172a; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-size: 11px; border-radius: 4px; }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Main */
+        .main { display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Cards */
+        .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .card h3 { font-size: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; color: var(--muted); }
+        .card-value { font-size: 20px; font-weight: bold; margin: 5px 0; }
+        .badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #334155; color: white; }
+        
+        /* Tabela */
+        .table-wrap { overflow-x: auto; max-height: 600px; border: 1px solid var(--border); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: right; }
+        th { background: #020617; padding: 10px; text-align: right; position: sticky; top: 0; z-index: 10; color: var(--muted); border-bottom: 1px solid var(--border); }
+        th:first-child { text-align: left; }
+        td { padding: 6px 10px; border-bottom: 1px solid var(--border); background: var(--panel); }
+        tr:hover td { background: #334155; }
+        
+        /* Drop Zone */
+        .drop-zone { border: 2px dashed var(--border); padding: 20px; text-align: center; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .drop-zone:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); }
+        
+        /* Loading */
+        #loader { display:none; text-align: center; padding: 10px; color: var(--accent); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <aside class="sidebar">
+        <h1 style="font-size:16px; margin-bottom:15px; color:white; display:flex; align-items:center; gap:8px;">
+            <span>⚖️</span> Mike Legal AI <span style="font-size:10px; background:var(--accent); padding:2px 6px; border-radius:4px;">PRO</span>
+        </h1>
+        
+        <h2>1. Fatores de Correção (TJ/Tribunais)</h2>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('excel')">Excel (.xlsx)</button>
+            <button class="tab-btn" onclick="switchTab('pdf')">PDF (Texto)</button>
+        </div>
+
+        <div id="tab-excel" class="tab-content active">
+            <div class="drop-zone" onclick="document.getElementById('inputExcel').click()">
+                <div style="font-size:24px; margin-bottom:5px;">📊</div>
+                <div>Clique para carregar XLSX/XLS</div>
+                <div style="font-size:10px; color:var(--muted)">(Tabelas do TJMG, TJSP etc)</div>
+            </div>
+            <input type="file" id="inputExcel" accept=".xlsx, .xls, .csv" style="display:none" onchange="lerExcel(this)">
+        </div>
+
+        <div id="tab-pdf" class="tab-content">
+            <div class="form-group">
+                <label>Cole aqui o conteúdo copiado do PDF:</label>
+                <textarea id="txtPdf" placeholder="Ex: 2024 1,01 1,02 1,03... (Selecione a tabela no PDF, copie e cole aqui)"></textarea>
+                <button class="btn btn-sec" onclick="lerTextoPDF()">Processar Texto</button>
+            </div>
+        </div>
+
+        <div id="statusImport" class="status-box">Aguardando arquivo...</div>
+
+        <h2>2. Parâmetros do Cálculo</h2>
+        <div class="form-group">
+            <label>Valor Principal (R$)</label>
+            <input type="number" id="vlrPrincipal" value="10000.00">
+        </div>
+        <div class="form-group">
+            <label>Data Início (Vencimento)</label>
+            <input type="date" id="dtInicio" value="2020-01-01">
+        </div>
+        <div class="form-group">
+            <label>Data Final (Cálculo)</label>
+            <input type="date" id="dtFim">
+        </div>
+
+        <h2>3. Regra de Juros</h2>
+        <div class="form-group">
+            <label>Tipo de Juros</label>
+            <select id="tipoJuros">
+                <option value="simples_1">1% Simples (Cível Geral)</option>
+                <option value="poupanca">Poupança (TR + 0.5%)</option>
+                <option value="selic">SELIC (Apenas Juros)</option>
+                <option value="nenhum">Sem Juros (Só Correção)</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Início dos Juros</label>
+            <input type="date" id="dtJuros">
+        </div>
+
+        <div class="form-group">
+            <label>Multa (%)</label>
+            <input type="number" id="multa" value="0">
+        </div>
+
+        <button class="btn btn-primary" onclick="calcular()">⚡ Calcular Agora</button>
+        <button class="btn btn-sec" onclick="exportarRelatorio()">📄 Relatório Markdown</button>
+    </aside>
+
+    <main class="main">
+        <div class="compare-grid">
+            <div class="card" style="border-left: 4px solid var(--muted)">
+                <h3>Valor Original <span class="badge">Histórico</span></h3>
+                <div class="card-value" id="kpiOriginal">R$ 0,00</div>
+            </div>
+            <div class="card" style="border-left: 4px solid var(--accent)">
+                <h3>Atualizado (Correção) <span class="badge" style="background:var(--accent)">Importado</span></h3>
+                <div class="card-value" id="kpiCorrigido" style="color:var(--accent)">R$ 0,00</div>
+                <div style="font-size:11px; color:var(--muted)" id="kpiFator">Fator: -</div>
+            </div>
+            <div class="card" style="border-left: 4px solid var(--success)">
+                <h3>Total Final <span class="badge" style="background:var(--success)">Com Juros</span></h3>
+                <div class="card-value" id="kpiTotal" style="color:var(--success)">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div id="loader">Carregando dados...</div>
+        <div class="table-wrap">
+            <table id="tblEvolucao">
+                <thead>
+                    <tr>
+                        <th style="width:100px">Mês/Ano</th>
+                        <th>Índice (%)</th>
+                        <th>Fator Tabela</th>
+                        <th>Vlr. Corrigido</th>
+                        <th>Juros (%)</th>
+                        <th>Juros (R$)</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="7" style="text-align:center; padding:20px; color:var(--muted)">Importe uma tabela e clique em Calcular.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script>
+    // --- SETUP ---
+    document.getElementById('dtFim').valueAsDate = new Date();
+    document.getElementById('dtJuros').valueAsDate = new Date(2020, 0, 1);
+
+    // Variáveis Globais
+    let FATORES_DB = {}; // Armazena { '2021-01': 1.0543, ... } (Fatores Brutos da Tabela)
+    let INDICES_DERIVADOS = {}; // Armazena { '2021-01': 0.54 } (Inflação mensal % derivada)
+    
+    // --- TAB SYSTEM ---
+    window.switchTab = (tab) => {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        event.target.classList.add('active');
+    };
+
+    // --- LEITOR UNIVERSAL (EXCEL / CSV) ---
+    async function lerExcel(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        setStatus("Lendo arquivo...", "loading");
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // Pega a primeira aba
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Converte para JSON (Array de Arrays é mais seguro para layout desconhecido)
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                processarMatriz(jsonData);
+            } catch (err) {
+                console.error(err);
+                setStatus("Erro ao ler Excel. Tente outro formato.", "error");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // --- LEITOR DE TEXTO (PDF PASTE) ---
+    function lerTextoPDF() {
+        const text = document.getElementById('txtPdf').value;
+        if (!text.trim()) return alert("Cole o texto primeiro.");
+        
+        // Tenta simular uma matriz baseada em quebras de linha
+        const lines = text.split('\n').map(l => l.trim().split(/\s+/)); // Divide por espaço
+        processarMatriz(lines);
+    }
+
+    // --- PROCESSADOR INTELIGENTE (Detecta Matriz vs Lista) ---
+    function processarMatriz(data) {
+        FATORES_DB = {};
+        let count = 0;
+        let tipoDetectado = "Desconhecido";
+
+        // Heurística 1: Tenta encontrar cabeçalho de Meses (JAN, FEV...) -> Formato Matriz
+        // Heurística 2: Tenta encontrar Colunas ANO e ÍNDICE -> Formato Lista
+
+        // Normalização de Cabeçalhos
+        const mesesRef = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+        
+        // Varre linhas procurando onde começam os dados
+        data.forEach(row => {
+            if (!row || row.length < 2) return;
+
+            // Converter linha para string lowercase para análise
+            const rowStr = row.map(c => String(c).toLowerCase());
+            
+            // Verifica se a primeira coluna parece um ano (19xx ou 20xx)
+            const col1 = String(row[0]).trim();
+            if (col1.match(/^(19|20)\d{2}$/)) {
+                const ano = parseInt(col1);
+                
+                // Se a linha tem muitos números, provável ser MATRIZ (Ano + 12 meses)
+                // Ex: [2021, 1.01, 1.02, ...]
+                // Verifica quantos números temos na linha
+                const numeros = row.filter(c => !isNaN(parseFloat(String(c).replace(',','.')))).length;
+                
+                if (numeros > 5) {
+                    // É MATRIZ
+                    tipoDetectado = "Matriz (TJMG/Excel)";
+                    // Assume que as colunas 1 a 12 são Jan a Dez (index 1 a 12)
+                    for (let m = 0; m < 12; m++) {
+                        if (row[m+1]) {
+                            let valStr = String(row[m+1]).replace(',', '.'); // Troca virgula por ponto
+                            let val = parseFloat(valStr);
+                            if (!isNaN(val)) {
+                                const mes = String(m + 1).padStart(2, '0');
+                                FATORES_DB[`${ano}-${mes}`] = val;
+                                count++;
+                            }
+                        }
+                    }
+                } else {
+                    // Pode ser LISTA (Ano, Mês, Valor) ou (Data, Valor)
+                    // Tenta identificar coluna de mês
+                    // Lógica simplificada: Se tem 3 colunas e a 2ª é texto de mês ou número
+                    if (row.length >= 3) {
+                        tipoDetectado = "Lista Linear";
+                        let mesRaw = row[1];
+                        let valRaw = row[2];
+                        let mesNum = parseMes(mesRaw);
+                        
+                        if (mesNum) {
+                            let val = parseFloat(String(valRaw).replace(',', '.'));
+                            if (!isNaN(val)) {
+                                FATORES_DB[`${ano}-${mesNum}`] = val;
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (count > 0) {
+            derivarIndicesMensais();
+            setStatus(`Sucesso! ${count} fatores importados. (${tipoDetectado})`, "success");
+            calcular();
+        } else {
+            setStatus("Não foi possível identificar dados. Verifique se o arquivo tem Anos e Fatores.", "error");
+        }
+    }
+
+    function parseMes(val) {
+        val = String(val).toLowerCase().trim();
+        const mapa = { 'jan': '01', 'fev': '02', 'mar': '03', 'abr': '04', 'mai': '05', 'jun': '06', 'jul': '07', 'ago': '08', 'set': '09', 'out': '10', 'nov': '11', 'dez': '12', 'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04', 'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08', 'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12' };
+        if (mapa[val]) return mapa[val];
+        if (!isNaN(parseInt(val)) && parseInt(val) >= 1 && parseInt(val) <= 12) return String(val).padStart(2, '0');
+        return null;
+    }
+
+    // --- ENGENHARIA REVERSA (Fator Acumulado -> Inflação Mensal) ---
+    function derivarIndicesMensais() {
+        // Ordena chaves
+        const chaves = Object.keys(FATORES_DB).sort();
+        INDICES_DERIVADOS = {};
+
+        // Assume que a tabela TJMG é de MULTIPLICADORES para trazer ao Valor Presente?
+        // OU Divisores?
+        // Geralmente Tabela TJMG: Valor Atualizado = Valor Original * Fator Data Atual / Fator Data Original.
+        // Se a tabela for de "Fatores de Atualização" (crescentes com o tempo, ex: 1994=0.001, 2024=100.0), a inflação é positiva.
+        // Se for "Fatores de Correção" (decrescentes, ex: Jan=1.0, Fev=0.99), é divisor.
+        
+        // Vamos checar a tendência
+        const primeiro = FATORES_DB[chaves[0]];
+        const ultimo = FATORES_DB[chaves[chaves.length-1]];
+        const crescente = ultimo > primeiro;
+
+        for (let i = 0; i < chaves.length - 1; i++) {
+            const atual = FATORES_DB[chaves[i]];
+            const prox = FATORES_DB[chaves[i+1]];
+            const keyProx = chaves[i+1];
+
+            // Variação percentual entre mês atual e próximo
+            let varPct = 0;
+            if (atual !== 0) {
+                // Se for crescente (Índice de Preços): Variação = (Prox / Atual) - 1
+                if (crescente) varPct = (prox / atual) - 1;
+                else varPct = (atual / prox) - 1; // Lógica inversa se for tabela de deflação (raro)
+            }
+            INDICES_DERIVADOS[keyProx] = varPct * 100; // Guarda %
+        }
+        // Primeiro mês assume 0 ou média
+        INDICES_DERIVADOS[chaves[0]] = 0;
+    }
+
+    // --- CÁLCULO ---
+    function calcular() {
+        if (Object.keys(FATORES_DB).length === 0) return setStatus("Importe uma tabela primeiro.", "error");
+
+        const V0 = parseFloat(document.getElementById('vlrPrincipal').value);
+        const dtIni = new Date(document.getElementById('dtInicio').value);
+        const dtFim = new Date(document.getElementById('dtFim').value);
+        const dtJuros = new Date(document.getElementById('dtJuros').value);
+        const tipoJuros = document.getElementById('tipoJuros').value;
+        const multaPct = parseFloat(document.getElementById('multa').value);
+
+        let saldo = V0;
+        let jurosAcum = 0; // Valor financeiro acumulado
+        let htmlRows = '';
+
+        // Iterar mês a mês (dia 1)
+        let curr = new Date(dtIni.getFullYear(), dtIni.getMonth(), 1);
+        const end = new Date(dtFim.getFullYear(), dtFim.getMonth(), 1);
+
+        // Pega fator da data inicial (para mostrar no header se quiser)
+        const keyIni = fmtKey(curr);
+        const fatorBase = FATORES_DB[keyIni] || 1;
+
+        while (curr <= end) {
+            const key = fmtKey(curr);
+            
+            // 1. Correção Monetária
+            // A lógica correta usando a tabela do TJ é:
+            // Valor Atualizado = Valor Original * (Fator Data Fim / Fator Data Início)
+            // Mas para mostrar evolução mês a mês, aplicamos o índice mensal derivado
+            
+            let idxMes = INDICES_DERIVADOS[key] || 0;
+            // Proteção contra dados ruins
+            if (idxMes > 100 || idxMes < -50) idxMes = 0;
+
+            // Se for o primeiro mês, não corrige (correção pro rata ou mês cheiro, assumindo mês cheio no próximo)
+            if (curr.getTime() === new Date(dtIni.getFullYear(), dtIni.getMonth(), 1).getTime()) idxMes = 0;
+
+            const saldoAnt = saldo;
+            saldo = saldo * (1 + (idxMes / 100));
+            
+            // 2. Juros
+            let taxaJ = 0;
+            if (curr >= new Date(dtJuros.getFullYear(), dtJuros.getMonth(), 1)) {
+                if (tipoJuros === 'simples_1') taxaJ = 1.0;
+                else if (tipoJuros === 'poupanca') taxaJ = 0.5; // Simplificado, ideal seria importar TR
+            }
+
+            const valJuros = saldo * (taxaJ / 100);
+            jurosAcum += valJuros;
+
+            // Fator original da tabela (apenas visual)
+            const fatorVisual = FATORES_DB[key] ? FATORES_DB[key].toFixed(4) : '-';
+
+            htmlRows += `
+                <tr>
+                    <td>${key}</td>
+                    <td style="color:${idxMes > 0 ? 'var(--accent)' : 'var(--muted)'}">${idxMes.toFixed(4)}%</td>
+                    <td style="color:var(--muted); font-size:11px">${fatorVisual}</td>
+                    <td style="font-weight:bold">${fmtBRL(saldo)}</td>
+                    <td>${taxaJ}%</td>
+                    <td>${fmtBRL(valJuros)}</td>
+                    <td style="color:var(--text)">${fmtBRL(saldo + jurosAcum)}</td>
+                </tr>
+            `;
+
+            curr.setMonth(curr.getMonth() + 1);
+        }
+
+        const totalSemMulta = saldo + jurosAcum;
+        const valMulta = totalSemMulta * (multaPct / 100);
+        const totalGeral = totalSemMulta + valMulta;
+
+        // Render UI
+        document.getElementById('tblEvolucao').querySelector('tbody').innerHTML = htmlRows;
+        document.getElementById('kpiOriginal').innerText = fmtBRL(V0);
+        document.getElementById('kpiCorrigido').innerText = fmtBRL(saldo);
+        document.getElementById('kpiTotal').innerText = fmtBRL(totalGeral);
+        document.getElementById('kpiFator').innerText = `Multa: ${fmtBRL(valMulta)}`;
+
+        setStatus("Cálculo finalizado.", "success");
+    }
+
+    // --- UTILS ---
+    function fmtKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
+    }
+    function fmtBRL(val) {
+        return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+    function setStatus(msg, type) {
+        const el = document.getElementById('statusImport');
+        el.innerText = msg;
+        el.style.borderLeftColor = type === 'success' ? 'var(--success)' : (type === 'error' ? 'var(--danger)' : 'var(--accent)');
+        el.style.color = type === 'success' ? 'var(--success)' : (type === 'error' ? 'var(--danger)' : 'var(--muted)');
+    }
+    
+    function exportarRelatorio() {
+        const total = document.getElementById('kpiTotal').innerText;
+        const texto = `# Relatório de Cálculo - Mike Legal AI\n\nData: ${new Date().toLocaleDateString()}\nTotal Final: ${total}\n\nEste cálculo utilizou fatores importados e juros simples/compostos conforme configurado.`;
+        const blob = new Blob([texto], {type: 'text/markdown'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'relatorio_juridico.md';
+        link.click();
+    }
+</script>
+
+</body>
+</html>

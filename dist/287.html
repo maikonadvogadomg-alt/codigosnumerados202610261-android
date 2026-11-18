@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Mike Definitiva</title>
+    <style>
+        /* VISUAL DARK/AZUL QUE VOCÊ GOSTOU */
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --accent: #3b82f6; --green: #10b981; --red: #ef4444; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; font-size: 14px; }
+        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        h2 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-top: 0; font-size: 16px; color: var(--accent); }
+        
+        .box { background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid #334155; }
+        
+        label { display: block; margin-top: 10px; color: #94a3b8; font-size: 12px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; background: #020617; border: 1px solid #475569; color: white; border-radius: 4px; }
+        
+        button { width: 100%; margin-top: 20px; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        button:hover { background: #2563eb; }
+
+        .file-upload { border: 2px dashed #475569; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 15px; border-radius: 6px; }
+        .file-upload:hover { border-color: var(--accent); background: #1e293b; }
+        
+        .result-row { display: flex; justify-content: space-between; margin-top: 10px; padding: 10px; background: #0f172a; border-radius: 4px; }
+        .val { font-weight: bold; font-size: 16px; }
+        .green { color: var(--green); } .red { color: var(--red); } .blue { color: var(--accent); }
+
+        /* Responsivo */
+        @media (max-width: 700px) { .container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="box">
+        <h2>1. Arquivo TJMG (.csv)</h2>
+        <div class="file-upload" onclick="document.getElementById('csvInput').click()">
+            📂 Clique para carregar "01 - Excel..."
+            <div id="statusFile" style="font-size:11px; color:var(--green); margin-top:5px"></div>
+        </div>
+        <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="lerCSV(this)">
+
+        <h2>2. Dados da Dívida</h2>
+        <label>Valor Original (R$)</label>
+        <input type="number" id="valor" value="10000.00">
+        
+        <label>Data de Vencimento</label>
+        <input type="date" id="dataVenc" value="2021-01-10">
+        
+        <label>Data do Cálculo (Hoje)</label>
+        <input type="date" id="dataCalc">
+    </div>
+
+    <div class="box">
+        <h2>3. Configuração</h2>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div>
+                <label style="color:var(--green)">SENTENÇA (Juros Simples)</label>
+                <input type="number" id="jurosJusto" value="1.0" placeholder="% a.m.">
+            </div>
+            <div>
+                <label style="color:var(--red)">BANCO (Juros Compostos)</label>
+                <input type="number" id="jurosBanco" value="3.5" placeholder="% a.m.">
+            </div>
+        </div>
+
+        <label>Multa (%)</label>
+        <input type="number" id="multa" value="2.0">
+        
+        <label>Honorários sobre Proveito (%)</label>
+        <input type="number" id="honorarios" value="10.0">
+
+        <button onclick="calcular()">CALCULAR AGORA</button>
+
+        <div id="resultados" style="margin-top:20px; display:none;">
+            <div class="result-row" style="border-left: 4px solid var(--red)">
+                <span>Total Banco</span>
+                <span class="val red" id="resBanco">R$ 0,00</span>
+            </div>
+            <div class="result-row" style="border-left: 4px solid var(--green)">
+                <span>Total Sentença</span>
+                <span class="val green" id="resJusto">R$ 0,00</span>
+            </div>
+            <div class="result-row" style="border-left: 4px solid var(--accent); margin-top:20px">
+                <span>Diferença (Proveito)</span>
+                <span class="val blue" id="resDiff">R$ 0,00</span>
+            </div>
+            <div class="result-row">
+                <span>Seus Honorários</span>
+                <span class="val blue" id="resHon">R$ 0,00</span>
+            </div>
+            <div style="margin-top:10px; font-size:11px; color:#64748b; text-align:center" id="logFator"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Define data de hoje
+    document.getElementById('dataCalc').valueAsDate = new Date();
+
+    let TABELA_FATORES = {}; // Memória para o arquivo CSV
+
+    const MESES = {
+        'janeiro': '01', 'fevereiro': '02', 'março': '03', 'marco': '03', 'abril': '04', 'maio': '05', 'junho': '06',
+        'julho': '07', 'agosto': '08', 'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
+    };
+
+    function lerCSV(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const lines = e.target.result.split('\n');
+            let count = 0;
+            TABELA_FATORES = {};
+            
+            lines.forEach(line => {
+                // Limpa e separa por vírgula
+                let parts = line.replace(/"/g, '').trim().split(',');
+                if (parts.length >= 3) {
+                    let ano = parts[0].trim();
+                    let mesNome = parts[1].trim().toLowerCase();
+                    let fatorStr = parts[2].trim();
+
+                    if (ano.match(/^\d{4}$/) && MESES[mesNome]) {
+                        // Corrige vírgula/ponto
+                        if (fatorStr.includes(',') && !fatorStr.includes('.')) fatorStr = fatorStr.replace(',', '.');
+                        let fator = parseFloat(fatorStr);
+                        
+                        if (!isNaN(fator)) {
+                            let chave = `${ano}-${MESES[mesNome]}`; // Ex: 2021-01
+                            TABELA_FATORES[chave] = fator;
+                            count++;
+                        }
+                    }
+                }
+            });
+            document.getElementById('statusFile').innerText = `✅ ${count} fatores lidos com sucesso!`;
+        };
+        reader.readAsText(file);
+    }
+
+    function calcular() {
+        // 1. Pega os valores
+        let V0 = parseFloat(document.getElementById('valor').value);
+        let dtVenc = new Date(document.getElementById('dataVenc').value);
+        let dtCalc = new Date(document.getElementById('dataCalc').value);
+        
+        // 2. Acha o Fator no Arquivo
+        let ano = dtVenc.getFullYear();
+        let mes = String(dtVenc.getMonth() + 1).padStart(2, '0');
+        let chave = `${ano}-${mes}`;
+        
+        let fator = TABELA_FATORES[chave];
+        let V_Corrigido = V0;
+        let msgLog = "";
+
+        if (fator) {
+            V_Corrigido = V0 * fator; // Multiplica direto (Tabela TJMG de Fatores)
+            msgLog = `Fator encontrado para ${chave}: ${fator}`;
+        } else {
+            msgLog = `⚠️ Fator não encontrado para ${chave}. Usando 1.0`;
+            // Se não carregou arquivo, avisa
+            if(Object.keys(TABELA_FATORES).length === 0) alert("Carregue o arquivo CSV primeiro!");
+        }
+
+        // 3. Calcula Tempo (Meses)
+        let meses = (dtCalc.getFullYear() - dtVenc.getFullYear()) * 12;
+        meses -= dtVenc.getMonth();
+        meses += dtCalc.getMonth();
+        if (meses < 0) meses = 0;
+
+        // 4. Cenário Sentença (Simples + Multa)
+        let jurosSimplesPct = parseFloat(document.getElementById('jurosJusto').value) * meses;
+        let valorJurosSimples = V_Corrigido * (jurosSimplesPct / 100);
+        let multaPct = parseFloat(document.getElementById('multa').value);
+        let valorMulta = (V_Corrigido + valorJurosSimples) * (multaPct / 100);
+        
+        let Total_Sentenca = V_Corrigido + valorJurosSimples + valorMulta;
+
+        // 5. Cenário Banco (Composto)
+        // Banco cobra sobre o valor original ou corrigido? Geralmente aplica índice próprio.
+        // Para simular o "rombo", vamos aplicar Juros Compostos sobre o Valor Original
+        let jurosBancoTaxa = parseFloat(document.getElementById('jurosBanco').value) / 100;
+        let Total_Banco = V0 * Math.pow((1 + jurosBancoTaxa), meses);
+
+        // 6. Diferença
+        let diff = Total_Banco - Total_Sentenca;
+        if (diff < 0) diff = 0; // Se banco for menor (impossível kkk), diferença é zero
+        
+        let honPct = parseFloat(document.getElementById('honorarios').value) / 100;
+        let honorarios = diff * honPct;
+
+        // 7. Exibe
+        document.getElementById('resultados').style.display = 'block';
+        document.getElementById('resBanco').innerText = fmt(Total_Banco);
+        document.getElementById('resJusto').innerText = fmt(Total_Sentenca);
+        document.getElementById('resDiff').innerText = fmt(diff);
+        document.getElementById('resHon').innerText = fmt(honorarios);
+        document.getElementById('logFator').innerText = msgLog;
+    }
+
+    function fmt(v) { return v.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}); }
+</script>
+
+</body>
+</html>

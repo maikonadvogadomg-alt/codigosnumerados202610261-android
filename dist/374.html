@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtro Jurídico Inteligente - Estrutura de Peças</title>
+    
+    <!-- Bibliotecas para importação/exportação -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <style>
+        :root {
+            --dark-bg: #2c3e50;
+            --darker-bg: #34495e;
+            --accent: #f1c40f;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --purple: #8e44ad;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: #ecf0f1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+        }
+
+        .container-principal {
+            display: flex;
+            gap: 20px;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        /* ========== PAINEL ESQUERDO ========== */
+        .painel-importacao {
+            flex: 1;
+            background: var(--dark-bg);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .painel-importacao h2 {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .painel-importacao h3 {
+            color: #ecf0f1;
+            font-size: 13px;
+            margin: 15px 0 8px;
+            text-transform: uppercase;
+        }
+
+        .info-box {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid var(--info);
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 11px;
+            line-height: 1.5;
+            border-radius: 4px;
+        }
+
+        textarea {
+            background: var(--darker-bg);
+            color: white;
+            border: 1px solid #7f8c8d;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            border-radius: 6px;
+            min-height: 150px;
+            margin-bottom: 10px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(241, 196, 15, 0.2);
+        }
+
+        input[type="text"], input[type="file"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #7f8c8d;
+            border-radius: 6px;
+            background: var(--darker-bg);
+            color: white;
+            font-size: 12px;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-acao {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-acao:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-acao:active {
+            transform: translateY(0);
+        }
+
+        .btn-limpar { background-color: var(--danger); }
+        .btn-info { background-color: var(--info); }
+        .btn-purple { background-color: var(--purple); }
+        .btn-full { grid-column: 1 / -1; }
+
+        .secao-topicos {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .topico-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+        }
+
+        .topico-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .topico-item label {
+            flex: 1;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* ========== PAINEL DIREITO ========== */
+        .area-peticao {
+            flex: 1.5;
+            background: #bdc3c7;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-y: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .folha-a4 {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm 20mm;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            text-align: justify;
+        }
+
+        .folha-a4 h1 {
+            font-size: 14pt;
+            text-align: center;
+            text-transform: uppercase;
+            margin: 20px 0 30px;
+            font-weight: bold;
+        }
+
+        .folha-a4 h2 {
+            font-size: 12pt;
+            text-transform: uppercase;
+            border-bottom: 1px solid black;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            padding-bottom: 5px;
+        }
+
+        .folha-a4 h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-top: 18px;
+            margin-bottom: 10px;
+        }
+
+        .folha-a4 p {
+            margin-bottom: 10px;
+            text-indent: 2cm;
+        }
+
+        .folha-a4 .no-indent {
+            text-indent: 0;
+        }
+
+        .folha-a4 .center {
+            text-align: center;
+            text-indent: 0;
+        }
+
+        .area-editavel {
+            border: 2px dashed #e67e22;
+            padding: 15px;
+            min-height: 80px;
+            background-color: #fef5e7;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .area-editavel:empty:before {
+            content: "[Texto filtrado aparecerá aqui]";
+            color: #d35400;
+            font-style: italic;
+            font-size: 11pt;
+        }
+
+        .normas-lista {
+            padding-left: 20px;
+            margin: 15px 0;
+        }
+
+        .normas-lista li {
+            margin-bottom: 8px;
+            text-indent: 0;
+        }
+
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            display: none; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .overlay .box {
+            background: white; padding: 18px 20px; border-radius: 10px; min-width: 280px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .spinner {
+            width: 18px; height: 18px; border: 3px solid #cbd5e1; border-top-color: #f39c12;
+            border-radius: 50%; display: inline-block; animation: spin 1s linear infinite; vertical-align: middle;
+            margin-right: 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ========== IMPRESSÃO ========== */
+        @media print {
+            body { background: white; }
+            .container-principal { display: block; height: auto; padding: 0; }
+            .painel-importacao, .toolbar { display: none !important; }
+            .area-peticao { background: white; padding: 0; box-shadow: none; }
+            .folha-a4 { box-shadow: none; margin: 0; width: 100%; min-height: auto; }
+            .area-editavel { border: none; background: none; padding: 0; }
+        }
+
+        /* ========== RESPONSIVO ========== */
+        @media (max-width: 1200px) {
+            .container-principal { flex-direction: column; height: auto; }
+            .painel-importacao, .area-peticao { flex: 1; }
+            .folha-a4 { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="loadingOverlay">
+    <div class="box">
+        <div><span class="spinner"></span><b id="overlayMsg">Processando...</b></div>
+        <div style="margin-top:8px;font-size:12px;color:#475569" id="overlaySub">Aguarde.</div>
+    </div>
+</div>
+
+<div class="container-principal">
+    
+    <!-- ========== PAINEL DE IMPORTAÇÃO ========== -->
+    <div class="painel-importacao">
+        <h2>📥 Importador Inteligente</h2>
+        
+        <div class="info-box">
+            <strong>💡 Como usar:</strong><br>
+            1. Cole texto ou carregue arquivo (TXT, DOCX, PDF)<br>
+            2. Selecione os tópicos desejados<br>
+            3. Clique em "Processar e Inserir"<br>
+            4. Edite diretamente na petição<br>
+            5. Exporte em Word, JSON ou PDF
+        </div>
+
+        <!-- IMPORTAÇÃO DE ARQUIVO -->
+        <h3>📁 Carregar Arquivo</h3>
+        <input type="file" id="fileInput" accept=".txt,.docx,.pdf" multiple>
+        
+        <!-- ÁREA DE TEXTO -->
+        <h3>📝 Ou Cole o Texto Aqui</h3>
+        <textarea id="textoBruto" placeholder="Cole aqui o texto bruto...
+
+Exemplo:
+* O processo não teve perícia médica.
+# A DIB deve ser na DER conforme Tema 1124/STJ.
+** As trigêmeas nasceram antes da DER.
+### O acórdão omitiu análise da Lei 14.176/21."></textarea>
+
+        <!-- CONFIGURAÇÕES DE FILTRO -->
+        <h3>⚙️ Opções de Filtro</h3>
+        <div class="secao-topicos">
+            <label style="display: block; margin-bottom: 10px; font-size: 12px;">
+                <input type="checkbox" id="removerDuplicatas" checked> Remover duplicatas
+            </label>
+            <label style="display: block; margin-bottom: 10px; font-size: 12px;">
+                <input type="checkbox" id="removerCaracteres" checked> Remover *, #, e símbolos (Markdown)
+            </label>
+            <label style="display: block; margin-bottom: 10px; font-size: 12px;">
+                <input type="checkbox" id="ignorarCurtas" checked> Ignorar linhas muito curtas (< 15 caracteres)
+            </label>
+        </div>
+
+        <!-- SELEÇÃO DE TÓPICOS -->
+        <h3>📋 Distribuir Texto nos Tópicos</h3>
+        <div class="secao-topicos">
+            <div class="topico-item">
+                <input type="checkbox" id="topico1" checked>
+                <label for="topico1">I. Síntese Fática</label>
+            </div>
+            <div class="topico-item">
+                <input type="checkbox" id="topico2" checked>
+                <label for="topico2">II. Fundamentos (Omissões)</label>
+            </div>
+            <div class="topico-item">
+                <input type="checkbox" id="topico3" checked>
+                <label for="topico3">III. Fundamentos (Contradições)</label>
+            </div>
+            <div class="topico-item">
+                <input type="checkbox" id="topico4" checked>
+                <label for="topico4">IV. Normas Jurídicas</label>
+            </div>
+            <div class="topico-item">
+                <input type="checkbox" id="topico5">
+                <label for="topico5">V. Jurisprudência</label>
+            </div>
+        </div>
+
+        <!-- BOTÕES DE AÇÃO -->
+        <div class="btn-group">
+            <button class="btn-acao" onclick="processarTexto()">🔄 Processar e Inserir</button>
+            <button class="btn-acao btn-limpar" onclick="limparTudo()">🗑️ Limpar Tudo</button>
+        </div>
+
+        <hr style="border: 1px solid #7f8c8d; margin: 20px 0;">
+
+        <!-- DADOS DA PETIÇÃO -->
+        <h3>⚖️ Dados da Petição</h3>
+        <label style="font-size: 11px; color: #bdc3c7; display: block; margin-bottom: 5px;">Tipo de Peça:</label>
+        <select id="tipoPeca">
+            <option value="embargos">Embargos de Declaração</option>
+            <option value="recurso">Recurso Inominado</option>
+            <option value="apelacao">Apelação</option>
+            <option value="agravo">Agravo de Instrumento</option>
+            <option value="peticao">Petição Genérica</option>
+        </select>
+
+        <label style="font-size: 11px; color: #bdc3c7; display: block; margin-bottom: 5px;">Nome da Parte:</label>
+        <input type="text" id="nomeParte" value="NOME DA PARTE">
+
+        <label style="font-size: 11px; color: #bdc3c7; display: block; margin-bottom: 5px;">Número do Processo:</label>
+        <input type="text" id="numProcesso" value="XXXXXXX-XX.XXXX.X.XX.XXXX">
+
+        <div class="btn-group">
+            <button class="btn-acao btn-info" onclick="atualizarDados()">✅ Atualizar Dados</button>
+            <button class="btn-acao btn-purple" onclick="exportarWord()">📄 Exportar Word</button>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-acao btn-full" style="background: #16a085;" onclick="window.print()">🖨️ Salvar PDF</button>
+            <button class="btn-acao btn-full" style="background: #f39c12;" onclick="exportarJSON()">💾 Exportar JSON</button>
+        </div>
+    </div>
+
+    <!-- ========== ÁREA DA PETIÇÃO ========== -->
+    <div class="area-peticao">
+        <div class="toolbar">
+            <button class="btn-acao btn-info" onclick="exportarWord()">📄 Word</button>
+            <button class="btn-acao" style="background: #16a085;" onclick="window.print()">🖨️ PDF</button>
+            <button class="btn-acao" style="background: #f39c12;" onclick="exportarJSON()">💾 JSON</button>
+        </div>
+
+        <div class="folha-a4" contenteditable="true">
+            <p class="center no-indent" style="font-weight: bold;">
+                EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) FEDERAL<br>
+                RELATOR(A) DA TURMA RECURSAL DOS JUIZADOS ESPECIAIS FEDERAIS
+            </p>
+
+            <p class="no-indent" style="margin-top: 20px;">
+                <b>Processo nº:</b> <span id="outProcesso">XXXXXXX-XX.XXXX.X.XX.XXXX</span>
+            </p>
+            <p class="no-indent">
+                <b>Parte:</b> <span id="outParte">NOME DA PARTE</span>
+            </p>
+
+            <h1 id="outTitulo">EMBARGOS DE DECLARAÇÃO</h1>
+
+            <p>
+                A parte acima qualificada vem, respeitosamente, à presença de Vossa Excelência, opor os presentes 
+                <span id="outTituloInline">EMBARGOS DE DECLARAÇÃO</span>, com fundamento no art. 1.022 do CPC, 
+                para sanar vícios no julgado, conforme os fundamentos a seguir expostos.
+            </p>
+
+            <!-- SEÇÃO I -->
+            <h2>I. SÍNTESE FÁTICA PADRONIZADA</h2>
+            <p>
+                Resumo cronológico e objetivo dos fatos relevantes para a análise jurídica do caso concreto:
+            </p>
+            <div class="area-editavel" id="area1"></div>
+
+            <!-- SEÇÃO II -->
+            <h2>II. DOS FUNDAMENTOS — OMISSÕES CONFIGURADAS</h2>
+            <h3>II.1. Omissão quanto à análise de questão essencial</h3>
+            <p>
+                O acórdão recorrido deixou de se manifestar sobre pontos essenciais ao deslinde da controvérsia, 
+                conforme demonstrado a seguir:
+            </p>
+            <div class="area-editavel" id="area2"></div>
+
+            <!-- SEÇÃO III -->
+            <h2>III. DOS FUNDAMENTOS — CONTRADIÇÕES NO JULGADO</h2>
+            <h3>III.1. Contradição entre fundamentação e dispositivo</h3>
+            <p>
+                Verifica-se contradição interna no acórdão, que compromete a sua higidez jurídica:
+            </p>
+            <div class="area-editavel" id="area3"></div>
+
+            <!-- SEÇÃO IV -->
+            <h2>IV. DAS NORMAS JURÍDICAS APLICÁVEIS (PREQUESTIONAMENTO)</h2>
+            <p>
+                Para fins de prequestionamento expresso, requer-se a manifestação sobre as seguintes normas 
+                e jurisprudências aplicáveis ao caso:
+            </p>
+            <ul class="normas-lista">
+                <li><b>Art. 1.022 do CPC</b> — Embargos de declaração para sanar omissões, contradições ou obscuridades.</li>
+                <li><b>Art. 489, §1º, IV, do CPC</b> — Dever de fundamentação adequada das decisões judiciais.</li>
+                <li><b>Art. 93, IX, da CF</b> — Fundamentação obrigatória de todas as decisões judiciais.</li>
+                <li><b>Tema 1124/STJ</b> — Fixação da DIB na DER em casos de incapacidade preexistente.</li>
+                <li><b>Súmula 22/TNU</b> — Comprovação da miserabilidade por outros meios de prova.</li>
+            </ul>
+            <div class="area-editavel" id="area4"></div>
+
+            <!-- SEÇÃO V (OPCIONAL) -->
+            <h2 id="secaoJuris" style="display: none;">V. DA JURISPRUDÊNCIA APLICÁVEL</h2>
+            <p id="paragrafoJuris" style="display: none;">
+                Transcrição de ementas e precedentes relevantes ao caso concreto:
+            </p>
+            <div class="area-editavel" id="area5" style="display: none;"></div>
+
+            <!-- PEDIDOS -->
+            <h2>VI. DOS PEDIDOS</h2>
+            <p>Diante do exposto, requer-se:</p>
+            <ul class="normas-lista">
+                <li>O <b>conhecimento e provimento</b> dos presentes embargos para sanar os vícios apontados;</li>
+                <li>A <b>atribuição de efeitos infringentes</b>, com a consequente reforma do julgado;</li>
+                <li>O <b>prequestionamento expresso</b> dos dispositivos legais e constitucionais indicados;</li>
+                <li>A <b>intimação</b> da parte contrária para, querendo, manifestar-se.</li>
+            </ul>
+
+            <p style="margin-top: 30px;">Termos em que,</p>
+            <p>Pede deferimento.</p>
+
+            <p class="center" style="margin-top: 40px;">
+                [Local e Data]
+            </p>
+            <p class="center" style="margin-top: 30px;">
+                _________________________________<br>
+                <b>ADVOGADO(A)</b><br>
+                OAB/UF XXXXX
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+
+    // ========== VARIÁVEIS GLOBAIS ==========
+    let textoProcessado = [];
+
+    // ========== FUNÇÕES DE UI ==========
+    function showOverlay(msg, sub) {
+        document.getElementById("overlayMsg").textContent = msg || "Processando...";
+        document.getElementById("overlaySub").textContent = sub || "Aguarde.";
+        document.getElementById("loadingOverlay").style.display = "flex";
+    }
+    function hideOverlay() {
+        document.getElementById("loadingOverlay").style.display = "none";
+    }
+
+    // ========== CARREGAR ARQUIVO ==========
+    document.getElementById('fileInput').addEventListener('change', async function(e) {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        showOverlay("Importando arquivos...", "Extraindo texto (PDF/DOCX/TXT).");
+        let textoCombinado = document.getElementById('textoBruto').value || "";
+
+        try {
+            for (const file of files) {
+                let texto = "";
+                const name = file.name.toLowerCase();
+
+                if (name.endsWith(".pdf")) {
+                    texto = await extrairTextoPDF(file);
+                } else if (name.endsWith(".docx")) {
+                    texto = await extrairTextoWord(file);
+                } else if (name.endsWith(".txt")) {
+                    texto = await file.text();
+                } else {
+                    console.warn("Formato não suportado:", file.name);
+                    continue;
+                }
+                textoCombinado += (textoCombinado ? "\n\n" : "") + `--- Texto extraído de ${file.name} ---\n${texto}`;
+            }
+            document.getElementById('textoBruto').value = textoCombinado;
+            alert(`${files.length} arquivo(s) importado(s) com sucesso! Clique em 'Processar e Inserir' para continuar.`);
+        } catch (err) {
+            alert("Erro ao processar arquivos: " + err.message);
+            console.error(err);
+        } finally {
+            hideOverlay();
+            e.target.value = ""; // Limpa o input para permitir reimportar
+        }
+    });
+
+    async function extrairTextoPDF(file) {
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        let fullText = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            fullText += content.items.map(item => item.str).join(" ") + "\n";
+        }
+        return fullText;
+    }
+
+    async function extrairTextoWord(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+        return result.value;
+    }
+
+    // ========== PROCESSAR TEXTO ==========
+    function processarTexto() {
+        let texto = document.getElementById('textoBruto').value;
+        
+        if (!texto.trim()) {
+            alert("⚠️ Por favor, cole algum texto ou carregue um arquivo!");
+            return;
+        }
+
+        showOverlay("Processando texto...", "Aplicando filtros e removendo duplicatas.");
+
+        setTimeout(() => {
+            try {
+                // Aplicar filtros
+                if (document.getElementById('removerCaracteres').checked) {
+                    // Remove *, #, e múltiplos desses caracteres
+                    texto = texto.replace(/[\*#]+/g, '');
+                    // Remove outros caracteres especiais comuns em markdown
+                    texto = texto.replace(/[_~`]/g, '');
+                }
+
+                // Quebra em parágrafos
+                let paragrafos = texto.split(/\n+/);
+                
+                // Usar Set para eliminar duplicatas
+                let unicos = new Set();
+                let textoLimpo = [];
+
+                paragrafos.forEach(p => {
+                    let pTratado = p.trim();
+                    
+                    // Aplicar filtros
+                    if (document.getElementById('ignorarCurtas').checked && pTratado.length < 15) {
+                        return;
+                    }
+
+                    if (pTratado.length > 0) {
+                        if (document.getElementById('removerDuplicatas').checked) {
+                            // Normaliza para comparação
+                            let pNorm = normalizeTextForCompare(pTratado);
+                            // Verifica duplicidade exata
+                            if (unicos.has(pNorm)) {
+                                return;
+                            }
+                            
+                            // Verifica duplicidade "frouxa" com similaridade
+                            let duplicado = false;
+                            for (let item of unicos) {
+                                if (calcularSimilaridade(item, pNorm) > 0.7) {
+                                    duplicado = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!duplicado) {
+                                unicos.add(pNorm);
+                                textoLimpo.push(pTratado);
+                            }
+                        } else {
+                            textoLimpo.push(pTratado);
+                        }
+                    }
+                });
+
+                textoProcessado = textoLimpo;
+
+                // Distribuir nos tópicos selecionados
+                distribuirTexto(textoLimpo);
+
+                alert(`✅ Texto processado! ${textoLimpo.length} parágrafos únicos foram inseridos.`);
+            } catch (err) {
+                alert("Erro ao processar texto: " + err.message);
+                console.error(err);
+            } finally {
+                hideOverlay();
+            }
+        }, 30);
+    }
+
+    // Função para normalizar texto para comparação
+    function normalizeTextForCompare(s) {
+        return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+
+    // Configuração do Worker do PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+    // Palavras-chave para separar o que é Direito do que é Fato
+    const keywordsDireito = [
+        "súmula", "tema", "lei", "artigo", "art.", "constituição", "cf/88", 
+        "jurisprudência", "precedente", "stj", "tnu", "trf", "turma", 
+        "nulidade", "cerceamento", "perícia", "laudo", "omissão", "contradição",
+        "acórdão", "sentença", "mérito", "provimento", "recurso"
+    ];
+
+
+    // Função para calcular similaridade entre textos
+    function calcularSimilaridade(texto1, texto2) {
+        const palavras1 = texto1.split(" ");
+        const palavras2 = texto2.split(" ");
+        const intersecao = palavras1.filter(p1 => palavras2.includes(p1)).length;
+        const uniao = new Set([...palavras1, ...palavras2]).size;
+        return intersecao / uniao;
+    }
+
+    // ========== DISTRIBUIR TEXTO NOS TÓPICOS ==========
+    function distribuirTexto(paragrafos) {
+        const html = paragrafos.map(p => `<p>${p}</p>`).join('');
+        
+        if (document.getElementById('topico1').checked) {
+            document.getElementById('area1').innerHTML = html;
+        }
+        if (document.getElementById('topico2').checked) {
+            document.getElementById('area2').innerHTML = html;
+        }
+        if (document.getElementById('topico3').checked) {
+            document.getElementById('area3').innerHTML = html;
+        }
+        if (document.getElementById('topico4').checked) {
+            document.getElementById('area4').innerHTML = html;
+        }
+        if (document.getElementById('topico5').checked) {
+            document.getElementById('area5').innerHTML = html;
+            document.getElementById('secaoJuris').style.display = 'block';
+            document.getElementById('paragrafoJuris').style.display = 'block';
+            document.getElementById('area5').style.display = 'block';
+        }
+    }
+
+    // ========== ATUALIZAR DADOS ==========
+    function atualizarDados() {
+        const tipo = document.getElementById('tipoPeca').value;
+        const nome = document.getElementById('nomeParte').value;
+        const processo = document.getElementById('numProcesso').value;
+
+        document.getElementById('outParte').innerText = nome;
+        document.getElementById('outProcesso').innerText = processo;
+
+        // Atualizar título conforme tipo
+        const titulos = {
+            'embargos': 'EMBARGOS DE DECLARAÇÃO',
+            'recurso': 'RECURSO INOMINADO',
+            'apelacao': 'APELAÇÃO',
+            'agravo': 'AGRAVO DE INSTRUMENTO',
+            'peticao': 'PETIÇÃO'
+        };
+
+        const titulo = titulos[tipo] || 'EMBARGOS DE DECLARAÇÃO';
+        document.getElementById('outTitulo').innerText = titulo;
+        document.getElementById('outTituloInline').innerText = titulo;
+    }
+
+    // ========== LIMPAR TUDO ==========
+    function limparTudo() {
+        if (!confirm('⚠️ Deseja realmente limpar todos os campos?')) return;
+        
+        document.getElementById('textoBruto').value = '';
+        document.getElementById('fileInput').value = '';
+        
+        ['area1', 'area2', 'area3', 'area4', 'area5'].forEach(id => {
+            document.getElementById(id).innerHTML = '';
+        });
+        
+        textoProcessado = [];
+    }
+
+    // ========== EXPORTAR WORD ==========
+    async function exportarWord() {
+        const { docx } = window;
+        if (!docx) {
+            alert('⚠️ Biblioteca DOCX não carregada. Verifique sua conexão.');
+            return;
+        }
+
+        const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } = docx;
+
+        // Coletar conteúdo
+        const titulo = document.getElementById('outTitulo').innerText;
+        const parte = document.getElementById('outParte').innerText;
+        const processo = document.getElementById('outProcesso').innerText;
+
+        const paragrafos = [];
+
+        // Cabeçalho
+        paragrafos.push(
+            new Paragraph({
+                text: "EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) FEDERAL",
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 100 }
+            }),
+            new Paragraph({
+                text: "RELATOR(A) DA TURMA RECURSAL DOS JUIZADOS ESPECIAIS FEDERAIS",
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 200 }
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({ text: "Processo nº: ", bold: true }),
+                    new TextRun({ text: processo })
+                ],
+                spacing: { after: 100 }
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({ text: "Parte: ", bold: true }),
+                    new TextRun({ text: parte })
+                ],
+                spacing: { after: 200 }
+            }),
+            new Paragraph({
+                text: titulo,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.HEADING_1,
+                spacing: { before: 200, after: 200 }
+            })
+        );
+
+        // Adicionar conteúdo das áreas editáveis
+        const areas = [
+            { id: 'area1', title: "I. SÍNTESE FÁTICA PADRONIZADA", intro: "Resumo cronológico e objetivo dos fatos relevantes para a análise jurídica do caso concreto:" },
+            { id: 'area2', title: "II. DOS FUNDAMENTOS — OMISSÕES CONFIGURADAS", intro: "O acórdão recorrido deixou de se manifestar sobre pontos essenciais ao deslinde da controvérsia, conforme demonstrado a seguir:" },
+            { id: 'area3', title: "III. DOS FUNDAMENTOS — CONTRADIÇÕES NO JULGADO", intro: "Verifica-se contradição interna no acórdão, que compromete a sua higidez jurídica:" },
+            { id: 'area4', title: "IV. DAS NORMAS JURÍDICAS APLICÁVEIS (PREQUESTIONAMENTO)", intro: "Para fins de prequestionamento expresso, requer-se a manifestação sobre as seguintes normas e jurisprudências aplicáveis ao caso:" },
+            { id: 'area5', title: "V. DA JURISPRUDÊNCIA APLICÁVEL", intro: "Transcrição de ementas e precedentes relevantes ao caso concreto:" }
+        ];
+
+        areas.forEach(area => {
+            const element = document.getElementById(area.id);
+            if (element.innerHTML.trim()) {
+                paragrafos.push(
+                    new Paragraph({
+                        text: area.title,
+                        heading: HeadingLevel.HEADING_2,
+                        spacing: { before: 200, after: 100 }
+                    }),
+                    new Paragraph({
+                        text: area.intro,
+                        alignment: AlignmentType.JUSTIFIED,
+                        spacing: { after: 120 }
+                    })
+                );
+
+                const ps = element.querySelectorAll('p');
+                ps.forEach(p => {
+                    if (p.innerText.trim()) {
+                        paragrafos.push(new Paragraph({
+                            text: p.innerText,
+                            alignment: AlignmentType.JUSTIFIED,
+                            spacing: { after: 120 }
+                        }));
+                    }
+                });
+            }
+        });
+
+        // Pedidos
+        paragrafos.push(
+            new Paragraph({
+                text: "VI. DOS PEDIDOS",
+                heading: HeadingLevel.HEADING_2,
+                spacing: { before: 200, after: 100 }
+            }),
+            new Paragraph({
+                text: "Diante do exposto, requer-se:",
+                alignment: AlignmentType.JUSTIFIED,
+                spacing: { after: 120 }
+            })
+        );
+
+        const pedidos = [
+            "O conhecimento e provimento dos presentes embargos para sanar os vícios apontados;",
+            "A atribuição de efeitos infringentes, com a consequente reforma do julgado;",
+            "O prequestionamento expresso dos dispositivos legais e constitucionais indicados;",
+            "A intimação da parte contrária para, querendo, manifestar-se."
+        ];
+
+        pedidos.forEach(pedido => {
+            paragrafos.push(new Paragraph({
+                text: pedido,
+                alignment: AlignmentType.JUSTIFIED,
+                spacing: { after: 120 }
+            }));
+        });
+
+        paragrafos.push(
+            new Paragraph({
+                text: "Termos em que,",
+                alignment: AlignmentType.JUSTIFIED,
+                spacing: { after: 120 }
+            }),
+            new Paragraph({
+                text: "Pede deferimento.",
+                alignment: AlignmentType.JUSTIFIED,
+                spacing: { after: 200 }
+            }),
+            new Paragraph({
+                text: "[Local e Data]",
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 200 }
+            }),
+            new Paragraph({
+                text: "_________________________________",
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 50 }
+            }),
+            new Paragraph({
+                text: "ADVOGADO(A)",
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 50 }
+            }),
+            new Paragraph({
+                text: "OAB/UF XXXXX",
+                alignment: AlignmentType.CENTER
+            })
+        );
+
+        const doc = new Document({
+            sections: [{
+                properties: {},
+                children: paragrafos
+            }]
+        });
+
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, `${titulo.toLowerCase().replace(/\s+/g, '_')}.docx`);
+    }
+
+    // ========== EXPORTAR JSON ==========
+    function exportarJSON() {
+        const data = {
+            tipoPeca: document.getElementById('tipoPeca').value,
+            nomeParte: document.getElementById('nomeParte').value,
+            numProcesso: document.getElementById('numProcesso').value,
+            areas: {
+                area1: document.getElementById('area1').innerHTML,
+                area2: document.getElementById('area2').innerHTML,
+                area3: document.getElementById('area3').innerHTML,
+                area4: document.getElementById('area4').innerHTML,
+                area5: document.getElementById('area5').innerHTML
+            }
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        saveAs(blob, 'peticao.json');
+    }
+
+    // ========== INICIALIZAÇÃO ==========
+    window.addEventListener('load', function() {
+        atualizarDados();
+    });
+</script>
+
+</body>
+</html>

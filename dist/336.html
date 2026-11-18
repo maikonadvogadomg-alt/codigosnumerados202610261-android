@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel Estruturado - Embargos & Cotejo</title>
+<style>
+body { font-family: Arial, sans-serif; margin:20px; background:#f4f6f9; }
+h2 { margin-top:20px; }
+textarea { width:100%; height:120px; margin-bottom:10px; }
+button { margin:5px; padding:10px; }
+pre { background:#fff; padding:10px; border:1px solid #ccc; }
+</style>
+</head>
+<body>
+
+<h1>Painel Estruturado - Embargos & Cotejo</h1>
+<p>Cole o resumo filtrado abaixo e organize nos campos:</p>
+
+<textarea id="resumo" placeholder="Cole aqui o resumo filtrado..."></textarea>
+<button onclick="extrair()">Extrair Dados</button>
+
+<h2>Quadro Fático (Relatório)</h2>
+<textarea id="quadro"></textarea>
+
+<h2>Vícios (Embargos)</h2>
+<textarea id="vicios"></textarea>
+
+<h2>Paradigma (Cotejo Analítico)</h2>
+<textarea id="paradigma"></textarea>
+
+<h2>Pedidos</h2>
+<textarea id="pedidos"></textarea>
+
+<button onclick="validar()">Validar Normas & Processos</button>
+<button onclick="exportWord()">⬇ Exportar Word</button>
+<button onclick="window.print()">⬇ Exportar PDF</button>
+
+<h2>Validação Automática</h2>
+<pre id="saida"></pre>
+
+<script>
+function extrair(){
+  let texto = document.getElementById("resumo").value;
+
+  // Expressões regulares para extrair dados
+  let processos = texto.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/g) || [];
+  let datas = texto.match(/\d{2}\/\d{2}\/\d{4}/g) || [];
+  let artigos = texto.match(/art\.?\s*\d+[A-Za-z0-9º\-]*/gi) || [];
+  let leis = texto.match(/Lei\s*(nº)?\s*\d+(\.\d+)?\/\d{4}/gi) || [];
+
+  // Preenche automaticamente o Quadro Fático com dados básicos
+  document.getElementById("quadro").value = 
+    "Processos: " + processos.join(", ") + "\n" +
+    "Datas: " + datas.join(", ") + "\n" +
+    "Dispositivos: " + artigos.join(", ") + "\n" +
+    "Leis: " + leis.join(", ");
+}
+
+function validar(){
+  let quadro = document.getElementById("quadro").value +
+               document.getElementById("vicios").value +
+               document.getElementById("paradigma").value +
+               document.getElementById("pedidos").value;
+
+  let erros = [];
+
+  if(!/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/.test(quadro)){
+    erros.push("⚠️ Nenhum número de processo válido encontrado (formato PJe).");
+  }
+  if(!/\d{2}\/\d{2}\/\d{4}/.test(quadro)){
+    erros.push("⚠️ Nenhuma data encontrada (DD/MM/AAAA).");
+  }
+  if(!/Lei\s*(nº)?\s*\d+(\.\d+)?\/\d{4}/.test(quadro)){
+    erros.push("⚠️ Nenhuma lei citada no formato correto (Lei nº XXXX/AAAA).");
+  }
+  if(!/art\.?\s*\d+/.test(quadro)){
+    erros.push("⚠️ Nenhum artigo de lei citado.");
+  }
+
+  document.getElementById("saida").textContent = 
+    erros.length ? erros.join("\n") : "✅ Tudo parece estar no formato correto!";
+}
+
+function exportWord(){
+  let conteudo = "<h2>Quadro Fático</h2><p>"+document.getElementById("quadro").value+"</p>"+
+                 "<h2>Vícios</h2><p>"+document.getElementById("vicios").value+"</p>"+
+                 "<h2>Paradigma</h2><p>"+document.getElementById("paradigma").value+"</p>"+
+                 "<h2>Pedidos</h2><p>"+document.getElementById("pedidos").value+"</p>";
+
+  let estilo = `<style>body{font-family:"Times New Roman";font-size:12pt;line-height:1.5;text-align:justify;}
+  h2{font-weight:bold;text-transform:uppercase;margin-top:20px;}p{margin-bottom:10px;}</style>`;
+  let html = "<html><head>"+estilo+"</head><body>"+conteudo+"</body></html>";
+  let blob = new Blob(['\ufeff', html], {type:'application/msword'});
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "embargos_cotejo.doc";
+  a.click();
+}
+</script>
+
+</body>
+</html>

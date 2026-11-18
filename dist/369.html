@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora Jurídica Definitiva - Dr. Manhumirim</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root { --banco: #c0392b; --justica: #2980b9; --success: #27ae60; --dark: #2c3e50; --bg: #f1f5f9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 20px; color: #334155; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        
+        .header { text-align: center; border-bottom: 3px solid var(--dark); margin-bottom: 25px; padding-bottom: 15px; }
+        .header h1 { margin: 0; color: var(--dark); font-size: 1.8rem; }
+        
+        .secao-geral { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .grid-cenarios { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        
+        .card { padding: 20px; border-radius: 10px; background: #fff; border: 1px solid #cbd5e1; position: relative; }
+        .card-banco { border-top: 8px solid var(--banco); }
+        .card-justica { border-top: 8px solid var(--justica); }
+        
+        h3 { margin-top: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        label { font-weight: 600; font-size: 0.85rem; display: block; margin-top: 12px; color: #475569; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box; font-size: 0.9rem; }
+        
+        .btn-calcular { background: var(--dark); color: white; width: 100%; padding: 18px; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.2s; }
+        .btn-calcular:hover { background: #000; transform: translateY(-2px); }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .stat-label { font-size: 0.9rem; color: #64748b; font-weight: bold; text-transform: uppercase; }
+        .stat-val { font-size: 1.5rem; font-weight: 800; display: block; margin-top: 8px; }
+
+        .sucumbencia-area { margin-top: 25px; padding: 20px; background: #f0f9ff; border-radius: 10px; border-left: 8px solid var(--justica); }
+        
+        .table-wrap { overflow-x: auto; margin-top: 30px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; color: #475569; font-weight: bold; }
+        .negativo { color: var(--banco); font-weight: bold; }
+        .positivo { color: var(--success); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Calculadora de Liquidação Comparativa</h1>
+        <p>Análise de Abusividade Bancária e Proveito Econômico</p>
+    </div>
+
+    <!-- DADOS DO PROCESSO -->
+    <div class="secao-geral">
+        <div>
+            <label>Valor Principal (R$):</label>
+            <input type="number" id="vPrincipal" value="10000.00" step="0.01">
+        </div>
+        <div>
+            <label>Data Inicial (Início do Cálculo):</label>
+            <input type="date" id="dInic" value="2022-01-15">
+        </div>
+        <div>
+            <label>Data Final (Atualização):</label>
+            <input type="date" id="dFim" value="2024-01-15">
+        </div>
+    </div>
+
+    <div class="grid-cenarios">
+        <!-- CENÁRIO 1: O QUE O BANCO QUER -->
+        <div class="card card-banco">
+            <h3 style="color:var(--banco)">🏦 Cenário 1: Banco (Contrato)</h3>
+            <label>Juros Remuneratórios (% ao mês):</label>
+            <input type="number" id="jRemunB" value="2.5" step="0.0001">
+            <label>Juros de Mora (% ao mês):</label>
+            <input type="number" id="jMoraB" value="1.0" step="0.0001">
+            <label>Multa Contratual (%):</label>
+            <input type="number" id="multaB" value="2.0" step="0.01">
+            <label>Capitalização:</label>
+            <select id="capB">
+                <option value="mensal">Mensal (Anatocismo)</option>
+                <option value="simples">Simples</option>
+            </select>
+        </div>
+
+        <!-- CENÁRIO 2: O QUE A JUSTIÇA MANDOU -->
+        <div class="card card-justica">
+            <h3 style="color:var(--justica)">⚖️ Cenário 2: Sentença (Justiça)</h3>
+            <label>Juros Variáveis (Cód. BCB - Ex: 4390 Selic):</label>
+            <input type="number" id="serieBCB" value="4390">
+            <label>Juros de Mora da Sentença (% ao mês):</label>
+            <input type="number" id="jMoraJ" value="1.0" step="0.0001">
+            <label>Multa Judicial (%):</label>
+            <input type="number" id="multaJ" value="0.0" step="0.01">
+            <label>Correção Monetária (Tabela TJMG - Excel):</label>
+            <input type="file" id="fileTJMG" accept=".xlsx, .xls">
+            <label>Capitalização de Juros:</label>
+            <select id="capJ">
+                <option value="simples">Simples (Padrão Judicial)</option>
+                <option value="anual">Anual (Art. 591 CC)</option>
+            </select>
+        </div>
+    </div>
+
+    <button class="btn-calcular" onclick="executarCalculoMaster()">CALCULAR COMPARAÇÃO E SUCUMBÊNCIA</button>
+
+    <!-- RESULTADOS -->
+    <div id="resFinalArea" style="display:none;">
+        <div class="dashboard">
+            <div class="stat-card" style="border-top: 5px solid var(--banco);">
+                <span class="stat-label">Total Banco</span>
+                <span id="resTotalB" class="stat-val" style="color:var(--banco)">R$ 0,00</span>
+            </div>
+            <div class="stat-card" style="border-top: 5px solid var(--justica);">
+                <span class="stat-label">Total Sentença</span>
+                <span id="resTotalJ" class="stat-val" style="color:var(--justica)">R$ 0,00</span>
+            </div>
+            <div class="stat-card" style="border-top: 5px solid var(--success);">
+                <span class="stat-label">Proveito Econômico</span>
+                <span id="resDiferenca" class="stat-val" style="color:var(--success)">R$ 0,00</span>
+            </div>
+        </div>
+
+        <div class="sucumbencia-area">
+            <h3 style="color:var(--justica)">💰 Honorários de Sucumbência (CPC Art. 85)</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px;">
+                <div>
+                    <label>Porcentagem (%):</label>
+                    <input type="number" id="percSuc" value="10" oninput="recalculaSucumbencia()">
+                </div>
+                <div>
+                    <label>Base de Cálculo:</label>
+                    <select id="baseSuc" onchange="recalculaSucumbencia()">
+                        <option value="proveito">Sobre o Proveito Econômico</option>
+                        <option value="condenacao">Sobre a Condenação (Sentença)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Valor dos Honorários:</label>
+                    <span id="valSuc" class="stat-val" style="color:var(--justica)">R$ 0,00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table id="tabelaEvolucao">
+                <thead>
+                    <tr>
+                        <th>Mês/Ano</th>
+                        <th>Dias</th>
+                        <th>Fator TJMG</th>
+                        <th>Juros BCB (%)</th>
+                        <th>Saldo Banco (R$)</th>
+                        <th>Saldo Sentença (R$)</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let indicesTJMG = {};
+    let globalTotalB = 0;
+    let globalTotalJ = 0;
+
+    // Leitor de Excel para o TJMG
+    document.getElementById('fileTJMG').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const wb = XLSX.read(evt.target.result, {type:'binary'});
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(ws);
+            const mesesMap = {'janeiro':'01','fevereiro':'02','março':'03','marco':'03','abril':'04','maio':'05','junho':'06','julho':'07','agosto':'08','setembro':'09','outubro':'10','novembro':'11','dezembro':'12'};
+            data.forEach(r => {
+                let m = mesesMap[(r['MÊS'] || r['Mês'] || '').toString().toLowerCase().trim()];
+                let a = r['ANO'] || r['Ano'];
+                if(m && a) indicesTJMG[`${m}/${a}`] = parseFloat(r['ÍNDICE'] || r['Índice'] || r['Indice']);
+            });
+            alert("Tabela TJMG carregada com sucesso!");
+        };
+        reader.readAsBinaryString(e.target.files[0]);
+    });
+
+    async function executarCalculoMaster() {
+        const vPrincipal = parseFloat(document.getElementById('vPrincipal').value);
+        const dInic = new Date(document.getElementById('dInic').value + "T00:00:00");
+        const dFim = new Date(document.getElementById('dFim').value + "T00:00:00");
+        const serie = document.getElementById('serieBCB').value;
+
+        // API Banco Central
+        let dadosBCB = [];
+        try {
+            const resp = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${serie}/dados?formato=json&dataInicial=${dInic.toLocaleDateString('pt-BR')}&dataFinal=${dFim.toLocaleDateString('pt-BR')}`);
+            dadosBCB = await resp.json();
+        } catch(e) { alert("Erro ao conectar com o Banco Central."); }
+
+        let corpo = document.getElementById('corpoTabela');
+        corpo.innerHTML = "";
+        
+        let saldoB = vPrincipal;
+        let saldoJ = vPrincipal;
+        let jurosAcumuladosJ = 0;
+        let cursor = new Date(dInic);
+        let mesContador = 0;
+
+        // Fatores de correção inicial e final
+        const fInic = indicesTJMG[formatMA(dInic)] || 1;
+        const fFim = indicesTJMG[formatMA(dFim)] || 1;
+
+        while(cursor <= dFim) {
+            let ma = formatMA(cursor);
+            
+            // Pro-rata (Tratamento de data quebrada)
+            let diasNoMes = 30;
+            if(mesContador === 0) {
+                let ultimoDia = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0).getDate();
+                diasNoMes = Math.min(30, ultimoDia - cursor.getDate() + 1);
+            }
+
+            // --- CÁLCULO BANCO ---
+            let taxaRemB = (parseFloat(document.getElementById('jRemunB').value) / 100) * (diasNoMes/30);
+            let taxaMoraB = (parseFloat(document.getElementById('jMoraB').value) / 100) * (diasNoMes/30);
+            let taxaTotalB = taxaRemB + taxaMoraB;
+
+            if(document.getElementById('capB').value === 'mensal') {
+                saldoB *= (1 + taxaTotalB);
+            } else {
+                saldoB += (vPrincipal * taxaTotalB);
+            }
+
+            // --- CÁLCULO JUSTIÇA ---
+            let bcbItem = dadosBCB.find(d => d.data.includes(ma));
+            // PROTEÇÃO CONTRA ERRO DE 700%: Divide por 100 sempre
+            let taxaBCB = bcbItem ? (parseFloat(bcbItem.valor) / 100) * (diasNoMes/30) : 0;
+            let taxaMoraJ = (parseFloat(document.getElementById('jMoraJ').value) / 100) * (diasNoMes/30);
+            let taxaTotalJ = taxaBCB + taxaMoraJ;
+
+            let fatorMes = indicesTJMG[ma] || fInic;
+            let valorCorrigidoMes = vPrincipal * (fFim / fatorMes);
+
+            jurosAcumuladosJ += (valorCorrigidoMes * taxaTotalJ);
+
+            // Capitalização Anual (Art. 591 CC)
+            if(document.getElementById('capJ').value === 'anual' && mesContador > 0 && mesContador % 12 === 0) {
+                saldoJ = valorCorrigidoMes + jurosAcumuladosJ;
+                jurosAcumuladosJ = 0;
+            } else {
+                saldoJ = valorCorrigidoMes;
+            }
+
+            corpo.innerHTML += `<tr>
+                <td>${ma}</td>
+                <td>${diasNoMes}</td>
+                <td>${fatorMes.toFixed(6)}</td>
+                <td>${(taxaBCB*100).toFixed(4)}%</td>
+                <td>R$ ${saldoB.toFixed(2)}</td>
+                <td>R$ ${(saldoJ + jurosAcumuladosJ).toFixed(2)}</td>
+            </tr>`;
+
+            cursor.setMonth(cursor.getMonth() + 1);
+            cursor.setDate(1);
+            mesContador++;
+        }
+
+        // Aplicar Multas Finais
+        globalTotalB = saldoB * (1 + parseFloat(document.getElementById('multaB').value)/100);
+        globalTotalJ = (saldoJ + jurosAcumuladosJ) * (1 + parseFloat(document.getElementById('multaJ').value)/100);
+
+        document.getElementById('resTotalB').innerText = globalTotalB.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+        document.getElementById('resTotalJ').innerText = globalTotalJ.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+        document.getElementById('resDiferenca').innerText = Math.abs(globalTotalB - globalTotalJ).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+        
+        document.getElementById('resFinalArea').style.display = 'block';
+        recalculaSucumbencia();
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function recalculaSucumbencia() {
+        const perc = parseFloat(document.getElementById('percSuc').value) / 100;
+        const base = document.getElementById('baseSuc').value;
+        const valorBase = (base === 'proveito') ? Math.abs(globalTotalB - globalTotalJ) : globalTotalJ;
+        document.getElementById('valSuc').innerText = (valorBase * perc).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    }
+
+    function formatMA(d) { return (d.getMonth()+1).toString().padStart(2,'0') + "/" + d.getFullYear(); }
+</script>
+</body>
+</html>

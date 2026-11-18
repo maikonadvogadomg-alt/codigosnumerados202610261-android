@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playground TSX - Maikon Caldeira</title>
+    
+    <!-- React + Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .painel {
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #333;
+        }
+
+        .painel:last-child {
+            border-right: none;
+        }
+
+        .painel-header {
+            background: #252526;
+            padding: 15px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        .preview {
+            flex: 1;
+            background: white;
+            overflow: auto;
+        }
+
+        .preview-mobile {
+            width: 375px;
+            height: 667px;
+            margin: 20px auto;
+            border: 8px solid #333;
+            border-radius: 30px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            background: white;
+        }
+
+        .preview-desktop {
+            width: 100%;
+            height: 100%;
+            background: white;
+            color: #333;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 0 5px;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .erro {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            background: #252526;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            background: #333;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .painel {
+                border-right: none;
+                border-bottom: 2px solid #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Playground TSX/React</h1>
+        <p>Cole seu código TSX e veja o resultado em tempo real</p>
+    </div>
+
+    <div class="container">
+        <!-- EDITOR -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>📝 Editor TSX</span>
+                <div>
+                    <button onclick="executarCodigo()">▶️ Executar</button>
+                    <button class="btn-success" onclick="carregarExemplo()">📋 Exemplo</button>
+                </div>
+            </div>
+            <div class="editor">
+                <textarea id="codigo" placeholder="Cole seu código TSX aqui..."></textarea>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>👁️ Preview</span>
+                <div class="tabs">
+                    <div class="tab active" onclick="mudarPreview('mobile')">📱 Mobile</div>
+                    <div class="tab" onclick="mudarPreview('desktop')">🖥️ Desktop</div>
+                </div>
+            </div>
+            <div class="preview" id="preview">
+                <div class="preview-mobile" id="previewMobile">
+                    <div id="root"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let modoPreview = 'mobile';
+
+        // ========================================
+        // EXECUTAR CÓDIGO TSX
+        // ========================================
+        function executarCodigo() {
+            const codigo = document.getElementById('codigo').value;
+            const root = document.getElementById('root');
+            
+            // Limpar preview
+            root.innerHTML = '';
+
+            try {
+                // Compilar TSX para JS usando Babel
+                const codigoCompilado = Babel.transform(codigo, {
+                    presets: ['react', 'typescript']
+                }).code;
+
+                // Criar função e executar
+                const funcao = new Function('React', 'ReactDOM', codigoCompilado);
+                funcao(React, ReactDOM);
+
+                console.log('✅ Código executado com sucesso!');
+            } catch (erro) {
+                console.error('❌ Erro:', erro);
+                root.innerHTML = `
+                    <div class="erro">
+                        <strong>❌ Erro ao executar:</strong><br><br>
+                        ${erro.message}
+                    </div>
+                `;
+            }
+        }
+
+        // ========================================
+        // MUDAR PREVIEW
+        // ========================================
+        function mudarPreview(modo) {
+            modoPreview = modo;
+            const preview = document.getElementById('preview');
+            const root = document.getElementById('root');
+
+            // Atualizar tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            if (modo === 'mobile') {
+                preview.innerHTML = `
+                    <div class="preview-mobile" id="previewMobile">
+                        <div id="root"></div>
+                    </div>
+                `;
+            } else {
+                preview.innerHTML = `
+                    <div class="preview-desktop">
+                        <div id="root"></div>
+                    </div>
+                `;
+            }
+
+            // Re-executar código
+            executarCodigo();
+        }
+
+        // ========================================
+        // CARREGAR EXEMPLO
+        // ========================================
+        function carregarExemplo() {
+            const exemplo = `function App() {
+  const [contador, setContador] = React.useState(0);
+
+  return (
+    <div style={{
+      padding: '40px',
+      fontFamily: 'Arial, sans-serif',
+      textAlign: 'center'
+    }}>
+      <h1 style={{ color: '#667eea' }}>
+        🚀 Meu PWA
+      </h1>
+      
+      <p style={{ fontSize: '18px', margin: '20px 0' }}>
+        Contador: <strong>{contador}</strong>
+      </p>
+      
+      <button
+        onClick={() => setContador(contador + 1)}
+        style={{
+          background: '#667eea',
+          color: 'white',
+          border: 'none',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          margin: '10px'
+        }}
+      >
+        ➕ Adicionar
+      </button>
+      
+      <button
+        onClick={() => setContador(0)}
+        style={{
+          background: '#ff4444',
+          color: 'white',
+          border: 'none',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          margin: '10px'
+        }}
+      >
+        🔄 Resetar
+      </button>
+      
+      <div style={{
+        marginTop: '30px',
+        padding: '20px',
+        background: '#f0f0f0',
+        borderRadius: '10px'
+      }}>
+        <h3>✨ Funcionalidades:</h3>
+        <ul style={{ textAlign: 'left', maxWidth: '300px', margin: '0 auto' }}>
+          <li>✅ React Hooks (useState)</li>
+          <li>✅ Inline Styles</li>
+          <li>✅ Eventos (onClick)</li>
+          <li>✅ Renderização dinâmica</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// Renderizar
+ReactDOM.render(<App />, document.getElementById('root'));`;
+
+            document.getElementById('codigo').value = exemplo;
+            executarCodigo();
+        }
+
+        // ========================================
+        // ATALHOS DE TECLADO
+        // ========================================
+        document.getElementById('codigo').addEventListener('keydown', (e) => {
+            // Ctrl+Enter ou Cmd+Enter = Executar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                executarCodigo();
+            }
+
+            // Tab = 2 espaços
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.substring(0, start) + '  ' + e.target.value.substring(end);
+                e.target.selectionStart = e.target.selectionEnd = start + 2;
+            }
+        });
+
+        // ========================================
+        // INICIALIZAR
+        // ========================================
+        window.onload = () => {
+            carregarExemplo();
+        };
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playground TSX - Maikon Caldeira</title>
+    
+    <!-- React + Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .painel {
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #333;
+        }
+
+        .painel:last-child {
+            border-right: none;
+        }
+
+        .painel-header {
+            background: #252526;
+            padding: 15px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        .preview {
+            flex: 1;
+            background: white;
+            overflow: auto;
+        }
+
+        .preview-mobile {
+            width: 375px;
+            height: 667px;
+            margin: 20px auto;
+            border: 8px solid #333;
+            border-radius: 30px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            background: white;
+        }
+
+        .preview-desktop {
+            width: 100%;
+            height: 100%;
+            background: white;
+            color: #333;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 0 5px;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .erro {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            background: #252526;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            background: #333;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .painel {
+                border-right: none;
+                border-bottom: 2px solid #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Playground TSX/React</h1>
+        <p>Cole seu código TSX e veja o resultado em tempo real</p>
+    </div>
+
+    <div class="container">
+        <!-- EDITOR -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>📝 Editor TSX</span>
+                <div>
+                    <button onclick="executarCodigo()">▶️ Executar</button>
+                    <button class="btn-success" onclick="carregarExemplo()">📋 Exemplo</button>
+                </div>
+            </div>
+            <div class="editor">
+                <textarea id="codigo" placeholder="Cole seu código TSX aqui..."></textarea>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>👁️ Preview</span>
+                <div class="tabs">
+                    <div class="tab active" onclick="mudarPreview('mobile')">📱 Mobile</div>
+                    <div class="tab" onclick="mudarPreview('desktop')">🖥️ Desktop</div>
+                </div>
+            </div>
+            <div class="preview" id="preview">
+                <div class="preview-mobile" id="previewMobile">
+                    <div id="root"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let modoPreview = 'mobile';
+
+        // ========================================
+        // EXECUTAR CÓDIGO TSX
+        // ========================================
+        function executarCodigo() {
+            const codigo = document.getElementById('codigo').value;
+            const root = document.getElementById('root');
+            
+            // Limpar preview
+            root.innerHTML = '';
+
+            try {
+                // Compilar TSX para JS usando Babel
+                const codigoCompilado = Babel.transform(codigo, {
+                    presets: ['react', 'typescript']
+                }).code;
+
+                // Criar função e executar
+                const funcao = new Function('React', 'ReactDOM', codigoCompilado);
+                funcao(React, ReactDOM);
+
+                console.log('✅ Código executado com sucesso!');
+            } catch (erro) {
+                console.error('❌ Erro:', erro);
+                root.innerHTML = `
+                    <div class="erro">
+                        <strong>❌ Erro ao executar:</strong><br><br>
+                        ${erro.message}
+                    </div>
+                `;
+            }
+        }
+
+        // ========================================
+        // MUDAR PREVIEW
+        // ========================================
+        function mudarPreview(modo) {
+            modoPreview = modo;
+            const preview = document.getElementById('preview');
+            const root = document.getElementById('root');
+
+            // Atualizar tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            if (modo === 'mobile') {
+                preview.innerHTML = `
+                    <div class="preview-mobile" id="previewMobile">
+                        <div id="root"></div>
+                    </div>
+                `;
+            } else {
+                preview.innerHTML = `
+                    <div class="preview-desktop">
+                        <div id="root"></div>
+                    </div>
+                `;
+            }
+
+            // Re-executar código
+            executarCodigo();
+        }
+
+        // ========================================
+        // CARREGAR EXEMPLO
+        // ========================================
+        function carregarExemplo() {
+            const exemplo = `function App() {
+  const [contador, setContador] = React.useState(0);
+
+  return (
+    <div style={{
+      padding: '40px',
+      fontFamily: 'Arial, sans-serif',
+      textAlign: 'center'
+    }}>
+      <h1 style={{ color: '#667eea' }}>
+        🚀 Meu PWA
+      </h1>
+      
+      <p style={{ fontSize: '18px', margin: '20px 0' }}>
+        Contador: <strong>{contador}</strong>
+      </p>
+      
+      <button
+        onClick={() => setContador(contador + 1)}
+        style={{
+          background: '#667eea',
+          color: 'white',
+          border: 'none',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          margin: '10px'
+        }}
+      >
+        ➕ Adicionar
+      </button>
+      
+      <button
+        onClick={() => setContador(0)}
+        style={{
+          background: '#ff4444',
+          color: 'white',
+          border: 'none',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          margin: '10px'
+        }}
+      >
+        🔄 Resetar
+      </button>
+      
+      <div style={{
+        marginTop: '30px',
+        padding: '20px',
+        background: '#f0f0f0',
+        borderRadius: '10px'
+      }}>
+        <h3>✨ Funcionalidades:</h3>
+        <ul style={{ textAlign: 'left', maxWidth: '300px', margin: '0 auto' }}>
+          <li>✅ React Hooks (useState)</li>
+          <li>✅ Inline Styles</li>
+          <li>✅ Eventos (onClick)</li>
+          <li>✅ Renderização dinâmica</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// Renderizar
+ReactDOM.render(<App />, document.getElementById('root'));`;
+
+            document.getElementById('codigo').value = exemplo;
+            executarCodigo();
+        }
+
+        // ========================================
+        // ATALHOS DE TECLADO
+        // ========================================
+        document.getElementById('codigo').addEventListener('keydown', (e) => {
+            // Ctrl+Enter ou Cmd+Enter = Executar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                executarCodigo();
+            }
+
+            // Tab = 2 espaços
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.substring(0, start) + '  ' + e.target.value.substring(end);
+                e.target.selectionStart = e.target.selectionEnd = start + 2;
+            }
+        });
+
+        // ========================================
+        // INICIALIZAR
+        // ========================================
+        window.onload = () => {
+            carregarExemplo();
+        };
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playground TSX - Maikon Caldeira</title>
+    
+    <!-- React + Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .painel {
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #333;
+        }
+
+        .painel:last-child {
+            border-right: none;
+        }
+
+        .painel-header {
+            background: #252526;
+            padding: 15px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        .preview {
+            flex: 1;
+            background: white;
+            overflow: auto;
+        }
+
+        .preview-mobile {
+            width: 375px;
+            height: 667px;
+            margin: 20px auto;
+            border: 8px solid #333;
+            border-radius: 30px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            background: white;
+        }
+
+        .preview-desktop {
+            width: 100%;
+            height: 100%;
+            background: white;
+            color: #333;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 0 5px;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .erro {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            background: #252526;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            background: #333;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .painel {
+                border-right: none;
+                border-bottom: 2px solid #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Playground TSX/React</h1>
+        <p>Cole seu código TSX e veja o resultado em tempo real</p>
+    </div>
+
+    <div class="container">
+        <!-- EDITOR -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>📝 Editor TSX</span>
+                <div>
+                    <button onclick="executarCodigo()">▶️ Executar</button>
+                    <button class="btn-success" onclick="carregarExemplo()">📋 Exemplo</button>
+                </div>
+            </div>
+            <div class="editor">
+                <textarea id="codigo" placeholder="Cole seu código TSX aqui..."></textarea>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>👁️ Preview</span>
+                <div class="tabs">
+                    <div class="tab active" onclick="mudarPreview('mobile')">📱 Mobile</div>
+                    <div class="tab" onclick="mudarPreview('desktop')">🖥️ Desktop</div>
+                </div>
+            </div>
+            <div class="preview" id="preview">
+                <div class="preview-mobile" id="previewMobile">
+                    <div id="root"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let modoPreview = 'mobile';
+
+        // ========================================
+        // EXECUTAR CÓDIGO TSX
+        // ========================================
+        function executarCodigo() {
+            const codigo = document.getElementById('codigo').value;
+            const root = document.getElementById('root');
+            
+            // Limpar preview
+            root.innerHTML = '';
+
+            try {
+                // Compilar TSX para JS usando Babel
+                const codigoCompilado = Babel.transform(codigo, {
+                    presets: ['react', 'typescript']
+                }).code;
+
+                // Criar função e executar
+                const funcao = new Function('React', 'ReactDOM', codigoCompilado);
+                funcao(React, ReactDOM);
+
+                console.log('✅ Código executado com sucesso!');
+            } catch (erro) {
+                console.error('❌ Erro:', erro);
+                root.innerHTML = `
+                    <div class="erro">
+                        <strong>❌ Erro ao executar:</strong><br><br>
+                        ${erro.message}
+                    </div>
+                `;
+            }
+        }
+
+        // ========================================
+        // MUDAR PREVIEW
+        // ========================================
+        function mudarPreview(modo) {
+            modoPreview = modo;
+            const preview = document.getElementById('preview');
+            const root = document.getElementById('root');
+
+            // Atualizar tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            if (modo === 'mobile') {
+                preview.innerHTML = `
+                    <div class="preview-mobile" id="previewMobile">
+                        <div id="root"></div>
+                    </div>
+                `;
+            } else {
+                preview.innerHTML = `
+                    <div class="preview-desktop">
+                        <div id="root"></div>
+                    </div>
+                `;
+            }
+
+            // Re-executar código
+            executarCodigo();
+        }
+
+        // ========================================
+        // CARREGAR EXEMPLO
+        // ========================================
+        function carregarExemplo() {
+            const exemplo = `function App() {
+  const [contador, setContador] = React.useState(0);
+
+  return (
+    <div style={{
+      padding: '40px',
+      fontFamily: 'Arial, sans-serif',
+      textAlign: 'center'
+    }}>
+      <h1 style={{ color: '#667eea' }}>
+        🚀 Meu PWA
+      </h1>
+      
+      <p style={{ fontSize: '18px', margin: '20px 0' }}>
+        Contador: <strong>{contador}</strong>
+      </p>
+      
+      <button
+        onClick={() => setContador(contador + 1)}
+        style={{
+          background: '#667eea',
+          color: 'white',
+          border: 'none',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          margin: '10px'
+        }}
+      >
+        ➕ Adicionar
+      </button>
+      
+      <button
+        onClick={() => setContador(0)}
+        style={{
+          background: '#ff4444',
+          color: 'white',
+          border: 'none',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          margin: '10px'
+        }}
+      >
+        🔄 Resetar
+      </button>
+      
+      <div style={{
+        marginTop: '30px',
+        padding: '20px',
+        background: '#f0f0f0',
+        borderRadius: '10px'
+      }}>
+        <h3>✨ Funcionalidades:</h3>
+        <ul style={{ textAlign: 'left', maxWidth: '300px', margin: '0 auto' }}>
+          <li>✅ React Hooks (useState)</li>
+          <li>✅ Inline Styles</li>
+          <li>✅ Eventos (onClick)</li>
+          <li>✅ Renderização dinâmica</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// Renderizar
+ReactDOM.render(<App />, document.getElementById('root'));`;
+
+            document.getElementById('codigo').value = exemplo;
+            executarCodigo();
+        }
+
+        // ========================================
+        // ATALHOS DE TECLADO
+        // ========================================
+        document.getElementById('codigo').addEventListener('keydown', (e) => {
+            // Ctrl+Enter ou Cmd+Enter = Executar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                executarCodigo();
+            }
+
+            // Tab = 2 espaços
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.substring(0, start) + '  ' + e.target.value.substring(end);
+                e.target.selectionStart = e.target.selectionEnd = start + 2;
+            }
+        });
+
+        // ========================================
+        // INICIALIZAR
+        // ========================================
+        window.onload = () => {
+            carregarExemplo();
+        };
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playground TSX - Maikon Caldeira</title>
+    
+    <!-- React + Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+     .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .painel {
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #333;
+        }
+
+        .painel:last-child {
+            border-right: none;
+        }
+
+        .painel-header {
+            background: #252526;
+            padding: 15px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        .preview {
+            flex: 1;
+            background: white;
+            overflow: auto;
+        }
+
+        .preview-mobile {
+            width: 375px;
+            height: 667px;
+            margin: 20px auto;
+            border: 8px solid #333;
+            border-radius: 30px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            background: white;
+        }
+
+        .preview-desktop {
+            width: 100%;
+            height: 100%;
+            background: white;
+            color: #333;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 0 5px;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .erro {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            background: #252526;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            background: #333;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .painel {
+                border-right: none;
+                border-bottom: 2px solid #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Playground TSX/React</h1>
+        <p>Cole seu código TSX e veja o resultado em tempo real</p>
+    </div>
+
+    <div class="container">
+        <!-- EDITOR -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>📝 Editor TSX</span>
+                <div>
+                    <button> onclick="executarCodigo()">▶️ Executar</button>
+                    <button class="btn-success" onclick="carregarExemplo()">📋 Exemplo</button>
+                </div>
+            </div>
+            <div class="editor">
+                <textarea id="codigo" placeholder="Cole seu código TSX aqui..."></textarea>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>👁️ Preview</span>
+                <div class="tabs">
+                    <div class="tab active" onclick="mudarPreview('mobile')">📱 Mobile</div>
+                    <div class="tab" onclick="mudarPreview('desktop')">🖥️ Desktop</div>
+                </div>
+            </div>
+            <div class="preview" id="preview">
+                <div class="preview-mobile" id="previewMobile">
+                    <div id="root"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let modoPreview = 'mobile';
+
+        // ========================================
+        // EXECUTAR CÓDIGO TSX
+        // ========================================
+        function executarCodigo() {
+            const codigo = document.getElementById('codigo').value;
+            const root = document.getElementById('root');
+            
+            // Limpar preview
+            root.innerHTML = '';
+
+            try {
+                // Compilar TSX para JS usando Babel
+                const codigoCompilado = Babel.transform(codigo, {
+                    presets: ['react', 'typescript']
+                }).code;
+
+                // Criar função e executar
+                const funcao = new Function('React', 'ReactDOM', codigoCompilado);
+                funcao(React, ReactDOM);
+
+                console.log('✅ Código executado com sucesso!');
+            } catch (erro) {
+                console.error('❌ Erro:', erro);
+                root.innerHTML = `
+                    <div class="erro">
+                        <strong>❌ Erro ao executar:</strong><br><br>
+                        ${erro.message}
+                    </div>
+                `;
+            }
+        }
+
+        // ========================================
+        // MUDAR PREVIEW
+        // ========================================
+        function mudarPreview(modo) {
+            modoPreview = modo;
+            const preview = document.getElementById('preview');
+            const root = document.getElementById('root');
+
+            // Atualizar tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            if (modo === 'mobile') {
+                preview.innerHTML = `
+                    <div class="preview-mobile" id="previewMobile">
+                        <div id="root"></div>
+                    </div>
+                `;
+            } else {
+                preview.innerHTML = `
+                    <div class="preview-desktop">
+                        <div id="root"></div>
+                    </div>
+                `;
+            }
+            // Re-executar código
+            executarCodigo();
+        }
+
+        // ========================================
+        // CARREGAR EXEMPLO
+        // ========================================
+        function carregarExemplo() {
+            const exemplo = `function App() {
+  const [contador, setContador] = React.useState(0);
+
+  return (
+    <div style={{
+      padding: '40px',
+      fontFamily: 'Arial, sans-serif',
+      textAlign: 'center'
+    }}>
+      <h1 style={{ color: '#667eea' }}>
+        🚀 Meu PWA
+      </h1>
+      
+      <p style={{ fontSize: '18px', margin: '20px 0' }}>
+        Contador: <strong>{contador}</strong>
+      </p>
+      
+      <button
+        onClick={() => setContador(contador + 1)}
+        style={{
+          background: '#667eea',
+          color: 'white',
+          border: 'none',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          margin: '10px'
+        }}
+      >
+        ➕ Adicionar
+      </button>
+      
+      <button
+        onClick={() => setContador(0)}
+        style={{
+          background: '#ff4444',
+          color: 'white',
+          border: 'none',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          margin: '10px'
+        }}
+      >
+        🔄 Resetar
+      </button>
+      
+      <div style={{
+        marginTop: '30px',
+        padding: '20px',
+        background: '#f0f0f0',
+        borderRadius: '10px'
+      }}>
+        <h3>✨ Funcionalidades:</h3>
+        <ul style={{ textAlign: 'left', maxWidth: '300px', margin: '0 auto' }}>
+          <li>✅ React Hooks (useState)</li>
+          <li>✅ Inline Styles</li>
+          <li>✅ Eventos (onClick)</li>
+          <li>✅ Renderização dinâmica</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// Renderizar
+ReactDOM.render(<App />, document.getElementById('root'));`;
+
+            document.getElementById('codigo').value = exemplo;
+            executarCodigo();
+        }
+
+        // ========================================
+        // ATALHOS DE TECLADO
+        // ========================================
+        document.getElementById('codigo').addEventListener('keydown', (e) => {
+            // Ctrl+Enter ou Cmd+Enter = Executar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                executarCodigo();
+            }
+
+            // Tab = 2 espaços
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.substring(0, start) + '  ' + e.target.value.substring(end);
+                e.target.selectionStart = e.target.selectionEnd = start + 2;
+            }
+        });
+
+        // ========================================
+        // INICIALIZAR
+        // ========================================
+        window.onload = () => {
+            carregarExemplo();
+        };
+    </script>
+</body>
+</html>

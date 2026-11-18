@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Build Guide — Entenda o Build</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar {
+      width: 280px;
+      background: #222;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin: 16px 0 8px 0;
+      letter-spacing: 1px;
+    }
+
+    .menu-item {
+      padding: 10px 12px;
+      background: #333;
+      margin: 4px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover {
+      background: #444;
+    }
+
+    .menu-item.active {
+      background: #0066cc;
+      border-left-color: #0088ff;
+    }
+
+    /* ═══ MAIN ═══ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0088ff;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #333;
+    }
+
+    .description {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #ccc;
+      margin-bottom: 12px;
+    }
+
+    .code-block {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      overflow-x: auto;
+      font-family: monospace;
+      font-size: 12px;
+      color: #88ff88;
+      line-height: 1.6;
+    }
+
+    .flow-diagram {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 12px 0;
+      text-align: center;
+    }
+
+    .flow-step {
+      display: inline-block;
+      padding: 12px 20px;
+      background: #0066cc;
+      border-radius: 4px;
+      margin: 0 8px;
+      font-weight: bold;
+    }
+
+    .flow-arrow {
+      display: inline-block;
+      margin: 0 8px;
+      color: #0088ff;
+      font-size: 20px;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+
+    .table th {
+      background: #333;
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #444;
+      color: #0088ff;
+      font-weight: bold;
+    }
+
+    .table td {
+      padding: 10px;
+      border-bottom: 1px solid #444;
+    }
+
+    .table tr:hover {
+      background: #2a2a2a;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #0066cc;
+      color: white;
+      border-radius: 3px;
+      font-size: 10px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .box {
+      background: #333;
+      border-left: 4px solid #0088ff;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 12px 0;
+    }
+
+    .box-title {
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 6px;
+    }
+
+    .box-content {
+      font-size: 12px;
+      color: #ccc;
+      line-height: 1.6;
+    }
+
+    .list {
+      margin: 12px 0;
+      padding-left: 20px;
+    }
+
+    .list li {
+      margin: 6px 0;
+      font-size: 12px;
+      color: #ccc;
+      line-height: 1.6;
+    }
+
+    .highlight {
+      background: rgba(0, 136, 255, 0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #0088ff;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .emoji {
+      font-size: 20px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-title">📚 Tópicos</div>
+      
+      <div class="menu-item active" onclick="loadTopic('intro')">🎯 Introdução</div>
+      <div class="menu-item" onclick="loadTopic('what-is')">❓ O que é Build?</div>
+      <div class="menu-item" onclick="loadTopic('why')">🤔 Por que Build?</div>
+      <div class="menu-item" onclick="loadTopic('process')">🔄 Processo</div>
+      <div class="menu-item" onclick="loadTopic('tools')">🛠️ Ferramentas</div>
+      <div class="menu-item" onclick="loadTopic('npm-build')">📦 npm build</div>
+      <div class="menu-item" onclick="loadTopic('webpack')">📦 Webpack</div>
+      <div class="menu-item" onclick="loadTopic('vite')">⚡ Vite</div>
+      <div class="menu-item" onclick="loadTopic('example')">💡 Exemplo Prático</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="header">
+        <div class="header-title" id="pageTitle">🎯 Introdução ao Build</div>
+      </div>
+
+      <div class="content" id="pageContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT DATABASE
+    // ═══════════════════════════════════════════════════════════════
+
+    const topics = {
+      intro: {
+        title: '🎯 Introdução ao Build',
+        content: `
+          <div class="section">
+            <div class="section-title">O que você vai aprender</div>
+            <ul class="list">
+              <li>✓ O que é BUILD</li>
+              <li>✓ Por que usar BUILD</li>
+              <li>✓ Como funciona o processo</li>
+              <li>✓ Ferramentas principais</li>
+              <li>✓ Exemplo prático</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Analogia do Mundo Real</div>
+            <div class="box">
+              <div class="box-title">🏗️ Construindo uma Casa</div>
+              <div class="box-content">
+                <p><strong>Você (Arquiteto):</strong> Desenha a casa no papel</p>
+                <p><strong>Build (Operários):</strong> Transformam o desenho em uma casa real</p>
+                <p><strong>Resultado:</strong> Casa pronta para morar</p>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">💻 No Desenvolvimento</div>
+              <div class="box-content">
+                <p><strong>Você (Programador):</strong> Escreve código em JavaScript, HTML, CSS</p>
+                <p><strong>Build (Ferramentas):</strong> Otimizam, compactam e organizam o código</p>
+                <p><strong>Resultado:</strong> Código pronto para produção</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      'what-is': {
+        title: '❓ O que é Build?',
+        content: `
+          <div class="section">
+            <div class="section-title">Definição</div>
+            <div class="description">
+              <span class="highlight">BUILD</span> é o processo de transformar seu código-fonte em um formato otimizado e pronto para ser usado em produção.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">O que o Build faz?</div>
+            <table class="table">
+              <tr>
+                <th>Ação</th>
+                <th>O que faz</th>
+                <th>Benefício</th>
+              </tr>
+              <tr>
+                <td>🗜️ Minificação</td>
+                <td>Remove espaços, quebras de linha</td>
+                <td>Arquivo menor</td>
+              </tr>
+              <tr>
+                <td>📦 Bundling</td>
+                <td>Junta múltiplos arquivos em um</td>
+                <td>Menos requisições HTTP</td>
+              </tr>
+              <tr>
+                <td>🔄 Transpilação</td>
+                <td>Converte código moderno para compatível</td>
+                <td>Funciona em navegadores antigos</td>
+              </tr>
+              <tr>
+                <td>🎨 Processamento CSS</td>
+                <td>Compila SASS/LESS, adiciona prefixos</td>
+                <td>CSS otimizado</td>
+              </tr>
+              <tr>
+                <td>🖼️ Otimização de imagens</td>
+                <td>Comprime imagens</td>
+                <td>Imagens menores</td>
+              </tr>
+              <tr>
+                <td>🗑️ Tree-shaking</td>
+                <td>Remove código não utilizado</td>
+                <td>Arquivo final menor</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Exemplo Visual</div>
+            <div class="flow-diagram">
+              <div class="flow-step">Código Original<br>(5 arquivos)</div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-step">BUILD</div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-step">Código Otimizado<br>(1 arquivo)</div>
+            </div>
+          </div>
+        `
+      },
+
+      why: {
+        title: '🤔 Por que usar Build?',
+        content: `
+          <div class="section">
+            <div class="section-title">Razões Principais</div>
+            
+            <div class="box">
+              <div class="box-title">⚡ Performance</div>
+              <div class="box-content">
+                Arquivos menores = página carrega mais rápido = usuários felizes
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">🔒 Segurança</div>
+              <div class="box-content">
+                Código minificado é mais difícil de ler e copiar
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">🌍 Compatibilidade</div>
+              <div class="box-content">
+                Código moderno funciona em navegadores antigos
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">📦 Organização</div>
+              <div class="box-content">
+                Múltiplos arquivos viram um único arquivo otimizado
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">🚀 Produção</div>
+              <div class="box-content">
+                Código pronto para ser publicado em servidor
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Comparação</div>
+            <table class="table">
+              <tr>
+                <th>Aspecto</th>
+                <th>Sem Build</th>
+                <th>Com Build</th>
+              </tr>
+              <tr>
+                <td>Tamanho</td>
+                <td>500 KB</td>
+                <td>50 KB</td>
+              </tr>
+              <tr>
+                <td>Tempo de carregamento</td>
+                <td>5 segundos</td>
+                <td>0.5 segundos</td>
+              </tr>
+              <tr>
+                <td>Compatibilidade</td>
+                <td>Navegadores modernos</td>
+                <td>Todos os navegadores</td>
+              </tr>
+              <tr>
+                <td>Código legível</td>
+                <td>Sim</td>
+                <td>Não (minificado)</td>
+              </tr>
+            </table>
+          </div>
+        `
+      },
+
+      process: {
+        title: '🔄 Processo do Build',
+        content: `
+          <div class="section">
+            <div class="section-title">Etapas do Build</div>
+            
+            <div class="flow-diagram">
+              <div style="margin: 10px 0;">
+                <div class="flow-step">1. Análise</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div style="margin: 10px 0;">
+                <div class="flow-step">2. Processamento</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div style="margin: 10px 0;">
+                <div class="flow-step">3. Otimização</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div style="margin: 10px 0;">
+                <div class="flow-step">4. Bundling</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div style="margin: 10px 0;">
+                <div class="flow-step">5. Output</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Detalhes de Cada Etapa</div>
+            
+            <div class="box">
+              <div class="box-title">1️⃣ Análise</div>
+              <div class="box-content">
+                A ferramenta lê todos os arquivos e identifica dependências
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">2️⃣ Processamento</div>
+              <div class="box-content">
+                Compila SASS → CSS, Babel → JavaScript compatível
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">3️⃣ Otimização</div>
+              <div class="box-content">
+                Remove código não utilizado, minifica, comprime
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">4️⃣ Bundling</div>
+              <div class="box-content">
+                Agrupa arquivos em bundles (main.js, vendor.js, etc)
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">5️⃣ Output</div>
+              <div class="box-content">
+                Salva arquivos otimizados na pasta dist/
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      tools: {
+        title: '🛠️ Ferramentas de Build',
+        content: `
+          <div class="section">
+            <div class="section-title">Principais Ferramentas</div>
+            <table class="table">
+              <tr>
+                <th>Ferramenta</th>
+                <th>O que faz</th>
+                <th>Melhor para</th>
+              </tr>
+              <tr>
+                <td><strong>npm build</strong></td>
+                <td>Script customizado</td>
+                <td>Projetos simples</td>
+              </tr>
+              <tr>
+                <td><strong>Webpack</strong></td>
+                <td>Bundler completo</td>
+                <td>Aplicações grandes</td>
+              </tr>
+              <tr>
+                <td><strong>Vite</strong></td>
+                <td>Build rápido</td>
+                <td>Desenvolvimento rápido</td>
+              </tr>
+              <tr>
+                <td><strong>Parcel</strong></td>
+                <td>Zero config</td>
+                <td>Iniciantes</td>
+              </tr>
+              <tr>
+                <td><strong>Gulp</strong></td>
+                <td>Task runner</td>
+                <td>Automação de tarefas</td>
+              </tr>
+            </table>
+          </div>
+        `
+      },
+
+      'npm-build': {
+        title: '📦 npm build',
+        content: `
+          <div class="section">
+            <div class="section-title">O que é npm build?</div>
+            <div class="description">
+              <span class="highlight">npm build</span> é um comando que executa um script definido no arquivo <span class="highlight">package.json</span>.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Como funciona?</div>
+            
+            <div class="box">
+              <div class="box-title">1. Arquivo package.json</div>
+              <div class="code-block">
+{
+  "name": "meu-projeto",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development",
+    "start": "node index.js"
+  }
+}
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">2. Executar no terminal</div>
+              <div class="code-block">
+npm run build
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">3. O que acontece</div>
+              <div class="box-content">
+                npm procura "build" em scripts e executa o comando webpack
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Exemplo Prático</div>
+            <div class="code-block">
+// package.json
+{
+  "scripts": {
+    "build": "node build.js"
+  }
+}
+
+// build.js
+const fs = require('fs');
+
+console.log('🔨 Iniciando build...');
+
+// Ler arquivo
+const code = fs.readFileSync('src/index.js', 'utf8');
+
+// Minificar (remover espaços)
+const minified = code.replace(/\\s+/g, ' ');
+
+// Salvar
+fs.writeFileSync('dist/index.js', minified);
+
+console.log('✓ Build concluído!');
+            </div>
+          </div>
+        `
+      },
+
+      webpack: {
+        title: '📦 Webpack',
+        content: `
+          <div class="section">
+            <div class="section-title">O que é Webpack?</div>
+            <div class="description">
+              Webpack é um <span class="highlight">bundler</span> que agrupa todos os seus arquivos (JS, CSS, imagens) em um ou mais arquivos otimizados.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Como funciona?</div>
+            
+            <div class="flow-diagram">
+              <div style="margin: 10px 0;">
+                <div class="flow-step">src/index.js</div>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div style="margin: 10px 0;">
+                <div class="flow-step">Webpack</div>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div style="margin: 10px 0;">
+                <div class="flow-step">dist/main.js</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Configuração Básica</div>
+            <div class="code-block">
+// webpack.config.js
+module.exports = {
+  entry: './src/index.js',
+  output: {
+    filename: 'main.js',
+    path: __dirname + '/dist'
+  },
+  mode: 'production'
+};
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Comando</div>
+            <div class="code-block">
+npm run build
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Resultado</div>
+            <ul class="list">
+              <li>✓ Todos os arquivos agrupados em dist/main.js</li>
+              <li>✓ Código minificado e otimizado</li>
+              <li>✓ Pronto para produção</li>
+            </ul>
+          </div>
+        `
+      },
+
+      vite: {
+        title: '⚡ Vite',
+        content: `
+          <div class="section">
+            <div class="section-title">O que é Vite?</div>
+            <div class="description">
+              Vite é um build tool <span class="highlight">muito rápido</span> que usa ES modules nativo do navegador.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Vite vs Webpack</div>
+            <table class="table">
+              <tr>
+                <th>Aspecto</th>
+                <th>Webpack</th>
+                <th>Vite</th>
+              </tr>
+              <tr>
+                <td>Velocidade</td>
+                <td>Lenta</td>
+                <td>⚡ Muito rápida</td>
+              </tr>
+              <tr>
+                <td>Configuração</td>
+                <td>Complexa</td>
+                <td>Simples</td>
+              </tr>
+              <tr>
+                <td>HMR (reload)</td>
+                <td>Lento</td>
+                <td>Instantâneo</td>
+              </tr>
+              <tr>
+                <td>Melhor para</td>
+                <td>Grandes projetos</td>
+                <td>Novos projetos</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Instalação e Uso</div>
+            <div class="code-block">
+# Criar projeto
+npm create vite@latest meu-app -- --template react
+
+# Entrar na pasta
+cd meu-app
+
+# Instalar dependências
+npm install
+
+# Desenvolvimento
+npm run dev
+
+# Build para produção
+npm run build
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Estrutura de Projeto</div>
+            <div class="code-block">
+meu-app/
+├── src/
+│   ├── main.jsx
+│   ├── App.jsx
+│   └── index.css
+├── dist/           (gerado após build)
+├── index.html
+├── package.json
+└── vite.config.js
+            </div>
+          </div>
+        `
+      },
+
+      example: {
+        title: '💡 Exemplo Prático',
+        content: `
+          <div class="section">
+            <div class="section-title">Projeto Antes do Build</div>
+            <div class="code-block">
+src/
+├── index.js
+├── utils.js
+├── style.css
+└── logo.png
+
+// index.js
+import { sum } from './utils.js';
+import './style.css';
+
+const result = sum(2, 3);
+console.log(result);
+
+// utils.js
+export function sum(a, b) {
+  return a + b;
+}
+
+// style.css
+body {
+  background: blue;
+  color: white;
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Executar Build</div>
+            <div class="code-block">
+npm run build
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Projeto Depois do Build</div>
+            <div class="code-block">
+dist/
+├── main.js        (tudo junto e minificado)
+├── main.css       (CSS minificado)
+└── logo.png       (imagem otimizada)
+
+// main.js (minificado)
+function sum(a,b){return a+b}const result=sum(2,3);console.log(result);
+
+// main.css (minificado)
+body{background:blue;color:white}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Comparação</div>
+            <table class="table">
+              <tr>
+                <th>Métrica</th>
+                <th>Antes</th>
+                <th>Depois</th>
+              </tr>
+              <tr>
+                <td>Número de arquivos</td>
+                <td>4</td>
+                <td>3</td>
+              </tr>
+              <tr>
+                <td>Tamanho total</td>
+                <td>50 KB</td>
+                <td>5 KB</td>
+              </tr>
+              <tr>
+                <td>Legibilidade</td>
+                <td>✓ Fácil</td>
+                <td>✗ Difícil</td>
+              </tr>
+              <tr>
+                <td>Performance</td>
+                <td>Normal</td>
+                <td>⚡ Rápido</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">HTML para usar</div>
+            <div class="code-block">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;link rel="stylesheet" href="dist/main.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;script src="dist/main.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+            </div>
+          </div>
+        `
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function loadTopic(topicId) {
+      const topic = topics[topicId];
+      
+      document.getElementById('pageTitle').textContent = topic.title;
+      document.getElementById('pageContent').innerHTML = topic.content;
+
+      // Update active menu item
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTopic('intro');
+    });
+  </script>
+</body>
+</html>

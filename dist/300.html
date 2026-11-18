@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rastreador de Histórico Replit — PWA Jurídico</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', monospace;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+h1 { color: #a3a082; margin-bottom: 10px; text-align: center; font-size: 24px; }
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 13px; }
+h2 { color: #4ade80; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #334155; padding-bottom: 8px; }
+h3 { color: #60a5fa; margin: 12px 0 8px 0; font-size: 13px; }
+
+.upload-area {
+  background: #1e293b;
+  border: 2px dashed #334155;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover { border-color: #a3a082; background: #334155; }
+.upload-area.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+
+input[type="file"] { display: none; }
+
+.btn {
+  background: #a3a082;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px;
+  transition: all 0.2s;
+}
+.btn:hover { background: #d4d0a8; transform: translateY(-2px); }
+.btn-secondary { background: #3b82f6; color: #fff; }
+.btn-secondary:hover { background: #2563eb; }
+.btn-danger { background: #f87171; color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+
+.loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px;
+  font-size: 14px;
+}
+.spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #334155;
+  border-top-color: #a3a082;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.results { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+
+.card {
+  background: #0f172a;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.card-timeline { border-left-color: #fbbf24; }
+.card-change { border-left-color: #60a5fa; }
+.card-bug { border-left-color: #f87171; }
+.card-fix { border-left-color: #4ade80; }
+.card-feature { border-left-color: #a78bfa; }
+
+.timeline {
+  position: relative;
+  padding: 20px 0 20px 40px;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 30px;
+  border-left: 2px solid #334155;
+}
+
+.timeline-item:last-child {
+  border-left: none;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -10px;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #a3a082;
+  border: 3px solid #0f172a;
+}
+
+.timeline-item.bug .timeline-dot { background: #f87171; }
+.timeline-item.fix .timeline-dot { background: #4ade80; }
+.timeline-item.feature .timeline-dot { background: #a78bfa; }
+.timeline-item.change .timeline-dot { background: #60a5fa; }
+
+.timeline-content {
+  padding-left: 20px;
+}
+
+.timeline-date {
+  color: #fbbf24;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.timeline-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+.timeline-desc {
+  color: #94a3b8;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+.timeline-files {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 8px;
+  font-size: 11px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.file-item {
+  padding: 4px 0;
+  color: #60a5fa;
+  border-bottom: 1px solid #334155;
+}
+
+.file-item:last-child { border-bottom: none; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.stat-box {
+  background: #334155;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-box strong {
+  display: block;
+  color: #a3a082;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.stat-box span {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.tab:hover { color: #e2e8f0; }
+.tab.active { color: #a3a082; border-bottom-color: #a3a082; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.code-block {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  line-height: 1.4;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.diff-add { color: #4ade80; }
+.diff-remove { color: #f87171; }
+.diff-modify { color: #fbbf24; }
+
+.summary-box {
+  background: #334155;
+  border-left: 4px solid #a3a082;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 4px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📜 Rastreador de Histórico Replit</h1>
+  <p class="subtitle">Analisa arquivos de versão da Replit e cria relatório de mudanças, bugs e correções</p>
+
+  <div class="upload-area" id="dropZone">
+    <p style="font-size: 18px; margin-bottom: 10px;">📦 Arraste seu ZIP da Replit aqui</p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Suporta .zip com histórico de versões</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecionar ZIP</button>
+    <input type="file" id="fileInput" accept=".zip" />
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Analisando histórico de versões...</p>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', e => {
+  handleFile(e.target.files[0]);
+});
+
+async function handleFile(file) {
+  if (!file) return;
+  
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  
+  try {
+    const zip = new JSZip();
+    const content = await zip.loadAsync(file);
+    
+    const versions = [];
+    const allFiles = {};
+    
+    // Extrai todas as versões
+    for (let [path, zipEntry] of Object.entries(content.files)) {
+      if (!zipEntry.dir) {
+        allFiles[path] = zipEntry;
+      }
+    }
+    
+    // Procura por padrões de versão
+    const versionPatterns = [
+      /\.replit\/versions\/\d+/,
+      /\.versions\/\d+/,
+      /version_\d+/,
+      /v\d+\//,
+      /backup_\d+/,
+      /snapshot_\d+/
+    ];
+    
+    const versionedFiles = Object.keys(allFiles).filter(path => 
+      versionPatterns.some(pattern => pattern.test(path))
+    );
+    
+    loadingDiv.style.display = 'none';
+    
+    if (versionedFiles.length > 0) {
+      await analyzeVersions(content, allFiles, versionedFiles);
+    } else {
+      // Se não encontrar versões, analisa estrutura geral
+      await analyzeStructure(content, allFiles);
+    }
+    
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    resultsDiv.innerHTML = `<div class="card" style="border-left-color: #f87171;">
+      <h3>❌ Erro ao processar</h3>
+      <p style="color: #f87171;">${err.message}</p>
+    </div>`;
+  }
+}
+
+async function analyzeVersions(zip, allFiles, versionedFiles) {
+  const timeline = [];
+  const fileChanges = {};
+  
+  // Agrupa arquivos por versão
+  const versions = new Map();
+  
+  for (let path of versionedFiles) {
+    const match = path.match(/(\d{4}-\d{2}-\d{2})|(\d+)/);
+    const versionKey = match ? match[0] : path;
+    
+    if (!versions.has(versionKey)) {
+      versions.set(versionKey, []);
+    }
+    versions.get(versionKey).push(path);
+  }
+  
+  // Analisa cada versão
+  const sortedVersions = Array.from(versions.entries()).sort();
+  
+  for (let [versionKey, files] of sortedVersions) {
+    const versionData = {
+      version: versionKey,
+      timestamp: parseVersionDate(versionKey),
+      files: files,
+      changes: [],
+      type: 'change'
+    };
+    
+    // Analisa conteúdo dos arquivos
+    for (let filePath of files) {
+      try {
+        const content = await zip.file(filePath).async('text');
+        const analysis = analyzeFileContent(content, filePath);
+        
+        if (analysis.type) {
+          versionData.type = analysis.type;
+          versionData.changes.push(analysis);
+        }
+      } catch (e) {}
+    }
+    
+    timeline.push(versionData);
+  }
+  
+  displayTimeline(timeline);
+}
+
+async function analyzeStructure(zip, allFiles) {
+  // Se não houver versões, analisa a estrutura geral
+  const files = Object.keys(allFiles);
+  const analysis = {
+    totalFiles: files.length,
+    jsFiles: files.filter(f => f.endsWith('.js')).length,
+    htmlFiles: files.filter(f => f.endsWith('.html')).length,
+    cssFiles: files.filter(f => f.endsWith('.css')).length,
+    jsonFiles: files.filter(f => f.endsWith('.json')).length,
+    hiddenFiles: files.filter(f => f.includes('/.')).length,
+    folders: new Set(files.map(f => f.split('/')[0])).size
+  };
+  
+  let html = `
+    <div class="results">
+      <h2>📊 Estrutura do Projeto</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <strong>${analysis.totalFiles}</strong>
+          <span>Total de Arquivos</span>
+        </div>
+        <div class="stat-box">
+          <strong>${analysis.jsFiles}</strong>
+          <span>Arquivos JS</span>
+        </div>
+        <div class="stat-box">
+          <strong>${analysis.htmlFiles}</strong>
+          <span>Arquivos HTML</span>
+        </div>
+        <div class="stat-box">
+          <strong>${analysis.cssFiles}</strong>
+          <span>Arquivos CSS</span>
+        </div>
+        <div class="stat-box">
+          <strong>${analysis.jsonFiles}</strong>
+          <span>Arquivos JSON</span>
+        </div>
+        <div class="stat-box">
+          <strong>${analysis.folders}</strong>
+          <span>Pastas</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Analisa arquivos principais
+  const mainFiles = ['package.json', 'index.html', 'app.js', 'server.js', 'README.md'];
+  let filesList = '';
+  
+  for (let [path, file] of Object.entries(allFiles)) {
+    const fileName = path.split('/').pop();
+    if (mainFiles.includes(fileName)) {
+      try {
+        const content = await file.async('text');
+        filesList += `
+          <div class="card">
+            <h3>📄 ${fileName}</h3>
+            <div class="code-block">
+              ${escapeHtml(content.substring(0, 300))}${content.length > 300 ? '...' : ''}
+            </div>
+          </div>
+        `;
+      } catch (e) {}
+    }
+  }
+  
+  if (filesList) {
+    html += `<div class="results"><h2>📄 Arquivos Principais</h2>${filesList}</div>`;
+  }
+  
+  resultsDiv.innerHTML = html;
+}
+
+function analyzeFileContent(content, filePath) {
+  const analysis = {
+    file: filePath,
+    type: null,
+    description: '',
+    keywords: []
+  };
+  
+  const lowerContent = content.toLowerCase();
+  
+  // Detecta tipo de mudança
+  if (lowerContent.includes('bug') || lowerContent.includes('erro') || lowerContent.includes('fix')) {
+    analysis.type = 'bug';
+    analysis.description = '🐛 Correção de bug';
+  }
+  
+  if (lowerContent.includes('feature') || lowerContent.includes('novo') || lowerContent.includes('adicionado')) {
+    analysis.type = 'feature';
+    analysis.description = '✨ Nova funcionalidade';
+  }
+  
+  if (lowerContent.includes('refactor') || lowerContent.includes('refatoração')) {
+    analysis.type = 'refactor';
+    analysis.description = '🔄 Refatoração';
+  }
+  
+  if (lowerContent.includes('historico') || lowerContent.includes('history')) {
+    analysis.keywords.push('Histórico da IA');
+  }
+  
+  if (lowerContent.includes('minuta') || lowerContent.includes('minute')) {
+    analysis.keywords.push('Geração de Minuta');
+  }
+  
+  if (lowerContent.includes('resumo') || lowerContent.includes('summary')) {
+    analysis.keywords.push('Resumo');
+  }
+  
+  if (lowerContent.includes('backend') || lowerContent.includes('server') || lowerContent.includes('api')) {
+    analysis.keywords.push('Backend/API');
+  }
+  
+  if (lowerContent.includes('database') || lowerContent.includes('db') || lowerContent.includes('sql')) {
+    analysis.keywords.push('Banco de Dados');
+  }
+  
+  if (lowerContent.includes('auth') || lowerContent.includes('autenticação')) {
+    analysis.keywords.push('Autenticação');
+  }
+  
+  if (lowerContent.includes('ia') || lowerContent.includes('ai') || lowerContent.includes('inteligência')) {
+    analysis.keywords.push('Integração IA');
+  }
+  
+  return analysis;
+}
+
+function parseVersionDate(versionKey) {
+  // Tenta parsear diferentes formatos de data
+  const dateMatch = versionKey.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (dateMatch) {
+    return new Date(dateMatch[0]);
+  }
+  
+  // Se for número, assume como timestamp
+  if (/^\d+$/.test(versionKey)) {
+    return new Date(parseInt(versionKey));
+  }
+  
+  return new Date();
+}
+
+function displayTimeline(timeline) {
+  let html = `
+    <div class="results">
+      <h2>📈 Estatísticas Gerais</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <strong>${timeline.length}</strong>
+          <span>Versões Detectadas</span>
+        </div>
+        <div class="stat-box">
+          <strong>${timeline.filter(t => t.type === 'bug').length}</strong>
+          <span>Correções</span>
+        </div>
+        <div class="stat-box">
+          <strong>${timeline.filter(t => t.type === 'feature').length}</strong>
+          <span>Features</span>
+        </div>
+        <div class="stat-box">
+          <strong>${timeline.filter(t => t.type === 'refactor').length}</strong>
+          <span>Refatorações</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Timeline visual
+  html += `
+    <div class="results">
+      <h2>📜 Histórico de Mudanças</h2>
+      <div class="timeline">
+  `;
+  
+  timeline.reverse().forEach((item, idx) => {
+    const typeClass = item.type || 'change';
+    const typeEmoji = {
+      'bug': '🐛',
+      'feature': '✨',
+      'refactor': '🔄',
+      'change': '📝'
+    }[typeClass] || '📝';
+    
+    html += `
+      <div class="timeline-item ${typeClass}">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">${formatDate(item.timestamp)}</div>
+          <div class="timeline-title">${typeEmoji} ${item.version}</div>
+          <div class="timeline-desc">${item.changes.length} arquivo(s) alterado(s)</div>
+          
+          ${item.changes.length > 0 ? `
+            <div class="timeline-files">
+              ${item.changes.map(c => `
+                <div class="file-item">
+                  ${c.keywords.length > 0 ? `<strong>${c.keywords.join(', ')}</strong><br/>` : ''}
+                  ${c.file.split('/').pop()}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `
+      </div>
+    </div>
+  `;
+  
+  // Resumo de funcionalidades
+  const allKeywords = new Map();
+  timeline.forEach(item => {
+    item.changes.forEach(change => {
+      change.keywords.forEach(kw => {
+        allKeywords.set(kw, (allKeywords.get(kw) || 0) + 1);
+      });
+    });
+  });
+  
+  if (allKeywords.size > 0) {
+    html += `
+      <div class="results">
+        <h2>🎯 Funcionalidades Rastreadas</h2>
+    `;
+    
+    for (let [keyword, count] of allKeywords) {
+      html += `
+        <div class="summary-box">
+          <strong>${keyword}</strong>
+          <span style="float: right; color: #a3a082;">${count} mudança(s)</span>
+        </div>
+      `;
+    }
+    
+    html += `</div>`;
+  }
+  
+  // Botões de exportação
+  html += `
+    <div class="results">
+      <h2>📥 Exportar Relatório</h2>
+      <div class="export-buttons">
+        <button class="btn btn-secondary" onclick="exportTimeline('${escapeHtml(JSON.stringify(timeline))}', 'json')">
+          📋 JSON
+        </button>
+        <button class="btn btn-secondary" onclick="exportTimeline('${escapeHtml(JSON.stringify(timeline))}', 'markdown')">
+          📝 Markdown
+        </button>
+        <button class="btn btn-secondary" onclick="exportTimeline('${escapeHtml(JSON.stringify(timeline))}', 'html')">
+          🌐 HTML
+        </button>
+      </div>
+    </div>
+  `;
+  
+  resultsDiv.innerHTML = html;
+}
+
+function formatDate(date) {
+  if (!date || isNaN(date)) return 'Data desconhecida';
+  return date.toLocaleDateString('pt-BR', { 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function exportTimeline(timelineJson, format) {
+  const timeline = JSON.parse(timelineJson);
+  
+  if (format === 'json') {
+    const json = JSON.stringify(timeline, null, 2);
+    downloadFile(json, 'historico.json', 'application/json');
+  } else if (format === 'markdown') {
+    let md = '# Histórico de Mudanças — PWA Jurídico\n\n';
+    md += `**Gerado em:** ${new Date().toLocaleString('pt-BR')}\n\n`;
+    md += `## 📊 Resumo\n`;
+    md += `- Total de versões: ${timeline.length}\n`;
+    md += `- Correções: ${timeline.filter(t => t.type === 'bug').length}\n`;
+    md += `- Features: ${timeline.filter(t => t.type === 'feature').length}\n\n`;
+    
+    md += `## 📜 Mudanças por Versão\n\n`;
+    timeline.forEach(item => {
+      md += `### ${item.version} (${formatDate(item.timestamp)})\n`;
+      item.changes.forEach(change => {
+        md += `- ${change.file}\n`;
+        if (change.keywords.length > 0) {
+          md += `  - Tags: ${change.keywords.join(', ')}\n`;
+        }
+      });
+      md += '\n';
+    });
+    
+    downloadFile(md, 'historico.md', 'text/markdown');
+  } else if (format === 'html') {
+    let html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Histórico - PWA Jurídico</title>
+  <style>
+    body { font-family: Arial; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+    h1 { color: #333; }
+    .version { margin: 20px 0; padding: 15px; background: #f9f9f9; border-left: 4px solid #007bff; }
+    .file { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📜 Histórico de Mudanças</h1>
+    <p><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+`;
+    
+    timeline.forEach(item => {
+      html += `<div class="version">
+        <h2>${item.version}</h2>
+        <p><strong>Data:</strong> ${formatDate(item.timestamp)}</p>
+        <p><strong>Arquivos:</strong> ${item.changes.length}</p>
+`;
+      item.changes.forEach(change => {
+        html += `<div class="file">${change.file}</div>`;
+      });
+      html += `</div>`;
+    });
+    
+    html += `
+  </div>
+</body>
+</html>`;
+    
+    downloadFile(html, 'historico.html', 'text/html');
+  }
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>

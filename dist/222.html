@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Calculadora Jurídica Monica — Importador Direto</title>
+<!-- Biblioteca para ler Excel (SheetJS) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--panel:#1e293b;--txt:#f8fafc;--accent:#fbbf24;
+  --good:#10b981;--bad:#ef4444;--info:#3b82f6;--border:#334155;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}
+body{background:#f1f5f9;color:#1e293b;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+header{background:var(--bg);color:var(--txt);padding:15px 25px;display:flex;justify-content:space-between;border-bottom:3px solid var(--accent)}
+.main-container{display:flex;flex:1;overflow:hidden}
+.sidebar{width:420px;background:var(--panel);color:var(--txt);padding:20px;overflow-y:auto;border-right:1px solid var(--border)}
+.content{flex:1;padding:25px;overflow-y:auto;background:#f8fafc}
+
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:20px;border:1px solid #e2e8f0}
+h2{font-size:11px;text-transform:uppercase;color:var(--accent);margin:15px 0 10px;letter-spacing:1px;border-bottom:1px solid var(--border)}
+
+label{display:block;font-size:11px;font-weight:700;margin-bottom:5px;color:#94a3b8}
+input, select{
+  width:100%;background:rgba(255,255,255,0.05);color:#fff;border:1px solid var(--border);
+  border-radius:6px;padding:10px;font-size:13px;margin-bottom:12px;outline:none;
+}
+input:focus{border-color:var(--accent)}
+
+button{
+  width:100%;padding:12px;border-radius:6px;border:0;font-weight:800;text-transform:uppercase;
+  cursor:pointer;transition:0.3s;margin-bottom:8px;font-size:11px;
+}
+.btn-file{background:var(--info);color:#fff; border: 2px dashed rgba(255,255,255,0.3)}
+.btn-calc{background:var(--accent);color:#000; height: 50px; font-size: 13px}
+
+.grid-results{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px}
+.stat-card{padding:15px;border-radius:10px;border-left:5px solid #ddd}
+.stat-card .val{font-size:20px;font-weight:900}
+
+table{width:100%;border-collapse:collapse;font-size:11px;margin-top:15px}
+th{background:#f1f5f9;padding:10px;text-align:left;border-bottom:2px solid #e2e8f0}
+td{padding:8px 10px;border-bottom:1px solid #f1f5f9}
+
+.status-box{font-size:10px;background:#000;color:var(--good);padding:10px;border-radius:5px;font-family:monospace;margin-top:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-weight:900">MONICA <span style="color:var(--accent)">JURÍDICO MASTER v2.0</span></div>
+  <div id="relogio" style="font-size:12px"></div>
+</header>
+
+<div class="main-container">
+  <div class="sidebar">
+    <h2>1. Dados Básicos</h2>
+    <label>Valor Principal (R$)</label>
+    <input id="v_principal" type="number" value="10000"/>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+      <div><label>Data Inicial</label><input id="d_ini" placeholder="01/01/2020"/></div>
+      <div><label>Data Final</label><input id="d_fim" placeholder="01/01/2024"/></div>
+    </div>
+
+    <h2>2. Importar Excel do TJMG</h2>
+    <label>Selecione o arquivo .xlsx ou .xls</label>
+    <input type="file" id="file_input" accept=".xlsx, .xls" style="display:none" onchange="lerArquivoExcel(this)">
+    <button class="btn-file" onclick="document.getElementById('file_input').click()">📁 Selecionar Planilha TJMG</button>
+    <div id="file_status" class="status-box">Nenhum arquivo carregado.</div>
+
+    <h2>3. Juros do Banco (BCB)</h2>
+    <label>Código SGS (Selic: 4390)</label>
+    <input id="sgs_code" value="4390"/>
+    <button style="background:transparent; border:1px solid var(--info); color:var(--info)" onclick="buscarBCB()">Buscar Taxas BCB Online</button>
+
+    <h2>4. Honorários</h2>
+    <label>Percentual (%)</label>
+    <input id="hon_pct" type="number" value="10"/>
+    <select id="hon_base">
+      <option value="proveito">Sobre o Proveito Econômico</option>
+      <option value="total">Sobre o Valor Total</option>
+    </select>
+
+    <button class="btn-calc" onclick="calcular()">CALCULAR TUDO</button>
+    <button style="background:#475569; color:#fff" onclick="window.print()">Imprimir PDF</button>
+  </div>
+
+  <div class="content">
+    <div class="card">
+      <h3 style="margin-bottom:15px">Resumo do Proveito Econômico</h3>
+      <div class="grid-results">
+        <div class="stat-card" style="border-color:var(--bad); background:#fff1f2">
+          <label>Cenário A (Banco)</label>
+          <div class="val" id="res_a" style="color:var(--bad)">R$ 0,00</div>
+        </div>
+        <div class="stat-card" style="border-color:var(--info); background:#eff6ff">
+          <label>Cenário B (Sentença)</label>
+          <div class="val" id="res_b" style="color:var(--info)">R$ 0,00</div>
+        </div>
+        <div class="stat-card" style="border-color:var(--accent); background:#fffbeb">
+          <label>Proveito Econômico</label>
+          <div class="val" id="res_prov" style="color:#92400e">R$ 0,00</div>
+        </div>
+      </div>
+      <div id="res_hon" style="margin-top:15px; font-weight:bold; color:#475569; padding:10px; background:#f8fafc; border-radius:8px"></div>
+    </div>
+
+    <div class="card">
+      <h3>Evolução Mensal (Auditoria)</h3>
+      <table id="tabela">
+        <thead>
+          <tr>
+            <th>Mês/Ano</th>
+            <th>Fator TJMG</th>
+            <th>Taxa BCB (%)</th>
+            <th>Saldo Banco</th>
+            <th>Saldo Sentença</th>
+          </tr>
+        </thead>
+        <tbody id="corpo_tabela"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+let DB_INDICES = new Map();
+
+// 1. Função para ler o Excel direto (Sem copiar e colar!)
+function lerArquivoExcel(input) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    document.getElementById('file_status').textContent = "Lendo arquivo...";
+
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+
+        let contador = 0;
+        const mesesMap = {"janeiro":1,"fevereiro":2,"março":3,"abril":4,"maio":5,"junho":6,"julho":7,"agosto":8,"setembro":9,"outubro":10,"novembro":11,"dezembro":12};
+
+        rows.forEach(row => {
+            // Procura linhas que tenham Ano (número) e Mês (texto)
+            if(row.length >= 3) {
+                const ano = parseInt(row[0]);
+                const mesNome = String(row[1]).toLowerCase().trim();
+                const fator = parseFloat(String(row[2]).replace(',', '.'));
+
+                if(!isNaN(ano) && mesesMap[mesNome] && !isNaN(fator)) {
+                    const chave = `${ano}-${String(mesesMap[mesNome]).padStart(2,'0')}`;
+                    let d = DB_INDICES.get(chave) || {};
+                    d.fator = fator;
+                    DB_INDICES.set(chave, d);
+                    contador++;
+                }
+            }
+        });
+        document.getElementById('file_status').textContent = `Sucesso! ${contador} meses importados do Excel.`;
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// 2. Busca no Banco Central
+async function buscarBCB() {
+    const sgs = document.getElementById('sgs_code').value;
+    const dIni = document.getElementById('d_ini').value;
+    const dFim = document.getElementById('d_fim').value;
+    document.getElementById('file_status').textContent = "Buscando taxas no BCB...";
+    
+    try {
+        const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${sgs}/dados?formato=json&dataInicial=${dIni}&dataFinal=${dFim}`;
+        const r = await fetch(url);
+        const j = await r.json();
+        j.forEach(item => {
+            const p = item.data.split('/');
+            const chave = `${p[2]}-${p[1]}`;
+            let d = DB_INDICES.get(chave) || {};
+            d.taxa = parseFloat(item.valor);
+            DB_INDICES.set(chave, d);
+        });
+        document.getElementById('file_status').textContent = `BCB: ${j.length} taxas carregadas!`;
+    } catch(e) { alert("Erro ao conectar com o BCB."); }
+}
+
+// 3. Cálculo Final
+function calcular() {
+    const principal = parseFloat(document.getElementById('v_principal').value);
+    const dIniStr = document.getElementById('d_ini').value;
+    const dFimStr = document.getElementById('d_fim').value;
+    
+    if(!dIniStr || !dFimStr) return alert("Defina as datas!");
+
+    let [di, mi, ai] = dIniStr.split('/');
+    let [df, mf, af] = dFimStr.split('/');
+    let dataAtual = new Date(ai, mi-1, 1);
+    let dataFinal = new Date(af, mf-1, 1);
+
+    let saldoA = principal; 
+    let html = "";
+
+    while(dataAtual <= dataFinal) {
+        const chave = `${dataAtual.getFullYear()}-${String(dataAtual.getMonth()+1).padStart(2,'0')}`;
+        const info = DB_INDICES.get(chave) || {fator: 1, taxa: 0};
+
+        // Banco: Juros sobre o saldo acumulado
+        saldoA *= (1 + (info.taxa / 100));
+
+        // Sentença: Valor Principal * Fator do Mês (Regra TJMG)
+        const saldoB = principal * (info.fator || 1);
+
+        html += `<tr>
+            <td>${chave}</td>
+            <td>${(info.fator || 1).toFixed(7)}</td>
+            <td>${(info.taxa || 0).toFixed(2)}%</td>
+            <td>${saldoA.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
+            <td>${saldoB.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
+        </tr>`;
+
+        if(dataAtual.getTime() === dataFinal.getTime()) {
+            // Resultado Final
+            document.getElementById('res_a').textContent = saldoA.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+            document.getElementById('res_b').textContent = saldoB.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+            const prov = Math.abs(saldoA - saldoB);
+            document.getElementById('res_prov').textContent = prov.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+            
+            const p_hon = parseFloat(document.getElementById('hon_pct').value) / 100;
+            const v_hon = (document.getElementById('hon_base').value === 'proveito') ? prov * p_hon : saldoB * p_hon;
+            document.getElementById('res_hon').textContent = `Honorários Estimados: ${v_hon.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}`;
+        }
+        dataAtual.setMonth(dataAtual.getMonth() + 1);
+    }
+    document.getElementById('corpo_tabela').innerHTML = html;
+}
+
+setInterval(() => { document.getElementById('relogio').textContent = new Date().toLocaleString(); }, 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Extrair Texto Completo</title>
+</head>
+<body>
+  <h2>Importar documento e extrair texto (PDF/TXT/Imagem/DOCX)</h2>
+  
+  <input type="file" id="fileInput" accept=".pdf,.txt,.png,.jpg,.jpeg,.docx">
+  <button onclick="extractText()">Extrair Texto</button>
+  <button onclick="downloadText()">Baixar TXT</button>
+  <button onclick="downloadPDF()">Baixar PDF</button>
+  <button onclick="downloadDOCX()">Baixar DOCX</button>
+  <button onclick="downloadMarkdown()">Baixar Markdown</button>
+  <button onclick="copyText()">Copiar Texto</button>
+  
+  <h3>Texto extraído:</h3>
+  <textarea id="output" rows="20" cols="100"></textarea>
+  
+  <!-- Bibliotecas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.36.0/docxtemplater.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPDF/2.5.1/jspdf.umd.min.js"></script>
+  
+  <script>
+    let extractedText = "";
+
+    // Função para remover rodapés repetitivos
+    function cleanFooter(text) {
+      const patterns = [
+        /Num\.\s*\d+\s*-\s*Pág\.\s*\d+[\s\S]*?Número do documento:\s*\d+[^\n]*\n?/gi,
+        /Assinado digitalmente por:[\s\S]*?Número do documento:[^\n]*\n?/gi,
+        /Documento eletrônico assinado[\s\S]*?Número do documento:[^\n]*\n?/gi
+      ];
+      let cleaned = text;
+      patterns.forEach(p => {
+        cleaned = cleaned.replace(p, "");
+      });
+      return cleaned;
+    }
+
+    // Autosave: carrega texto salvo
+    window.onload = function() {
+      const saved = localStorage.getItem("autosaveText");
+      if (saved) {
+        extractedText = saved;
+        document.getElementById("output").value = saved;
+      }
+    };
+
+    async function extractText() {
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) {
+        alert("Selecione um arquivo primeiro!");
+        return;
+      }
+
+      if (file.type === "text/plain") {
+        const text = await file.text();
+        extractedText = cleanFooter(text) + `\n\n--- Fim do arquivo TXT ---\n\n`;
+
+      } else if (file.type === "application/pdf") {
+        const reader = new FileReader();
+        reader.onload = async function() {
+          const typedArray = new Uint8Array(this.result);
+          const pdf = await pdfjsLib.getDocument(typedArray).promise;
+          let textContent = "";
+
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const text = await page.getTextContent();
+
+            if (text.items.length > 0) {
+              text.items.forEach(item => textContent += item.str + " ");
+            } else {
+              const viewport = page.getViewport({ scale: 2 });
+              const canvas = document.createElement("canvas");
+              const context = canvas.getContext("2d");
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+
+              await page.render({ canvasContext: context, viewport: viewport }).promise;
+              const { data: { text: ocrText } } = await Tesseract.recognize(canvas, 'por');
+              textContent += ocrText + " ";
+            }
+
+            // Adiciona separador entre páginas
+            textContent += `\n\n--- Página ${i} ---\n\n`;
+          }
+
+          extractedText = cleanFooter(textContent);
+          document.getElementById("output").value = extractedText;
+          localStorage.setItem("autosaveText", extractedText);
+        };
+        reader.readAsArrayBuffer(file);
+
+      } else if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = async function() {
+          const { data: { text } } = await Tesseract.recognize(reader.result, 'por');
+          extractedText = cleanFooter(text) + `\n\n--- Fim da imagem ---\n\n`;
+          document.getElementById("output").value = extractedText;
+          localStorage.setItem("autosaveText", extractedText);
+        };
+        reader.readAsDataURL(file);
+
+      } else if (file.name.endsWith(".docx")) {
+        const reader = new FileReader();
+        reader.onload = async function() {
+          const zip = new JSZip(reader.result);
+          const doc = new window.Docxtemplater().loadZip(zip);
+          const text = doc.getFullText();
+          extractedText = cleanFooter(text) + `\n\n--- Fim do arquivo DOCX ---\n\n`;
+          document.getElementById("output").value = extractedText;
+          localStorage.setItem("autosaveText", extractedText);
+        };
+        reader.readAsBinaryString(file);
+
+      } else {
+        alert("Formato não suportado. Use PDF, TXT, DOCX ou imagem.");
+      }
+    }
+
+    function downloadText() {
+      if (!extractedText) {
+        alert("Nenhum texto extraído ainda!");
+        return;
+      }
+      const blob = new Blob([extractedText], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_extraido.txt";
+      link.click();
+    }
+
+    function downloadPDF() {
+      if (!extractedText) {
+        alert("Nenhum texto extraído ainda!");
+        return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(12);
+      const lines = doc.splitTextToSize(extractedText, 180);
+      doc.text(lines, 10, 10);
+      doc.save("texto_extraido.pdf");
+    }
+
+    function downloadDOCX() {
+      if (!extractedText) {
+        alert("Nenhum texto extraído ainda!");
+        return;
+      }
+      const blob = new Blob(
+        [`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+          <w:body>
+            <w:p><w:r><w:t>${extractedText.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</w:t></w:r></w:p>
+          </w:body>
+        </w:document>`],
+        { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
+      );
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_extraido.docx";
+      link.click();
+    }
+
+    function downloadMarkdown() {
+      if (!extractedText) {
+        alert("Nenhum texto extraído ainda!");
+        return;
+      }
+      // Converte separadores para estilo Markdown
+      const mdText = extractedText.replace(/--- Página (\d+) ---/g, "### Página $1");
+      const blob = new Blob([mdText], { type: "text/markdown" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_extraido.md";
+      link.click();
+    }
+
+    function copyText() {
+      if (!extractedText) {
+        alert("Nenhum texto extraído ainda!");
+        return;
+      }
+      navigator.clipboard.writeText(extractedText).then(() => {
+        alert("Texto copiado para a área de transferência!");
+      });
+    }
+  </script>
+</body>
+</html>

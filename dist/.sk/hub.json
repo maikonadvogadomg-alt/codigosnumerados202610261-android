@@ -1,0 +1,3510 @@
+{
+  "titulo": "codigos-numerados-2026-10-26 (1)",
+  "arquivo": "hub.html",
+  "itens": [
+    {
+      "path": "1.html",
+      "nome": "Arrumador de Backups",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "2.html",
+      "nome": "Diagnóstico + Correção de Executáveis",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "3.html",
+      "nome": "Conversor NPM → CDN",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "4.html",
+      "nome": "Playground Visual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "5.html",
+      "nome": "Netlify Build + Testador API",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "6.html",
+      "nome": "Gerenciador de Portas e Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "7.html",
+      "nome": "Corretor de Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "8.html",
+      "nome": "Guia do Terminal",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "9.html",
+      "nome": "Leitor de Memória",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "10.html",
+      "nome": "Meu Projeto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "11.html",
+      "nome": "Validador de Código + Testador de API",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "12.html",
+      "nome": "Triagem de Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "13.html",
+      "nome": "Teste",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "14.html",
+      "nome": "SK Mini Editor",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "15.html",
+      "nome": "SK Mini Editor - Guia de Instalação Interativo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "16.html",
+      "nome": "SK Code Editor - GitHub Integration",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "17.html",
+      "nome": "SK Mini Editor - Completo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "18.html",
+      "nome": "teste 2 onde txt 6 index",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "19.html",
+      "nome": "Playground Pro",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "20.html",
+      "nome": "🚀 SK Mini Editor - Gerador de Arquivos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "21.html",
+      "nome": "🚀 SK Mini Editor - Setup Interativo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "22.html",
+      "nome": "SK Mini Editor - TESTE",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "23.html",
+      "nome": "SK Mini Editor - Editor de Código Online",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "24.html",
+      "nome": "SK Oficina de Busca, Extração & Exportação v7",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "25.html",
+      "nome": "SK Rastreador de Rotas & IA v6 - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "26.html",
+      "nome": "SK-Mini Playground",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "27.html",
+      "nome": "SK Oficina Jurídica v4 - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "28.html",
+      "nome": "SK Decodificador & Comparador de Logs v6",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "29.html",
+      "nome": "SK-Code Debugger — Verificar Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "30.html",
+      "nome": "Cirurgião de Código 3.0",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "31.html",
+      "nome": "Navegador PWA com Proxys",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "32.html",
+      "nome": "Auditoria Financeira — Calculadora Sentença",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "33.html",
+      "nome": "Assistente Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "34.html",
+      "nome": "SK Editor Jurídico v2 - Seu Ambiente",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "35.html",
+      "nome": "Playground Visual - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "36.html",
+      "nome": "Menu Principal",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "37.html",
+      "nome": "Gerador de Ícone",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "38.html",
+      "nome": "Construtor Automático PWA - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "39.html",
+      "nome": "Editor de Peças Jurídicas — Estrutura + Preview",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "40.html",
+      "nome": "Comparador Jurídico Multi-Cenário — Cartão/Empréstimo (BCB + TJMG)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "41.html",
+      "nome": "🔪 Fatiador de Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "42.html",
+      "nome": "Playground Supabase",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "43.html",
+      "nome": "Iara Suite — Editor",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "44.html",
+      "nome": "Gerador de Estrutura - CORRIGIDO",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "45.html",
+      "nome": "🐍 Python Explicado Visualmente",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "46.html",
+      "nome": "CodeLens",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "47.html",
+      "nome": "Navegador PWA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "48.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "49.html",
+      "nome": "SK Scanner v2",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "50.html",
+      "nome": "Relatório de metadados",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "51.html",
+      "nome": "RECEITA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "52.html",
+      "nome": "relatorio-AssistenteJuridico-PWA-8zip 714d7dd (3).md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "53.html",
+      "nome": "relatorio-AssistenteJuridico-PWA-8zip 1AssistenteJ.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "54.html",
+      "nome": "🔧 PWA Builder — Gerador de Instalação",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "55.html",
+      "nome": "PWA Jurídico — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "56.html",
+      "nome": "🧩 Montador Multi-Projetos — PWA Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "57.html",
+      "nome": "Live Code Runner",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "58.html",
+      "nome": "SK-Prompt Manager — Templates + Histórico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "59.html",
+      "nome": "Projeto Lab",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "60.html",
+      "nome": "Chat IA Profissional",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "61.html",
+      "nome": "AI Code Studio",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "62.html",
+      "nome": "🚀 Guia Interativo - Chat IA Profissional",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "63.html",
+      "nome": "🔧 ConstruAPK Pro — Analisador e Gerador",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "64.html",
+      "nome": "📱 Gerador DevMobile EAS",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "65.html",
+      "nome": "📦 Build & Deploy",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "66.html",
+      "nome": "Sistema Profissional - Modular",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "67.html",
+      "nome": "Gerador de Estrutura de Projeto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "68.html",
+      "nome": "Analisador de Projeto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "69.html",
+      "nome": "Playground Code — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "70.html",
+      "nome": "playground",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "71.html",
+      "nome": "Code Playground - HTML/CSS/JS/React/Python",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "72.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "73.html",
+      "nome": "Playground — MeuIDE",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "74.html",
+      "nome": "Suite Jurídica + IA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "75.html",
+      "nome": "plano-SK-Editor-v3-SemReplit-9-1790894751105.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "76.html",
+      "nome": "PLANO_RECUPERACAO.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "77.html",
+      "nome": "Editor Visual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "78.html",
+      "nome": "🎨 Editor Visual - Funcional de Verdade",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "79.html",
+      "nome": "🐝 Editor Visual - Responsivo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "80.html",
+      "nome": "Editor Visual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "81.html",
+      "nome": "🎨 Editor Visual - Funcional",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "82.html",
+      "nome": "🎨 Editor Visual de Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "83.html",
+      "nome": "SK-HTML Magic Editor",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "84.html",
+      "nome": "SK-Build Guide — Entenda o Build",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "85.html",
+      "nome": "SK-Build Unpacker — Desempacotar Build",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "86.html",
+      "nome": "Perito de Metadados",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "87.html",
+      "nome": "Parser Markdown - Gerador de Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "88.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "89.html",
+      "nome": "Organizador de Documentos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "90.html",
+      "nome": "Extrator Universal BPC/LOAS - Análise Processual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "91.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "92.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "93.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "94.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "95.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "96.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "97.html",
+      "nome": "Code Merger Pro — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "98.html",
+      "nome": "Build React - Executável Funcional",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "99.html",
+      "nome": "🏗️ Montador - Chat IA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "100.html",
+      "nome": "⚙️ Replit Config Manager",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "101.html",
+      "nome": "🧹 Project Cleaner",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "102.html",
+      "nome": "Iara Mapper Pro - Final",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "103.html",
+      "nome": "SK-Code Editor Functions Explained",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "104.html",
+      "nome": "SK-Details & Summary — Expandir/Colapsar",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "105.html",
+      "nome": "SK-Iara Suite Checker",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "106.html",
+      "nome": "Editor com Busca - Dr. Maikon",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "107.html",
+      "nome": "Iara Mapper Pro",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "108.html",
+      "nome": "Analisador de Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "109.html",
+      "nome": "Visualizador de Markdown",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "110.html",
+      "nome": "Iara 2.0 - Mapeador Profissional de Dependências",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "111.html",
+      "nome": "🧹 Limpador de Replit",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "112.html",
+      "nome": "Raio-X de Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "113.html",
+      "nome": "Gerador de Ícones PRO - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "114.html",
+      "nome": "PWA Jurídico — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "115.html",
+      "nome": "Teste Diff (Estático)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "116.html",
+      "nome": "Diff Simple Test",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "117.html",
+      "nome": "projeto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "118.html",
+      "nome": "Analisador e Reparador PWA -> APK",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "119.html",
+      "nome": "🔍 Analisador de Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "120.html",
+      "nome": "VOXIS — Assistente Pessoal",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "121.html",
+      "nome": "📱 Gerador EAS Build",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "122.html",
+      "nome": "🔗 Teste APK + Termux",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "123.html",
+      "nome": "Analisador de Logs GitHub Actions",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "124.html",
+      "nome": "Replicador de Projeto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "125.html",
+      "nome": "Editor Visual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "126.html",
+      "nome": "🐝 Editor Visual - Responsivo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "127.html",
+      "nome": "Editor Visual HTML - Tipo Firebug Simples",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "128.html",
+      "nome": "SK-Code Analyzer — Mapear Dependências",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "129.html",
+      "nome": "SK-Code Formatter — Organize seu Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "130.html",
+      "nome": "Perito de Metadados",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "131.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "132.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "133.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "134.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "135.html",
+      "nome": "📱 APK Builder - EAS",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "136.html",
+      "nome": "🚀 Setup Dashboard - Monorepo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "137.html",
+      "nome": "🛠️ Workstation Completa — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "138.html",
+      "nome": "modulo 2",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "139.html",
+      "nome": "IARA Suite — Importador & Editor Completo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "140.html",
+      "nome": "Comparar Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "141.html",
+      "nome": "SK-Docs Hub PT — Documentação em Português",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "142.html",
+      "nome": "Code Debugger — Dr. Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "143.html",
+      "nome": "Iara Mapper Pro — Dr. Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "144.html",
+      "nome": "Meu Projeto PWA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "145.html",
+      "nome": "manual-dev (1)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "146.html",
+      "nome": "Auditoria Financeira - Assistente Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "147.html",
+      "nome": "HTML Playground - Editor de Codigo ao Vivo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "148.html",
+      "nome": "Auditoria Master - Dr. MAIKON DA ROCHA CALDEIRA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "149.html",
+      "nome": "Limpador de Processos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "150.html",
+      "nome": "Painel Maikon Caldeira - Advogado",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "151.html",
+      "nome": "Iara Suite v2.0 - Editor + Mapper Avançado",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "152.html",
+      "nome": "⚖️ Robô Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "153.html",
+      "nome": "Iara Suite v3.0 - Importador Universal",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "154.html",
+      "nome": "Gerador de Plano de Projeto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "155.html",
+      "nome": "Gerador de Ícones PWA - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "156.html",
+      "nome": "📱 Gerador EAS Build",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "157.html",
+      "nome": "Gerador de Documentação Automática",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "158.html",
+      "nome": "Extrator de Sites",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "159.html",
+      "nome": "SK-Combinar Apps — Unir Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "160.html",
+      "nome": "🔧 ConstruAPK Pro — Analisador e Gerador",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "161.html",
+      "nome": "🎨 Playground + ⚖️ Assistente Jurídico - Maikon",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "162.html",
+      "nome": "Juntador de Arquivos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "163.html",
+      "nome": "Maikon Caldeira — Aplicativos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "164.html",
+      "nome": "AI Code Studio",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "165.html",
+      "nome": "🚀 Setup Dashboard",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "166.html",
+      "nome": "Gerador de Relatório + Extrator de Arquivos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "167.html",
+      "nome": "Filtrador Jurídico Avançado (Atualizado)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "168.html",
+      "nome": "SK-Chat — Painel de Regras",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "169.html",
+      "nome": "SK-Master — Editor + Chat + Prompt Generator",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "170.html",
+      "nome": "SK-Code Analyzer v2",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "171.html",
+      "nome": "Peça",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "172.html",
+      "nome": "CirurgiÃ£o de CÃ³digo 4.4",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "173.html",
+      "nome": "Cirurgião de Código 4.3",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "174.html",
+      "nome": "Juntador de Arquivos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "175.html",
+      "nome": "Maikon Caldeira - Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "176.html",
+      "nome": "SK Editor v3",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "177.html",
+      "nome": "Conversor TJMG (Fator) → competencia/correcao_pct",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "178.html",
+      "nome": "Iara Suite",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "179.html",
+      "nome": "🚀 Gerenciador PWA - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "180.html",
+      "nome": "Playground TSX - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "181.html",
+      "nome": "📱 Gerador DevMobile EAS",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "182.html",
+      "nome": "Extrator de Sites",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "183.html",
+      "nome": "Extrator Jurídico — Maikon Caldeira OAB/MG 183712",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "184.html",
+      "nome": "Iara Mapper — Dr. Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "185.html",
+      "nome": "SK-CSS/HTML Interactive Guide",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "186.html",
+      "nome": "Demonstrativo de cálculo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "187.html",
+      "nome": "Corretor Automático Inteligente",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "188.html",
+      "nome": "Comunicações Processuais",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "189.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "190.html",
+      "nome": "Consulta por OAB",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "191.html",
+      "nome": "lib pdf template",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "192.html",
+      "nome": "indice_legal-assistant.tsx (2).md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "193.html",
+      "nome": "Meus Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "194.html",
+      "nome": "Construtor Automático PWA - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "195.html",
+      "nome": "SK-Chat — Regras + Tokens",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "196.html",
+      "nome": "Cirurgião de Código 4.0",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "197.html",
+      "nome": "Cirurgião de Código 2.0",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "198.html",
+      "nome": "Cirurgião de Código 4.4",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "199.html",
+      "nome": "Cirurgião de Código 4.2",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "200.html",
+      "nome": "Cirurgião de Código 4.1",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "201.html",
+      "nome": "Chat IA Pro — Saulo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "202.html",
+      "nome": "Chat",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "203.html",
+      "nome": "Calculadora de Sentença",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "204.html",
+      "nome": "Calculadora de Sentença",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "205.html",
+      "nome": "Calculadora de Sentença",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "206.html",
+      "nome": "arquivo 2",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "207.html",
+      "nome": "Comparador Jurídico Completo — TJMG (Fator) + BCB (Juros) — Multi-Cenário",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "208.html",
+      "nome": "Chat IA Pro",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "209.html",
+      "nome": "Calculadora de Sentença",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "210.html",
+      "nome": "SK Oficina Jurídica v6 - Integrada",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "211.html",
+      "nome": "Análise: snippets.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "212.html",
+      "nome": "analise_Manual.tsx.html",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "213.html",
+      "nome": "Análise: keys.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "214.html",
+      "nome": "Análise: export.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "215.html",
+      "nome": "Análise: EditorLayout.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "216.html",
+      "nome": "analise_EditorLayout.tsx (1).md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "217.html",
+      "nome": "Análise: desktop.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "218.html",
+      "nome": "Análise: android.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "219.html",
+      "nome": "AI Code Studio",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "220.html",
+      "nome": "Sem titulo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "221.html",
+      "nome": "Diagnóstico crise",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "222.html",
+      "nome": "Calculadora Jurídica Monica — Importador Direto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "223.html",
+      "nome": "Comparador Jurídico Completo (Com Busca BCB)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "224.html",
+      "nome": "Resumidor Jurídico Estruturado v2.0",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "225.html",
+      "nome": "Gerador de Petição: Vinculação e Enquadramento - Caso Adjair",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "226.html",
+      "nome": "Siscajur - Perícia Bancária & Sentença (Capitalização Anual)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "227.html",
+      "nome": "Extrator Replit — Maikon",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "228.html",
+      "nome": "Comparador JurÃ­dico â TJMG + BCB",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "229.html",
+      "nome": "Extrator de Texto Pro",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "230.html",
+      "nome": "Gerador de Peças Processuais — TRF6",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "231.html",
+      "nome": "Calculadora Judicial (TJMG + BCB + Capitalização Anual)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "232.html",
+      "nome": "Analisador de Histórico — ZIP/TAR/TAZ",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "233.html",
+      "nome": "Gerador Jurídico Pro (PDF/DOCX + Dedup Inteligente)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "234.html",
+      "nome": "Maikon Caldeira - Reconhecimentos Pretéritos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "235.html",
+      "nome": "Comparador Jurídico - Índices TJMG + BCB",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "236.html",
+      "nome": "📋 Gerador de Plano de Projeto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "237.html",
+      "nome": "SK Database Manager + IA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "238.html",
+      "nome": "Análise: Terminal.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "239.html",
+      "nome": "Análise: settings.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "240.html",
+      "nome": "Análise: Manual.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "241.html",
+      "nome": "Análise: legal-assistant.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "242.html",
+      "nome": "analise_export.tsx.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "243.html",
+      "nome": "analise_desktop.ts (1).md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "244.html",
+      "nome": "Análise: DeployPanel.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "245.html",
+      "nome": "Alquimia v.14",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "246.html",
+      "nome": "Extrator de Dados Jurídicos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "247.html",
+      "nome": "🚨 RECURSO URGENTE - FUNCIONA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "248.html",
+      "nome": "🚨 MEU RECURSO PREVIDÊNCIA - FUNCIONA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "249.html",
+      "nome": "Gerador de Cotejo Analítico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "250.html",
+      "nome": "Extrator BPC Netflix",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "251.html",
+      "nome": "Maikon Caldeira - Advocacia",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "252.html",
+      "nome": "Extrair Texto com Filtros",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "253.html",
+      "nome": "Parecer de Liquidação Judicial - Dr. Braulino",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "254.html",
+      "nome": "Calculadora Judicial Completa",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "255.html",
+      "nome": "🚀 Gerenciador PWA - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "256.html",
+      "nome": "Exported HTML",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "257.html",
+      "nome": "Gerador de Peças Jurídicas - TRF6/JEF",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "258.html",
+      "nome": "Calculadora Judicial Manhumirim - Proveito Econômico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "259.html",
+      "nome": "Painel Consolidado – Petições, Tabelas e CTC",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "260.html",
+      "nome": "Filtro Jurídico - Redução Real de Duplicatas",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "261.html",
+      "nome": "PWA Scanner Multi-Formato + IA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "262.html",
+      "nome": "Filtrador Jurídico Master — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "263.html",
+      "nome": "Scanner — Detector de Dependências Replit",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "264.html",
+      "nome": "Manual SK Editor 4 — Completo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "265.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "266.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "267.html",
+      "nome": "Filtrador Jurídico Avançado (Anti-repetição)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "268.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "269.html",
+      "nome": "MANUAL (2)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "270.html",
+      "nome": "PLANO",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "271.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "272.html",
+      "nome": "Cirurgião de Código 3.0",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "273.html",
+      "nome": "Scanner — Detector de Dependências",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "274.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "275.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "276.html",
+      "nome": "3 Ferramentas Completas - Bugs, Versões e APK",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "277.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "278.html",
+      "nome": "Análise: workspace.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "279.html",
+      "nome": "Análise: persistFiles.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "280.html",
+      "nome": "analise_Manual.tsx.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "281.html",
+      "nome": "analise_legal-assistant.tsx.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "282.html",
+      "nome": "analise_EditorLayout.tsx.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "283.html",
+      "nome": "Análise: App.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "284.html",
+      "nome": "200+ Códigos Jurídicos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "285.html",
+      "nome": "Gerador PWA - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "286.html",
+      "nome": "Gerador de Arquivo .env - Assistente Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "287.html",
+      "nome": "Calculadora Mike Definitiva",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "288.html",
+      "nome": "Editor de Cotejo Analítico - Proporcionalidade de Danos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "289.html",
+      "nome": "Guia de Recuperação e Configuração do Projeto Maikon",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "290.html",
+      "nome": "nova_ferramenta",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "291.html",
+      "nome": "Auditoria Master - Dr. MAIKON DA ROCHA CALDEIRA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "292.html",
+      "nome": "Extrator de Texto Pro",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "293.html",
+      "nome": "Monica Jurídico v7.0 - Comparador de Cenários (Perícia Bancária)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "294.html",
+      "nome": "A Oficina Digital do Mike da Galera",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "295.html",
+      "nome": "Editor Jurídico Visual Law - Versão Final",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "296.html",
+      "nome": "Calculadora Judicial Híbrida (Fixo vs Variável)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "297.html",
+      "nome": "Calculadora Pericial: Sentença vs Contrato (Cartão/Taxa Média)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "298.html",
+      "nome": "Calculadora de Liquidação & Proveito Econômico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "299.html",
+      "nome": "Painel – Flexibilização de Renda",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "300.html",
+      "nome": "Rastreador de Histórico Replit — PWA Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "301.html",
+      "nome": "Calculadora Judicial Premium - Mike da Galera",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "302.html",
+      "nome": "Leitor de Projeto",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "303.html",
+      "nome": "MANUAL (3)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "304.html",
+      "nome": "Filtrador Avançado de Documentos Jurídicos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "305.html",
+      "nome": "🔌 Testador de API — Com Proxy em Cascata",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "306.html",
+      "nome": "Editor HTML",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "307.html",
+      "nome": "🧩 Montador de Módulos — PWA Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "308.html",
+      "nome": "guia-completo-apk (2)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "309.html",
+      "nome": "🔍 Scanner de Dependências — SK Editor",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "310.html",
+      "nome": "Extrator de Vínculos Previdenciários - Análise Processual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "311.html",
+      "nome": "Calculadora Jurídica - Juros e Correção",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "312.html",
+      "nome": "Playground Code Pro — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "313.html",
+      "nome": "Chat IA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "314.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "315.html",
+      "nome": "Filtrador Jurídico Avançado (Atualizado)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "316.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "317.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "318.html",
+      "nome": "RECEITA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "319.html",
+      "nome": "Blocos de js/1.html.md.js",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "320.html",
+      "nome": "Gerador de APK — EAS Config",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "321.html",
+      "nome": "Análise: Terminal.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "322.html",
+      "nome": "Análise: RealTerminal.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "323.html",
+      "nome": "Análise: pwa.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "324.html",
+      "nome": "Análise: pacote-ia.txt.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "325.html",
+      "nome": "Análise: pacote-ia.txt.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "326.html",
+      "nome": "Análise: legal-assistant.tsx.recovered",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "327.html",
+      "nome": "Análise: keys.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "328.html",
+      "nome": "Análise: github.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "329.html",
+      "nome": "Análise: EditorLayout.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "330.html",
+      "nome": "Análise: DatabasePanel.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "331.html",
+      "nome": "Análise: App.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "332.html",
+      "nome": "Análise: App.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "333.html",
+      "nome": "Análise: AIChat.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "334.html",
+      "nome": "Cartao de Perfil",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "335.html",
+      "nome": "Importar TJMG",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "336.html",
+      "nome": "Painel Estruturado - Embargos & Cotejo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "337.html",
+      "nome": "Leitor de CNIS - Visual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "338.html",
+      "nome": "Rural Adjair",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "339.html",
+      "nome": "Calculadora de Honorários & Liquidação (Anual vs Mensal)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "340.html",
+      "nome": "manual-dev",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "341.html",
+      "nome": "Sistema de Perícia Judicial Bancária - Dr. Manhumirim",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "342.html",
+      "nome": "Extrator Jurídico - Contrato Falsificado (INSS/Estelionato)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "343.html",
+      "nome": "Mike Legal AI - Importador Universal",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "344.html",
+      "nome": "Code Merger Pro — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "345.html",
+      "nome": "🗄️ Painel de Banco de Dados",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "346.html",
+      "nome": "Maikon Caldeira - Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "347.html",
+      "nome": "⚡ Iara Suite — Code Editor · APK Builder · Site Extractor",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "348.html",
+      "nome": "Exported HTML",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "349.html",
+      "nome": "ObjectFactory (intercomunicacao 2.2.2 API)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "350.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "351.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "352.html",
+      "nome": "Manual Completo — Extrator Jurídico + APK — Maikon Caldeira OAB/MG 183712",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "353.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "354.html",
+      "nome": "Comparador Jurídico Profissional v2.0",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "355.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "356.html",
+      "nome": "Manual Iara Suite v2.0 — Maikon Caldeira OAB/MG 183712",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "357.html",
+      "nome": "Análise: TerminalTab.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "358.html",
+      "nome": "Meus Códigos Jurídicos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "359.html",
+      "nome": "Conversão TJMG → Padronizado",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "360.html",
+      "nome": "Leitor Visual de CNIS",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "361.html",
+      "nome": "Extrator Jurídico BPC/LOAS com OCR e Exportação",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "362.html",
+      "nome": "Comparador Jurídico Multi-Cenário (Com Integração BCB)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "363.html",
+      "nome": "🛠️ Ferramentas Jurídico BPC",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "364.html",
+      "nome": "Filtrador de Documentos Jurídicos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "365.html",
+      "nome": "Laudo de Auditoria - Dr. Braulino",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "366.html",
+      "nome": "Gerador de Cotejo Analítico - Exportável para Word",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "367.html",
+      "nome": "Calculadora de Custos de IA Avançada",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "368.html",
+      "nome": "PWA Scanner ZIP Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "369.html",
+      "nome": "Calculadora Jurídica Definitiva - Dr. Manhumirim",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "370.html",
+      "nome": "🧩 Montador Multi-Projetos — PWA Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "371.html",
+      "nome": "Maikon Caldeira - Reconhecimentos Pretéritos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "372.html",
+      "nome": "Modelo Editável de Peça (TRF6/JEF) — Endereçamento, Qualificação, Fundamentos com Subtítulos e Jurisprudência",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "373.html",
+      "nome": "Comparador Jurídico Completo - TJMG + BCB",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "374.html",
+      "nome": "Filtro Jurídico Inteligente - Estrutura de Peças",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "375.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "376.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "377.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "378.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "379.html",
+      "nome": "Meu Projeto PWA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "380.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "381.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "382.html",
+      "nome": "Assistente Jurídico Pro",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "383.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "384.html",
+      "nome": "📖 Gerador de Histórias com Voz",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "385.html",
+      "nome": "Gerador de package.json REAL - Só o que Funciona",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "386.html",
+      "nome": "Cirurgião de Código 4.0",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "387.html",
+      "nome": "analise_Terminal.tsx.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "388.html",
+      "nome": "Análise: legal-assistant.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "389.html",
+      "nome": "Análise: desktop.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "390.html",
+      "nome": "Análise: App.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "391.html",
+      "nome": "Análise: ApkAnalyzer.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "392.html",
+      "nome": "Análise: AIChat.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "393.html",
+      "nome": "Comparador de Juros Simples e Compostos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "394.html",
+      "nome": "PDJd Token COJEF Centro",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "395.html",
+      "nome": "🔑 PDJD Token Generator - Portal Jus.br",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "396.html",
+      "nome": "COMO_BUILDAR",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "397.html",
+      "nome": "Filtrador Universal de Documentos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "398.html",
+      "nome": "Analisador de Versões PWA Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "399.html",
+      "nome": "Adjair Tempo Especial",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "400.html",
+      "nome": "Comparador Jurídico Master — Monica Especialista",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "401.html",
+      "nome": "Painel – Flexibilização de Renda",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "402.html",
+      "nome": "🧩 Montador Multi-Projetos — PWA Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "403.html",
+      "nome": "Painel de Confronto de Remunerações (CNIS/RAIS/CTC)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "405.html",
+      "nome": "Analisador de Código Gigante",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "406.html",
+      "nome": "MANUAL (1)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "407.html",
+      "nome": "Dashboard de Monitoramento - Projeto Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "408.html",
+      "nome": "Filtrador Jurídico Avançado (Anti-repetição)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "409.html",
+      "nome": "🔍 Comparador de Projetos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "410.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "411.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "412.html",
+      "nome": "Analisador de Projetos + Gerador .EXE",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "413.html",
+      "nome": "Blocos de assets/app (cópia).js",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "414.html",
+      "nome": "Análise: TerminalTab.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "415.html",
+      "nome": "analise_pacote-ia.txt.md.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "416.html",
+      "nome": "Análise: EditorLayout.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "417.html",
+      "nome": "Análise: eas.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "418.html",
+      "nome": "Análise: archive.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "419.html",
+      "nome": "Análise: archive.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "420.html",
+      "nome": "analise_App.tsx.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "421.html",
+      "nome": "Validar JWT com Chave Pública PEM",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "422.html",
+      "nome": "' + nomeCompleto + '",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "423.html",
+      "nome": "Monica Assistente - Comparador de Cenários Judiciais",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "424.html",
+      "nome": "🔑 JWT Generator PDJUD/PDPJ",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "425.html",
+      "nome": "Manual Básico: Variáveis de Ambiente e Chaves Secretas",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "426.html",
+      "nome": "Manual 1",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "427.html",
+      "nome": "Gerador de Cotejo Analítico (BPC/LOAS) — Export Word/Excel/JSON",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "428.html",
+      "nome": "SK Oficina Jurídica v6 - Analyzer + Injector",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "429.html",
+      "nome": "Extrair Texto (PDF/TXT/Imagem/DOCX)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "430.html",
+      "nome": "Filtrador Jurídico Completo (VIP + Word)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "431.html",
+      "nome": "Filtrador Jurídico Avançado (Versão Mike)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "432.html",
+      "nome": "Filtrador Genérico (Anti-repetição) — Jurídico",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "433.html",
+      "nome": "Leitor de Projeto PRO - Com Memória",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "434.html",
+      "nome": "Extrator Jurídico - Processo Completo (Contrato Falsificado)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "435.html",
+      "nome": "Comparador Jurídico — Correção + Juros (Simples/Compostos) por Competência",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "436.html",
+      "nome": "🔬 Cirurgião 3.0 — Scanner Inteligente",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "437.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "438.html",
+      "nome": "Playground IA — Saulo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "439.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "440.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "441.html",
+      "nome": "analise_settings.tsx.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "442.html",
+      "nome": "Análise: Manual.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "443.html",
+      "nome": "analise_keys.tsx (3).md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "444.html",
+      "nome": "Análise: eas.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "445.html",
+      "nome": "Análise: BuildPanel.tsx",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "446.html",
+      "nome": "Análise: android.ts",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "447.html",
+      "nome": "Analisador Local de Projetos — V2",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "448.html",
+      "nome": "Comparar custo IA: barato vs caro",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "449.html",
+      "nome": "Extrair Texto Completo",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "450.html",
+      "nome": "nova_ferramenta",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "451.html",
+      "nome": "nova_ferramenta",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "452.html",
+      "nome": "Playground Pro - Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "453.html",
+      "nome": "Guia de recuperação",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "454.html",
+      "nome": "Limpador de Embargos (Anti-Repetição)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "455.html",
+      "nome": "🔐 JWT RS256 - Front-end",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "456.html",
+      "nome": "Comparador Jurídico — TJMG + BCB — Premium",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "457.html",
+      "nome": "Extrator Jurídico - Contrato Falsificado (INSS/Estelionato)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "458.html",
+      "nome": "Iara — Mapeador Visual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "459.html",
+      "nome": "Iara Dissecador — Extrator e Montador de Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "460.html",
+      "nome": "Extrator Jurídico Avançado - Processo Completo com Links",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "461.html",
+      "nome": "Analisador Automático + Debugger Visual",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "462.html",
+      "nome": "Comparador Jurídico — TJMG (Fator) + BCB (Juros) — Multi-Cenário",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "463.html",
+      "nome": "Painel Maikon Caldeira — Advocacia Digital",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "464.html",
+      "nome": "Playground Code Pro + IA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "465.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "466.html",
+      "nome": "Multi-Projetos PWA — Maikon Caldeira",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "467.html",
+      "nome": "Explorador de Versões e Bugs - Replit/ZIP",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "468.html",
+      "nome": "Diagnóstico de Executável com Problema",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "469.html",
+      "nome": "Gerador Automático de package.json + Workflow",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "470.html",
+      "nome": "Mini SK",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "471.html",
+      "nome": "Analisador de Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "472.html",
+      "nome": "11",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "473.html",
+      "nome": "ai-studio-backup-2026-10-24-15-47 — Relatório",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "474.html",
+      "nome": "ai-studio-backup-2026-10-24-15-47 — Relatório",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "475.html",
+      "nome": "Analisador de Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "476.html",
+      "nome": "analise_legal-assistant.tsx.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "477.html",
+      "nome": "Markdown",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "478.html",
+      "nome": "cdns (1)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "479.html",
+      "nome": "Guia dos Apps do Maikon",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "480.html",
+      "nome": "Blocos de colado.js",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "481.html",
+      "nome": "🔬 Dissecador de Código — Iara Suite v2.0",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "482.html",
+      "nome": "SK Editor v3",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "483.html",
+      "nome": "Meu App",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "484.html",
+      "nome": "Instalador · Assistente Jurídico (no computador)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "485.html",
+      "nome": "Instalador · Mini SK v09/10-b",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "486.html",
+      "nome": "Instalador · Mini SK v15/10-a (site / celular / APK)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "487.html",
+      "nome": "Laboratório do Modular",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "488.html",
+      "nome": "Playground HTML",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "489.html",
+      "nome": "RECEITA",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "490.html",
+      "nome": "⚖️ Cofre de Configurações",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "491.html",
+      "nome": "Fatiador Universal de Código",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "492.html",
+      "nome": "Instalador · Caça-Bug",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "493.html",
+      "nome": "Arquivos juntados",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "494.html",
+      "nome": "Laboratório HTML",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "495.html",
+      "nome": "📂 Leitor Universal de Arquivos",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "496.html",
+      "nome": "PLANO",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "497.html",
+      "nome": "Planos.md",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "498.html",
+      "nome": "📦 Project Manager Pro - Terminal & NPM",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "499.html",
+      "nome": "Sem título (1)",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "500.html",
+      "nome": "Manual do Maikon",
+      "desc": "",
+      "on": false,
+      "icone": "icon-192.png"
+    },
+    {
+      "path": "index.html",
+      "nome": "Maikon Caldeira — Aplicativos",
+      "desc": "",
+      "on": true,
+      "icone": "icon-192.png"
+    }
+  ],
+  "sub": "",
+  "logo": "",
+  "tema": "escuro",
+  "links": []
+}

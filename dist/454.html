@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpador de Embargos (Anti-Repetição)</title>
+    
+    <!-- Bibliotecas para ler PDF e Word corretamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; }
+        h1 { margin: 0 0 15px 0; font-size: 1.2rem; color: #1a202c; }
+        .container { display: flex; gap: 20px; flex: 1; height: 100%; }
+        
+        /* Colunas */
+        .col { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* Inputs e Botões */
+        .controls { margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        
+        textarea { flex: 1; width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 10px; font-size: 13px; resize: none; font-family: monospace; }
+        
+        button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-success { background: #16a34a; color: white; }
+        
+        label { font-size: 0.9rem; font-weight: 600; }
+        .file-input-wrapper { border: 2px dashed #ccc; padding: 15px; text-align: center; border-radius: 4px; cursor: pointer; background: #fafafa; }
+        .file-input-wrapper:hover { border-color: #2563eb; background: #eff6ff; }
+        
+        /* Status e Loading */
+        #status { font-size: 0.85rem; color: #666; margin-top: 5px; min-height: 20px; }
+        .loading { color: #2563eb; font-weight: bold; }
+        
+        /* Configurações Avançadas */
+        details { margin-top: 5px; border: 1px solid #eee; padding: 5px; border-radius: 4px; }
+        summary { cursor: pointer; font-size: 0.8rem; color: #555; }
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 0; }
+        .checkbox-group { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <h1>Limpador de Embargos & Extrator de Texto (Anti-Repetição)</h1>
+
+    <div class="container">
+        <!-- LADO ESQUERDO: ENTRADA -->
+        <div class="col">
+            <div class="controls">
+                <div class="file-input-wrapper" onclick="document.getElementById('fileInput').click()">
+                    <span id="fileLabel">📂 Clique para selecionar arquivos (PDF, DOCX, TXT)</span>
+                    <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.json" style="display: none" onchange="handleFiles(this.files)">
+                </div>
+                
+                <details>
+                    <summary>⚙️ Configurações de Filtro (Clique para abrir)</summary>
+                    <div class="config-grid">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="cleanDirty" checked>
+                            <label for="cleanDirty">Limpar sujeira (*, #, _)</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="removeExact" checked>
+                            <label for="removeExact">Remover duplicatas exatas</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="removeSimilar" checked>
+                            <label for="removeSimilar">Remover similares (inteligente)</label>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem">Nível de Similaridade (0.5 a 1.0)</label>
+                            <input type="number" id="similarityLevel" value="0.75" step="0.05" min="0.1" max="1.0" style="width: 60px;">
+                        </div>
+                    </div>
+                    <textarea id="banList" style="height: 60px;" placeholder="Palavras para excluir (uma por linha). Ex: Pede Deferimento, OAB..."></textarea>
+                </details>
+
+                <div class="row">
+                    <button class="btn-primary" onclick="processText()">⚡ FILTRAR AGORA</button>
+                    <button class="btn-danger" onclick="clearAll()">Limpar Tudo</button>
+                </div>
+                <div id="status">Aguardando entrada...</div>
+            </div>
+            <textarea id="inputText" placeholder="O texto bruto aparecerá aqui. Se a importação falhar, você pode COPIAR e COLAR seu texto aqui manualmente."></textarea>
+        </div>
+
+        <!-- LADO DIREITO: SAÍDA -->
+        <div class="col">
+            <div class="controls">
+                <div class="row" style="justify-content: space-between;">
+                    <label>Resultado Limpo:</label>
+                    <div class="row">
+                        <button class="btn-success" onclick="downloadText()">💾 Baixar .TXT</button>
+                        <button class="btn-primary" onclick="copyOutput()">📋 Copiar</button>
+                    </div>
+                </div>
+            </div>
+            <textarea id="outputText" placeholder="O texto limpo e sem repetições aparecerá aqui..."></textarea>
+        </div>
+    </div>
+
+<script>
+    // --- FUNÇÕES DE IMPORTAÇÃO (CORRIGINDO O PROBLEMA DOS DESENHOS) ---
+
+    async function handleFiles(files) {
+        const inputArea = document.getElementById('inputText');
+        const status = document.getElementById('status');
+        
+        if (files.length === 0) return;
+
+        status.innerHTML = '<span class="loading">⏳ Lendo arquivos... (Isso pode demorar se forem grandes)</span>';
+        let fullText = inputArea.value ? inputArea.value + "\n\n" : "";
+
+        for (let file of files) {
+            try {
+                let text = "";
+                const ext = file.name.split('.').pop().toLowerCase();
+
+                if (ext === 'pdf') {
+                    text = await readPDF(file);
+                } else if (ext === 'docx') {
+                    text = await readDocx(file);
+                } else if (ext === 'txt' || ext === 'json') {
+                    text = await readFileAsText(file);
+                } else {
+                    text = `[Erro: Formato .${ext} não suportado. Copie e cole o texto manualmente.]`;
+                }
+
+                fullText += `--- INÍCIO ARQUIVO: ${file.name} ---\n${text}\n--- FIM ARQUIVO ---\n\n`;
+                
+            } catch (e) {
+                console.error(e);
+                fullText += `\n[ERRO ao ler ${file.name}: ${e.message}. Tente copiar e colar o texto.]\n`;
+            }
+        }
+
+        inputArea.value = fullText;
+        status.innerText = `✅ ${files.length} arquivo(s) carregado(s). Clique em FILTRAR AGORA.`;
+    }
+
+    // Leitor de PDF usando PDF.js
+    async function readPDF(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let text = "";
+        // Lê no máximo 200 páginas por vez para não travar, se for maior avisa
+        const maxPages = pdf.numPages; 
+        for (let i = 1; i <= maxPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            const strings = content.items.map(item => item.str);
+            text += strings.join(" ") + "\n";
+        }
+        return text;
+    }
+
+    // Leitor de DOCX usando Mammoth
+    async function readDocx(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+        return result.value;
+    }
+
+    // Leitor de Texto Simples
+    function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+        });
+    }
+
+    // --- LÓGICA DE FILTRAGEM E LIMPEZA ---
+
+    function processText() {
+        const status = document.getElementById('status');
+        const raw = document.getElementById('inputText').value;
+        
+        if (!raw.trim()) {
+            alert("Cole um texto ou importe um arquivo primeiro.");
+            return;
+        }
+
+        status.innerHTML = '<span class="loading">⚙️ Processando... Filtrando repetições...</span>';
+
+        // Pequeno delay para a UI atualizar antes de travar processando
+        setTimeout(() => {
+            try {
+                const config = {
+                    cleanDirty: document.getElementById('cleanDirty').checked,
+                    removeExact: document.getElementById('removeExact').checked,
+                    removeSimilar: document.getElementById('removeSimilar').checked,
+                    threshold: parseFloat(document.getElementById('similarityLevel').value),
+                    banList: document.getElementById('banList').value.split('\n').map(s => s.trim()).filter(s => s)
+                };
+
+                const result = filterLogic(raw, config);
+                document.getElementById('outputText').value = result;
+                status.innerText = `✅ Concluído! Texto reduzido.`;
+            } catch (e) {
+                status.innerText = "❌ Erro ao processar.";
+                console.error(e);
+                alert("Erro: " + e.message);
+            }
+        }, 100);
+    }
+
+    function filterLogic(text, config) {
+        // 1. Limpeza Inicial (Tirar sujeira)
+        if (config.cleanDirty) {
+            // Remove sequencias de * # _ - (ex: ******* ou ####)
+            text = text.replace(/[*#_=-]{3,}/g, ''); 
+            // Remove marcadores de lista markdown no inicio da linha (ex: * Texto)
+            text = text.replace(/^\s*[*#-]\s+/gm, '');
+            // Remove espaços excessivos
+            text = text.replace(/[ \t]+/g, ' ');
+        }
+
+        // 2. Quebrar em parágrafos
+        // Quebra por 2 quebras de linha OU quebra de linha seguida de letra maiúscula (início de frase)
+        let paragraphs = text.split(/\n\s*\n/);
+        
+        // 3. Filtragem
+        let uniqueParagraphs = [];
+        let output = [];
+
+        // Preparar lista de banimento (lowercase)
+        const banListLower = config.banList.map(b => b.toLowerCase());
+
+        for (let p of paragraphs) {
+            let cleanP = p.trim();
+            if (cleanP.length < 30) continue; // Ignora linhas muito curtas (geralmente lixo ou títulos soltos)
+
+            // Checar Banlist
+            let isBanned = false;
+            let pLower = cleanP.toLowerCase();
+            for (let ban of banListLower) {
+                if (pLower.includes(ban)) { isBanned = true; break; }
+            }
+            if (isBanned) continue;
+
+            // Checar Duplicatas
+            let isDuplicate = false;
+
+            if (config.removeExact || config.removeSimilar) {
+                for (let existing of uniqueParagraphs) {
+                    // Comparação Exata
+                    if (config.removeExact && existing === cleanP) {
+                        isDuplicate = true;
+                        break;
+                    }
+                    // Comparação Similar (Jaccard Simples)
+                    if (config.removeSimilar) {
+                        const sim = getSimilarity(existing, cleanP);
+                        if (sim >= config.threshold) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!isDuplicate) {
+                uniqueParagraphs.push(cleanP);
+                output.push(cleanP);
+            }
+        }
+
+        return output.join("\n\n");
+    }
+
+    // Função simples de similaridade (Jaccard com palavras)
+    // Rápida o suficiente para textos grandes no navegador
+    function getSimilarity(s1, s2) {
+        const set1 = new Set(s1.toLowerCase().split(/\s+/));
+        const set2 = new Set(s2.toLowerCase().split(/\s+/));
+        
+        const intersection = new Set([...set1].filter(x => set2.has(x)));
+        const union = new Set([...set1, ...set2]);
+        
+        return intersection.size / union.size;
+    }
+
+    // --- UTILITÁRIOS ---
+
+    function clearAll() {
+        if(confirm("Tem certeza? Isso apagará tudo.")) {
+            document.getElementById('inputText').value = "";
+            document.getElementById('outputText').value = "";
+            document.getElementById('fileInput').value = "";
+            document.getElementById('status').innerText = "Aguardando entrada...";
+        }
+    }
+
+    function downloadText() {
+        const text = document.getElementById('outputText').value;
+        if(!text) return;
+        const blob = new Blob([text], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'texto_filtrado.txt';
+        a.click();
+    }
+
+    function copyOutput() {
+        const text = document.getElementById('outputText');
+        text.select();
+        document.execCommand('copy');
+        alert("Texto copiado para a área de transferência!");
+    }
+</script>
+
+</body>
+</html>

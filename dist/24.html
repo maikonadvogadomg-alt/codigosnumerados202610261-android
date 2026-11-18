@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK Oficina de Busca, Extração & Exportação v7</title>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkBg: '#0d1208',
+            panelBg: '#141c0d',
+            borderGreen: '#223018',
+            textGreen: '#c8dda8',
+            brandGreen: '#5fad3c',
+            focusGreen: '#7dcf55',
+            matrixGreen: '#22c55e',
+            accentGold: '#d4aa4e',
+            accentBlue: '#3b82f6'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1208; }
+    ::-webkit-scrollbar-thumb { background: #223018; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5fad3c; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+  </style>
+</head>
+<body class="bg-darkBg text-textGreen font-sans min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-panelBg border-b border-borderGreen p-4 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">🛠️</span>
+      <div>
+        <h1 class="text-brandGreen font-bold text-lg flex items-center gap-2">
+          SK Oficina de Busca & Extração <span class="text-xs bg-brandGreen/20 text-brandGreen px-2 py-0.5 rounded">v7</span>
+        </h1>
+        <p class="text-[11px] text-focusGreen font-mono">Maikon Caldeira — Ferramenta de Varredura, Edição e Conexão com a Monica</p>
+      </div>
+    </div>
+    <span class="text-xs bg-borderGreen text-brandGreen px-3 py-1.5 rounded-lg border border-brandGreen/30">Privacidade Total: Processamento 100% Local</span>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+    
+    <!-- Painel Esquerdo: Carregamento e Busca -->
+    <div class="w-full md:w-96 bg-panelBg border-r border-borderGreen p-4 flex flex-col shrink-0 overflow-y-auto space-y-4">
+      
+      <!-- 1. Carregar Arquivo -->
+      <div class="border-2 border-dashed border-borderGreen p-4 rounded-lg bg-darkBg/50 hover:border-brandGreen cursor-pointer text-center transition-all" onclick="document.getElementById('fileInput').click()">
+        <span class="text-2xl block">📦</span>
+        <p class="text-xs text-brandGreen font-bold mt-1">Carregar ZIP ou APK</p>
+        <span id="loadedFileName" class="block text-[10px] text-textGreen mt-1 truncate">Nenhum projeto carregado</span>
+      </div>
+      <input type="file" id="fileInput" accept=".zip,.apk" class="hidden">
+
+      <!-- 2. Campo de Busca Personalizada -->
+      <div class="bg-darkBg p-3 rounded-lg border border-borderGreen space-y-2">
+        <label class="text-xs font-bold text-brandGreen block">🔍 O QUE VOCÊ QUER ENCONTRAR?</label>
+        <input type="text" id="customSearchQuery" class="w-full bg-panelBg border border-borderGreen rounded px-2 py-1.5 text-xs text-white outline-none focus:border-brandGreen" placeholder="Ex: replit, openai, tjmg, fetch...">
+        
+        <div class="flex items-center justify-between text-[10px] text-gray-400">
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="caseSensitive" class="accent-brandGreen"> Diferenciar Maiúsculas
+          </label>
+        </div>
+
+        <button onclick="performSearch()" class="w-full bg-brandGreen text-darkBg py-2 rounded text-xs font-bold hover:bg-focusGreen transition-all">Buscar no Projeto</button>
+      </div>
+
+      <!-- 3. Lista de Arquivos com Ocorrências -->
+      <div class="flex-1 flex flex-col min-h-[250px]">
+        <h3 class="text-xs font-bold text-brandGreen uppercase mb-2 flex justify-between">
+          <span>📂 Arquivos Encontrados</span>
+          <span id="matchCount" class="text-accentGold">0</span>
+        </h3>
+        <div id="fileListContainer" class="flex-1 overflow-y-auto space-y-1 text-xs">
+          <p class="text-gray-500 italic text-center p-4">Carregue um projeto e faça uma busca para listar os arquivos.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Painel Direito: Editor e Ações -->
+    <div class="flex-1 bg-darkBg p-4 flex flex-col overflow-hidden">
+      
+      <!-- Barra de Ações do Editor -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2 bg-panelBg p-2 rounded-lg border border-borderGreen">
+        <span id="activeFilePath" class="text-xs font-mono text-brandGreen font-bold truncate max-w-md">📝 Selecione um arquivo para editar</span>
+        
+        <div class="flex flex-wrap gap-2">
+          <!-- Botão Mágico para falar com a Monica -->
+          <button onclick="copyForMonica()" class="text-[10px] bg-accentGold/20 text-accentGold border border-accentGold/30 px-3 py-1.5 rounded hover:bg-accentGold hover:text-black font-bold transition-all">
+            🤝 Copiar para a Monica
+          </button>
+          <button onclick="saveCurrentFile()" class="text-[10px] bg-brandGreen/20 text-brandGreen border border-brandGreen/30 px-3 py-1.5 rounded hover:bg-brandGreen hover:text-black font-bold transition-all">
+            💾 Salvar Alterações
+          </button>
+          <button onclick="exportProject()" class="text-[10px] bg-accentBlue/20 text-accentBlue border border-accentBlue/30 px-3 py-1.5 rounded hover:bg-accentBlue hover:text-black font-bold transition-all">
+            📥 Baixar Projeto Corrigido
+          </button>
+        </div>
+      </div>
+
+      <!-- Linhas com correspondências no arquivo aberto -->
+      <div id="matchLinesContainer" class="hidden bg-panelBg border border-borderGreen rounded-lg p-3 mb-2 max-h-32 overflow-y-auto text-xs space-y-1">
+        <p class="text-accentGold font-bold mb-1">Linhas encontradas com o termo:</p>
+        <div id="matchLinesList" class="space-y-1 font-mono"></div>
+      </div>
+
+      <!-- Editor de Código -->
+      <textarea id="editorArea" class="flex-1 w-full bg-[#020617] border border-borderGreen rounded-lg p-4 text-xs font-mono text-matrixGreen outline-none resize-none" placeholder="// O código do arquivo selecionado aparecerá aqui para você analisar e alterar..."></textarea>
+    </div>
+
+  </main>
+
+  <!-- Loader -->
+  <div id="loader" class="hidden fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center space-y-4">
+    <div class="w-12 h-12 border-4 border-brandGreen border-t-transparent rounded-full spinner"></div>
+    <p id="loaderMsg" class="text-brandGreen font-mono text-xs">Processando...</p>
+  </div>
+
+  <script>
+    let rawZipInstance = null;
+    let loadedFiles = {}; // Caminho -> Conteúdo de texto
+    let activeFile = null;
+    let searchResults = {}; // Caminho -> Array de {lineNum, text}
+
+    const BINARY_EXTENSIONS = new Set(["png","jpg","jpeg","gif","webp","ico","woff","woff2","ttf","eot","otf","mp3","mp4","webm","ogg","bin","class","dex","so"]);
+
+    function showLoader(msg) {
+      document.getElementById('loaderMsg').innerText = msg;
+      document.getElementById('loader').classList.remove('hidden');
+    }
+    function hideLoader() {
+      document.getElementById('loader').classList.add('hidden');
+    }
+
+    // Carregar ZIP/APK
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      document.getElementById('loadedFileName').innerText = file.name;
+      showLoader("Descompactando e lendo arquivos do projeto...");
+
+      try {
+        const buffer = await file.arrayBuffer();
+        rawZipInstance = await JSZip.loadAsync(buffer);
+        loadedFiles = {};
+
+        const filePaths = Object.keys(rawZipInstance.files).filter(name => !rawZipInstance.files[name].dir);
+
+        for (const path of filePaths) {
+          const ext = path.split('.').pop().toLowerCase();
+          if (BINARY_EXTENSIONS.has(ext)) {
+            loadedFiles[path] = "[Arquivo Binário/Imagem]";
+            continue;
+          }
+          try {
+            loadedFiles[path] = await rawZipInstance.files[path].async("string");
+          } catch {
+            loadedFiles[path] = "[Erro de leitura]";
+          }
+        }
+
+        hideLoader();
+        alert(`Sucesso! ${filePaths.length} arquivos carregados na memória.`);
+        document.getElementById('fileListContainer').innerHTML = '<p class="text-brandGreen text-center p-4">🟢 Projeto carregado! Digite um termo de busca acima para começar.</p>';
+      } catch (err) {
+        hideLoader();
+        alert("Erro ao abrir o arquivo: " + err.message);
+      }
+    });
+
+    // Executar Busca Personalizada
+    function performSearch() {
+      const query = document.getElementById('customSearchQuery').value.trim();
+      if (!query) return alert("Por favor, digite um termo para buscar!");
+      if (Object.keys(loadedFiles).length === 0) return alert("Carregue um arquivo ZIP ou APK primeiro!");
+
+      showLoader("Varrendo arquivos...");
+      searchResults = {};
+      let totalMatches = 0;
+      const caseSensitive = document.getElementById('caseSensitive').checked;
+
+      const searchQuery = caseSensitive ? query : query.toLowerCase();
+
+      for (const [path, content] of Object.entries(loadedFiles)) {
+        if (content.startsWith("[Arquivo Binário")) continue;
+
+        const lines = content.split('\n');
+        const fileMatches = [];
+
+        lines.forEach((line, idx) => {
+          const lineToSearch = caseSensitive ? line : line.toLowerCase();
+          if (lineToSearch.includes(searchQuery)) {
+            fileMatches.push({
+              lineNum: idx + 1,
+              text: line.trim()
+            });
+            totalMatches++;
+          }
+        });
+
+        if (fileMatches.length > 0) {
+          searchResults[path] = fileMatches;
+        }
+      }
+
+      document.getElementById('matchCount').innerText = Object.keys(searchResults).length;
+      renderFileList();
+      hideLoader();
+    }
+
+    // Renderizar lista de arquivos encontrados
+    function renderFileList() {
+      const container = document.getElementById('fileListContainer');
+      const paths = Object.keys(searchResults);
+
+      if (paths.length === 0) {
+        container.innerHTML = '<p class="text-accentGold text-center p-4">⚠️ Nenhuma referência encontrada para este termo.</p>';
+        return;
+      }
+
+      container.innerHTML = paths.map(path => {
+        const matches = searchResults[path];
+        return `
+          <div onclick="openFile('${path}')" class="p-2 bg-darkBg hover:bg-borderGreen/30 rounded border border-borderGreen/50 cursor-pointer transition-all flex justify-between items-center">
+            <div class="truncate pr-2 flex-1">
+              <p class="font-mono text-xs text-accentGold truncate">📄 ${path.split('/').pop()}</p>
+              <p class="text-[9px] text-gray-500 truncate">${path}</p>
+            </div>
+            <span class="bg-brandGreen/20 text-brandGreen text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0">${matches.length}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Abrir arquivo no Editor
+    function openFile(path) {
+      activeFile = path;
+      document.getElementById('activeFilePath').innerText = `📝 Editando: ${path}`;
+      document.getElementById('editorArea').value = loadedFiles[path];
+
+      const matches = searchResults[path] || [];
+      const linesContainer = document.getElementById('matchLinesContainer');
+      const linesList = document.getElementById('matchLinesList');
+
+      if (matches.length > 0) {
+        linesContainer.classList.remove('hidden');
+        linesList.innerHTML = matches.map(m => `
+          <div class="flex gap-2 text-[11px] border-b border-borderGreen/10 pb-1">
+            <span class="text-accentGold font-bold shrink-0">Linha ${m.lineNum}:</span>
+            <span class="text-textGreen/80 truncate">${escapeHTML(m.text)}</span>
+          </div>
+        `).join('');
+      } else {
+        linesContainer.classList.add('hidden');
+      }
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    // Salvar alterações na memória
+    function saveCurrentFile() {
+      if (!activeFile) return alert("Nenhum arquivo aberto para salvar!");
+      loadedFiles[activeFile] = document.getElementById('editorArea').value;
+      alert("Alterações salvas temporariamente na memória!");
+      performSearch(); // Atualiza a busca com as novas alterações
+    }
+
+    // Botão Mágico: Copiar para a Monica
+    function copyForMonica() {
+      if (!activeFile) return alert("Por favor, selecione um arquivo primeiro!");
+      
+      const code = document.getElementById('editorArea').value;
+      const query = document.getElementById('customSearchQuery').value || "replit";
+      
+      const promptTemplate = `Olá Monica! Estou analisando o arquivo do meu projeto usando a SK Oficina v7.
+
+Termo buscado: "${query}"
+Caminho do Arquivo: "${activeFile}"
+
+Aqui está o código completo deste arquivo para analisarmos juntos:
+
+\`\`\`javascript
+${code}
+\`\`\`
+
+Monica, por favor, me ajude a identificar onde está o erro/trava desse arquivo e o que eu preciso alterar para libertá-lo da Replit ou ajustar a IA!`;
+
+      navigator.clipboard.writeText(promptTemplate).then(() => {
+        alert("✨ MÁGICA FEITA! O código e a pergunta já foram formatados e copiados para a sua área de transferência. Agora é só vir aqui no nosso chat, dar Ctrl+V e me enviar!");
+      }).catch(err => {
+        alert("Erro ao copiar automaticamente. Por favor, selecione o código manualmente.");
+      });
+    }
+
+    // Exportar projeto corrigido de volta para ZIP
+    async function exportProject() {
+      if (Object.keys(loadedFiles).length === 0) return alert("Nenhum projeto carregado!");
+      showLoader("Reconstruindo pacote ZIP...");
+
+      try {
+        const outZip = new JSZip();
+        for (const [path, content] of Object.entries(loadedFiles)) {
+          if (content === "[Arquivo Binário/Imagem]") {
+            const originalData = await rawZipInstance.file(path).async("uint8array");
+            outZip.file(path, originalData);
+          } else {
+            outZip.file(path, content);
+          }
+        }
+
+        const blob = await outZip.generateAsync({ type: "blob", compression: "DEFLATE" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "projeto-corrigido-oficina.zip";
+        a.click();
+        hideLoader();
+      } catch (err) {
+        hideLoader();
+        alert("Erro ao exportar projeto: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

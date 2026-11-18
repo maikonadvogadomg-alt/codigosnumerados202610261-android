@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Filtrador Jurídico Master — Maikon Caldeira</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script>
+    window.pdfjsLib && (pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js");
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --panel2:#0b1220; --txt:#e5e7eb; --muted:#9ca3af;
+      --accent:#f59e0b; --good:#22c55e; --bad:#ef4444; --info:#60a5fa;
+      --warn:#fb923c; --paper:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; background:#e5e7eb;}
+    .wrap{display:flex; height:100vh; gap:14px; padding:14px;}
+    .left{width:40%; min-width:360px; background:var(--panel); color:var(--txt); border-radius:12px; padding:14px; overflow:auto; display:flex; flex-direction:column; gap:10px;}
+    .right{flex:1; background:#cbd5e1; border-radius:12px; padding:14px; overflow:auto; display:flex; flex-direction:column; gap:8px;}
+
+    h1{font-size:14px; margin:0; color:var(--accent); letter-spacing:.5px; text-transform:uppercase;}
+    h2{font-size:11px; margin:0; color:var(--txt); text-transform:uppercase; letter-spacing:.5px;}
+    .hint{font-size:11px; color:var(--muted); line-height:1.4; background:rgba(96,165,250,.08); border-left:3px solid var(--info); padding:8px 10px; border-radius:8px;}
+
+    textarea, input[type="text"], input[type="number"]{
+      width:100%; background:var(--panel2); color:var(--txt); border:1px solid rgba(255,255,255,.14);
+      border-radius:8px; padding:8px 10px; outline:none; font-size:12px; transition:border .2s;
+    }
+    textarea:focus, input:focus{border-color:var(--accent);}
+    textarea{min-height:90px; resize:vertical; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:11px;}
+    label{font-size:11px; color:var(--muted); display:block; margin:6px 0 4px;}
+
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+    .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+    .row4{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px;}
+    .row5{display:grid; grid-template-columns:repeat(5,1fr); gap:6px;}
+
+    button{
+      border:0; border-radius:8px; padding:9px 8px; font-weight:700; cursor:pointer;
+      text-transform:uppercase; letter-spacing:.3px; font-size:10px; transition:.15s;
+    }
+    button:hover{opacity:.82; transform:translateY(-1px);}
+    .b1{background:var(--accent); color:#111827;}
+    .b2{background:var(--bad); color:white;}
+    .b3{background:var(--good); color:#052e16;}
+    .b4{background:var(--info); color:#0b1220;}
+    .b5{background:var(--warn); color:#1c1917;}
+    .b-copy{background:#fff; color:#000; border:1px solid #ccc;}
+    .b-md{background:#7c3aed; color:white;}
+    .b-excl{background:#be185d; color:white;}
+
+    .box{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:6px;}
+    .checks{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+    .checks label{margin:0; color:var(--txt); font-size:11px; cursor:pointer; display:flex; align-items:center; gap:5px;}
+    .checks input[type=checkbox]{transform:none; margin:0; accent-color:var(--accent);}
+
+    .status{white-space:pre-wrap; font-size:11px; color:var(--txt); background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.08); padding:8px 10px; border-radius:8px; max-height:70px; overflow-y:auto;}
+    .autosave-badge{font-size:10px; color:var(--good); text-align:right; min-height:14px; transition:opacity .3s;}
+
+    /* ABAS */
+    .tabs{display:flex; gap:4px;}
+    .tab-btn{background:rgba(255,255,255,.12); color:var(--muted); border:0; border-radius:8px 8px 0 0; padding:7px 12px; cursor:pointer; font-size:11px; font-weight:700; transition:.15s;}
+    .tab-btn.active{background:var(--accent); color:#111827;}
+    .tab-pane{display:none; flex-direction:column; flex:1;}
+    .tab-pane.active{display:flex;}
+
+    .paper{background:var(--paper); border-radius:0 12px 12px 12px; padding:14px; display:flex; flex-direction:column; flex:1; min-height:0;}
+    .paper-dark{background:#0f172a; border-radius:0 12px 12px 12px; padding:14px; display:flex; flex-direction:column; flex:1; min-height:0;}
+    .out{white-space:pre-wrap; font-family:"Times New Roman",Times,serif; font-size:12pt; line-height:1.6; flex:1; overflow:auto; border:1px solid #ddd; padding:12px; border-radius:8px; background:#fff;}
+    .out-dark{white-space:pre-wrap; font-family:ui-monospace,monospace; font-size:11px; line-height:1.5; flex:1; overflow:auto; border:1px solid rgba(239,68,68,.3); padding:12px; border-radius:8px; background:#0b1220; color:#fca5a5;}
+
+    .small{font-size:10px; color:var(--muted);}
+    details{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); padding:8px 10px; border-radius:8px;}
+    summary{cursor:pointer; font-weight:700; color:var(--txt); font-size:11px;}
+    .removedItem{padding:6px 8px; border-left:3px solid var(--bad); background:rgba(239,68,68,.08); border-radius:6px; margin-top:6px; color:var(--txt); font-size:11px;}
+
+    .overlay{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:9999;}
+    .ovbox{background:white; border-radius:12px; padding:18px 22px; min-width:300px; box-shadow:0 20px 60px rgba(0,0,0,.4);}
+    .spin{width:16px; height:16px; border:3px solid #cbd5e1; border-top-color:var(--accent); border-radius:50%; display:inline-block; animation:sp 1s linear infinite; vertical-align:middle; margin-right:8px;}
+    @keyframes sp{to{transform:rotate(360deg)}}
+
+    .progress-wrap{height:4px; background:rgba(255,255,255,.1); border-radius:2px; overflow:hidden;}
+    .progress-fill{height:100%; background:var(--accent); width:0%; transition:width .3s;}
+
+    .stats-bar{display:flex; gap:10px; font-size:10px; color:var(--muted); flex-wrap:wrap;}
+    .stat-item{background:rgba(255,255,255,.08); padding:4px 8px; border-radius:6px;}
+    .stat-item span{color:var(--accent); font-weight:700;}
+
+    /* Limpeza de sujeira - badge */
+    .clean-badge{font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(34,197,94,.15); color:var(--good); border:1px solid rgba(34,197,94,.3);}
+  </style>
+</head>
+<body>
+
+<!-- OVERLAY DE PROGRESSO -->
+<div class="overlay" id="ov">
+  <div class="ovbox">
+    <div><span class="spin"></span><b id="ovMsg">Processando…</b></div>
+    <div class="small" id="ovSub" style="margin-top:6px;color:#475569">Aguarde.</div>
+    <div class="progress-wrap" style="margin-top:10px;"><div class="progress-fill" id="ovProgress"></div></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== PAINEL ESQUERDO ===== -->
+  <div class="left">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h1>⚖️ Filtrador Jurídico Master</h1>
+      <span class="autosave-badge" id="autosaveBadge">💾 salvo</span>
+    </div>
+
+    <!-- IMPORTAR -->
+    <div class="box">
+      <h2>📁 Importar Documentos</h2>
+      <input id="files" type="file" multiple accept=".txt,.pdf,.docx,.doc,.json" />
+      <div class="checks">
+        <label><input type="checkbox" id="ocrFallback"> OCR se PDF vazio</label>
+        <label><input type="checkbox" id="cleanGarbage" checked> Limpar lixo de imagem</label>
+        <label><input type="checkbox" id="appendMode"> Acumular (não substituir)</label>
+        <label><input type="checkbox" id="autoRun" checked> Filtrar ao importar</label>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="importProgress"></div></div>
+    </div>
+
+    <!-- TEXTO BRUTO -->
+    <div class="box">
+      <h2>📝 Texto Bruto</h2>
+      <textarea id="raw" placeholder="Cole aqui o texto gigante ou importe arquivos acima…" style="min-height:120px;"></textarea>
+    </div>
+
+    <!-- CONFIGURAÇÕES -->
+    <div class="box">
+      <h2>⚙️ Configurações de Filtragem</h2>
+      <div class="checks">
+        <label><input type="checkbox" id="cleanSymbols" checked> Limpar *, #, markdown</label>
+        <label><input type="checkbox" id="dedupeExact" checked> Duplicatas exatas</label>
+        <label><input type="checkbox" id="dedupeNear" checked> Duplicatas aproximadas</label>
+        <label><input type="checkbox" id="keepOrder" checked> Manter ordem original</label>
+      </div>
+      <div class="row" style="margin-top:6px;">
+        <div>
+          <label>Mínimo de caracteres</label>
+          <input id="minChars" type="number" value="20" />
+        </div>
+        <div>
+          <label>Similaridade (0.50–0.95)</label>
+          <input id="sim" type="number" step="0.01" value="0.72" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Shingle (2–5)</label>
+          <input id="shingle" type="number" value="3" />
+        </div>
+        <div>
+          <label>Janela (parágrafos)</label>
+          <input id="windowN" type="number" value="250" />
+        </div>
+      </div>
+    </div>
+
+    <!-- REGRAS DE EXCLUSÃO -->
+    <div class="box">
+      <h2>🚫 Regras de Exclusão</h2>
+      <label>Excluir se contiver — 1 por linha (Lista Negra)</label>
+      <textarea id="banWords" placeholder="Ex.: modelo padrão&#10;pede deferimento&#10;rodapé do sistema"></textarea>
+      <label>Excluir por REGEX — 1 por linha</label>
+      <textarea id="banRegex" placeholder="Ex.: ^\s*\*{3,}.*$&#10;página \d+ de \d+&#10;(?i)gerado automaticamente"></textarea>
+      <div class="row">
+        <button class="b4" id="btnSaveRules">💾 Salvar Regras</button>
+        <button class="b2" id="btnClearRules">🗑️ Limpar</button>
+      </div>
+    </div>
+
+    <!-- LISTA VIP -->
+    <div class="box">
+      <h2>⭐ Lista VIP — Manutenção Forçada</h2>
+      <label>Manter se contiver (Whitelist)</label>
+      <textarea id="keepWords" placeholder="Ex.: aposentadoria rural&#10;período especial&#10;segurado especial"></textarea>
+      <label>Manter por REGEX</label>
+      <textarea id="keepRegex" placeholder="Ex.: ^URGENTE.*$&#10;(?i)prova.*rural"></textarea>
+      <div class="row">
+        <button class="b4" id="btnSaveKeepRules">💾 Salvar VIP</button>
+        <button class="b2" id="btnClearKeepRules">🗑️ Limpar VIP</button>
+      </div>
+    </div>
+
+    <!-- BOTÕES PRINCIPAIS -->
+    <div class="row">
+      <button class="b1" id="btnRun">▶ Filtrar Agora</button>
+      <button class="b2" id="btnClearAll">🗑️ Limpar Tudo</button>
+    </div>
+
+    <!-- STATUS -->
+    <div>
+      <h2>📊 Status</h2>
+      <div class="status" id="status">Pronto.</div>
+    </div>
+
+    <!-- ESTATÍSTICAS -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-item">Total: <span id="stTotal">0</span></div>
+      <div class="stat-item">Mantidos: <span id="stKept">0</span></div>
+      <div class="stat-item">Removidos: <span id="stRemoved">0</span></div>
+      <div class="stat-item">Redução: <span id="stReduction">0%</span></div>
+    </div>
+
+    <!-- REMOVIDOS -->
+    <details>
+      <summary>🗑️ Ver Removidos (<span id="removedCount">0</span>)</summary>
+      <div id="removedBox"></div>
+    </details>
+  </div>
+
+  <!-- ===== PAINEL DIREITO ===== -->
+  <div class="right">
+
+    <!-- ABAS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('filtered')">📄 Texto Filtrado</button>
+      <button class="tab-btn" onclick="switchTab('excluded')">🗑️ Texto Excluído</button>
+      <button class="tab-btn" onclick="switchTab('original')">📋 Texto Original</button>
+    </div>
+
+    <!-- ABA: TEXTO FILTRADO -->
+    <div class="tab-pane active" id="pane-filtered">
+      <div class="paper">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+          <h2 style="color:#1e293b;">Resultado Filtrado</h2>
+          <div class="row5">
+            <button class="b-copy" id="btnCopyText">📋 Copiar</button>
+            <button class="b3" id="btnExportWord">📄 Word</button>
+            <button class="b3" id="btnExportTxt">📝 TXT</button>
+            <button class="b-md" id="btnExportMd">📑 Markdown</button>
+            <button class="b4" id="btnExportJson">🔗 JSON</button>
+          </div>
+        </div>
+        <div class="small" style="margin-bottom:6px;">Copie para colar no Word ou baixe no formato desejado.</div>
+        <div id="out" class="out">[O texto filtrado aparecerá aqui]</div>
+      </div>
+    </div>
+
+    <!-- ABA: TEXTO EXCLUÍDO -->
+    <div class="tab-pane" id="pane-excluded">
+      <div class="paper-dark">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+          <h2 style="color:#fca5a5;">Texto Excluído — Disponível para Reaproveitamento</h2>
+          <div class="row4">
+            <button class="b-copy" id="btnCopyExcluded">📋 Copiar</button>
+            <button class="b-excl" id="btnExportExclWord">📄 Word</button>
+            <button class="b-excl" id="btnExportExclTxt">📝 TXT</button>
+            <button class="b-excl" id="btnExportExclJson">🔗 JSON</button>
+          </div>
+        </div>
+        <div class="small" style="margin-bottom:6px;color:#9ca3af;">Use este texto em outro filtro ou para recuperar informações excluídas.</div>
+        <div id="outExcluded" class="out-dark">[O texto excluído aparecerá aqui]</div>
+      </div>
+    </div>
+
+    <!-- ABA: TEXTO ORIGINAL -->
+    <div class="tab-pane" id="pane-original">
+      <div class="paper">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <h2 style="color:#1e293b;">Texto Original Bruto</h2>
+          <button class="b-copy" id="btnCopyOriginal">📋 Copiar Original</button>
+        </div>
+        <div id="outOriginal" class="out" style="color:#475569;">[O texto original aparecerá aqui após importação]</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  ESTADO GLOBAL
+// ============================================================
+const LS_KEY = "filtrador_master_v3";
+let TEXTO_EXCLUIDO_GLOBAL = "";
+let TEXTO_ORIGINAL_GLOBAL = "";
+
+// ============================================================
+//  AUTO-SAVE
+// ============================================================
+function saveState(extra={}){
+  const cfgIds = ["cleanSymbols","dedupeExact","dedupeNear","keepOrder","minChars","sim","shingle","windowN","cleanGarbage","appendMode","autoRun","ocrFallback"];
+  const cfg = {};
+  for (const id of cfgIds){
+    const el = document.getElementById(id);
+    if (!el) continue;
+    cfg[id] = (el.type === "checkbox") ? el.checked : el.value;
+  }
+  const st = {
+    raw: document.getElementById("raw").value,
+    banWords: document.getElementById("banWords").value,
+    banRegex: document.getElementById("banRegex").value,
+    keepWords: document.getElementById("keepWords").value,
+    keepRegex: document.getElementById("keepRegex").value,
+    cfg,
+    lastOut: document.getElementById("out").textContent,
+    lastExcluded: TEXTO_EXCLUIDO_GLOBAL,
+    lastOriginal: TEXTO_ORIGINAL_GLOBAL,
+    ...extra
+  };
+  localStorage.setItem(LS_KEY, JSON.stringify(st));
+  const badge = document.getElementById("autosaveBadge");
+  badge.textContent = "💾 salvo " + new Date().toLocaleTimeString("pt-BR");
+  badge.style.opacity = "1";
+  setTimeout(()=>{ badge.style.opacity = "0.4"; }, 2000);
+}
+
+function loadState(){
+  try{
+    const st = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+    if (st.raw != null) document.getElementById("raw").value = st.raw;
+    if (st.banWords != null) document.getElementById("banWords").value = st.banWords;
+    if (st.banRegex != null) document.getElementById("banRegex").value = st.banRegex;
+    if (st.keepWords != null) document.getElementById("keepWords").value = st.keepWords;
+    if (st.keepRegex != null) document.getElementById("keepRegex").value = st.keepRegex;
+    if (st.cfg){
+      for (const [k,v] of Object.entries(st.cfg)){
+        const el = document.getElementById(k);
+        if (!el) continue;
+        if (el.type === "checkbox") el.checked = !!v;
+        else el.value = v;
+      }
+    }
+    if (st.lastOut) document.getElementById("out").textContent = st.lastOut;
+    if (st.lastExcluded){ TEXTO_EXCLUIDO_GLOBAL = st.lastExcluded; document.getElementById("outExcluded").textContent = st.lastExcluded; }
+    if (st.lastOriginal){ TEXTO_ORIGINAL_GLOBAL = st.lastOriginal; document.getElementById("outOriginal").textContent = st.lastOriginal; }
+  }catch(e){}
+}
+
+// Auto-save em cada mudança
+["raw","banWords","banRegex","keepWords","keepRegex","minChars","sim","shingle","windowN",
+ "cleanSymbols","dedupeExact","dedupeNear","keepOrder","cleanGarbage","appendMode","autoRun","ocrFallback"]
+  .forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", ()=>saveState());
+    el.addEventListener("change", ()=>saveState());
+  });
+
+// ============================================================
+//  UI HELPERS
+// ============================================================
+function setStatus(s){ document.getElementById("status").textContent = s; }
+function ov(on, msg, sub, pct){
+  document.getElementById("ov").style.display = on ? "flex" : "none";
+  if (msg) document.getElementById("ovMsg").textContent = msg;
+  if (sub) document.getElementById("ovSub").textContent = sub;
+  if (pct !== undefined) document.getElementById("ovProgress").style.width = pct + "%";
+}
+function setImportProgress(pct){ document.getElementById("importProgress").style.width = pct + "%"; }
+
+function switchTab(name){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".tab-pane").forEach(p=>p.classList.remove("active"));
+  document.querySelector(`[onclick="switchTab('${name}')"]`).classList.add("active");
+  document.getElementById(`pane-${name}`).classList.add("active");
+}
+
+function updateStats(stats){
+  document.getElementById("stTotal").textContent = stats.total || 0;
+  document.getElementById("stKept").textContent = stats.kept || 0;
+  document.getElementById("stRemoved").textContent = stats.removed || 0;
+  const pct = stats.total > 0 ? ((stats.removed / stats.total)*100).toFixed(1) : 0;
+  document.getElementById("stReduction").textContent = pct + "%";
+  document.getElementById("removedCount").textContent = stats.removed || 0;
+}
+
+function download(filename, text, mime="text/plain"){
+  const blob = new Blob([text], {type:mime});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+// ============================================================
+//  LIMPEZA DE LIXO DE IMAGEM / CARACTERES ESTRANHOS
+// ============================================================
+function limparLixoImagem(texto){
+  let t = texto || "";
+  // Remove blocos de caracteres não-imprimíveis (lixo de OCR ruim)
+  t = t.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+  // Remove sequências longas de símbolos sem letras/números (lixo de imagem)
+  t = t.replace(/[^\w\sÀ-ÿ.,;:!?()\/\-–—"'«»\n]{4,}/g, " ");
+  // Remove linhas que são só símbolos ou números isolados sem contexto
+  t = t.replace(/^[\W\d_]{1,5}$/gm, "");
+  // Remove sequências de pontos/traços longos (linhas de tabela viradas em lixo)
+  t = t.replace(/[.\-_=]{8,}/g, "");
+  // Normaliza espaços e quebras excessivas
+  t = t.replace(/[ \t]{2,}/g, " ");
+  t = t.replace(/\n{4,}/g, "\n\n\n");
+  return t;
+}
+
+// ============================================================
+//  IMPORTADORES
+// ============================================================
+async function extractTextFromPDF(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+  let full = "";
+  for (let i=1; i<=pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(it=>it.str).join(" ");
+    full += `\n--- PÁGINA ${i} ---\n${pageText}\n`;
+  }
+  // Se PDF vazio (imagem) e OCR ativado
+  if (full.replace(/\s|-|PÁGINA|\d/g,"").trim().length < 100 && document.getElementById("ocrFallback").checked){
+    full = await ocrPDF(file, pdf);
+  }
+  return full;
+}
+
+async function ocrPDF(file, pdf){
+  // OCR via canvas + Tesseract (carregado dinamicamente)
+  if (!window.Tesseract){
+    setStatus("Carregando Tesseract OCR...");
+    await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js");
+  }
+  let full = "";
+  for (let i=1; i<=pdf.numPages; i++){
+    ov(true, `OCR — Página ${i} de ${pdf.numPages}`, "Reconhecimento de texto em imagem...", (i/pdf.numPages)*100);
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({scale:2});
+    const canvas = document.createElement("canvas");
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({canvasContext:canvas.getContext("2d"), viewport:vp}).promise;
+    const {data:{text}} = await Tesseract.recognize(canvas, "por");
+    full += `\n--- PÁGINA ${i} (OCR) ---\n${text}\n`;
+  }
+  return full;
+}
+
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const s = document.createElement("script");
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function extractTextFromDOCX(file){
+  const buf = await file.arrayBuffer();
+  const res = await mammoth.extractRawText({arrayBuffer:buf});
+  return res.value || "";
+}
+
+async function extractTextFromJSON(file){
+  const txt = await file.text();
+  let obj;
+  try{ obj = JSON.parse(txt); } catch(e){ return txt; }
+  const parts=[];
+  (function walk(x){
+    if (x==null) return;
+    if (typeof x==="string"){ if(x.trim()) parts.push(x); return; }
+    if (Array.isArray(x)){ x.forEach(walk); return; }
+    if (typeof x==="object"){ Object.values(x).forEach(walk); return; }
+  })(obj);
+  return parts.join("\n\n");
+}
+
+// ============================================================
+//  UTILITÁRIOS DE TEXTO
+// ============================================================
+function cleanMarkdownNoise(t){
+  let s = t||"";
+  s = s.replace(/^\s{0,6}(?:[*•\-–—]+|#{1,6}|>+)\s+/gm,"");
+  s = s.replace(/[*#_`~]{2,}/g," ");
+  s = s.replace(/[""]/g,'"').replace(/[']/g,"'");
+  s = s.replace(/[ \t]+/g," ");
+  s = s.replace(/\n{3,}/g,"\n\n");
+  return s;
+}
+
+function splitParagraphs(t){
+  return (t||"")
+    .replace(/\r\n/g,"\n")
+    .split(/\n{2,}|\n(?=\s*[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]{3,}[\s:])/g)
+    .map(p=>p.trim())
+    .filter(Boolean);
+}
+
+function normalizeForCompare(s){
+  return (s||"").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9\s]/g," ")
+    .replace(/\s+/g," ").trim();
+}
+
+function makeShingles(words, size){
+  const out=[];
+  for (let i=0; i+size<=words.length; i++) out.push(words.slice(i,i+size).join(" "));
+  return out;
+}
+
+function signature(norm, shingleSize){
+  const words = norm.split(" ").filter(Boolean);
+  const sh = makeShingles(words, shingleSize);
+  return new Set(sh.length>250 ? sh.slice(0,250) : sh);
+}
+
+function jaccard(a,b){
+  if (!a.size||!b.size) return 0;
+  let inter=0;
+  const small = a.size<b.size?a:b;
+  const big = a.size<b.size?b:a;
+  for (const x of small) if (big.has(x)) inter++;
+  const uni = a.size+b.size-inter;
+  return uni ? inter/uni : 0;
+}
+
+function parseLines(text){
+  return (text||"").split("\n").map(s=>s.trim()).filter(Boolean);
+}
+
+function buildRegexList(lines){
+  const out=[];
+  for (const l of lines){
+    try{ out.push(new RegExp(l,"i")); }catch(e){}
+  }
+  return out;
+}
+
+// ============================================================
+//  CORE: FILTRO
+// ============================================================
+function applyBanRules(par, banWords, banRegexList, keepWords, keepRegexList){
+  const low = par.toLowerCase();
+  for (const w of keepWords) if (w && low.includes(w.toLowerCase())) return {drop:false, reason:`VIP: "${w}"`};
+  for (const rx of keepRegexList) if (rx.test(par)) return {drop:false, reason:`VIP regex: /${rx.source}/i`};
+  for (const w of banWords) if (w && low.includes(w.toLowerCase())) return {drop:true, reason:`Palavra: "${w}"`};
+  for (const rx of banRegexList) if (rx.test(par)) return {drop:true, reason:`Regex: /${rx.source}/i`};
+  return {drop:false};
+}
+
+function filterText(rawText, cfg){
+  const removed=[];
+  const removedTexts=[];
+  let text = rawText||"";
+  if (cfg.cleanSymbols) text = cleanMarkdownNoise(text);
+  let pars = splitParagraphs(text)
+    .map(p=>p.replace(/\s+/g," ").trim())
+    .filter(p=>p.length >= cfg.minChars);
+
+  const exactSet = new Set();
+  const kept = [];
+  const out = [];
+
+  for (const p of pars){
+    const rule = applyBanRules(p, cfg.banWords, cfg.banRegexList, cfg.keepWords, cfg.keepRegexList);
+    if (rule.drop){
+      removed.push({motivo:rule.reason, texto:p});
+      removedTexts.push(p);
+      continue;
+    }
+    const norm = normalizeForCompare(p);
+    if (cfg.dedupeExact){
+      if (exactSet.has(norm)){
+        removed.push({motivo:"Duplicata exata", texto:p});
+        removedTexts.push(p);
+        continue;
+      }
+      exactSet.add(norm);
+    }
+    if (cfg.dedupeNear){
+      const sig = signature(norm, cfg.shingleSize);
+      let dup=false;
+      const start = Math.max(0, kept.length - cfg.windowN);
+      for (let i=start; i<kept.length; i++){
+        if (jaccard(sig, kept[i].sig) >= cfg.sim){ dup=true; break; }
+      }
+      if (dup){
+        removed.push({motivo:"Duplicata aproximada", texto:p});
+        removedTexts.push(p);
+        continue;
+      }
+      kept.push({raw:p, norm, sig});
+    }
+    out.push(p);
+  }
+
+  return {
+    outText: out.join("\n\n"),
+    excludedText: removedTexts.join("\n\n"),
+    removed,
+    stats:{ total:pars.length, kept:out.length, removed:removed.length }
+  };
+}
+
+// ============================================================
+//  EXPORTAÇÕES
+// ============================================================
+function buildWordHtml(content, titulo="Documento Filtrado"){
+  const paragraphs = content.split(/\n\n+/);
+  let htmlBody = "";
+  for (const p of paragraphs){
+    if (!p.trim()) continue;
+    const safe = escapeHtml(p);
+    htmlBody += `<p style="margin-bottom:12pt;font-family:'Times New Roman',serif;font-size:12pt;line-height:1.5;">${safe}</p>`;
+  }
+  return `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset='utf-8'><title>${titulo}</title></head>
+<body>${htmlBody}</body></html>`;
+}
+
+function buildMarkdown(content){
+  const lines = content.split("\n");
+  return lines.map(l=>{
+    if (l.startsWith("---")) return `\n---\n`;
+    if (l.match(/^[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ\s]{10,}:?\s*$/)) return `\n## ${l.trim()}\n`;
+    return l;
+  }).join("\n");
+}
+
+function buildJson(content, tipo){
+  return JSON.stringify({
+    geradoEm: new Date().toISOString(),
+    tipo,
+    totalCaracteres: content.length,
+    totalParagrafos: content.split("\n\n").length,
+    conteudo: content
+  }, null, 2);
+}
+
+// Filtrado
+document.getElementById("btnExportWord").addEventListener("click", ()=>{
+  const c = document.getElementById("out").textContent;
+  if (!c.trim() || c.includes("[O texto")) return alert("Nenhum texto para exportar.");
+  download("filtrado.doc", buildWordHtml(c, "Texto Filtrado"), "application/msword");
+});
+document.getElementById("btnExportTxt").addEventListener("click", ()=>{
+  const c = document.getElementById("out").textContent;
+  download("filtrado.txt", c, "text/plain;charset=utf-8");
+});
+document.getElementById("btnExportMd").addEventListener("click", ()=>{
+  const c = document.getElementById("out").textContent;
+  download("filtrado.md", buildMarkdown(c), "text/markdown;charset=utf-8");
+});
+document.getElementById("btnExportJson").addEventListener("click", ()=>{
+  const c = document.getElementById("out").textContent;
+  download("filtrado.json", buildJson(c, "filtrado"), "application/json;charset=utf-8");
+});
+
+// Excluído
+document.getElementById("btnExportExclWord").addEventListener("click", ()=>{
+  if (!TEXTO_EXCLUIDO_GLOBAL.trim()) return alert("Nenhum texto excluído.");
+  download("excluido.doc", buildWordHtml(TEXTO_EXCLUIDO_GLOBAL, "Texto Excluído"), "application/msword");
+});
+document.getElementById("btnExportExclTxt").addEventListener("click", ()=>{
+  download("excluido.txt", TEXTO_EXCLUIDO_GLOBAL, "text/plain;charset=utf-8");
+});
+document.getElementById("btnExportExclJson").addEventListener("click", ()=>{
+  download("excluido.json", buildJson(TEXTO_EXCLUIDO_GLOBAL, "excluido"), "application/json;charset=utf-8");
+});
+
+// ============================================================
+//  COPIAR
+// ============================================================
+async function copiarTexto(id, btnId){
+  const el = document.getElementById(id);
+  const texto = el.textContent || el.value || "";
+  try{
+    await navigator.clipboard.writeText(texto);
+    setStatus("✅ Texto copiado! Cole com Ctrl+V.");
+    const btn = document.getElementById(btnId);
+    const orig = btn.textContent;
+    btn.textContent = "✅ Copiado!";
+    setTimeout(()=>btn.textContent=orig, 2000);
+  }catch(e){
+    setStatus("❌ Erro ao copiar. Selecione manualmente.");
+  }
+}
+document.getElementById("btnCopyText").addEventListener("click", ()=>copiarTexto("out","btnCopyText"));
+document.getElementById("btnCopyExcluded").addEventListener("click", ()=>copiarTexto("outExcluded","btnCopyExcluded"));
+document.getElementById("btnCopyOriginal").addEventListener("click", ()=>copiarTexto("outOriginal","btnCopyOriginal"));
+
+// ============================================================
+//  IMPORTAÇÃO DE ARQUIVOS
+// ============================================================
+document.getElementById("files").addEventListener("change", async (e)=>{
+  const files = Array.from(e.target.files||[]);
+  if (!files.length) return;
+  ov(true,"Importando…","Lendo arquivos.",0);
+  try{
+    let combined = document.getElementById("appendMode").checked
+      ? (document.getElementById("raw").value||"")
+      : "";
+
+    for (let i=0; i<files.length; i++){
+      const f = files[i];
+      const name = (f.name||"").toLowerCase();
+      ov(true,`Importando ${i+1}/${files.length}`,f.name,(i/files.length)*100);
+      setImportProgress((i/files.length)*100);
+      let text = "";
+      try{
+        if (name.endsWith(".txt")) text = await f.text();
+        else if (name.endsWith(".pdf")) text = await extractTextFromPDF(f);
+        else if (name.endsWith(".docx")||name.endsWith(".doc")) text = await extractTextFromDOCX(f);
+        else if (name.endsWith(".json")) text = await extractTextFromJSON(f);
+        else text = await f.text();
+      }catch(err){
+        text = `[ERRO ao ler ${f.name}: ${err.message}]`;
+      }
+
+      // Limpar lixo de imagem se ativado
+      if (document.getElementById("cleanGarbage").checked){
+        text = limparLixoImagem(text);
+      }
+
+      combined += (combined.trim()?"\n\n":"") + `--- ARQUIVO: ${f.name} ---\n` + text;
+    }
+
+    document.getElementById("raw").value = combined;
+    TEXTO_ORIGINAL_GLOBAL = combined;
+    document.getElementById("outOriginal").textContent = combined;
+    setImportProgress(100);
+    saveState();
+    setStatus(`✅ ${files.length} arquivo(s) importado(s).`);
+
+    if (document.getElementById("autoRun").checked){
+      setTimeout(()=>document.getElementById("btnRun").click(), 300);
+    }
+  }catch(err){
+    alert("Falha ao importar: "+err.message);
+  }finally{
+    ov(false);
+    e.target.value="";
+  }
+});
+
+// ============================================================
+//  BOTÃO FILTRAR
+// ============================================================
+document.getElementById("btnRun").addEventListener("click", ()=>{
+  const raw = document.getElementById("raw").value;
+  if (!raw.trim()){ alert("Cole o texto ou importe arquivos primeiro."); return; }
+
+  const cfg = {
+    cleanSymbols: document.getElementById("cleanSymbols").checked,
+    dedupeExact: document.getElementById("dedupeExact").checked,
+    dedupeNear: document.getElementById("dedupeNear").checked,
+    keepOrder: document.getElementById("keepOrder").checked,
+    minChars: Math.max(0, Number(document.getElementById("minChars").value||0)),
+    sim: Math.max(0.50, Math.min(0.95, Number(document.getElementById("sim").value||0.72))),
+    shingleSize: Math.max(2, Math.min(5, Number(document.getElementById("shingle").value||3))),
+    windowN: Math.max(10, Math.min(2000, Number(document.getElementById("windowN").value||250))),
+    banWords: parseLines(document.getElementById("banWords").value),
+    banRegexList: buildRegexList(parseLines(document.getElementById("banRegex").value)),
+    keepWords: parseLines(document.getElementById("keepWords").value),
+    keepRegexList: buildRegexList(parseLines(document.getElementById("keepRegex").value))
+  };
+
+  ov(true,"Filtrando…","Removendo repetição e aplicando regras.",0);
+
+  setTimeout(()=>{
+    try{
+      const res = filterText(raw, cfg);
+
+      document.getElementById("out").textContent = res.outText || "";
+      TEXTO_EXCLUIDO_GLOBAL = res.excludedText || "";
+      document.getElementById("outExcluded").textContent = TEXTO_EXCLUIDO_GLOBAL || "[Nenhum texto excluído]";
+
+      if (!TEXTO_ORIGINAL_GLOBAL) TEXTO_ORIGINAL_GLOBAL = raw;
+      document.getElementById("outOriginal").textContent = TEXTO_ORIGINAL_GLOBAL;
+
+      // Removidos detalhados
+      const rb = document.getElementById("removedBox");
+      rb.innerHTML = "";
+      const sample = res.removed.slice(0,300);
+      for (let i=0; i<sample.length; i++){
+        const r = sample[i];
+        const div = document.createElement("div");
+        div.className = "removedItem";
+        div.innerHTML = `<b>${i+1}. ${escapeHtml(r.motivo)}</b><br>${escapeHtml(r.texto.slice(0,200))}`;
+        rb.appendChild(div);
+      }
+      if (res.removed.length > sample.length){
+        const more = document.createElement("div");
+        more.className = "small"; more.style.marginTop = "8px";
+        more.textContent = `… (${res.removed.length} removidos no total)`;
+        rb.appendChild(more);
+      }
+
+      updateStats(res.stats);
+      setStatus(`✅ Concluído. Mantidos: ${res.stats.kept} | Removidos: ${res.stats.removed}`);
+      saveState({lastOut:res.outText, lastExcluded:TEXTO_EXCLUIDO_GLOBAL});
+    }catch(err){
+      console.error(err);
+      alert("Erro: "+err.message);
+    }finally{
+      ov(false);
+    }
+  }, 30);
+});
+
+// ============================================================
+//  OUTROS BOTÕES
+// ============================================================
+document.getElementById("btnSaveRules").addEventListener("click", ()=>{ saveState(); setStatus("💾 Regras salvas."); });
+document.getElementById("btnClearRules").addEventListener("click", ()=>{
+  document.getElementById("banWords").value="";
+  document.getElementById("banRegex").value="";
+  saveState(); setStatus("🗑️ Regras limpas.");
+});
+document.getElementById("btnSaveKeepRules").addEventListener("click", ()=>{ saveState(); setStatus("💾 Lista VIP salva."); });
+document.getElementById("btnClearKeepRules").addEventListener("click", ()=>{
+  document.getElementById("keepWords").value="";
+  document.getElementById("keepRegex").value="";
+  saveState(); setStatus("🗑️ VIP limpo.");
+});
+document.getElementById("btnClearAll").addEventListener("click", ()=>{
+  if (!confirm("Limpar tudo? (auto-save também será apagado)")) return;
+  localStorage.removeItem(LS_KEY);
+  document.getElementById("raw").value="";
+  document.getElementById("out").textContent="[O texto filtrado aparecerá aqui]";
+  document.getElementById("outExcluded").textContent="[O texto excluído aparecerá aqui]";
+  document.getElementById("outOriginal").textContent="[O texto original aparecerá aqui após importação]";
+  document.getElementById("removedBox").innerHTML="";
+  TEXTO_EXCLUIDO_GLOBAL=""; TEXTO_ORIGINAL_GLOBAL="";
+  updateStats({total:0,kept:0,removed:0});
+  setStatus("🗑️ Tudo limpo.");
+});
+
+// ============================================================
+//  INICIALIZAÇÃO
+// ============================================================
+window.addEventListener("load", loadState);
+</script>
+</body>
+</html>

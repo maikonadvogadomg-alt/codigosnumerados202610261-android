@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construtor Automático PWA - Maikon Caldeira</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .painel {
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #333;
+        }
+
+        .painel:last-child {
+            border-right: none;
+        }
+
+        .painel-header {
+            background: #161616;
+            padding: 15px;
+            border-bottom: 2px solid #333;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #0a0a0a;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .terminal-line {
+            margin-bottom: 10px;
+        }
+
+        .prompt {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #00ff00;
+        }
+
+        .error {
+            color: #ff4444;
+        }
+
+        .warning {
+            color: #ffaa00;
+        }
+
+        .info {
+            color: #4facfe;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background: #161616;
+            border-top: 2px solid #333;
+            gap: 10px;
+        }
+
+        #commandInput {
+            flex: 1;
+            background: #0a0a0a;
+            border: 2px solid #333;
+            color: #00ff00;
+            padding: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        #commandInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .arvore {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #0a0a0a;
+            font-size: 13px;
+        }
+
+        .arquivo {
+            padding: 8px;
+            margin: 2px 0;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .arquivo:hover {
+            background: #1a1a1a;
+            padding-left: 15px;
+        }
+
+        .arquivo.selecionado {
+            background: #667eea;
+            color: white;
+        }
+
+        .pasta {
+            color: #ffaa00;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            background: #161616;
+            padding: 10px 15px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #0a0a0a;
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .btn-copiar {
+            background: #28a745;
+            padding: 8px 15px;
+            font-size: 12px;
+        }
+
+        .btn-copiar:hover {
+            background: #218838;
+        }
+
+        .btn-baixar {
+            background: #17a2b8;
+            padding: 8px 15px;
+            font-size: 12px;
+        }
+
+        .btn-baixar:hover {
+            background: #138496;
+        }
+
+        .comandos-rapidos {
+            display: flex;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #161616;
+            border-bottom: 2px solid #333;
+            flex-wrap: wrap;
+        }
+
+        .btn-comando {
+            background: #333;
+            color: #00ff00;
+            padding: 5px 12px;
+            font-size: 11px;
+            border-radius: 3px;
+        }
+
+        .btn-comando:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .painel {
+                border-right: none;
+                border-bottom: 2px solid #333;
+            }
+        }
+
+        /* Animação de digitação */
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #00ff00;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Construtor Automático PWA</h1>
+        <p>Terminal Simulado + Gerador de Arquivos Completo</p>
+    </div>
+
+    <div class="container">
+        <!-- PAINEL ESQUERDO: TERMINAL -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>💻 Terminal</span>
+                <button onclick="limparTerminal()" style="padding: 5px 10px; font-size: 11px;">Limpar</button>
+            </div>
+
+            <div class="comandos-rapidos">
+                <button class="btn-comando" onclick="executarComando('help')">help</button>
+                <button class="btn-comando" onclick="executarComando('init')">init</button>
+                <button class="btn-comando" onclick="executarComando('capacitor')">capacitor</button>
+                <button class="btn-comando" onclick="executarComando('electron')">electron</button>
+                <button class="btn-comando" onclick="executarComando('build')">build</button>
+                <button class="btn-comando" onclick="executarComando('tree')">tree</button>
+                <button class="btn-comando" onclick="executarComando('download')">download</button>
+            </div>
+
+            <div class="terminal" id="terminal">
+                <div class="terminal-line success">
+                    ╔═══════════════════════════════════════════╗
+                    ║   BEM-VINDO AO CONSTRUTOR AUTOMÁTICO PWA  ║
+                    ╚═══════════════════════════════════════════╝
+                </div>
+                <div class="terminal-line info">
+                    Digite 'help' para ver todos os comandos disponíveis
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">$</span> <span class="cursor"></span>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="commandInput" 
+                    placeholder="Digite um comando (ex: help, init, capacitor)..."
+                    autocomplete="off"
+                >
+                <button onclick="executarComando()">Executar</button>
+            </div>
+        </div>
+
+        <!-- PAINEL DIREITO: ARQUIVOS + EDITOR -->
+        <div class="painel">
+            <div class="painel-header">
+                <span>📁 Estrutura do Projeto</span>
+                <button class="btn-baixar" onclick="baixarProjeto()">📦 Baixar Projeto</button>
+            </div>
+
+            <div style="display: grid; grid-template-rows: 300px 1fr; height: 100%;">
+                <!-- ÁRVORE DE ARQUIVOS -->
+                <div class="arvore" id="arvore">
+                    <div class="info">Nenhum arquivo gerado ainda.</div>
+                    <div class="info">Use 'init' para criar o projeto base.</div>
+                </div>
+
+                <!-- EDITOR -->
+                <div class="editor">
+                    <div class="editor-header">
+                        <span id="arquivoAtual">Nenhum arquivo selecionado</span>
+                        <button class="btn-copiar" onclick="copiarCodigo()" id="btnCopiar" style="display: none;">
+                            📋 Copiar Código
+                        </button>
+                    </div>
+                    <div class="editor-content" id="editor">
+                        <div class="info">Selecione um arquivo na árvore para visualizar</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        // ========================================
+        // ESTADO GLOBAL
+        // ========================================
+        let projeto = {
+            nome: 'meu-pwa',
+            arquivos: {}
+        };
+
+        let arquivoSelecionado = null;
+
+        // ========================================
+        // TEMPLATES DE ARQUIVOS
+        // ========================================
+        const templates = {
+            'package.json': (nome) => `{
+  "name": "${nome}",
+  "version": "1.0.0",
+  "description": "PWA criado automaticamente",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["pwa", "app"],
+  "author": "Maikon Caldeira",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}`,
+
+            'index.html': (nome) => `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${nome}</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+</head>
+<body>
+    <h1>🚀 ${nome}</h1>
+    <p>Seu PWA está funcionando!</p>
+    <script src="/sw-register.js"></script>
+</body>
+</html>`,
+
+            'manifest.json': (nome) => `{
+  "name": "${nome}",
+  "short_name": "${nome}",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}`,
+
+            'sw.js': () => `const CACHE_NAME = 'pwa-v1';
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/manifest.json'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(urlsToCache))
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => response || fetch(event.request))
+  );
+});`,
+
+            'sw-register.js': () => `if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => console.log('✅ Service Worker registrado'))
+      .catch((err) => console.error('❌ Erro:', err));
+  });
+}`,
+
+            'capacitor.config.json': (nome) => `{
+  "appId": "com.${nome}.app",
+  "appName": "${nome}",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000
+    }
+  }
+}`,
+
+            'electron.js': (nome) => `const { app, BrowserWindow } = require('electron');
+const path = require('path');
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  });
+
+  win.loadFile('index.html');
+}
+
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});`,
+
+            'vite.config.js': () => `import { defineConfig } from 'vite';
+
+export default defineConfig({
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets'
+  }
+});`,
+
+            'netlify.toml': () => `[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200`,
+
+            'README.md': (nome) => `# ${nome}
+
+PWA criado automaticamente pelo Construtor PWA.
+
+## 🚀 Como usar
+
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+## 📦 Build
+
+\`\`\`bash
+npm run build
+\`\`\`
+
+## 📱 Capacitor (Mobile)
+
+\`\`\`bash
+npx cap init
+npx cap add android
+npx cap add ios
+\`\`\`
+
+## 💻 Electron (Desktop)
+
+\`\`\`bash
+npm install electron
+npm start
+\`\`\``
+        };
+
+        // ========================================
+        // COMANDOS
+        // ========================================
+        const comandos = {
+            help: () => {
+                print('📚 COMANDOS DISPONÍVEIS:', 'info');
+                print('');
+                print('  init              - Criar projeto base PWA', 'success');
+                print('  capacitor         - Adicionar suporte Capacitor (mobile)', 'success');
+                print('  electron          - Adicionar suporte Electron (desktop)', 'success');
+                print('  build             - Adicionar configurações de build', 'success');
+                print('  tree              - Mostrar árvore de arquivos', 'success');
+                print('  download          - Baixar projeto completo em ZIP', 'success');
+                print('  clear / limpar    - Limpar terminal', 'success');
+                print('  reset             - Resetar projeto', 'warning');
+                print('');
+            },
+
+            init: () => {
+                print('🚀 Inicializando projeto PWA...', 'info');
+                
+                projeto.arquivos = {
+                    'package.json': templates['package.json'](projeto.nome),
+                    'index.html': templates['index.html'](projeto.nome),
+                    'manifest.json': templates['manifest.json'](projeto.nome),
+                    'sw.js': templates['sw.js'](),
+                    'sw-register.js': templates['sw-register.js'](),
+                    'README.md': templates['README.md'](projeto.nome)
+                };
+
+                print('✅ Arquivos base criados:', 'success');
+                print('   - package.json');
+                print('   - index.html');
+                print('   - manifest.json');
+                print('   - sw.js (Service Worker)');
+                print('   - sw-register.js');
+                print('   - README.md');
+                print('');
+                print('💡 Use "tree" para ver a estrutura', 'info');
+                
+                atualizarArvore();
+            },
+
+            capacitor: () => {
+                if (!projeto.arquivos['package.json']) {
+                    print('❌ Execute "init" primeiro!', 'error');
+                    return;
+                }
+
+                print('📱 Adicionando suporte Capacitor...', 'info');
+                
+                projeto.arquivos['capacitor.config.json'] = templates['capacitor.config.json'](projeto.nome);
+                
+                print('✅ Capacitor configurado!', 'success');
+                print('   - capacitor.config.json criado');
+                print('');
+                print('📱 Próximos passos:', 'info');
+                print('   npx cap init');
+                print('   npx cap add android');
+                print('   npx cap add ios');
+                
+                atualizarArvore();
+            },
+
+            electron: () => {
+                if (!projeto.arquivos['package.json']) {
+                    print('❌ Execute "init" primeiro!', 'error');
+                    return;
+                }
+
+                print('💻 Adicionando suporte Electron...', 'info');
+                
+                projeto.arquivos['electron.js'] = templates['electron.js'](projeto.nome);
+                
+                // Atualizar package.json
+                const pkg = JSON.parse(projeto.arquivos['package.json']);
+                pkg.main = 'electron.js';
+                pkg.scripts.start = 'electron .';
+                pkg.devDependencies.electron = '^28.0.0';
+                projeto.arquivos['package.json'] = JSON.stringify(pkg, null, 2);
+                
+                print('✅ Electron configurado!', 'success');
+                print('   - electron.js criado');
+                print('   - package.json atualizado');
+                print('');
+                print('💻 Para rodar:', 'info');
+                print('   npm install');
+                print('   npm start');
+                
+                atualizarArvore();
+            },
+
+            build: () => {
+                if (!projeto.arquivos['package.json']) {
+                    print('❌ Execute "init" primeiro!', 'error');
+                    return;
+                }
+
+                print('🔧 Adicionando configurações de build...', 'info');
+                
+                projeto.arquivos['vite.config.js'] = templates['vite.config.js']();
+                projeto.arquivos['netlify.toml'] = templates['netlify.toml']();
+                
+                print('✅ Configurações adicionadas!', 'success');
+                print('   - vite.config.js');
+                print('   - netlify.toml');
+                print('');
+                print('🚀 Para fazer build:', 'info');
+                print('   npm run build');
+                
+                atualizarArvore();
+            },
+
+            tree: () => {
+                if (Object.keys(projeto.arquivos).length === 0) {
+                    print('❌ Nenhum arquivo criado ainda. Use "init"', 'error');
+                    return;
+                }
+
+                print('📁 Estrutura do projeto:', 'info');
+                print('');
+                print(`${projeto.nome}/`);
+                Object.keys(projeto.arquivos).forEach((arquivo, index, arr) => {
+                    const isLast = index === arr.length - 1;
+                    const prefix = isLast ? '└──' : '├──';
+                    print(`${prefix} ${arquivo}`);
+                });
+                print('');
+            },
+
+            download: () => {
+                if (Object.keys(projeto.arquivos).length === 0) {
+                    print('❌ Nenhum arquivo para baixar. Use "init"', 'error');
+                    return;
+                }
+
+                print('📦 Preparando download...', 'info');
+                baixarProjeto();
+                print('✅ Download iniciado!', 'success');
+            },
+
+            clear: () => {
+                document.getElementById('terminal').innerHTML = '';
+            },
+
+            limpar: () => comandos.clear(),
+
+            reset: () => {
+                if (confirm('⚠️ Resetar projeto? Todos os arquivos serão perdidos!')) {
+                    projeto.arquivos = {};
+                    atualizarArvore();
+                    limparEditor();
+                    print('🔄 Projeto resetado!', 'warning');
+                }
+            }
+        };
+
+        // ========================================
+        // FUNÇÕES DO TERMINAL
+        // ========================================
+        function print(texto, tipo = '') {
+            const terminal = document.getElementById('terminal');
+            const line = document.createElement('div');
+            line.className = `terminal-line ${tipo}`;
+            line.textContent = texto;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function executarComando(cmd) {
+            const input = document.getElementById('commandInput');
+            const comando = cmd || input.value.trim().toLowerCase();
+            
+            if (!comando) return;
+
+            // Mostrar comando
+            print(`$ ${comando}`, 'prompt');
+            print('');
+
+            // Executar
+            if (comandos[comando]) {
+                comandos[comando]();
+            } else {
+                print(`❌ Comando não encontrado: ${comando}`, 'error');
+                print('💡 Digite "help" para ver comandos disponíveis', 'info');
+            }
+
+            print('');
+            input.value = '';
+        }
+
+        function limparTerminal() {
+            document.getElementById('terminal').innerHTML = '';
+            print('Terminal limpo!', 'success');
+        }
+
+        // ========================================
+        // ÁRVORE DE ARQUIVOS
+        // ========================================
+        function atualizarArvore() {
+            const arvore = document.getElementById('arvore');
+            arvore.innerHTML = '';
+
+            if (Object.keys(projeto.arquivos).length === 0) {
+                arvore.innerHTML = '<div class="info">Nenhum arquivo gerado ainda.</div>';
+                return;
+            }
+
+            const pasta = document.createElement('div');
+            pasta.className = 'pasta';
+            pasta.textContent = `📁 ${projeto.nome}/`;
+            arvore.appendChild(pasta);
+
+            Object.keys(projeto.arquivos).forEach(nome => {
+                const arquivo = document.createElement('div');
+                arquivo.className = 'arquivo';
+                arquivo.innerHTML = `<span>📄</span><span>${nome}</span>`;
+                arquivo.onclick = () => selecionarArquivo(nome);
+                arvore.appendChild(arquivo);
+            });
+        }
+
+        function selecionarArquivo(nome) {
+            arquivoSelecionado = nome;
+
+            // Atualizar seleção visual
+            document.querySelectorAll('.arquivo').forEach(el => {
+                el.classList.remove('selecionado');
+            });
+            event.currentTarget.classList.add('selecionado');
+
+            // Mostrar conteúdo
+            const conteudo = projeto.arquivos[nome];
+            document.getElementById('arquivoAtual').textContent = nome;
+            document.getElementById('editor').innerHTML = `<pre>${escapeHtml(conteudo)}</pre>`;
+            document.getElementById('btnCopiar').style.display = 'block';
+        }
+
+        function limparEditor() {
+            document.getElementById('arquivoAtual').textContent = 'Nenhum arquivo selecionado';
+            document.getElementById('editor').innerHTML = '<div class="info">Selecione um arquivo na árvore</div>';
+            document.getElementById('btnCopiar').style.display = 'none';
+        }
+
+        // ========================================
+        // COPIAR CÓDIGO
+        // ========================================
+        function copiarCodigo() {
+            if (!arquivoSelecionado) return;
+
+            const conteudo = projeto.arquivos[arquivoSelecionado];
+            navigator.clipboard.writeText(conteudo).then(() => {
+                const btn = document.getElementById('btnCopiar');
+                const textoOriginal = btn.textContent;
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => {
+                    btn.textContent = textoOriginal;
+                }, 2000);
+            });
+        }
+
+        // ========================================
+        // BAIXAR PROJETO
+        // ========================================
+        async function baixarProjeto() {
+            if (Object.keys(projeto.arquivos).length === 0) {
+                alert('❌ Nenhum arquivo para baixar!');
+                return;
+            }
+
+            const zip = new JSZip();
+            const pasta = zip.folder(projeto.nome);
+
+            Object.entries(projeto.arquivos).forEach(([nome, conteudo]) => {
+                pasta.file(nome, conteudo);
+            });
+
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${projeto.nome}.zip`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ========================================
+        // UTILIDADES
+        // ========================================
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // ========================================
+        // EVENTOS
+        // ========================================
+        document.getElementById('commandInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                executarComando();
+            }
+        });
+
+        // Inicializar
+        window.onload = () => {
+            document.getElementById('commandInput').focus();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Extrator Jurídico - Processo Completo (Contrato Falsificado)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/docx@0.2.3/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+        window.jsPDF = window.jspdf.jsPDF;
+    </script>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden font-sans">
+    <header class="bg-blue-900 text-white p-3 shadow-lg flex flex-wrap justify-between items-center z-20 gap-2">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-balance-scale text-2xl text-yellow-400"></i>
+            <div>
+                <h1 class="text-lg font-bold leading-tight">Extrator Jurídico - Processo Completo</h1>
+                <p class="text-[10px] text-blue-200 opacity-80">Contrato Falsificado • INSS • Estelionato</p>
+            </div>
+        </div>
+        <div class="flex gap-2 text-xs">
+            <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded font-bold transition flex items-center gap-2 shadow">
+                <i class="fas fa-folder-open text-lg"></i> Importar (PDF/DOCX)
+            </button>
+            <div class="h-8 w-px bg-blue-700 mx-1"></div>
+            <button onclick="exportarWord()" class="bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded transition" title="Exportar Word">
+                <i class="fas fa-file-word text-lg"></i>
+            </button>
+            <button onclick="exportarExcel()" class="bg-green-700 hover:bg-green-600 px-3 py-2 rounded transition" title="Exportar Excel">
+                <i class="fas fa-file-excel text-lg"></i>
+            </button>
+            <button onclick="exportarPDF()" class="bg-red-700 hover:bg-red-600 px-3 py-2 rounded transition" title="Exportar PDF">
+                <i class="fas fa-file-pdf text-lg"></i>
+            </button>
+            <button onclick="exportarJSON()" class="bg-yellow-600 hover:bg-yellow-500 px-3 py-2 rounded transition" title="Exportar JSON">
+                <i class="fas fa-code text-lg"></i>
+            </button>
+            <button onclick="exportarXML()" class="bg-purple-600 hover:bg-purple-500 px-3 py-2 rounded transition" title="Exportar XML">
+                <i class="fas fa-file-code text-lg"></i>
+            </button>
+        </div>
+        <input type="file" id="fileInput" multiple accept=".pdf,.docx" class="hidden">
+    </header>
+    <div class="flex flex-1 overflow-hidden">
+        <aside class="w-1/4 min-w-[300px] bg-white border-r border-gray-200 flex flex-col shadow-md z-10">
+            <div class="p-4 bg-slate-50 border-b">
+                <h2 class="font-bold text-slate-700 mb-1 flex items-center gap-2">
+                    <i class="fas fa-search"></i> Critérios de Busca
+                </h2>
+                <p class="text-xs text-slate-500 mb-4">Configure Regex para extrair blocos úteis dos autos.</p>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-blue-800">Nome do Dado</label>
+                        <input type="text" id="varNome" placeholder="Ex: Contrato Falsificado (Bloco)" class="w-full text-sm p-2 border border-gray-300 rounded focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-blue-800">Expressão Regular (Regex)</label>
+                        <div class="flex gap-1">
+                            <input type="text" id="varRegex" placeholder="Ex: \\bFalsificação\\b[\\s\\S]{0,1000}" class="w-full text-sm p-2 border border-gray-300 rounded font-mono bg-yellow-50 focus:bg-white transition">
+                            <button onclick="adicionarVariavel()" class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700 font-bold">+</button>
+                        </div>
+                        <button onclick="restaurarPadrao()" class="w-full bg-orange-500 text-white text-xs py-2 px-3 rounded mt-2 font-bold hover:bg-orange-600 transition">
+                            <i class="fas fa-magic mr-1"></i> Restaurar Padrões
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-b">
+                <h2 class="font-bold text-slate-700 mb-1 flex items-center gap-2">
+                    <i class="fas fa-cog"></i> Configurações de Extração
+                </h2>
+                <p class="text-xs text-slate-500 mb-4">Ajuste como os trechos são extraídos e exibidos.</p>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-blue-800">Limite de Caracteres por Trecho (Tabela)</label>
+                        <input type="number" id="limiteCaracteres" value="200" min="50" max="1000" class="w-full text-sm p-2 border border-gray-300 rounded focus:border-blue-500 outline-none">
+                        <p class="text-xs text-slate-400 italic">Define quantos caracteres de cada trecho aparecem na tabela.</p>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-blue-800">Limitadores de Contexto</label>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="limiteIdPje" checked>
+                            <label for="limiteIdPje" class="text-sm">Parar em ID PJe</label>
+                        </div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <input type="checkbox" id="limiteEvento" checked>
+                            <label for="limiteEvento" class="text-sm">Parar em Evento (eProc)</label>
+                        </div>
+                        <p class="text-xs text-slate-400 italic">Evita trechos desconexos ao limitar captura até o próximo ID ou Evento.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-50" id="listaVariaveis"></div>
+            <div class="p-4 border-t bg-white">
+                <button onclick="reprocessar()" class="w-full bg-indigo-100 text-indigo-800 font-bold py-3 rounded hover:bg-indigo-200 transition flex justify-center items-center gap-2">
+                    <i class="fas fa-sync-alt"></i> Analisar Documentos
+                </button>
+            </div>
+        </aside>
+        <main class="w-3/4 flex flex-col relative">
+            <div class="h-3/5 overflow-auto p-4 bg-white border-b border-gray-300">
+                <h3 class="font-bold text-gray-700 mb-2 sticky top-0 bg-white z-10 py-2 border-b flex justify-between">
+                    <span><i class="fas fa-table"></i> Quadro Comparativo</span>
+                    <span id="statusCount" class="text-xs font-normal text-gray-500">0 arquivos carregados</span>
+                </h3>
+                <table class="w-full text-sm text-left border-collapse" id="tabelaResultados">
+                    <thead class="bg-gray-100 text-gray-600 sticky top-10 z-10 shadow-sm" id="tabelaHeader">
+                        <tr><th class="p-3 border">Arquivo</th></tr>
+                    </thead>
+                    <tbody id="tabelaBody" class="divide-y divide-gray-100">
+                        <tr><td class="p-8 text-center text-gray-400 italic">Importe arquivos PDF ou Word para iniciar a análise...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="h-2/5 flex flex-col bg-slate-800 text-green-400 font-mono text-xs p-4 border-t-4 border-blue-900">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold flex items-center gap-2">
+                        <i class="fas fa-terminal"></i> Leitor de Texto Bruto
+                    </span>
+                    <select id="seletorArquivoTexto" class="bg-slate-700 text-white border border-slate-600 rounded p-1 text-xs max-w-[300px]" onchange="mostrarTextoBruto()">
+                        <option>Nenhum arquivo selecionado</option>
+                    </select>
+                </div>
+                <textarea id="textoBrutoArea" class="flex-1 w-full bg-slate-900 border border-slate-700 p-4 resize-none focus:outline-none rounded text-xs leading-relaxed" readonly spellcheck="false" placeholder="O texto extraído do documento aparecerá aqui para conferência..."></textarea>
+            </div>
+        </main>
+    </div>
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded shadow-xl flex flex-col items-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-3"></i>
+            <p class="font-bold text-gray-700">Processando arquivos...</p>
+        </div>
+    </div>
+    <script>
+        let ARQUIVOS_CACHE = [];
+        const VARIAVEIS_PADRAO = [
+            { nome: "Contrato Falsificado (Contexto)", regex: "\\b(falsificação|assinatura falsa|contrato falsificado|contrato indevido|dados divergentes)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Estelionato (Investigação/Fraude)", regex: "\\b(estelionato|crime|fraude|investigação|inquérito)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Má-Fé Processual (Alegações)", regex: "\\b(má-fé|litigância de má-fé|alegações falsas|condenação por má-fé)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "INSS (Benefício/Descontos)", regex: "\\b(INSS|benefício previdenciário|descontos indevidos|verba alimentar)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Cadastro Positivo (Vazamento)", regex: "\\b(cadastro positivo|vazamento de dados|acesso indevido)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Decisões Judiciais (Sentença/Acórdão)", regex: "\\b(sentença|acórdão|turma recursal|liminar|tutela de urgência)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Perícia Grafotécnica (Resultado)", regex: "\\b(perícia grafotécnica|assinatura reconhecida|prova técnica)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Petição Inicial (Contexto)", regex: "\\b(petição inicial|autor|réu|pedido inicial|causa de pedir)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Contestação (Defesa)", regex: "\\b(contestação|defesa preliminar|mérito|impugnação)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Provas Documentais", regex: "\\b(prova documental|documento anexo|comprovante|laudo pericial)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Testemunhas (Depoimentos)", regex: "\\b(testemunha|depoimento|oitiva|declaração)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Danos Morais/Materiais", regex: "\\b(dano moral|dano material|indenização|reparação|prejuízo)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Alegações Finais", regex: "\\b(alegações finais|memoriais|razões finais)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Recursos (Apelação)", regex: "\\b(recurso|apelação|agravo|embargos)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Custas Processuais", regex: "\\b(custas processuais|honorários|sucumbência)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "Banco como Vítima (Alegação)", regex: "\\b(banco|vítima|alegação de vítima|não responsável)\\b[\\s\\S]*?(?=\\bId\\s+no\\s+PJE|\\bEvento\\s+\\d+|$)[\\s\\S]{0,1000}" },
+            { nome: "ID PJe (Identificador)", regex: "\\bId\\s+no\\s+PJE:\\s*\\d+\\b[\\s\\S]{0,200}" },
+            { nome: "Evento (eProc ou Similar)", regex: "\\bEvento\\s+\\d+\\b[\\s\\S]{0,200}" }
+        ];
+        let VARIAVEIS = JSON.parse(JSON.stringify(VARIAVEIS_PADRAO));
+
+        // Autosave
+        const LS_KEY = "extrator_juridico_state";
+        function loadState() {
+            try {
+                const st = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+                if (st.variaveis) VARIAVEIS = st.variaveis;
+                if (st.limiteCaracteres) document.getElementById('limiteCaracteres').value = st.limiteCaracteres;
+                if (st.limiteIdPje !== undefined) document.getElementById('limiteIdPje').checked = st.limiteIdPje;
+                if (st.limiteEvento !== undefined) document.getElementById('limiteEvento').checked = st.limiteEvento;
+                renderizarListaVariaveis();
+            } catch (e) {}
+        }
+        function saveState() {
+            localStorage.setItem(LS_KEY, JSON.stringify({
+                variaveis: VARIAVEIS,
+                limiteCaracteres: document.getElementById('limiteCaracteres').value,
+                limiteIdPje: document.getElementById('limiteIdPje').checked,
+                limiteEvento: document.getElementById('limiteEvento').checked
+            }));
+        }
+        window.onload = () => {
+            loadState();
+            renderizarListaVariaveis();
+        };
+
+        function renderizarListaVariaveis() {
+            const container = document.getElementById('listaVariaveis');
+            container.innerHTML = '';
+            VARIAVEIS.forEach(v => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-white p-2 rounded border border-gray-200 text-sm shadow-sm hover:shadow-md transition group";
+                div.innerHTML = `
+                    <div class="overflow-hidden">
+                        <strong class="text-blue-800 block truncate" title="${v.nome}">${v.nome}</strong>
+                        <code class="text-[10px] text-gray-500 block truncate font-mono bg-gray-100 p-0.5 rounded" title="${v.regex}">${v.regex}</code>
+                    </div>
+                    <button onclick="removerVar('${v.nome}')" class="text-red-300 hover:text-red-600 ml-2 px-2"><i class="fas fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function adicionarVariavel() {
+            const nome = document.getElementById('varNome').value.trim();
+            const regex = document.getElementById('varRegex').value.trim();
+            if (!nome || !regex) {
+                alert("Preencha nome e regex.");
+                return;
+            }
+            VARIAVEIS.push({ nome, regex });
+            renderizarListaVariaveis();
+            saveState();
+            document.getElementById('varNome').value = '';
+            document.getElementById('varRegex').value = '';
+        }
+
+        function removerVar(nome) {
+            VARIAVEIS = VARIAVEIS.filter(v => v.nome !== nome);
+            renderizarListaVariaveis();
+            saveState();
+            if (ARQUIVOS_CACHE.length > 0) reprocessar();
+        }
+
+        function restaurarPadrao() {
+            if (confirm("Restaurar variáveis padrão para o caso de contrato falsificado?")) {
+                VARIAVEIS = JSON.parse(JSON.stringify(VARIAVEIS_PADRAO));
+                renderizarListaVariaveis();
+                saveState();
+                if (ARQUIVOS_CACHE.length > 0) reprocessar();
+            }
+        }
+
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            ARQUIVOS_CACHE = [];
+            document.getElementById('seletorArquivoTexto').innerHTML = '<option>Nenhum arquivo selecionado</option>';
+            try {
+                for (let file of files) {
+                    let texto = "";
+                    let tipo = "";
+                    let paginas = [];
+                    if (file.type === "application/pdf") {
+                        const pdfData = await extrairTextoPDFPorPagina(file);
+                        texto = pdfData.textoCompleto;
+                        paginas = pdfData.textoPorPagina;
+                        tipo = "PDF";
+                    } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                        texto = await extrairTextoWord(file);
+                        paginas = [{ pagina: 1, texto: texto }];
+                        tipo = "DOCX";
+                    } else {
+                        console.warn("Formato não suportado: " + file.name);
+                        continue;
+                    }
+                    ARQUIVOS_CACHE.push({nome: file.name, texto: texto, tipo: tipo, paginas: paginas});
+                    let opt = document.createElement('option');
+                    opt.value = ARQUIVOS_CACHE.length - 1;
+                    opt.text = `[${tipo}] ${file.name}`;
+                    document.getElementById('seletorArquivoTexto').appendChild(opt);
+                }
+                document.getElementById('statusCount').innerText = `${ARQUIVOS_CACHE.length} arquivos analisados`;
+                if (ARQUIVOS_CACHE.length > 0) {
+                    document.getElementById('seletorArquivoTexto').selectedIndex = 1;
+                    mostrarTextoBruto();
+                    reprocessar();
+                }
+            } catch (err) {
+                alert("Erro ao processar arquivos: " + err.message);
+                console.error(err);
+            } finally {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        });
+
+        async function extrairTextoPDFPorPagina(file) {
+            const buffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(buffer).promise;
+            let textoCompleto = "";
+            let textoPorPagina = [];
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                const textoPagina = content.items.map(item => item.str).join(" ") + "\n";
+                textoCompleto += textoPagina;
+                textoPorPagina.push({ pagina: i, texto: textoPagina });
+            }
+            return { textoCompleto, textoPorPagina };
+        }
+
+        async function extrairTextoWord(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+            return result.value;
+        }
+
+        function mostrarTextoBruto() {
+            const idx = document.getElementById('seletorArquivoTexto').value;
+            document.getElementById('textoBrutoArea').value = idx ? ARQUIVOS_CACHE[idx].texto : "";
+        }
+
+        function encontrarPagina(arquivo, trecho) {
+            if (arquivo.tipo === "PDF") {
+                for (let i = 0; i < arquivo.paginas.length; i++) {
+                    if (arquivo.paginas[i].texto.includes(trecho.slice(0, 50))) {
+                        return arquivo.paginas[i].pagina;
+                    }
+                }
+            }
+            return 1; // Padrão para DOCX ou se não encontrar
+        }
+
+        function reprocessar() {
+            const limiteCaracteres = parseInt(document.getElementById('limiteCaracteres').value) || 200;
+            const limiteIdPje = document.getElementById('limiteIdPje').checked;
+            const limiteEvento = document.getElementById('limiteEvento').checked;
+            saveState();
+
+            // Ajustar regex dinamicamente com base nos limitadores
+            const limitador = [];
+            if (limiteIdPje) limitador.push("\\bId\\s+no\\s+PJE");
+            if (limiteEvento) limitador.push("\\bEvento\\s+\\d+");
+            const limitadorStr = limitador.length > 0 ? `(?=${limitador.join('|')}|$)` : '';
+
+            const regexAjustadas = VARIAVEIS.map(v => {
+                let regexFinal = v.regex;
+                if (limitadorStr && !v.nome.includes("ID PJe") && !v.nome.includes("Evento")) {
+                    regexFinal = regexFinal.replace(/\[\\s\\S\]\*?\(?=.*?\)/, `[\\s\\S]*?${limitadorStr}`);
+                }
+                return { nome: v.nome, regex: regexFinal };
+            });
+
+            const thead = document.getElementById('tabelaHeader');
+            const tbody = document.getElementById('tabelaBody');
+            let headerHTML = `<tr><th class="p-3 border bg-slate-200 text-slate-700">Arquivo</th>`;
+            regexAjustadas.forEach(v => headerHTML += `<th class="p-3 border bg-slate-200 text-blue-900 font-bold">${v.nome}</th>`);
+            headerHTML += `</tr>`;
+            thead.innerHTML = headerHTML;
+            let bodyHTML = '';
+            ARQUIVOS_CACHE.forEach(arquivo => {
+                let row = `<tr><td class="p-3 border font-bold">${arquivo.nome}</td>`;
+                regexAjustadas.forEach(v => {
+                    try {
+                        const regex = new RegExp(v.regex, 'gi');
+                        const matches = arquivo.texto.match(regex) || [];
+                        let content = '-';
+                        if (matches.length > 0) {
+                            content = matches.map(m => {
+                                const pagina = encontrarPagina(arquivo, m);
+                                const trecho = m.slice(0, limiteCaracteres) + (m.length > limiteCaracteres ? '...' : '');
+                                return `${trecho} <span class="text-gray-500 italic">(pág. ${pagina})</span>`;
+                            }).join('<br>');
+                        }
+                        row += `<td class="p-3 border">${content}</td>`;
+                    } catch (e) {
+                        row += `<td class="p-3 border text-red-500">Erro no regex</td>`;
+                    }
+                });
+                row += `</tr>`;
+                bodyHTML += row;
+            });
+            tbody.innerHTML = bodyHTML || '<tr><td class="p-8 text-center text-gray-400 italic" colspan="100%">Importe arquivos para análise...</td></tr>';
+        }
+
+        function exportarJSON() {
+            const data = {
+                createdAt: new Date().toISOString(),
+                arquivos: ARQUIVOS_CACHE.map(a => ({ nome: a.nome, tipo: a.tipo, tamanho: a.texto.length })),
+                resultados: gerarDadosExportacao()
+            };
+            download('extrator_resultados.json', JSON.stringify(data, null, 2), 'application/json;charset=utf-8');
+        }
+
+        function exportarExcel() {
+            const wb = XLSX.utils.book_new();
+            const ws_data = [['Arquivo', ...VARIAVEIS.map(v => v.nome)]];
+            ARQUIVOS_CACHE.forEach(arquivo => {
+                const row = [arquivo.nome];
+                VARIAVEIS.forEach(v => {
+                    try {
+                        const regex = new RegExp(v.regex, 'gi');
+                        const matches = arquivo.texto.match(regex) || [];
+                        let content = matches.map(m => {
+                            const pagina = encontrarPagina(arquivo, m);
+                            return `Página ${pagina}: ${m.slice(0, 500)}`;
+                        }).join('\n');
+                        row.push(content || 'Nenhum resultado');
+                    } catch (e) {
+                        row.push('Erro no regex');
+                    }
+                });
+                ws_data.push(row);
+            });
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
+            XLSX.writeFile(wb, 'extrator_resultados.xlsx');
+        }
+
+        function exportarXML() {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<ExtratorJuridico>\n    <Arquivos>\n';
+            ARQUIVOS_CACHE.forEach(arquivo => {
+                xml += `        <Arquivo nome="${escapeXml(arquivo.nome)}" tipo="${arquivo.tipo}">\n`;
+                VARIAVEIS.forEach(v => {
+                    try {
+                        const regex = new RegExp(v.regex, 'gi');
+                        const matches = arquivo.texto.match(regex) || [];
+                        xml += `            <Categoria nome="${escapeXml(v.nome)}">\n`;
+                        matches.forEach((m, i) => {
+                            const pagina = encontrarPagina(arquivo, m);
+                            xml += `                <Trecho id="${i+1}" pagina="${pagina}">${escapeXml(m.slice(0, 500))}${m.length > 500 ? '...' : ''}</Trecho>\n`;
+                        });
+                        xml += `            </Categoria>\n`;
+                    } catch (e) {
+                        xml += `            <Categoria nome="${escapeXml(v.nome)}"><Erro>Regex inválido</Erro></Categoria>\n`;
+                    }
+                });
+                xml += `        </Arquivo>\n`;
+            });
+            xml += `    </Arquivos>\n</ExtratorJuridico>`;
+            download('extrator_resultados.xml', xml, 'application/xml;charset=utf-8');
+        }
+
+        function escapeXml(unsafe) {
+            return unsafe.replace(/[<>&'"]/g, c => {
+                switch (c) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case '\'': return '&apos;';
+                    case '"': return '&quot;';
+                    default: return c;
+                }
+            });
+        }
+
+        function exportarPDF() {
+            const { jsPDF } = window;
+            const doc = new jsPDF();
+            doc.text('Extrator Jurídico - Resultados', 10, 10);
+            const tableData = [['Arquivo', ...VARIAVEIS.map(v => v.nome)]];
+            ARQUIVOS_CACHE.forEach(arquivo => {
+                const row = [arquivo.nome];
+                VARIAVEIS.forEach(v => {
+                    try {
+                        const regex = new RegExp(v.regex, 'gi');
+                        const matches = arquivo.texto.match(regex) || [];
+                        let content = matches.map(m => {
+                            const pagina = encontrarPagina(arquivo, m);
+                            return `Pág. ${pagina}: ${m.slice(0, 50)}`;
+                        }).join('\n');
+                        row.push(content || 'Nenhum resultado');
+                    } catch (e) {
+                        row.push('Erro');
+                    }
+                });
+                tableData.push(row);
+            });
+            doc.autoTable({
+                head: [tableData[0]],
+                body: tableData.slice(1),
+                startY: 20
+            });
+            doc.save('extrator_resultados.pdf');
+        }
+
+        function exportarWord() {
+            const doc = new docx.Document({
+                sections: [{
+                    properties: {},
+                    children: [
+                        new docx.Paragraph({
+                            text: "Extrator Jurídico - Resultados",
+                            heading: docx.HeadingLevel.HEADING_1
+                        })
+                    ]
+                }]
+            });
+            ARQUIVOS_CACHE.forEach(arquivo => {
+                doc.addSection({
+                    children: [
+                        new docx.Paragraph({
+                            text: `Arquivo: ${arquivo.nome}`,
+                            heading: docx.HeadingLevel.HEADING_2
+                        })
+                    ]
+                });
+                VARIAVEIS.forEach(v => {
+                    try {
+                        const regex = new RegExp(v.regex, 'gi');
+                        const matches = arquivo.texto.match(regex) || [];
+                        let content = matches.length > 0 ? matches.map((m, i) => {
+                            const pagina = encontrarPagina(arquivo, m);
+                            return `Trecho ${i+1} (Pág. ${pagina}): ${m.slice(0, 200)}`;
+                        }).join('\n') : 'Nenhum resultado';
+                        doc.addParagraph(new docx.Paragraph({
+                            text: `${v.nome}: ${content}`
+                        }));
+                    } catch (e) {}
+                });
+            });
+            docx.Packer.toBlob(doc).then(blob => {
+                saveAs(blob, "extrator_resultados.docx");
+            });
+        }
+
+        function gerarDadosExportacao() {
+            const resultados = [];
+            ARQUIVOS_CACHE.forEach(arquivo => {
+                const resArquivo = { nome: arquivo.nome, categorias: [] };
+                VARIAVEIS.forEach(v => {
+                    try {
+                        const regex = new RegExp(v.regex, 'gi');
+                        const matches = arquivo.texto.match(regex) || [];
+                        const trechosComPagina = matches.map(m => {
+                            const pagina = encontrarPagina(arquivo, m);
+                            return { texto: m, pagina: pagina };
+                        });
+                        resArquivo.categorias.push({
+                            nome: v.nome,
+                            trechos: trechosComPagina
+                        });
+                    } catch (e) {
+                        resArquivo.categorias.push({ nome: v.nome, erro: 'Regex inválido' });
+                    }
+                });
+                resultados.push(resArquivo);
+            });
+            return resultados;
+        }
+
+        function download(filename, text, mime = "text/plain") {
+            const blob = new Blob([text], { type: mime });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        }
+    </script>
+</body>
+</html>

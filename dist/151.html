@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iara Suite v2.0 - Editor + Mapper Avançado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* HEADER */
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 2px solid #00d4ff;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #00d4ff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #00d4ff;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        .btn:hover {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+
+        .btn.danger {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .btn.danger:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 0;
+        }
+
+        .section {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .section.active {
+            display: flex;
+        }
+
+        /* EDITOR SECTION */
+        .editor-section {
+            display: flex;
+            gap: 0;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.6);
+            border-right: 1px solid #00d4ff;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .file-tree {
+            font-size: 12px;
+        }
+
+        .file-item {
+            padding: 6px 8px;
+            margin: 2px 0;
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 2px solid transparent;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+            word-break: break-word;
+        }
+
+        .file-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-left-color: #00d4ff;
+        }
+
+        .file-item.active {
+            background: rgba(0, 212, 255, 0.3);
+            border-left-color: #00d4ff;
+            font-weight: bold;
+        }
+
+        .file-item.folder {
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .file-item.folder::before {
+            content: "📁 ";
+        }
+
+        .file-item.file::before {
+            content: "📄 ";
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-toolbar {
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 1px solid #00d4ff;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            gap: 0;
+        }
+
+        #code-editor {
+            flex: 1;
+            background: #0f0f1e;
+            color: #e0e0e0;
+            border: none;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: none;
+            overflow: auto;
+        }
+
+        #ed-divider {
+            width: 4px;
+            background: #00d4ff;
+            cursor: col-resize;
+            transition: background 0.2s;
+        }
+
+        #ed-divider:hover {
+            background: #00ff88;
+        }
+
+        #preview-wrap {
+            flex: 1;
+            background: #0f0f1e;
+            border-left: 1px solid #00d4ff;
+            overflow: auto;
+            display: none;
+        }
+
+        #preview-wrap.active {
+            display: block;
+        }
+
+        #preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        /* MAPPER SECTION */
+        .mapper-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            overflow: auto;
+        }
+
+        .mapper-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #00d4ff;
+        }
+
+        .mapper-controls input[type="file"] {
+            display: none;
+        }
+
+        .mapper-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .analysis-card {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            border-radius: 6px;
+            padding: 12px;
+            overflow: auto;
+            max-height: 400px;
+        }
+
+        .analysis-card h3 {
+            color: #00d4ff;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .analysis-card pre {
+            background: #0f0f1e;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+
+        .tree-view {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .tree-item {
+            padding: 2px 4px;
+            margin-left: 12px;
+        }
+
+        .tree-folder {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        .tree-file {
+            color: #e0e0e0;
+        }
+
+        .tree-error {
+            color: #ff4444;
+        }
+
+        .tree-api {
+            color: #00ff88;
+        }
+
+        .tree-function {
+            color: #ffaa00;
+        }
+
+        .tree-dependency {
+            color: #aa00ff;
+        }
+
+        /* FILTERS */
+        .filter-section {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #00d4ff;
+            margin-bottom: 12px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #00d4ff;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            color: #00d4ff;
+            margin-bottom: 12px;
+        }
+
+        .modal-content input, .modal-content textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            background: #0f0f1e;
+            border: 1px solid #00d4ff;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff88;
+        }
+
+        .token-control {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #00d4ff;
+        }
+
+        .token-control input {
+            width: 80px;
+            padding: 4px;
+            background: #0f0f1e;
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            border-radius: 3px;
+        }
+
+        .report-section {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #00d4ff;
+            margin-bottom: 12px;
+        }
+
+        .report-section h3 {
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-box .value {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .stat-box .label {
+            color: #888;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🚀 Iara Suite v2.0</h1>
+            <div class="nav-tabs">
+                <button class="nav-btn active" onclick="switchTab('editor')">📝 Editor</button>
+                <button class="nav-btn" onclick="switchTab('mapper')">🗺️ Mapper Avançado</button>
+                <button class="nav-btn" onclick="switchTab('settings')">⚙️ Configurações</button>
+            </div>
+            <div class="header-controls">
+                <button class="btn" onclick="openAPIModal()">🔑 Chaves API</button>
+                <button class="btn" onclick="exportProject()">📥 Exportar ZIP</button>
+                <button class="btn danger" onclick="clearAll()">🗑️ Limpar Tudo</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- EDITOR SECTION -->
+            <div id="editor" class="section active">
+                <div class="editor-section">
+                    <div class="sidebar">
+                        <div style="margin-bottom: 10px; display: flex; gap: 4px;">
+                            <button class="btn" style="flex: 1; font-size: 11px;" onclick="newFile()">+ Arquivo</button>
+                            <button class="btn" style="flex: 1; font-size: 11px;" onclick="newFolder()">+ Pasta</button>
+                        </div>
+                        <div class="file-tree" id="file-tree"></div>
+                    </div>
+                    <div class="editor-wrapper">
+                        <div class="editor-toolbar">
+                            <button class="btn" onclick="renameFile()">✏️ Renomear</button>
+                            <button class="btn danger" onclick="deleteFile()">🗑️ Deletar</button>
+                            <button class="btn" onclick="togglePreview('split')">⚡ Split</button>
+                            <button class="btn" onclick="togglePreview('full')">🟥 Full</button>
+                            <button class="btn" onclick="downloadAsMarkdown()">📄 Download MD</button>
+                            <button class="btn" onclick="copyToClipboard()">📋 Copiar</button>
+                        </div>
+                        <div class="editor-content">
+                            <textarea id="code-editor" placeholder="Selecione um arquivo para editar..."></textarea>
+                            <div id="ed-divider"></div>
+                            <div id="preview-wrap">
+                                <iframe id="preview-frame"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAPPER SECTION -->
+            <div id="mapper" class="section">
+                <div class="mapper-section">
+                    <div class="mapper-controls">
+                        <button class="btn" onclick="document.getElementById('zip-input').click()">📦 Importar ZIP</button>
+                        <input type="file" id="zip-input" accept=".zip" onchange="handleZipUpload(event)">
+                        <button class="btn" onclick="analyzeProject()">🔍 Analisar Projeto</button>
+                        <button class="btn" onclick="generateReport()">📊 Gerar Relatório</button>
+                        <button class="btn" onclick="exportAnalysis()">💾 Exportar Análise</button>
+                        <button class="btn" onclick="sendToEditor()">➡️ Enviar ao Editor</button>
+                    </div>
+
+                    <!-- FILTROS -->
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <label style="color: #888; font-size: 11px;">Filtros:</label>
+                            <button class="filter-btn active" onclick="filterAnalysis('all')">Tudo</button>
+                            <button class="filter-btn" onclick="filterAnalysis('bugs')">🐛 Bugs</button>
+                            <button class="filter-btn" onclick="filterAnalysis('apis')">🌐 APIs</button>
+                            <button class="filter-btn" onclick="filterAnalysis('functions')">⚙️ Funções</button>
+                            <button class="filter-btn" onclick="filterAnalysis('dependencies')">📦 Dependências</button>
+                            <button class="filter-btn" onclick="filterAnalysis('conflicts')">⚠️ Conflitos</button>
+                            <button class="filter-btn" onclick="filterAnalysis('errors')">❌ Erros</button>
+                        </div>
+                        <div class="token-control">
+                            <label style="color: #888; font-size: 11px;">Limite de Tokens:</label>
+                            <input type="number" id="token-limit" value="8000" min="100" max="128000">
+                            <button class="btn" style="font-size: 11px;" onclick="updateTokenLimit()">✓ Atualizar</button>
+                        </div>
+                    </div>
+
+                    <!-- RELATÓRIO -->
+                    <div class="report-section">
+                        <h3>📊 Resumo da Análise</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="value" id="stat-files">0</div>
+                                <div class="label">Arquivos</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-folders">0</div>
+                                <div class="label">Pastas</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-bugs">0</div>
+                                <div class="label">Bugs</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-apis">0</div>
+                                <div class="label">APIs</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-functions">0</div>
+                                <div class="label">Funções</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="stat-deps">0</div>
+                                <div class="label">Dependências</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ANÁLISE -->
+                    <div class="mapper-content" id="mapper-content"></div>
+                </div>
+            </div>
+
+            <!-- SETTINGS SECTION -->
+            <div id="settings" class="section">
+                <div style="padding: 20px; overflow-y: auto;">
+                    <h2 style="color: #00d4ff; margin-bottom: 20px;">⚙️ Configurações</h2>
+                    
+                    <div style="background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 4px; border: 1px solid #00d4ff; margin-bottom: 15px;">
+                        <h3 style="color: #00d4ff; margin-bottom: 10px;">🤖 Provedor de IA</h3>
+                        <div style="margin-bottom: 10px;">
+                            <label style="color: #888;">Selecione o provedor:</label>
+                            <select id="ai-provider" style="width: 100%; padding: 8px; background: #0f0f1e; border: 1px solid #00d4ff; color: #00d4ff; border-radius: 4px; margin-top: 5px;">
+                                <option value="anthropic">Anthropic (Claude)</option>
+                                <option value="google">Google Gemini</option>
+                                <option value="openai">OpenAI Compatible</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <label style="color: #888;">Chave de API:</label>
+                            <input type="password" id="api-key" placeholder="Cole sua chave de API aqui" style="width: 100%; padding: 8px; background: #0f0f1e; border: 1px solid #00d4ff; color: #00d4ff; border-radius: 4px; margin-top: 5px;">
+                        </div>
+                        <button class="btn" onclick="saveAPISettings()" style="width: 100%;">💾 Salvar Configurações</button>
+                    </div>
+
+                    <div style="background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 4px; border: 1px solid #00d4ff;">
+                        <h3 style="color: #00d4ff; margin-bottom: 10px;">📋 Informações</h3>
+                        <p style="color: #888; font-size: 12px; line-height: 1.6;">
+                            <strong>Iara Suite v2.0</strong> é um editor de código integrado com análise avançada de projetos.<br><br>
+                            <strong>Funcionalidades:</strong><br>
+                            ✓ Editor de código com preview em tempo real<br>
+                            ✓ Mapper avançado com análise de projetos<br>
+                            ✓ Detecção de bugs, APIs, funções e dependências<br>
+                            ✓ Geração de relatórios e exportação<br>
+                            ✓ Integração com IA (Claude, Gemini, OpenAI)<br>
+                            ✓ Persistência local com localStorage<br>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA CHAVES API -->
+    <div id="api-modal" class="modal">
+        <div class="modal-content">
+            <h2>🔑 Configurar Chaves de API</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="color: #888;">Provedor:</label>
+                <select id="modal-provider" style="width: 100%; padding: 8px; background: #0f0f1e; border: 1px solid #00d4ff; color: #00d4ff; border-radius: 4px; margin-top: 5px;">
+                    <option value="anthropic">Anthropic (Claude)</option>
+                    <option value="google">Google Gemini</option>
+                    <option value="openai">OpenAI Compatible</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="color: #888;">Chave de API:</label>
+                <input type="password" id="modal-api-key" placeholder="Cole sua chave de API" style="width: 100%; padding: 8px; background: #0f0f1e; border: 1px solid #00d4ff; color: #00d4ff; border-radius: 4px; margin-top: 5px;">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="saveModalAPI()" style="flex: 1;">💾 Salvar</button>
+                <button class="btn danger" onclick="closeAPIModal()" style="flex: 1;">❌ Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ ESTADO GLOBAL ============
+        let state = {
+            files: {},
+            currentFile: null,
+            previewMode: null,
+            projectAnalysis: null,
+            currentFilter: 'all',
+            tokenLimit: 8000,
+            apiConfig: {
+                provider: 'anthropic',
+                key: ''
+            }
+        };
+
+        // ============ INICIALIZAÇÃO ============
+        function init() {
+            loadFromStorage();
+            renderFileTree();
+            loadAPIConfig();
+        }
+
+        // ============ STORAGE ============
+        function saveToStorage() {
+            localStorage.setItem('iara-files', JSON.stringify(state.files));
+            localStorage.setItem('iara-current', state.currentFile);
+        }
+
+        function loadFromStorage() {
+            const files = localStorage.getItem('iara-files');
+            const current = localStorage.getItem('iara-current');
+            if (files) state.files = JSON.parse(files);
+            if (current) state.currentFile = current;
+        }
+
+        function saveAPIConfig() {
+            localStorage.setItem('iara-api', JSON.stringify(state.apiConfig));
+        }
+
+        function loadAPIConfig() {
+            const config = localStorage.getItem('iara-api');
+            if (config) state.apiConfig = JSON.parse(config);
+        }
+
+        // ============ NAVEGAÇÃO ============
+        function switchTab(tab) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ============ EDITOR - GERENCIAMENTO DE ARQUIVOS ============
+        function newFile() {
+            const name = prompt('Nome do arquivo:');
+            if (!name) return;
+            state.files[name] = '';
+            state.currentFile = name;
+            saveToStorage();
+            renderFileTree();
+            loadFile(name);
+        }
+
+        function newFolder() {
+            const name = prompt('Nome da pasta:');
+            if (!name) return;
+            const folderName = `[PASTA] ${name}`;
+            state.files[folderName] = '';
+            saveToStorage();
+            renderFileTree();
+        }
+
+        function loadFile(name) {
+            state.currentFile = name;
+            document.getElementById('code-editor').value = state.files[name] || '';
+            renderFileTree();
+            saveToStorage();
+            updatePreview();
+        }
+
+        function saveFile() {
+            if (state.currentFile) {
+                state.files[state.currentFile] = document.getElementById('code-editor').value;
+                saveToStorage();
+                updatePreview();
+            }
+        }
+
+        function renameFile() {
+            if (!state.currentFile) {
+                alert('Selecione um arquivo primeiro');
+                return;
+            }
+            const newName = prompt('Novo nome:', state.currentFile);
+            if (newName && newName !== state.currentFile) {
+                state.files[newName] = state.files[state.currentFile];
+                delete state.files[state.currentFile];
+                state.currentFile = newName;
+                saveToStorage();
+                renderFileTree();
+                loadFile(newName);
+            }
+        }
+
+        function deleteFile() {
+            if (!state.currentFile) {
+                alert('Selecione um arquivo primeiro');
+                return;
+            }
+            if (confirm(`Deletar "${state.currentFile}"?`)) {
+                delete state.files[state.currentFile];
+                state.currentFile = null;
+                document.getElementById('code-editor').value = '';
+                saveToStorage();
+                renderFileTree();
+            }
+        }
+
+        function renderFileTree() {
+            const tree = document.getElementById('file-tree');
+            tree.innerHTML = '';
+            Object.keys(state.files).forEach(name => {
+                const item = document.createElement('div');
+                item.className = `file-item ${name.startsWith('[PASTA]') ? 'folder' : 'file'} ${state.currentFile === name ? 'active' : ''}`;
+                item.textContent = name.replace('[PASTA] ', '');
+                item.onclick = () => loadFile(name);
+                tree.appendChild(item);
+            });
+        }
+
+        // ============ PREVIEW ============
+        function togglePreview(mode) {
+            const preview = document.getElementById('preview-wrap');
+            const divider = document.getElementById('ed-divider');
+            
+            if (state.previewMode === mode) {
+                state.previewMode = null;
+                preview.classList.remove('active');
+                divider.style.display = 'none';
+            } else {
+                state.previewMode = mode;
+                preview.classList.add('active');
+                divider.style.display = mode === 'split' ? 'block' : 'none';
+                updatePreview();
+            }
+        }
+
+        function updatePreview() {
+            if (!state.previewMode) return;
+            const content = document.getElementById('code-editor').value;
+            const frame = document.getElementById('preview-frame');
+            
+            try {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                doc.open();
+                doc.write(content);
+                doc.close();
+            } catch (e) {
+                console.error('Erro no preview:', e);
+            }
+        }
+
+        // ============ EXPORT ============
+        function downloadAsMarkdown() {
+            if (!state.currentFile) {
+                alert('Selecione um arquivo');
+                return;
+            }
+            const content = state.files[state.currentFile];
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = state.currentFile + '.md';
+            a.click();
+        }
+
+        function copyToClipboard() {
+            if (!state.currentFile) {
+                alert('Selecione um arquivo');
+                return;
+            }
+            navigator.clipboard.writeText(state.files[state.currentFile]).then(() => {
+                alert('Copiado!');
+            });
+        }
+
+        function exportProject() {
+            const content = JSON.stringify(state.files, null, 2);
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'projeto.json';
+            a.click();
+        }
+
+        // ============ MAPPER - ANÁLISE DE PROJETOS ============
+        async function handleZipUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const JSZip = window.JSZip || await loadJSZip();
+                const zip = new JSZip();
+                const loaded = await zip.loadAsync(file);
+                
+                const analysis = {
+                    files: [],
+                    folders: [],
+                    apis: [],
+                    functions: [],
+                    dependencies: [],
+                    bugs: [],
+                    conflicts: [],
+                    errors: [],
+                    tree: {}
+                };
+
+                for (const [path, fileObj] of Object.entries(loaded.files)) {
+                    if (fileObj.dir) {
+                        analysis.folders.push(path);
+                    } else {
+                        analysis.files.push(path);
+                        const content = await fileObj.async('text');
+                        analyzeFileContent(content, path, analysis);
+                    }
+                }
+
+                state.projectAnalysis = analysis;
+                displayAnalysis();
+                updateStats();
+            } catch (e) {
+                alert('Erro ao processar ZIP: ' + e.message);
+            }
+        }
+
+        function analyzeFileContent(content, path, analysis) {
+            // Detectar APIs
+            const apiRegex = /(?:fetch|axios|http|api|endpoint|route|@get|@post|@put|@delete)\s*\(|\/api\/|http:\/\/|https:\/\//gi;
+            const apis = content.match(apiRegex) || [];
+            apis.forEach(api => {
+                if (!analysis.apis.some(a => a.includes(api))) {
+                    analysis.apis.push({ file: path, api: api.trim() });
+                }
+            });
+
+            // Detectar funções
+            const funcRegex = /(?:function|const|let|var)\s+(\w+)\s*(?:=\s*)?(?:async\s+)?\(|async\s+(\w+)\s*\(|class\s+(\w+)/g;
+            let match;
+            while ((match = funcRegex.exec(content)) !== null) {
+                const funcName = match[1] || match[2] || match[3];
+                if (funcName && !analysis.functions.some(f => f.name === funcName && f.file === path)) {
+                    analysis.functions.push({ file: path, name: funcName });
+                }
+            }
+
+            // Detectar dependências
+            const depRegex = /(?:import|require)\s+(?:.*\s+)?from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+            while ((match = depRegex.exec(content)) !== null) {
+                const dep = match[1] || match[2];
+                if (dep && !analysis.dependencies.some(d => d === dep)) {
+                    analysis.dependencies.push(dep);
+                }
+            }
+
+            // Detectar bugs potenciais
+            const bugPatterns = [
+                { pattern: /console\.log/g, name: 'console.log em produção' },
+                { pattern: /TODO|FIXME|BUG|HACK/g, name: 'Comentários de aviso' },
+                { pattern: /any\s*[,\)]/g, name: 'Uso de "any" em TypeScript' },
+                { pattern: /\=\=/g, name: 'Comparação com == (usar ===)' },
+                { pattern: /var\s+/g, name: 'Uso de "var" (usar const/let)' }
+            ];
+
+            bugPatterns.forEach(({ pattern, name }) => {
+                if (pattern.test(content)) {
+                    if (!analysis.bugs.some(b => b.file === path && b.type === name)) {
+                        analysis.bugs.push({ file: path, type: name, severity: 'warning' });
+                    }
+                }
+            });
+
+            // Detectar erros
+            const errorPatterns = [
+                { pattern: /undefined/g, name: 'Referência a undefined' },
+                { pattern: /null\./g, name: 'Acesso a propriedade de null' },
+                { pattern: /\[\]/g, name: 'Array vazio sem inicialização' }
+            ];
+
+            errorPatterns.forEach(({ pattern, name }) => {
+                if (pattern.test(content)) {
+                    if (!analysis.errors.some(e => e.file === path && e.type === name)) {
+                        analysis.errors.push({ file: path, type: name, severity: 'error' });
+                    }
+                }
+            });
+        }
+
+        function analyzeProject() {
+            if (!state.projectAnalysis) {
+                alert('Importe um ZIP primeiro');
+                return;
+            }
+            displayAnalysis();
+        }
+
+        function displayAnalysis() {
+            const container = document.getElementById('mapper-content');
+            container.innerHTML = '';
+
+            const filtered = getFilteredAnalysis();
+
+            // Árvore de arquivos
+            if (filtered.tree !== false) {
+                const treeCard = createCard('📁 Estrutura do Projeto', 'tree');
+                const tree = buildFileTree(state.projectAnalysis.files, state.projectAnalysis.folders);
+                treeCard.querySelector('pre').textContent = tree;
+                container.appendChild(treeCard);
+            }
+
+            // APIs
+            if (filtered.apis && state.projectAnalysis.apis.length > 0) {
+                const card = createCard('🌐 APIs Detectadas', 'apis');
+                const content = state.projectAnalysis.apis.map(a => `${a.file}\n  → ${a.api}`).join('\n');
+                card.querySelector('pre').textContent = content;
+                container.appendChild(card);
+            }
+
+            // Funções
+            if (filtered.functions && state.projectAnalysis.functions.length > 0) {
+                const card = createCard('⚙️ Funções Encontradas', 'functions');
+                const content = state.projectAnalysis.functions.map(f => `${f.file}\n  → ${f.name}()`).join('\n');
+                card.querySelector('pre').textContent = content;
+                container.appendChild(card);
+            }
+
+            // Dependências
+            if (filtered.dependencies && state.projectAnalysis.dependencies.length > 0) {
+                const card = createCard('📦 Dependências', 'dependencies');
+                const content = state.projectAnalysis.dependencies.join('\n');
+                card.querySelector('pre').textContent = content;
+                container.appendChild(card);
+            }
+
+            // Bugs
+            if (filtered.bugs && state.projectAnalysis.bugs.length > 0) {
+                const card = createCard('🐛 Bugs Potenciais', 'bugs');
+                const content = state.projectAnalysis.bugs.map(b => `${b.file}\n  ⚠️ ${b.type}`).join('\n');
+                card.querySelector('pre').textContent = content;
+                container.appendChild(card);
+            }
+
+            // Erros
+            if (filtered.errors && state.projectAnalysis.errors.length > 0) {
+                const card = createCard('❌ Erros Encontrados', 'errors');
+                const content = state.projectAnalysis.errors.map(e => `${e.file}\n  ❌ ${e.type}`).join('\n');
+                card.querySelector('pre').textContent = content;
+                container.appendChild(card);
+            }
+
+            // Conflitos
+            if (filtered.conflicts && state.projectAnalysis.conflicts && state.projectAnalysis.conflicts.length > 0) {
+                const card = createCard('⚠️ Conflitos Detectados', 'conflicts');
+                const content = state.projectAnalysis.conflicts.join('\n');
+                card.querySelector('pre').textContent = content;
+                container.appendChild(card);
+            }
+        }
+
+        function createCard(title, type) {
+            const card = document.createElement('div');
+            card.className = 'analysis-card';
+            card.innerHTML = `
+                <h3>
+                    ${title}
+                    <button class="btn" style="font-size: 10px; padding: 4px 8px;" onclick="copyCardContent(this)">📋</button>
+                </h3>
+                <pre class="tree-${type}"></pre>
+            `;
+            return card;
+        }
+
+        function buildFileTree(files, folders, indent = '') {
+            let tree = '';
+            const grouped = {};
+
+            files.forEach(file => {
+                const parts = file.split('/');
+                const dir = parts.slice(0, -1).join('/') || 'root';
+                if (!grouped[dir]) grouped[dir] = [];
+                grouped[dir].push(parts[parts.length - 1]);
+            });
+
+            Object.keys(grouped).sort().forEach(dir => {
+                tree += `${indent}📁 ${dir}\n`;
+                grouped[dir].forEach(file => {
+                    tree += `${indent}  📄 ${file}\n`;
+                });
+            });
+
+            return tree;
+        }
+
+        function getFilteredAnalysis() {
+            const filter = state.currentFilter;
+            if (filter === 'all') {
+                return {
+                    tree: true,
+                    apis: true,
+                    functions: true,
+                    dependencies: true,
+                    bugs: true,
+                    errors: true,
+                    conflicts: true
+                };
+            }
+            return {
+                [filter]: true
+            };
+        }
+
+        function filterAnalysis(type) {
+            state.currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            displayAnalysis();
+        }
+
+        function updateStats() {
+            if (!state.projectAnalysis) return;
+            document.getElementById('stat-files').textContent = state.projectAnalysis.files.length;
+            document.getElementById('stat-folders').textContent = state.projectAnalysis.folders.length;
+            document.getElementById('stat-bugs').textContent = state.projectAnalysis.bugs.length;
+            document.getElementById('stat-apis').textContent = state.projectAnalysis.apis.length;
+            document.getElementById('stat-functions').textContent = state.projectAnalysis.functions.length;
+            document.getElementById('stat-deps').textContent = state.projectAnalysis.dependencies.length;
+        }
+
+        function generateReport() {
+            if (!state.projectAnalysis) {
+                alert('Analise um projeto primeiro');
+                return;
+            }
+
+            let report = `# 📊 Relatório de Análise do Projeto\n\n`;
+            report += `## 📈 Estatísticas\n`;
+            report += `- **Arquivos**: ${state.projectAnalysis.files.length}\n`;
+            report += `- **Pastas**: ${state.projectAnalysis.folders.length}\n`;
+            report += `- **Funções**: ${state.projectAnalysis.functions.length}\n`;
+            report += `- **APIs**: ${state.projectAnalysis.apis.length}\n`;
+            report += `- **Dependências**: ${state.projectAnalysis.dependencies.length}\n`;
+            report += `- **Bugs Potenciais**: ${state.projectAnalysis.bugs.length}\n`;
+            report += `- **Erros**: ${state.projectAnalysis.errors.length}\n\n`;
+
+            report += `## 🌐 APIs Detectadas\n\`\`\`\n`;
+            state.projectAnalysis.apis.forEach(a => {
+                report += `${a.file}: ${a.api}\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## ⚙️ Funções\n\`\`\`\n`;
+            state.projectAnalysis.functions.forEach(f => {
+                report += `${f.file}: ${f.name}()\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## 📦 Dependências\n\`\`\`\n`;
+            state.projectAnalysis.dependencies.forEach(d => {
+                report += `${d}\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## 🐛 Bugs Potenciais\n\`\`\`\n`;
+            state.projectAnalysis.bugs.forEach(b => {
+                report += `${b.file}: ${b.type}\n`;
+            });
+            report += `\`\`\`\n\n`;
+
+            report += `## ❌ Erros\n\`\`\`\n`;
+            state.projectAnalysis.errors.forEach(e => {
+                report += `${e.file}: ${e.type}\n`;
+            });
+            report += `\`\`\`\n`;
+
+            // Salvar em arquivo
+            const blob = new Blob([report], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'relatorio-analise.md';
+            a.click();
+
+            alert('Relatório gerado e baixado!');
+        }
+
+        function exportAnalysis() {
+            if (!state.projectAnalysis) {
+                alert('Analise um projeto primeiro');
+                return;
+            }
+            const json = JSON.stringify(state.projectAnalysis, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'analise-projeto.json';
+            a.click();
+        }
+
+        function sendToEditor() {
+            if (!state.projectAnalysis) {
+                alert('Analise um projeto primeiro');
+                return;
+            }
+
+            let content = `# 📊 Análise do Projeto\n\n`;
+            content += `## Estrutura\n\`\`\`\n${buildFileTree(state.projectAnalysis.files, state.projectAnalysis.folders)}\`\`\`\n\n`;
+            content += `## APIs\n\`\`\`\n${state.projectAnalysis.apis.map(a => `${a.file}: ${a.api}`).join('\n')}\`\`\`\n\n`;
+            content += `## Funções\n\`\`\`\n${state.projectAnalysis.functions.map(f => `${f.file}: ${f.name}()`).join('\n')}\`\`\`\n\n`;
+
+            const fileName = `analise-${Date.now()}.md`;
+            state.files[fileName] = content;
+            state.currentFile = fileName;
+            saveToStorage();
+            renderFileTree();
+            loadFile(fileName);
+            switchTab('editor');
+        }
+
+        function copyCardContent(btn) {
+            const pre = btn.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.textContent).then(() => {
+                const oldText = btn.textContent;
+                btn.textContent = '✓ Copiado';
+                setTimeout(() => { btn.textContent = oldText; }, 2000);
+            });
+        }
+
+        function updateTokenLimit() {
+            state.tokenLimit = parseInt(document.getElementById('token-limit').value);
+            alert(`Limite de tokens atualizado para ${state.tokenLimit}`);
+        }
+
+        // ============ API MODAL ============
+        function openAPIModal() {
+            document.getElementById('api-modal').classList.add('active');
+            document.getElementById('modal-provider').value = state.apiConfig.provider;
+            document.getElementById('modal-api-key').value = state.apiConfig.key;
+        }
+
+        function closeAPIModal() {
+            document.getElementById('api-modal').classList.remove('active');
+        }
+
+        function saveModalAPI() {
+            state.apiConfig.provider = document.getElementById('modal-provider').value;
+            state.apiConfig.key = document.getElementById('modal-api-key').value;
+            saveAPIConfig();
+            alert('Configurações salvas!');
+            closeAPIModal();
+        }
+
+        function saveAPISettings() {
+            state.apiConfig.provider = document.getElementById('ai-provider').value;
+            state.apiConfig.key = document.getElementById('api-key').value;
+            saveAPIConfig();
+            alert('Configurações salvas!');
+        }
+
+        // ============ UTILITÁRIOS ============
+        function clearAll() {
+            if (confirm('Limpar TUDO? Esta ação não pode ser desfeita!')) {
+                localStorage.clear();
+                state = { files: {}, currentFile: null, previewMode: null, projectAnalysis: null, currentFilter: 'all', tokenLimit: 8000, apiConfig: { provider: 'anthropic', key: '' } };
+                renderFileTree();
+                document.getElementById('code-editor').value = '';
+                alert('Tudo foi limpo!');
+            }
+        }
+
+        async function loadJSZip() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+                script.onload = () => resolve(window.JSZip);
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // ============ EVENT LISTENERS ============
+        document.getElementById('code-editor').addEventListener('input', saveFile);
+        document.getElementById('code-editor').addEventListener('input', updatePreview);
+
+        // Redimensionador
+        let isDragging = false;
+        document.getElementById('ed-divider').addEventListener('mousedown', () => {
+            isDragging = true;
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const editor = document.getElementById('code-editor');
+            const preview = document.getElementById('preview-wrap');
+            const container = editor.parentElement;
+            const rect = container.getBoundingClientRect();
+            const newWidth = e.clientX - rect.left;
+            editor.style.flex = `0 0 ${newWidth}px`;
+            preview.style.flex = '1';
+        });
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Inicializar
+        init();
+    </script>
+</body>
+</html>

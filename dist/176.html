@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#141414" />
+    <meta name="description" content="SK Editor v3 — Editor de código com IA, terminal e assistente jurídico" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="SK Editor" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>SK Editor v3</title>
+    <script type="module" crossorigin src="/assets/index-Cxjs0Gz5.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-lucide-f6q5Jl5b.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-vcInrQem.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monaco-CVROF3ma.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-C9Vd2Uh-.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      /* Registra o Service Worker que injeta COOP/COEP (exigido pelo WebContainer) */
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(function(reg) {
+          reg.addEventListener('updatefound', function() {
+            var sw = reg.installing;
+            sw.addEventListener('statechange', function() {
+              /* Primeira instalação: recarrega para ativar os headers COOP/COEP */
+              if (sw.state === 'installed' && !navigator.serviceWorker.controller) {
+                window.location.reload();
+              }
+            });
+          });
+        });
+        /* SW já ativo mas crossOriginIsolated ainda false → recarregar UMA vez */
+        if (navigator.serviceWorker.controller && !self.crossOriginIsolated) {
+          if (!sessionStorage.getItem('_sw_reloaded')) {
+            sessionStorage.setItem('_sw_reloaded', '1');
+            window.location.reload();
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

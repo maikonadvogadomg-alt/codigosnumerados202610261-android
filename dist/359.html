@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Conversão TJMG → Padronizado</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h2>Importar Excel do TJMG</h2>
+  <input type="file" id="fileInput" accept=".xlsx,.xls" />
+
+  <h3>Pré-visualização (dados brutos)</h3>
+  <pre id="preview"></pre>
+
+  <div>
+    <button onclick="mostrarTabela('original')">Ver Original</button>
+    <button onclick="mostrarTabela('competencia')">Ver Competência + Juros</button>
+    <button onclick="exportarTabela('excel')">Exportar Excel</button>
+    <button onclick="exportarTabela('csv')">Exportar CSV</button>
+  </div>
+
+  <div id="resultado"></div>
+
+  <script>
+    let dadosOriginal = [];
+    let dadosCompetencia = [];
+    let tabelaAtual = [];
+
+    const meses = {
+      "Janeiro": "01", "Fevereiro": "02", "Março": "03", "Abril": "04",
+      "Maio": "05", "Junho": "06", "Julho": "07", "Agosto": "08",
+      "Setembro": "09", "Outubro": "10", "Novembro": "11", "Dezembro": "12"
+    };
+
+    document.getElementById("fileInput").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(sheet);
+
+        // Mostra o bruto para conferência
+        document.getElementById("preview").textContent = JSON.stringify(json, null, 2);
+
+        // Original
+        dadosOriginal = json.map(row => ({
+          ANO: row["ANO"],
+          MÊS: row["MÊS"],
+          ÍNDICE: row["ÍNDICE"]
+        }));
+
+        // Competência + Juros
+        dadosCompetencia = json.map(row => {
+          const ano = row["ANO"];
+          const mes = meses[row["MÊS"]];
+          return {
+            COMPETÊNCIA: mes + "/" + ano,
+            JUROS: (parseFloat(row["ÍNDICE"]) * 100).toFixed(2) + "%"
+          };
+        });
+
+        mostrarTabela("original"); // mostra a primeira por padrão
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function mostrarTabela(tipo) {
+      let data, cols;
+      if (tipo === "original") {
+        data = dadosOriginal;
+        cols = ["ANO", "MÊS", "ÍNDICE"];
+      } else {
+        data = dadosCompetencia;
+        cols = ["COMPETÊNCIA", "JUROS"];
+      }
+      tabelaAtual = data;
+      renderizarTabela(data, cols);
+    }
+
+    function renderizarTabela(data, cols) {
+      const table = document.createElement("table");
+      table.border = "1";
+      const thead = document.createElement("thead");
+      const tr = document.createElement("tr");
+      cols.forEach(c => {
+        const th = document.createElement("th");
+        th.textContent = c;
+        tr.appendChild(th);
+      });
+      thead.appendChild(tr);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        cols.forEach(c => {
+          const td = document.createElement("td");
+          td.textContent = row[c];
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      document.getElementById("resultado").innerHTML = "";
+      document.getElementById("resultado").appendChild(table);
+    }
+
+    function exportarTabela(tipo) {
+      const ws = XLSX.utils.json_to_sheet(tabelaAtual);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Tabela");
+
+      if (tipo === "excel") {
+        XLSX.writeFile(wb, "tabela_convertida.xlsx");
+      } else {
+        XLSX.writeFile(wb, "tabela_convertida.csv");
+      }
+    }
+  </script>
+</body>
+</html>

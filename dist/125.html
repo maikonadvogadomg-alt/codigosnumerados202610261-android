@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor Visual</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #0d1117; color: #c9d1d9; height: 100vh; overflow: hidden; }
+.topbar { height: 50px; background: #161b22; border-bottom: 2px solid #1f6feb; display: flex; align-items: center; gap: 8px; padding: 0 12px; flex-wrap: wrap; }
+.topbar h1 { font-size: 16px; color: #1f6feb; flex: 1; }
+.btn { border: 0; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-weight: bold; background: #1f6feb; color: white; font-size: 12px; }
+.btn.green { background: #238636; }
+.btn.red { background: #da3633; }
+.container { display: grid; grid-template-columns: 1fr 1.5fr 1fr; height: calc(100vh - 50px); }
+.panel { display: flex; flex-direction: column; border-right: 1px solid #30363d; min-height: 0; }
+.panel-title { height: 40px; background: #0d1117; border-bottom: 1px solid #30363d; padding: 0 12px; font-size: 13px; display: flex; align-items: center; }
+.panel-content { flex: 1; overflow: auto; background: #0d1117; }
+textarea { width: 100%; height: 100%; border: 0; outline: 0; padding: 12px; background: #0d1117; color: #c9d1d9; font-family: monospace; font-size: 13px; resize: none; }
+.preview-wrap { flex: 1; background: white; position: relative; }
+iframe { width: 100%; height: 100%; border: 0; }
+.props { padding: 12px; overflow: auto; }
+.empty { color: #8b949e; padding: 12px; }
+.group { border-bottom: 1px solid #30363d; margin-bottom: 12px; padding-bottom: 12px; }
+.group h3 { color: #1f6feb; font-size: 12px; margin-bottom: 10px; text-transform: uppercase; }
+label { font-size: 11px; color: #8b949e; display: block; margin: 8px 0 4px; }
+input, select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: #c9d1d9; font-size: 12px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.selected-info { background: #161b22; border-left: 3px solid #1f6feb; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 12px; }
+.small-buttons { display: flex; gap: 6px; margin-top: 8px; }
+.small-buttons button { flex: 1; padding: 8px; font-size: 11px; border: 0; border-radius: 6px; background: #1f6feb; color: white; cursor: pointer; font-weight: bold; }
+.small-buttons button.red { background: #da3633; }
+.status { position: fixed; bottom: 12px; left: 12px; background: rgba(13,17,23,0.95); padding: 10px 14px; border-radius: 6px; font-size: 12px; border: 1px solid #30363d; }
+.btn-menu { display: none; width: 40px; height: 40px; justify-content: center; align-items: center; font-size: 20px; }
+
+@media (max-width: 1200px) {
+  .container { grid-template-columns: 1fr 1.2fr; }
+  .panel:last-child { display: none; }
+  .btn-menu { display: flex; }
+  .panel:last-child.show { display: flex; position: fixed; right: 0; top: 50px; width: 100%; max-width: 350px; height: calc(100vh-50px); z-index: 100; background: #0d1117; border-left: 1px solid #30363d; }
+}
+@media (max-width: 768px) {
+  .container { grid-template-columns: 1fr; }
+  .panel:first-child { display: none; }
+  .panel:first-child.show { display: flex; position: fixed; left: 0; top: 50px; width: 100%; height: calc(100vh-50px); z-index: 100; background: #0d1117; border-right: 1px solid #30363d; }
+  .panel:last-child.show { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>🐝 Editor Visual</h1>
+  <button class="btn btn-menu" onclick="toggleCodigo()">📝</button>
+  <button class="btn" onclick="colar()">📋 Colar</button>
+  <button class="btn green" onclick="renderizar()">▶ Ver</button>
+  <button class="btn" onclick="importar()">📂 Importar</button>
+  <button class="btn" onclick="copiar()">📄 Copiar</button>
+  <button class="btn" onclick="baixar()">💾 Baixar</button>
+  <button class="btn" onclick="desfazer()">↶ Desfazer</button>
+  <button class="btn red" onclick="limpar()">🗑 Limpar</button>
+  <button class="btn btn-menu" onclick="toggleProps()">⚙️</button>
+  <input id="file" type="file" accept=".html" style="display:none" onchange="lerArquivo(event)">
+</div>
+
+<div class="container">
+  <div class="panel">
+    <div class="panel-title">📝 Código</div>
+    <div class="panel-content"><textarea id="codigo"></textarea></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">👁️ Preview (clique nos elementos)</div>
+    <div class="preview-wrap"><iframe id="preview"></iframe></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">⚙️ Propriedades</div>
+    <div class="panel-content props" id="props"><div class="empty">Cole ou importe um código e clique em Ver.</div></div>
+  </div>
+</div>
+
+<div id="status" class="status">Pronto.</div>
+
+<script>
+const codigo = document.getElementById('codigo');
+const frame = document.getElementById('preview');
+const props = document.getElementById('props');
+let selecionado = null;
+let historico = [];
+
+const exemplo = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial;background:#667eea;color:white;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}.card{background:white;color:#333;padding:40px;border-radius:12px;text-align:center;max-width:400px}button{background:#1f6feb;color:white;border:0;padding:12px 30px;border-radius:6px;font-size:16px;cursor:pointer}</style></head><body><div class="card"><h1>Olá!</h1><p>Editor visual responsivo. Clique nos elementos.</p><button>Clique aqui</button></div></body></html>`;
+codigo.value = exemplo;
+
+function setStatus(msg){ document.getElementById('status').textContent = msg; setTimeout(()=>document.getElementById('status').textContent='Pronto.',3000); }
+
+function toggleCodigo(){ document.querySelector('.panel:first-child').classList.toggle('show'); }
+function toggleProps(){ document.querySelector('.panel:last-child').classList.toggle('show'); }
+
+function salvar(){ historico.push(codigo.value); if(historico.length>30) historico.shift(); }
+
+async function colar(){
+  try{ const t = await navigator.clipboard.readText(); if(t.trim()){ salvar(); codigo.value=t; renderizar(); setStatus('Colado!'); } }catch{ alert('Use Ctrl+V na caixa de código'); }
+}
+
+function importar(){ document.getElementById('file').click(); }
+function lerArquivo(e){ const arq=e.target.files[0]; if(!arq)return; const r=new FileReader(); r.onload=ev=>{salvar();codigo.value=ev.target.result;renderizar();setStatus('Importado!');}; r.readAsText(arq); }
+
+function renderizar(){
+  salvar();
+  selecionado=null;
+  props.innerHTML='<div class="empty">Clique em um elemento.</div>';
+  const doc=frame.contentDocument||frame.contentWindow.document;
+  doc.open(); doc.write(codigo.value); doc.close();
+  setTimeout(()=>prepararClique(doc),300);
+  setStatus('Atualizado!');
+}
+
+function prepararClique(doc){
+  const style=doc.createElement('style');
+  style.textContent=`.__hover{outline:2px dashed #ff9800!important} .__sel{outline:3px solid #1f6feb!important}`;
+  doc.head.appendChild(style);
+  doc.addEventListener('click',e=>{
+    e.preventDefault(); e.stopPropagation();
+    const el=e.target;
+    if(!el.tagName||['html','head','body'].includes(el.tagName.toLowerCase()))return;
+    if(selecionado)selecionado.classList.remove('__sel');
+    selecionado=el;
+    selecionado.classList.add('__sel');
+    montarProps(el,doc);
+    if(window.innerWidth<=768) document.querySelector('.panel:last-child').classList.add('show');
+  },true);
+}
+
+function montarProps(el,doc){
+  const cs=getComputedStyle(el);
+  props.innerHTML=`
+    <div class="selected-info"><b>&lt;${el.tagName.toLowerCase()}&gt;</b></div>
+    <div class="group"><h3>Texto</h3><textarea style="height:60px" oninput="editarTexto(this.value)">${el.innerText||''}</textarea></div>
+    <div class="group"><h3>Cores</h3><label>Texto</label><input type="color" value="${rgbHex(cs.color)}" oninput="editarEstilo('color',this.value)"><label>Fundo</label><input type="color" value="${rgbHex(cs.backgroundColor)}" oninput="editarEstilo('backgroundColor',this.value)"></div>
+    <div class="group"><h3>Tamanho</h3><div class="row2"><div><label>Largura</label><input value="${cs.width}" oninput="editarEstilo('width',this.value)"></div><div><label>Altura</label><input value="${cs.height}" oninput="editarEstilo('height',this.value)"></div></div></div>
+    <div class="group"><h3>Espaçamento</h3><label>Margem</label><input value="${cs.margin}" oninput="editarEstilo('margin',this.value)"><label>Padding</label><input value="${cs.padding}" oninput="editarEstilo('padding',this.value)"></div>
+    <div class="group"><h3>Ações</h3><div class="small-buttons"><button onclick="duplicar()">Duplicar</button><button class="red" onclick="remover()">Remover</button></div></div>`;
+}
+
+function editarTexto(v){ if(selecionado){selecionado.innerText=v; sincronizar();} }
+function editarEstilo(p,v){ if(selecionado){selecionado.style[p]=v; sincronizar();} }
+function duplicar(){ if(selecionado){const c=selecionado.cloneNode(true);selecionado.after(c);sincronizar();} }
+function remover(){ if(selecionado&&confirm('Remover?')){selecionado.remove();selecionado=null;props.innerHTML='<div class="empty">Removido.</div>';sincronizar();} }
+
+function sincronizar(){
+  const doc=frame.contentDocument||frame.contentWindow.document;
+  doc.querySelectorAll('.__sel,.__hover').forEach(e=>e.classList.remove('__sel','__hover'));
+  codigo.value='<!DOCTYPE html>\n'+doc.documentElement.outerHTML;
+  prepararClique(doc);
+  if(selecionado)selecionado.classList.add('__sel');
+}
+
+function copiar(){ navigator.clipboard.writeText(codigo.value).then(()=>setStatus('Copiado!')).catch(()=>alert('Use Ctrl+C')); }
+function baixar(){ const b=new Blob([codigo.value],{type:'text/html'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='editado.html'; a.click(); URL.revokeObjectURL(u); }
+function desfazer(){ if(historico.length){codigo.value=historico.pop();renderizar();} }
+function limpar(){ if(confirm('Limpar?')){salvar();codigo.value='';frame.srcdoc='';props.innerHTML='<div class="empty">Limpo.</div>';} }
+function rgbHex(rgb){ const m=rgb.match(/\d+/g); if(!m)return'#fff'; return '#'+m.slice(0,3).map(x=>parseInt(x).toString(16).padStart(2,'0')).join(''); }
+
+renderizar();
+</script>
+</body>
+</html>

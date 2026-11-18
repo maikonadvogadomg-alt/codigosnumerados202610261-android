@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Details & Summary — Expandir/Colapsar</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar {
+      width: 280px;
+      background: #222;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin: 16px 0 8px 0;
+      letter-spacing: 1px;
+    }
+
+    .menu-item {
+      padding: 10px 12px;
+      background: #333;
+      margin: 4px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover {
+      background: #444;
+    }
+
+    .menu-item.active {
+      background: #0066cc;
+      border-left-color: #0088ff;
+    }
+
+    /* ═══ MAIN ═══ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0088ff;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #333;
+    }
+
+    .description {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #ccc;
+      margin-bottom: 12px;
+    }
+
+    .code-block {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      overflow-x: auto;
+      font-family: monospace;
+      font-size: 12px;
+      color: #88ff88;
+      line-height: 1.6;
+    }
+
+    .demo-box {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+
+    .demo-box details {
+      margin-bottom: 12px;
+    }
+
+    .demo-box details:last-child {
+      margin-bottom: 0;
+    }
+
+    details {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    details[open] {
+      background: #333;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: #0088ff;
+      user-select: none;
+      padding: 8px;
+      margin: -8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    summary:hover {
+      background: #444;
+    }
+
+    details > *:not(summary) {
+      margin-top: 12px;
+      color: #ccc;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+
+    .table th {
+      background: #333;
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #444;
+      color: #0088ff;
+      font-weight: bold;
+    }
+
+    .table td {
+      padding: 10px;
+      border-bottom: 1px solid #444;
+    }
+
+    .table tr:hover {
+      background: #2a2a2a;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #0066cc;
+      color: white;
+      border-radius: 3px;
+      font-size: 10px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .box {
+      background: #333;
+      border-left: 4px solid #0088ff;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 12px 0;
+    }
+
+    .box-title {
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 6px;
+    }
+
+    .copy-btn {
+      padding: 6px 10px;
+      background: #0066cc;
+      border: none;
+      color: white;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 10px;
+      margin-top: 8px;
+    }
+
+    .copy-btn:hover {
+      background: #0077dd;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .example-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .example-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #444;
+    }
+
+    .example-list li:last-child {
+      border-bottom: none;
+    }
+
+    .example-list li strong {
+      color: #0088ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-title">📚 Tópicos</div>
+      
+      <div class="menu-item active" onclick="loadTopic('intro')">🎯 Introdução</div>
+      <div class="menu-item" onclick="loadTopic('what-is')">❓ O que é?</div>
+      <div class="menu-item" onclick="loadTopic('syntax')">💻 Sintaxe</div>
+      <div class="menu-item" onclick="loadTopic('examples')">📚 Exemplos</div>
+      <div class="menu-item" onclick="loadTopic('attributes')">🔧 Atributos</div>
+      <div class="menu-item" onclick="loadTopic('css')">🎨 Estilizar</div>
+      <div class="menu-item" onclick="loadTopic('javascript')">⚙️ JavaScript</div>
+      <div class="menu-item" onclick="loadTopic('use-cases')">💡 Casos de Uso</div>
+      <div class="menu-item" onclick="loadTopic('browser')">🌐 Compatibilidade</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="header">
+        <div class="header-title" id="pageTitle">🎯 Introdução</div>
+      </div>
+
+      <div class="content" id="pageContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT DATABASE
+    // ═══════════════════════════════════════════════════════════════
+
+    const topics = {
+      intro: {
+        title: '🎯 Introdução a &lt;details&gt; e &lt;summary&gt;',
+        content: `
+          <div class="section">
+            <div class="section-title">O que você vai aprender</div>
+            <ul class="example-list">
+              <li><strong>✓</strong> O que são &lt;details&gt; e &lt;summary&gt;</li>
+              <li><strong>✓</strong> Como usar para expandir/colapsar conteúdo</li>
+              <li><strong>✓</strong> Exemplos práticos</li>
+              <li><strong>✓</strong> Estilizar com CSS</li>
+              <li><strong>✓</strong> Controlar com JavaScript</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Analogia</div>
+            <div class="box">
+              <div class="box-title">📁 Pasta com Arquivos</div>
+              <div>
+                <p><strong>&lt;details&gt;</strong> = A pasta</p>
+                <p><strong>&lt;summary&gt;</strong> = O nome da pasta (sempre visível)</p>
+                <p><strong>Conteúdo</strong> = Arquivos dentro (aparecem ao abrir)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Exemplo Rápido</div>
+            <div class="code-block">
+&lt;details&gt;
+  &lt;summary&gt;Clique para expandir&lt;/summary&gt;
+  &lt;p&gt;Este conteúdo fica escondido até clicar!&lt;/p&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Demo ao Vivo</div>
+            <div class="demo-box">
+              <details>
+                <summary>📌 Clique para expandir</summary>
+                <p>Parabéns! Você expandiu o conteúdo!</p>
+                <p>Este é um exemplo de &lt;details&gt; e &lt;summary&gt; funcionando.</p>
+              </details>
+            </div>
+          </div>
+        `
+      },
+
+      'what-is': {
+        title: '❓ O que é &lt;details&gt; e &lt;summary&gt;?',
+        content: `
+          <div class="section">
+            <div class="section-title">Definição</div>
+            <div class="description">
+              <strong>&lt;details&gt;</strong> é um elemento HTML que cria um contêiner expansível/colapsável.
+              <br><br>
+              <strong>&lt;summary&gt;</strong> é o título que aparece sempre e é clicável para expandir/colapsar.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Características</div>
+            <table class="table">
+              <tr>
+                <th>Aspecto</th>
+                <th>Descrição</th>
+              </tr>
+              <tr>
+                <td>Expansível</td>
+                <td>Clique para expandir/colapsar</td>
+              </tr>
+              <tr>
+                <td>Sem JavaScript</td>
+                <td>Funciona nativamente no navegador</td>
+              </tr>
+              <tr>
+                <td>Semântico</td>
+                <td>HTML semântico e acessível</td>
+              </tr>
+              <tr>
+                <td>Animável</td>
+                <td>Pode ser estilizado com CSS</td>
+              </tr>
+              <tr>
+                <td>Controlável</td>
+                <td>Pode ser controlado com JavaScript</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Quando Usar</div>
+            <ul class="example-list">
+              <li><strong>FAQ</strong> - Perguntas e respostas</li>
+              <li><strong>Acordeão</strong> - Múltiplos painéis</li>
+              <li><strong>Menu</strong> - Submenu expansível</li>
+              <li><strong>Documentação</strong> - Seções colapsáveis</li>
+              <li><strong>Termos</strong> - Expandir definições</li>
+            </ul>
+          </div>
+        `
+      },
+
+      syntax: {
+        title: '💻 Sintaxe Básica',
+        content: `
+          <div class="section">
+            <div class="section-title">Estrutura Básica</div>
+            <div class="code-block">
+&lt;details&gt;
+  &lt;summary&gt;Título aqui&lt;/summary&gt;
+  &lt;p&gt;Conteúdo que fica escondido&lt;/p&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Com Atributo open</div>
+            <div class="code-block">
+&lt;!-- Começa expandido --&gt;
+&lt;details open&gt;
+  &lt;summary&gt;Já está aberto&lt;/summary&gt;
+  &lt;p&gt;Este conteúdo já aparece por padrão&lt;/p&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Conteúdo Complexo</div>
+            <div class="code-block">
+&lt;details&gt;
+  &lt;summary&gt;Mais informações&lt;/summary&gt;
+  
+  &lt;h3&gt;Título&lt;/h3&gt;
+  &lt;p&gt;Parágrafo&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;Item 1&lt;/li&gt;
+    &lt;li&gt;Item 2&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;img src="imagem.jpg" alt="Imagem"&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Demo - Expandido por Padrão</div>
+            <div class="demo-box">
+              <details open>
+                <summary>📂 Este já está aberto</summary>
+                <p>Veja que este &lt;details&gt; tem o atributo <strong>open</strong></p>
+                <p>Por isso ele já começa expandido!</p>
+              </details>
+            </div>
+          </div>
+        `
+      },
+
+      examples: {
+        title: '📚 Exemplos Práticos',
+        content: `
+          <div class="section">
+            <div class="section-title">Exemplo 1: FAQ Simples</div>
+            <div class="code-block">
+&lt;details&gt;
+  &lt;summary&gt;Como faço para resetar minha senha?&lt;/summary&gt;
+  &lt;p&gt;Clique em "Esqueci minha senha" na página de login e siga as instruções.&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;Qual é o horário de atendimento?&lt;/summary&gt;
+  &lt;p&gt;Atendemos de segunda a sexta, das 9h às 18h.&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;Vocês entregam em todo o Brasil?&lt;/summary&gt;
+  &lt;p&gt;Sim! Entregamos em todo o Brasil em até 5 dias úteis.&lt;/p&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Exemplo 2: Documentação</div>
+            <div class="code-block">
+&lt;h2&gt;Guia de Instalação&lt;/h2&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;Windows&lt;/summary&gt;
+  &lt;ol&gt;
+    &lt;li&gt;Baixe o instalador&lt;/li&gt;
+    &lt;li&gt;Execute o arquivo .exe&lt;/li&gt;
+    &lt;li&gt;Siga os passos&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;Mac&lt;/summary&gt;
+  &lt;ol&gt;
+    &lt;li&gt;Baixe o arquivo .dmg&lt;/li&gt;
+    &lt;li&gt;Abra e arraste para Applications&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;Linux&lt;/summary&gt;
+  &lt;code&gt;sudo apt-get install meu-app&lt;/code&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Demo - FAQ Completo</div>
+            <div class="demo-box">
+              <details>
+                <summary>❓ Como funciona este site?</summary>
+                <p>Este é um site de documentação em português que explica HTML, CSS e JavaScript de forma simples.</p>
+              </details>
+
+              <details>
+                <summary>💰 Quanto custa?</summary>
+                <p>É totalmente gratuito! Você pode usar livremente.</p>
+              </details>
+
+              <details>
+                <summary>🔒 Meus dados são seguros?</summary>
+                <p>Sim, usamos criptografia SSL e não armazenamos dados pessoais.</p>
+              </details>
+
+              <details>
+                <summary>📱 Funciona em celular?</summary>
+                <p>Sim! É totalmente responsivo e funciona em qualquer dispositivo.</p>
+              </details>
+            </div>
+          </div>
+        `
+      },
+
+      attributes: {
+        title: '🔧 Atributos',
+        content: `
+          <div class="section">
+            <div class="section-title">Atributo: open</div>
+            <div class="description">
+              Faz o &lt;details&gt; começar expandido por padrão.
+            </div>
+            <div class="code-block">
+&lt;details open&gt;
+  &lt;summary&gt;Já está aberto&lt;/summary&gt;
+  &lt;p&gt;Conteúdo visível por padrão&lt;/p&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Atributo: id</div>
+            <div class="description">
+              Identifica o elemento para CSS e JavaScript.
+            </div>
+            <div class="code-block">
+&lt;details id="meu-details"&gt;
+  &lt;summary&gt;Clique aqui&lt;/summary&gt;
+  &lt;p&gt;Conteúdo&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;script&gt;
+const details = document.getElementById('meu-details');
+console.log(details.open); // true ou false
+&lt;/script&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Atributo: class</div>
+            <div class="description">
+              Aplica estilos CSS ao elemento.
+            </div>
+            <div class="code-block">
+&lt;details class="faq-item"&gt;
+  &lt;summary&gt;Pergunta&lt;/summary&gt;
+  &lt;p&gt;Resposta&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;style&gt;
+.faq-item {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px 0;
+}
+&lt;/style&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Resumo de Atributos</div>
+            <table class="table">
+              <tr>
+                <th>Atributo</th>
+                <th>Descrição</th>
+                <th>Exemplo</th>
+              </tr>
+              <tr>
+                <td>open</td>
+                <td>Começa expandido</td>
+                <td>&lt;details open&gt;</td>
+              </tr>
+              <tr>
+                <td>id</td>
+                <td>Identificador único</td>
+                <td>&lt;details id="faq1"&gt;</td>
+              </tr>
+              <tr>
+                <td>class</td>
+                <td>Classe CSS</td>
+                <td>&lt;details class="item"&gt;</td>
+              </tr>
+              <tr>
+                <td>style</td>
+                <td>Estilos inline</td>
+                <td>&lt;details style="color: blue;"&gt;</td>
+              </tr>
+            </table>
+          </div>
+        `
+      },
+
+      css: {
+        title: '🎨 Estilizar com CSS',
+        content: `
+          <div class="section">
+            <div class="section-title">Estilo Básico</div>
+            <div class="code-block">
+details {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: bold;
+  color: #0066cc;
+}
+
+summary:hover {
+  background: #f0f0f0;
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Estilo Avançado com Transição</div>
+            <div class="code-block">
+details {
+  border: 2px solid #0066cc;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+  background: #f9f9f9;
+}
+
+details[open] {
+  background: #e6f2ff;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: bold;
+  color: #0066cc;
+  user-select: none;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+summary:hover {
+  background: #0066cc;
+  color: white;
+}
+
+details > *:not(summary) {
+  margin-top: 12px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Demo - Estilizado</div>
+            <div class="demo-box">
+              <details>
+                <summary>🎨 Veja este exemplo estilizado</summary>
+                <p>Este &lt;details&gt; tem estilos CSS aplicados!</p>
+                <p>Veja como fica mais bonito com CSS.</p>
+              </details>
+            </div>
+          </div>
+        `
+      },
+
+      javascript: {
+        title: '⚙️ Controlar com JavaScript',
+        content: `
+          <div class="section">
+            <div class="section-title">Verificar se está aberto</div>
+            <div class="code-block">
+const details = document.getElementById('meu-details');
+
+if (details.open) {
+  console.log('Está aberto');
+} else {
+  console.log('Está fechado');
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Abrir/Fechar Programaticamente</div>
+            <div class="code-block">
+const details = document.getElementById('meu-details');
+
+// Abrir
+details.open = true;
+
+// Fechar
+details.open = false;
+
+// Toggle (alternar)
+details.open = !details.open;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Evento toggle</div>
+            <div class="code-block">
+const details = document.getElementById('meu-details');
+
+details.addEventListener('toggle', function() {
+  if (this.open) {
+    console.log('Abriu!');
+  } else {
+    console.log('Fechou!');
+  }
+});
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Fechar todos menos um</div>
+            <div class="code-block">
+const detailsList = document.querySelectorAll('details');
+
+detailsList.forEach(detail => {
+  detail.addEventListener('toggle', function() {
+    if (this.open) {
+      // Fechar todos os outros
+      detailsList.forEach(other => {
+        if (other !== this) {
+          other.open = false;
+        }
+      });
+    }
+  });
+});
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Exemplo Completo</div>
+            <div class="code-block">
+&lt;details id="faq1"&gt;
+  &lt;summary&gt;Pergunta 1&lt;/summary&gt;
+  &lt;p&gt;Resposta 1&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;details id="faq2"&gt;
+  &lt;summary&gt;Pergunta 2&lt;/summary&gt;
+  &lt;p&gt;Resposta 2&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;script&gt;
+// Acordeão: fechar outros ao abrir um
+const detailsList = document.querySelectorAll('details');
+
+detailsList.forEach(detail => {
+  detail.addEventListener('toggle', function() {
+    if (this.open) {
+      detailsList.forEach(other => {
+        if (other !== this) other.open = false;
+      });
+    }
+  });
+});
+&lt;/script&gt;
+            </div>
+          </div>
+        `
+      },
+
+      'use-cases': {
+        title: '💡 Casos de Uso',
+        content: `
+          <div class="section">
+            <div class="section-title">1️⃣ FAQ (Perguntas Frequentes)</div>
+            <div class="description">
+              Perguntas e respostas que o usuário pode expandir conforme necessário.
+            </div>
+            <div class="code-block">
+&lt;h2&gt;Perguntas Frequentes&lt;/h2&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;Como faço para cancelar minha assinatura?&lt;/summary&gt;
+  &lt;p&gt;Você pode cancelar a qualquer momento na página de configurações.&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;Vocês oferecem suporte 24/7?&lt;/summary&gt;
+  &lt;p&gt;Sim, nosso suporte está disponível 24 horas por dia, 7 dias por semana.&lt;/p&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">2️⃣ Menu Acordeão</div>
+            <div class="description">
+              Menu com submenu que expande/colapsa ao clicar.
+            </div>
+            <div class="code-block">
+&lt;details&gt;
+  &lt;summary&gt;📁 Produtos&lt;/summary&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;a href="#"&gt;Eletrônicos&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;Roupas&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;Livros&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;📁 Suporte&lt;/summary&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;a href="#"&gt;Contato&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;FAQ&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#"&gt;Documentação&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">3️⃣ Documentação Técnica</div>
+            <div class="description">
+              Documentação com seções colapsáveis para melhor organização.
+            </div>
+            <div class="code-block">
+&lt;h2&gt;Documentação da API&lt;/h2&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;GET /usuarios&lt;/summary&gt;
+  &lt;p&gt;&lt;strong&gt;Descrição:&lt;/strong&gt; Retorna lista de usuários&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Resposta:&lt;/strong&gt;&lt;/p&gt;
+  &lt;code&gt;[{ "id": 1, "nome": "João" }]&lt;/code&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;POST /usuarios&lt;/summary&gt;
+  &lt;p&gt;&lt;strong&gt;Descrição:&lt;/strong&gt; Cria um novo usuário&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Corpo:&lt;/strong&gt;&lt;/p&gt;
+  &lt;code&gt;{ "nome": "Maria", "email": "maria@email.com" }&lt;/code&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">4️⃣ Termos e Condições</div>
+            <div class="description">
+              Expandir seções de termos sem poluir a página.
+            </div>
+            <div class="code-block">
+&lt;h2&gt;Termos de Serviço&lt;/h2&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;1. Aceitação dos Termos&lt;/summary&gt;
+  &lt;p&gt;Ao usar este serviço, você concorda com todos os termos...&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;2. Responsabilidades do Usuário&lt;/summary&gt;
+  &lt;p&gt;O usuário é responsável por manter a confidencialidade...&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;3. Limitação de Responsabilidade&lt;/summary&gt;
+  &lt;p&gt;Em nenhuma circunstância seremos responsáveis...&lt;/p&gt;
+&lt;/details&gt;
+            </div>
+          </div>
+        `
+      },
+
+      browser: {
+        title: '🌐 Compatibilidade com Navegadores',
+        content: `
+          <div class="section">
+            <div class="section-title">Suporte</div>
+            <table class="table">
+              <tr>
+                <th>Navegador</th>
+                <th>Versão</th>
+                <th>Suporte</th>
+              </tr>
+              <tr>
+                <td>Chrome</td>
+                <td>12+</td>
+                <td>✅ Completo</td>
+              </tr>
+              <tr>
+                <td>Firefox</td>
+                <td>49+</td>
+                <td>✅ Completo</td>
+              </tr>
+              <tr>
+                <td>Safari</td>
+                <td>15.1+</td>
+                <td>✅ Completo</td>
+              </tr>
+              <tr>
+                <td>Edge</td>
+                <td>79+</td>
+                <td>✅ Completo</td>
+              </tr>
+              <tr>
+                <td>Opera</td>
+                <td>15+</td>
+                <td>✅ Completo</td>
+              </tr>
+              <tr>
+                <td>Internet Explorer</td>
+                <td>Todas</td>
+                <td>❌ Não suporta</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Polyfill para IE</div>
+            <div class="description">
+              Se você precisa suportar Internet Explorer, use um polyfill:
+            </div>
+            <div class="code-block">
+&lt;script src="https://cdn.jsdelivr.net/npm/details-polyfill@1/index.min.js"&gt;&lt;/script&gt;
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Verificar Suporte</div>
+            <div class="code-block">
+// Verificar se o navegador suporta &lt;details&gt;
+if ('open' in document.createElement('details')) {
+  console.log('Navegador suporta &lt;details&gt;');
+} else {
+  console.log('Navegador NÃO suporta &lt;details&gt;');
+}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Dica</div>
+            <div class="box">
+              <div class="box-title">✅ Use sem medo!</div>
+              <div>
+                <p>&lt;details&gt; e &lt;summary&gt; são bem suportados em navegadores modernos.</p>
+                <p>Se você precisa suportar IE, use um polyfill ou uma alternativa com JavaScript.</p>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function loadTopic(topicId) {
+      const topic = topics[topicId];
+      
+      document.getElementById('pageTitle').textContent = topic.title;
+      document.getElementById('pageContent').innerHTML = topic.content;
+
+      // Update active menu item
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTopic('intro');
+    });
+  </script>
+</body>
+</html>

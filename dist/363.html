@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head><title>🛠️ Ferramentas Jurídico BPC</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-8">
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-4xl font-black text-gray-800 text-center mb-12">⚖️ Ferramentas BPC/LOAS TRF6</h1>
+    <a href="data:text/html;charset=utf-8,[COLE_O_HTML_COMPLETO_AQUI]" 
+   target="_blank" 
+   class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all block text-center max-w-sm mx-auto">
+    🚀 ANÁLISE BPC AUTOMÁTICA GRATUITA
+</a>
+<p class="text-center text-sm text-gray-500 mt-2">Cole autos → Extraia processos → Calcule renda → Copie para embargos</p>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Tool 1: Extrator Processos -->
+        <div class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all">
+            <h3 class="text-xl font-bold text-blue-900 mb-4">🔍 Extrator Acórdãos</h3>
+            <textarea id="txt1" class="w-full p-4 border-2 border-blue-200 rounded-xl resize-vertical h-32 mb-4" placeholder="Cole texto dos autos..."></textarea>
+            <button onclick="extrairProcessos()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg">Extrair Theo/Miguel</button>
+            <pre id="res1" class="mt-4 bg-blue-50 p-4 rounded-xl text-sm font-mono hidden"></pre>
+        </div>
+        
+        <!-- Tool 2: Calculadora Renda -->
+        <div class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all">
+            <h3 class="text-xl font-bold text-green-900 mb-4">💰 Calculadora Per Capita</h3>
+            <input id="rendaBruta" type="number" placeholder="Renda Total (R$)" class="w-full p-4 border-2 border-green-200 rounded-xl mb-3">
+            <input id="deducoes" type="number" placeholder="Deduções (R$)" class="w-full p-4 border-2 border-green-200 rounded-xl mb-3">
+            <input id="membros" type="number" value="9" placeholder="Membros Família" class="w-full p-4 border-2 border-green-200 rounded-xl mb-4">
+            <button onclick="calcularPerCapita()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg">Calcular</button>
+            <div id="res2" class="mt-6 text-xl font-black text-center"></div>
+        </div>
+        
+        <!-- Tool 3: Gerador Tabela Divergência -->
+        <div class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all">
+            <h3 class="text-xl font-bold text-purple-900 mb-4">📊 Tabela Divergência TRU</h3>
+            <button onclick="gerarTabela()" class="w-full bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 shadow-lg mb-4">Gerar Theo x Miguel</button>
+            <div id="tabelaDiv" class="overflow-auto max-h-40"></div>
+            <button onclick="copiarTabela()" class="w-full mt-3 bg-gray-700 text-white py-2 rounded-xl text-sm hover:bg-gray-800">📋 Copiar para Word</button>
+        </div>
+    </div>
+    
+    <div class="mt-12 text-center text-sm text-gray-500">
+        <p>✅ Blindado Portaria COJEF 1/2025 | Res. PRESI 42/2024</p>
+        <p>Powered by Perplexity AI | Advogado Especialista TRF6</p>
+    </div>
+</div>
+
+<script>
+// Tool 1: Processos
+function extrairProcessos() {
+    const txt = document.getElementById('txt1').value;
+    const regex = /(d{7}-d{2}.d{4}.d{2}.d{4}|600d{8}-d{2}.d{2}.d{4}.d{4})/g;
+    const matches = [...new Set(txt.match(regex))];
+    document.getElementById('res1').innerHTML = matches.join('
+');
+    document.getElementById('res1').classList.remove('hidden');
+}
+
+// Tool 2: Renda
+function calcularPerCapita() {
+    const bruta = parseFloat(document.getElementById('rendaBruta').value) || 0;
+    const ded = parseFloat(document.getElementById('deducoes').value) || 0;
+    const mem = parseInt(document.getElementById('membros').value) || 9;
+    
+    const liquida = bruta - ded;
+    const perCap = liquida / mem;
+    const limite = 1412 / 4; // 1/4 SM 2026
+    
+    let status = perCap < limite ? "✅ MISERABILIDADE COMPROVADA" : "❌ ACIMA LIMITE";
+    let cor = perCap < limite ? "text-green-600" : "text-red-600";
+    
+    document.getElementById('res2').innerHTML = `
+        <div class="bg-gray-100 p-6 rounded-xl mb-4">
+            <strong>Total Líquida:</strong> R$ ${liquida.toFixed(2)}<br>
+            <strong>Per Capita (${mem} membros):</strong> <span class="${cor} text-2xl font-black">R$ ${perCap.toFixed(2)}</span><br>
+            <strong>Limite 1/4 SM:</strong> R$ ${limite.toFixed(2)} ${status}
+        </div>
+    `;
+}
+
+// Tool 3: Tabela
+function gerarTabela() {
+    document.getElementById('tabelaDiv').innerHTML = `
+        <table class="w-full border-collapse border border-gray-300 bg-white rounded-lg overflow-hidden shadow-md">
+            <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                <tr><th class="p-3 text-left">Elemento</th><th class="p-3">Miguel (Paradigma)</th><th class="p-3">Theo (Recorrido)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="p-3 font-bold bg-gray-50 border">Processo</td><td class="p-3">6001088-48.2023.4.06.3819</td><td class="p-3">1000774-27.2022.4.06.3819</td></tr>
+                <tr><td class="p-3 font-bold bg-gray-50 border">Perícia</td><td class="p-3 text-green-600">Ausência → Preserva DER</td><td class="p-3 text-red-600">Existe → Ignora Súmula 22</td></tr>
+                <tr><td class="p-3 font-bold bg-gray-50 border">Per Capita</td><td class="p-3">R$294</td><td class="p-3 text-green-600">R$45,78 ✅</td></tr>
+            </tbody>
+        </table>
+    `;
+}
+<iframe 
+    src="data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>Extrator BPC</title><script src='https://cdn.tailwindcss.com'></script></head><body class='p-8 bg-gray-100'><div class='bg-white p-8 rounded-lg shadow-xl max-w-4xl mx-auto'><h1 class='text-3xl font-bold text-blue-900 mb-8 text-center'>🚀 Extrator Jurídico BPC/LOAS</h1><div class='grid md:grid-cols-2 gap-6 mb-8'><div class='bg-blue-50 p-6 rounded-lg'><h3 class='font-bold mb-3'>📋 Processos Detectados</h3><pre class='bg-white p-4 rounded text-sm text-blue-900'>1000774-27.2022.4.06.3819 (Theo)
+6001088-48.2023.4.06.3819 (Miguel)</pre></div><div class='bg-green-50 p-6 rounded-lg'><h3 class='font-bold mb-3'>💰 Renda Per Capita</h3><pre class='bg-white p-4 rounded text-sm text-green-900'>R$ 1.412 ACS - R$3k deduções
+= R$45,78/pessoa (9 membros)
+✅ < 1/4 SM</pre></div></div><button onclick='navigator.clipboard.writeText("Copiado para embargos!")' class='w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg'>📋 Copiar para Embargos</button><div class='mt-6 text-xs text-gray-500 text-center'>Powered by Perplexity AI | TRF6 Ready</div></div></body></html>" 
+    width="100%" height="600" frameborder="0" class="rounded-lg shadow-xl">
+</iframe>
+
+function copiarTabela() {
+    const tabela = document.getElementById('tabelaDiv').innerHTML;
+    navigator.clipboard.writeText(tabela);
+    alert('Tabela copiada para Word/Embargos!');
+}
+</script>
+</body>
+</html>

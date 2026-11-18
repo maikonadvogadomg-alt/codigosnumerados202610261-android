@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerador de Cotejo Analítico (BPC/LOAS) — Export Word/Excel/JSON</title>
+
+  <!-- Export Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Export Word (DOCX) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+
+  <!-- Save files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <style>
+    /* ====== GERAL ====== */
+    * { box-sizing: border-box; }
+    body { font-family: "Segoe UI", Arial, sans-serif; background:#e9ecef; color:#333; margin:0; padding:20px; }
+    .muted { color:#666; font-size:12px; }
+
+    /* ====== IMPRESSÃO (CORREÇÃO A4) ======
+       Problema comum: usar .folha com width fixo + padding + margens do navegador => "estoura" A4.
+       Correção:
+       - @page define tamanho e margens reais do PDF
+       - na impressão, .folha vira "fluida": width:auto e padding:0 (quem dá o respiro é a margem da página)
+       - tabela reduz fonte e permite quebra agressiva para não vazar
+    */
+    @media print {
+      .painel-controle, .btn-remove, .btn-export, .nao-imprimir { display:none !important; }
+      body { background:white; padding:0; margin:0; }
+      @page { size: A4; margin: 15mm; }
+      .folha {
+        width: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+      .tabela-cotejo { font-size: 9pt !important; }
+      .tabela-cotejo th, .tabela-cotejo td { padding: 6px !important; }
+    }
+
+    /* ====== PAINEL DE CONTROLE ====== */
+    .painel-controle {
+      background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,.1);
+      max-width:1100px; margin:0 auto 30px auto; border-top:5px solid #2c3e50;
+    }
+    .painel-controle h2 { margin:0 0 10px 0; color:#2c3e50; border-bottom:2px solid #eee; padding-bottom:10px; font-size:18px; }
+
+    .grid-header { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:15px; }
+    .grid-inputs {
+      display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; align-items:end;
+      background:#f8f9fa; padding:15px; border-radius:6px; border:1px solid #ddd;
+    }
+
+    label { display:block; font-weight:700; margin-bottom:4px; font-size:12px; color:#555; }
+    input, textarea { width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:13px; }
+    textarea { resize: vertical; height: 64px; }
+
+    .input-theo { border-left:4px solid #c0392b; }
+    .input-paradigma1 { border-left:4px solid #27ae60; }
+    .input-paradigma2 { border-left:4px solid #2980b9; }
+    .full-width { grid-column: 1 / -1; }
+
+    /* ====== BOTÕES ====== */
+    button { padding:10px 12px; border:none; cursor:pointer; font-size:14px; border-radius:4px; font-weight:700; color:white; transition:.15s; }
+    .btn-add { background:#2c3e50; width:100%; margin-top:10px; }
+    .btn-add:hover { background:#1a252f; }
+    .btn-clear { background:#c0392b; }
+    .btn-clear:hover { background:#a93226; }
+    .btn-print { background:#e67e22; }
+    .btn-print:hover { background:#cf6d17; }
+
+    .btn-export { background:#16a085; }
+    .btn-export:hover { background:#138a73; }
+
+    .btn-remove { background:transparent; color:#c0392b; font-size:18px; padding:0; margin-left:8px; }
+
+    .top-actions { display:flex; gap:10px; justify-content:flex-end; margin-bottom:10px; flex-wrap:wrap; }
+    .top-actions button { min-width: 150px; }
+
+    /* ====== "FOLHA A4" (VISUALIZAÇÃO) ====== */
+    .folha {
+      background:white;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm;
+      margin: 0 auto;
+      box-shadow: 0 0 15px rgba(0,0,0,.1);
+      position: relative;
+      text-align: justify;
+      line-height: 1.5;
+      font-size: 12pt;
+    }
+
+    /* ====== TABELA ====== */
+    .tabela-cotejo {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:20px;
+      font-size:10pt;
+      table-layout: fixed; /* mantém colunas dentro da largura */
+    }
+    .tabela-cotejo th, .tabela-cotejo td {
+      border:1px solid #000;
+      padding:8px;
+      vertical-align:top;
+      overflow-wrap:anywhere; /* chave para não estourar */
+      word-break: break-word;
+    }
+
+    .th-criterio { background:#34495e; color:#fff; width:15%; }
+    .th-divergente { background:#c0392b; color:#fff; width:28.33%; }
+    .th-paradigma1 { background:#27ae60; color:#fff; width:28.33%; }
+    .th-paradigma2 { background:#2980b9; color:#fff; width:28.33%; }
+
+    .doc-ref {
+      display:block; font-size:8.5pt; color:#555; margin-top:6px; font-style:italic;
+      background:#eee; padding:2px 4px; border-radius:3px;
+    }
+
+    .violacao-row td {
+      background:#fff3cd;
+      color:#856404;
+      font-size:9pt;
+      font-weight:800;
+      text-align:center;
+      border-bottom:2px solid #333;
+    }
+
+    .assinatura { margin-top:50px; text-align:center; }
+  </style>
+</head>
+
+<body>
+
+<div class="painel-controle">
+  <div class="top-actions">
+    <button class="btn-print" onclick="window.print()">🖨️ Salvar PDF (Impressão)</button>
+    <button class="btn-export" onclick="exportarWord()">📄 Exportar Word</button>
+    <button class="btn-export" onclick="exportarExcel()">📊 Exportar Excel</button>
+    <button class="btn-export" onclick="exportarJSON()">🧾 Exportar JSON</button>
+    <button class="btn-clear" onclick="limparTabela()">🗑️ Limpar Tabela</button>
+  </div>
+
+  <h2>1. Dados dos Processos (BPC/LOAS)</h2>
+  <div class="grid-header">
+    <div>
+      <label>Processo Recorrido (Theo):</label>
+      <input type="text" id="headerTheo"
+             value="Proc. nº 6002755-35.2024.4.06.3819 (Theo Pyerre Dias de Oliveira)"
+             onkeyup="atualizarCabecalhos()" />
+    </div>
+    <div>
+      <label>Paradigma 1 (Miguel):</label>
+      <input type="text" id="headerP1"
+             value="Proc. nº 1001321-33.2023.4.06.3819 (Miguel de Paiva Oliveira)"
+             onkeyup="atualizarCabecalhos()" />
+    </div>
+    <div>
+      <label>Paradigma 2 (Reforço/Outro):</label>
+      <input type="text" id="headerP2"
+             value="(Opcional) — informe processo/precedente"
+             onkeyup="atualizarCabecalhos()" />
+    </div>
+  </div>
+
+  <p class="muted">
+    Sugestão de critérios (caso BPC): DIB/DER; perícia biopsicossocial; flexibilização de renda (Lei 14.176/2021);
+    dedução de gastos essenciais; fato novo (trigêmeas); coisa julgada; Tema 1124/STJ; Súmula 22/TNU; Súmula 98/TNU.
+  </p>
+
+  <h2>2. Adicionar Linha de Confronto (Cotejo Analítico)</h2>
+  <div class="grid-inputs">
+    <div class="full-width">
+      <label>Critério/Fato controvertido (tema da linha):</label>
+      <input type="text" id="inputCriterio" placeholder="Ex: Fixação da DIB (DER x citação) — Tema 1124/STJ / Súmula 22/TNU" />
+    </div>
+
+    <div>
+      <label style="color:#c0392b">Decisão no Caso Theo (divergente):</label>
+      <textarea id="textoTheo" class="input-theo" placeholder="Explique a premissa do acórdão e o vício (omissão/contradição/erro material)."></textarea>
+      <input type="text" id="locTheo" placeholder="Local: ID/Evento/Fls/trecho..." />
+    </div>
+
+    <div>
+      <label style="color:#27ae60">Paradigma 1 (como deveria):</label>
+      <textarea id="textoP1" class="input-paradigma1" placeholder="Explique a tese/solução no paradigma (com similitude fática)."></textarea>
+      <input type="text" id="locP1" placeholder="Local: acórdão/sentença/ementa..." />
+    </div>
+
+    <div>
+      <label style="color:#2980b9">Paradigma 2 (reforço):</label>
+      <textarea id="textoP2" class="input-paradigma2" placeholder="Se houver, inclua reforço (TNU/STJ/STF/TRU etc.)."></textarea>
+      <input type="text" id="locP2" placeholder="Local: súmula/tema/RE..." />
+    </div>
+
+    <div class="full-width">
+      <label>⚠️ Dispositivo violado / ponto de direito material (para admissibilidade e prequestionamento):</label>
+      <input type="text" id="inputViolacao"
+             placeholder="Ex: Tema 1124/STJ; Súmula 22/TNU; Art. 20-B da LOAS; Lei 14.176/2021; Art. 489, §1º, IV, CPC..." />
+    </div>
+
+    <div class="full-width">
+      <button class="btn-add" onclick="adicionarLinha()">➕ INCLUIR NO COTEJO</button>
+    </div>
+  </div>
+</div>
+
+<div class="folha" id="folhaA4">
+  <div style="text-align:center; font-weight:800; margin-bottom:14px;">
+    COTEJO ANALÍTICO DE DIVERGÊNCIA JURISPRUDENCIAL — BPC/LOAS
+  </div>
+
+  <p style="margin-top:0;">
+    A tabela abaixo demonstra, de forma analítica, a similitude fática e a divergência jurídica entre o acórdão recorrido e os paradigmas,
+    indicando o ponto de direito material e o dispositivo violado (essencial ao pedido de uniformização e ao prequestionamento).
+  </p>
+
+  <table class="tabela-cotejo" id="tabelaCotejo">
+    <thead>
+      <tr>
+        <th class="th-criterio">CRITÉRIO / FATO</th>
+        <th class="th-divergente">DECISÃO RECORRIDA<br><span id="lblTheo" style="font-size:8pt"></span></th>
+        <th class="th-paradigma1">PARADIGMA 1<br><span id="lblP1" style="font-size:8pt"></span></th>
+        <th class="th-paradigma2">PARADIGMA 2<br><span id="lblP2" style="font-size:8pt"></span></th>
+      </tr>
+    </thead>
+    <tbody id="corpoTabela"></tbody>
+  </table>
+
+  <div class="assinatura">
+    __________________________________<br/>
+    <b>MAIKON DA ROCHA CALDEIRA</b><br/>
+    OAB/MG 183.712
+  </div>
+</div>
+
+<script>
+  // ===========================
+  // MODELO DE DADOS (para exportar corretamente)
+  // ===========================
+  const estado = {
+    headers: { theo: "", p1: "", p2: "" },
+    linhas: [] // {id, criterio, theoTxt, theoLoc, p1Txt, p1Loc, p2Txt, p2Loc, violacao}
+  };
+
+  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+
+  function atualizarCabecalhos() {
+    const theo = document.getElementById("headerTheo").value.trim();
+    const p1   = document.getElementById("headerP1").value.trim();
+    const p2   = document.getElementById("headerP2").value.trim();
+
+    document.getElementById("lblTheo").innerText = theo;
+    document.getElementById("lblP1").innerText = p1;
+    document.getElementById("lblP2").innerText = p2;
+
+    estado.headers = { theo, p1, p2 };
+  }
+
+  function adicionarLinha() {
+    const criterio = document.getElementById("inputCriterio").value.trim();
+    const theoTxt  = document.getElementById("textoTheo").value.trim();
+    const theoLoc  = document.getElementById("locTheo").value.trim();
+    const p1Txt    = document.getElementById("textoP1").value.trim();
+    const p1Loc    = document.getElementById("locP1").value.trim();
+    const p2Txt    = document.getElementById("textoP2").value.trim();
+    const p2Loc    = document.getElementById("locP2").value.trim();
+    const violacao = document.getElementById("inputViolacao").value.trim();
+
+    if (!criterio) { alert("Preencha pelo menos o Critério/Fato."); return; }
+
+    const linha = { id: uid(), criterio, theoTxt, theoLoc, p1Txt, p1Loc, p2Txt, p2Loc, violacao };
+    estado.linhas.push(linha);
+
+    renderLinha(linha);
+
+    // Limpar
+    document.getElementById("inputCriterio").value = "";
+    document.getElementById("textoTheo").value = "";
+    document.getElementById("locTheo").value = "";
+    document.getElementById("textoP1").value = "";
+    document.getElementById("locP1").value = "";
+    document.getElementById("textoP2").value = "";
+    document.getElementById("locP2").value = "";
+    document.getElementById("inputViolacao").value = "";
+    document.getElementById("inputCriterio").focus();
+  }
+
+  function renderLinha(linha) {
+    const tbody = document.getElementById("corpoTabela");
+
+    const tr = document.createElement("tr");
+    tr.dataset.id = linha.id;
+
+    tr.innerHTML = `
+      <td style="font-weight:800; text-align:center;">
+        ${escapeHtml(linha.criterio)}
+        <button class="btn-remove" title="Remover linha" onclick="removerLinha('${linha.id}')">×</button>
+      </td>
+      <td>
+        ${nl2br(escapeHtml(linha.theoTxt))}
+        ${linha.theoLoc ? `<span class="doc-ref">📄 ${escapeHtml(linha.theoLoc)}</span>` : ""}
+      </td>
+      <td>
+        ${nl2br(escapeHtml(linha.p1Txt))}
+        ${linha.p1Loc ? `<span class="doc-ref">📄 ${escapeHtml(linha.p1Loc)}</span>` : ""}
+      </td>
+      <td>
+        ${nl2br(escapeHtml(linha.p2Txt))}
+        ${linha.p2Loc ? `<span class="doc-ref">📄 ${escapeHtml(linha.p2Loc)}</span>` : ""}
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+
+    if (linha.violacao) {
+      const trV = document.createElement("tr");
+      trV.className = "violacao-row";
+      trV.dataset.parentId = linha.id;
+      trV.innerHTML = `
+        <td colspan="4">
+          ⚠️ DISPOSITIVO / TESE VIOLADA NESTE PONTO: ${escapeHtml(linha.violacao)}
+        </td>
+      `;
+      tbody.appendChild(trV);
+    }
+  }
+
+  function removerLinha(id) {
+    estado.linhas = estado.linhas.filter(l => l.id !== id);
+
+    const tbody = document.getElementById("corpoTabela");
+    [...tbody.querySelectorAll(`tr[data-id="${CSS.escape(id)}"]`)].forEach(el => el.remove());
+    [...tbody.querySelectorAll(`tr[data-parent-id="${CSS.escape(id)}"]`)].forEach(el => el.remove());
+  }
+
+  function limparTabela() {
+    if (!confirm("Tem certeza que deseja apagar todas as linhas?")) return;
+    estado.linhas = [];
+    document.getElementById("corpoTabela").innerHTML = "";
+  }
+
+  // ===========================
+  // EXPORT JSON
+  // ===========================
+  function exportarJSON() {
+    if (estado.linhas.length === 0) return alert("Não há linhas para exportar.");
+    const payload = {
+      geradoEm: new Date().toISOString(),
+      caso: "BPC/LOAS — Cotejo Analítico",
+      headers: estado.headers,
+      linhas: estado.linhas
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    saveAs(blob, "Cotejo_Analitico_BPC.json");
+  }
+
+  // ===========================
+  // EXPORT EXCEL
+  // ===========================
+  function exportarExcel() {
+    if (estado.linhas.length === 0) return alert("Não há linhas para exportar.");
+
+    const colunas = [
+      "Critério/Fato",
+      `Decisão Recorrida — ${estado.headers.theo || "Theo"}`,
+      "Local (Theo)",
+      `Paradigma 1 — ${estado.headers.p1 || "P1"}`,
+      "Local (P1)",
+      `Paradigma 2 — ${estado.headers.p2 || "P2"}`,
+      "Local (P2)",
+      "Dispositivo/Tese violada"
+    ];
+
+    const dados = estado.linhas.map(l => ([
+      l.criterio,
+      l.theoTxt,
+      l.theoLoc,
+      l.p1Txt,
+      l.p1Loc,
+      l.p2Txt,
+      l.p2Loc,
+      l.violacao
+    ]));
+
+    const ws = XLSX.utils.aoa_to_sheet([colunas, ...dados]);
+
+    // Melhorias de leitura (larguras)
+    ws["!cols"] = [
+      { wch: 28 }, { wch: 40 }, { wch: 22 },
+      { wch: 40 }, { wch: 22 },
+      { wch: 40 }, { wch: 22 },
+      { wch: 36 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Cotejo");
+    XLSX.writeFile(wb, "Cotejo_Analitico_BPC.xlsx");
+  }
+
+  // ===========================
+  // EXPORT WORD (DOCX)
+  // ===========================
+  async function exportarWord() {
+    if (estado.linhas.length === 0) return alert("Não há linhas para exportar.");
+
+    const { docx } = window;
+    const {
+      Document, Packer, Paragraph, TextRun, HeadingLevel,
+      Table, TableRow, TableCell, WidthType, PageOrientation
+    } = docx;
+
+    // Para caber bem no Word, use landscape (4 colunas) e largura 100%
+    const headRow = new TableRow({
+      children: [
+        cellHead("CRITÉRIO / FATO"),
+        cellHead(`DECISÃO RECORRIDA\n${estado.headers.theo || ""}`),
+        cellHead(`PARADIGMA 1\n${estado.headers.p1 || ""}`),
+        cellHead(`PARADIGMA 2\n${estado.headers.p2 || ""}`)
+      ]
+    });
+
+    const rows = [headRow];
+
+    estado.linhas.forEach(l => {
+      rows.push(new TableRow({
+        children: [
+          cellBody(l.criterio),
+          cellBody(joinTxtLoc(l.theoTxt, l.theoLoc)),
+          cellBody(joinTxtLoc(l.p1Txt, l.p1Loc)),
+          cellBody(joinTxtLoc(l.p2Txt, l.p2Loc)),
+        ]
+      }));
+
+      if (l.violacao) {
+        rows.push(new TableRow({
+          children: [
+            new TableCell({
+              columnSpan: 4,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: `⚠️ DISPOSITIVO/TESE VIOLADA: ${l.violacao}`, bold: true })
+                  ]
+                })
+              ]
+            })
+          ]
+        }));
+      }
+    });
+
+    const tabela = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows
+    });
+
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: { size: { orientation: PageOrientation.LANDSCAPE } } // melhora enquadramento no Word (4 colunas)
+        },
+        children: [
+          new Paragraph({ text: "COTEJO ANALÍTICO DE DIVERGÊNCIA JURISPRUDENCIAL — BPC/LOAS", heading: HeadingLevel.HEADING_1 }),
+          new Paragraph({ text: `Gerado em: ${new Date().toLocaleString("pt-BR")}` }),
+          new Paragraph({ text: " " }),
+          tabela,
+          new Paragraph({ text: " " }),
+          new Paragraph({ text: "Assinatura:", heading: HeadingLevel.HEADING_2 }),
+          new Paragraph("__________________________________"),
+          new Paragraph("MAIKON DA ROCHA CALDEIRA — OAB/MG 183.712")
+        ]
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, "Cotejo_Analitico_BPC.docx");
+
+    function cellHead(text) {
+      return new TableCell({
+        children: [new Paragraph({ children: [new TextRun({ text, bold: true })] })]
+      });
+    }
+    function cellBody(text) {
+      return new TableCell({ children: [new Paragraph(String(text || ""))] });
+    }
+    function joinTxtLoc(txt, loc) {
+      const t = (txt || "").trim();
+      const l = (loc || "").trim();
+      if (!l) return t;
+      if (!t) return `Local: ${l}`;
+      return `${t}\n\nLocal: ${l}`;
+    }
+  }
+
+  // ===========================
+  // HELPERS
+  // ===========================
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+  function nl2br(s) {
+    return String(s).replace(/\n/g, "<br>");
+  }
+
+  // Boot
+  window.onload = atualizarCabecalhos;
+</script>
+
+</body>
+</html>

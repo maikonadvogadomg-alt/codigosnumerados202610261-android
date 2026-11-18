@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Extrair Texto (PDF/TXT/Imagem/DOCX)</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f1b33;
+      --muted:#93a4c7;
+      --text:#e9f0ff;
+      --accent:#4f8cff;
+      --accent2:#23c483;
+      --danger:#ff5c7a;
+      --border:rgba(255,255,255,.12);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 700px at 20% 0%, rgba(79,140,255,.20), transparent 60%),
+                  radial-gradient(900px 600px at 100% 0%, rgba(35,196,131,.16), transparent 50%),
+                  var(--bg);
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 16px 40px}
+    header{
+      display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    h1{margin:0;font-size:20px;letter-spacing:.2px}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:13px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+    .grid{display:grid;grid-template-columns: 1.1fr .9fr; gap:16px}
+    @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
+    .drop{
+      border:1px dashed rgba(255,255,255,.22);
+      border-radius:14px;
+      padding:16px;
+      background: rgba(15,27,51,.55);
+      transition: .15s ease;
+      min-height:110px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .drop.dragover{
+      border-color: rgba(79,140,255,.9);
+      background: rgba(79,140,255,.10);
+      transform: translateY(-1px);
+    }
+    .file-meta{display:flex;flex-direction:column;gap:4px}
+    .file-meta .name{font-weight:600}
+    .file-meta .info{color:var(--muted);font-size:12px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    input[type="file"]{display:none}
+    .btn{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      transition:.15s ease;
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.22)}
+    .btn.primary{background: linear-gradient(180deg, rgba(79,140,255,.95), rgba(79,140,255,.65)); border-color: rgba(79,140,255,.55)}
+    .btn.good{background: linear-gradient(180deg, rgba(35,196,131,.95), rgba(35,196,131,.65)); border-color: rgba(35,196,131,.55)}
+    .btn.danger{background: linear-gradient(180deg, rgba(255,92,122,.95), rgba(255,92,122,.65)); border-color: rgba(255,92,122,.55)}
+    .btn:disabled{
+      opacity:.45; cursor:not-allowed; transform:none;
+    }
+    .status{
+      display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(0,0,0,.18);
+    }
+    .pill.ok{color:#b7ffd8;border-color:rgba(35,196,131,.35); background: rgba(35,196,131,.10)}
+    .pill.err{color:#ffd0da;border-color:rgba(255,92,122,.35); background: rgba(255,92,122,.10)}
+    .pill.run{color:#cfe1ff;border-color:rgba(79,140,255,.35); background: rgba(79,140,255,.10)}
+    .progress{
+      width:100%;
+      height:10px;
+      background: rgba(255,255,255,.07);
+      border:1px solid var(--border);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .bar{height:100%; width:0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .15s ease}
+    .tools{display:flex; gap:10px; flex-wrap:wrap}
+    textarea{
+      width:100%;
+      min-height:420px;
+      resize:vertical;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      padding:12px;
+      font-family: var(--mono);
+      font-size:13px;
+      line-height:1.35;
+      outline:none;
+    }
+    .hint{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.35}
+    .right h3{margin:0 0 10px;font-size:14px;color:var(--muted);font-weight:700;letter-spacing:.2px}
+    .kbd{
+      font-family: var(--mono);
+      border:1px solid var(--border);
+      padding:2px 6px;border-radius:8px;
+      background: rgba(0,0,0,.2);
+      color: var(--text);
+      font-size:12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Extrator de Texto (PDF / TXT / Imagem / DOCX)</h1>
+        <p class="sub">Arraste o arquivo, extraia o texto e baixe em TXT/PDF/DOCX/Markdown. Também tem autosave.</p>
+      </div>
+      <div class="row">
+        <span class="pill">Dica: <span class="kbd">Ctrl</span> + <span class="kbd">V</span> no textarea funciona normal</span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div id="drop" class="drop" role="button" tabindex="0" aria-label="Área de upload">
+          <div class="file-meta">
+            <div class="name" id="fileName">Nenhum arquivo selecionado</div>
+            <div class="info" id="fileInfo">Clique aqui ou arraste e solte (PDF, TXT, JPG/PNG, DOCX).</div>
+          </div>
+          <div class="row">
+            <label class="btn" for="fileInput">Selecionar arquivo</label>
+            <button class="btn danger" id="btnClear" type="button">Limpar</button>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.txt,.png,.jpg,.jpeg,.docx" />
+        </div>
+
+        <div class="status">
+          <div class="pill" id="pill">Pronto</div>
+          <div style="flex:1; min-width:220px">
+            <div class="progress" aria-label="Progresso">
+              <div class="bar" id="bar"></div>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn primary" id="btnExtract" type="button">Extrair texto</button>
+            <button class="btn" id="btnCopy" type="button" disabled>Copiar</button>
+          </div>
+        </div>
+
+        <div class="tools" style="margin-top:12px">
+          <button class="btn good" id="btnTxt" type="button" disabled>Baixar TXT</button>
+          <button class="btn good" id="btnPdf" type="button" disabled>Baixar PDF</button>
+          <button class="btn good" id="btnDocx" type="button" disabled>Baixar DOCX</button>
+          <button class="btn good" id="btnMd" type="button" disabled>Baixar Markdown</button>
+        </div>
+
+        <p class="hint">
+          Observações: PDF “normal” extrai texto direto; PDF escaneado/sem texto usa OCR (pode demorar).
+          DOCX: extração focada no texto (sem formatação).
+        </p>
+      </div>
+
+      <div class="card right">
+        <h3>Texto extraído</h3>
+        <textarea id="output" placeholder="O texto extraído vai aparecer aqui..."></textarea>
+        <p class="hint">Autosave: o conteúdo do textarea fica salvo no seu navegador.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bibliotecas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    let extractedText = "";
+    let currentFile = null;
+
+    // pdf.js worker (evita avisos e melhora compat)
+    if (window.pdfjsLib?.GlobalWorkerOptions) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+    }
+
+    const $ = (id) => document.getElementById(id);
+
+    const fileInput = $("fileInput");
+    const drop = $("drop");
+    const fileName = $("fileName");
+    const fileInfo = $("fileInfo");
+    const output = $("output");
+
+    const pill = $("pill");
+    const bar = $("bar");
+
+    const btnExtract = $("btnExtract");
+    const btnClear = $("btnClear");
+    const btnCopy = $("btnCopy");
+    const btnTxt = $("btnTxt");
+    const btnPdf = $("btnPdf");
+    const btnDocx = $("btnDocx");
+    const btnMd = $("btnMd");
+
+    function setStatus(type, msg) {
+      pill.className = "pill" + (type ? " " + type : "");
+      pill.textContent = msg;
+    }
+    function setProgress(pct) {
+      const v = Math.max(0, Math.min(100, pct || 0));
+      bar.style.width = v + "%";
+    }
+    function setDownloadsEnabled(enabled) {
+      btnCopy.disabled = !enabled;
+      btnTxt.disabled = !enabled;
+      btnPdf.disabled = !enabled;
+      btnDocx.disabled = !enabled;
+      btnMd.disabled = !enabled;
+    }
+    function prettyBytes(bytes) {
+      if (!Number.isFinite(bytes)) return "";
+      const units = ["B","KB","MB","GB"];
+      let i = 0, n = bytes;
+      while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+      return `${n.toFixed(i ? 1 : 0)} ${units[i]}`;
+    }
+
+    // Função para remover rodapés repetitivos (mantida)
+    function cleanFooter(text) {
+      const patterns = [
+        /Num\.\s*\d+\s*-\s*Pág\.\s*\d+[\s\S]*?Número do documento:\s*\d+[^\n]*\n?/gi,
+        /Assinado digitalmente por:[\s\S]*?Número do documento:[^\n]*\n?/gi,
+        /Documento eletrônico assinado[\s\S]*?Número do documento:[^\n]*\n?/gi
+      ];
+      let cleaned = text;
+      patterns.forEach(p => cleaned = cleaned.replace(p, ""));
+      return cleaned;
+    }
+
+    function updateFileUI(file) {
+      if (!file) {
+        fileName.textContent = "Nenhum arquivo selecionado";
+        fileInfo.textContent = "Clique aqui ou arraste e solte (PDF, TXT, JPG/PNG, DOCX).";
+        return;
+      }
+      fileName.textContent = file.name;
+      fileInfo.textContent = `${file.type || "tipo desconhecido"} • ${prettyBytes(file.size)}`;
+    }
+
+    function clearAll() {
+      currentFile = null;
+      fileInput.value = "";
+      extractedText = "";
+      output.value = "";
+      localStorage.removeItem("autosaveText");
+      updateFileUI(null);
+      setDownloadsEnabled(false);
+      setStatus("", "Pronto");
+      setProgress(0);
+    }
+
+    // Autosave
+    window.addEventListener("load", () => {
+      const saved = localStorage.getItem("autosaveText");
+      if (saved) {
+        extractedText = saved;
+        output.value = saved;
+        setDownloadsEnabled(true);
+        setStatus("ok", "Texto recuperado do autosave");
+      }
+    });
+    output.addEventListener("input", () => {
+      extractedText = output.value || "";
+      localStorage.setItem("autosaveText", extractedText);
+      setDownloadsEnabled(!!extractedText.trim());
+    });
+
+    // Drag & drop
+    ["dragenter","dragover"].forEach(evt => {
+      drop.addEventListener(evt, (e) => {
+        e.preventDefault();
+        drop.classList.add("dragover");
+      });
+    });
+    ["dragleave","drop"].forEach(evt => {
+      drop.addEventListener(evt, (e) => {
+        e.preventDefault();
+        drop.classList.remove("dragover");
+      });
+    });
+    drop.addEventListener("drop", (e) => {
+      const f = e.dataTransfer.files?.[0];
+      if (!f) return;
+      fileInput.files = e.dataTransfer.files;
+      currentFile = f;
+      updateFileUI(f);
+      setStatus("", "Arquivo pronto para extrair");
+    });
+    drop.addEventListener("click", () => fileInput.click());
+    drop.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") fileInput.click();
+    });
+
+    fileInput.addEventListener("change", () => {
+      currentFile = fileInput.files?.[0] || null;
+      updateFileUI(currentFile);
+      if (currentFile) setStatus("", "Arquivo pronto para extrair");
+    });
+
+    btnClear.addEventListener("click", clearAll);
+
+    // ===== Extrações (modular) =====
+    async function extractFromTXT(file) {
+      const text = await file.text();
+      return cleanFooter(text) + `\n\n--- Fim do arquivo TXT ---\n\n`;
+    }
+
+    async function extractFromImage(file) {
+      setStatus("run", "OCR na imagem…");
+      const url = await fileToDataURL(file);
+      const result = await Tesseract.recognize(url, "por", {
+        logger: (m) => {
+          if (m.status === "recognizing text" && typeof m.progress === "number") {
+            setProgress(Math.round(m.progress * 100));
+          }
+        }
+      });
+      setProgress(100);
+      return cleanFooter(result.data.text) + `\n\n--- Fim da imagem ---\n\n`;
+    }
+
+    async function extractFromPDF(file) {
+      setStatus("run", "Lendo PDF…");
+      const buf = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument(new Uint8Array(buf)).promise;
+
+      let textContent = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        setStatus("run", `Processando página ${i}/${pdf.numPages}…`);
+        setProgress(Math.round(((i - 1) / pdf.numPages) * 100));
+
+        const page = await pdf.getPage(i);
+        const text = await page.getTextContent();
+
+        if (text.items?.length) {
+          text.items.forEach(item => { textContent += item.str + " "; });
+        } else {
+          // fallback OCR
+          setStatus("run", `OCR na página ${i}/${pdf.numPages}…`);
+          const viewport = page.getViewport({ scale: 2 });
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+
+          await page.render({ canvasContext: ctx, viewport }).promise;
+
+          const result = await Tesseract.recognize(canvas, "por", {
+            logger: (m) => {
+              if (m.status === "recognizing text" && typeof m.progress === "number") {
+                // OCR domina o progresso desta página
+                const base = (i - 1) / pdf.numPages;
+                const slice = 1 / pdf.numPages;
+                setProgress(Math.round((base + slice * m.progress) * 100));
+              }
+            }
+          });
+          textContent += result.data.text + " ";
+        }
+
+        textContent += `\n\n--- Página ${i} ---\n\n`;
+      }
+
+      setProgress(100);
+      return cleanFooter(textContent);
+    }
+
+    async function extractFromDOCX(file) {
+      setStatus("run", "Lendo DOCX…");
+      setProgress(15);
+
+      const buf = await file.arrayBuffer();
+      const zip = await JSZip.loadAsync(buf);
+
+      // DOCX é um ZIP; o texto principal geralmente está aqui:
+      const docXmlFile = zip.file("word/document.xml");
+      if (!docXmlFile) throw new Error("DOCX inválido: não achei word/document.xml");
+
+      const xml = await docXmlFile.async("text");
+      setProgress(55);
+
+      // Converte XML WordprocessingML em texto simples
+      // - troca tags de parágrafo por quebra de linha
+      // - troca tags de quebra de linha por \n
+      // - remove demais tags
+      // - decodifica entidades básicas
+      let text = xml
+        .replace(/<w:br[^>]*\/>/g, "\n")
+        .replace(/<\/w:p>/g, "\n")
+        .replace(/<[^>]+>/g, "");
+
+      text = decodeXmlEntities(text);
+      text = text.replace(/\n{3,}/g, "\n\n").trim();
+
+      setProgress(100);
+      return cleanFooter(text) + `\n\n--- Fim do arquivo DOCX ---\n\n`;
+    }
+
+    function decodeXmlEntities(str) {
+      // decodificação simples suficiente pra maioria dos casos
+      return str
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&#xA;/g, "\n")
+        .replace(/&#xD;/g, "\r")
+        .replace(/&#x9;/g, "\t");
+    }
+
+    function fileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    // ===== Função principal (mantida: extractText) =====
+    async function extractText() {
+      const file = currentFile || fileInput.files?.[0];
+      if (!file) {
+        alert("Selecione um arquivo primeiro!");
+        return;
+      }
+
+      btnExtract.disabled = true;
+      setDownloadsEnabled(false);
+      setProgress(0);
+      setStatus("run", "Iniciando…");
+      output.value = "Processando…";
+
+      try {
+        if (file.type === "text/plain" || file.name.toLowerCase().endsWith(".txt")) {
+          extractedText = await extractFromTXT(file);
+
+        } else if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+          extractedText = await extractFromPDF(file);
+
+        } else if (file.type.startsWith("image/")) {
+          extractedText = await extractFromImage(file);
+
+        } else if (file.name.toLowerCase().endsWith(".docx")) {
+          extractedText = await extractFromDOCX(file);
+
+        } else {
+          throw new Error("Formato não suportado. Use PDF, TXT, DOCX ou imagem.");
+        }
+
+        output.value = extractedText;
+        localStorage.setItem("autosaveText", extractedText);
+        setDownloadsEnabled(!!extractedText.trim());
+        setStatus("ok", "Extração concluída");
+        setProgress(100);
+
+      } catch (err) {
+        console.error(err);
+        output.value = "";
+        extractedText = "";
+        setDownloadsEnabled(false);
+        setStatus("err", "Erro na extração");
+        alert("Erro ao processar: " + (err?.message || err));
+        setProgress(0);
+
+      } finally {
+        btnExtract.disabled = false;
+      }
+    }
+
+    // ===== Downloads (mantidos) =====
+    function downloadText() {
+      if (!extractedText) return alert("Nenhum texto extraído ainda!");
+      const blob = new Blob([extractedText], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_extraido.txt";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function downloadPDF() {
+      if (!extractedText) return alert("Nenhum texto extraído ainda!");
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      doc.setFontSize(11);
+
+      const margin = 12;
+      const maxWidth = 210 - margin * 2;
+      const lines = doc.splitTextToSize(extractedText, maxWidth);
+
+      let y = margin;
+      const lineHeight = 5.2;
+      lines.forEach(line => {
+        if (y > 297 - margin) { doc.addPage(); y = margin; }
+        doc.text(line, margin, y);
+        y += lineHeight;
+      });
+
+      doc.save("texto_extraido.pdf");
+    }
+
+    function downloadDOCX() {
+      if (!extractedText) return alert("Nenhum texto extraído ainda!");
+
+      // OBS: isso gera um "docx" simples via WordprocessingML (básico)
+      // para algo 100% compatível com Word, o ideal é usar uma lib geradora de DOCX.
+      const safe = extractedText
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+      const xml =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p><w:r><w:t xml:space="preserve">${safe}</w:t></w:r></w:p>
+  </w:body>
+</w:document>`;
+
+      const blob = new Blob([xml], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      });
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_extraido.docx";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function downloadMarkdown() {
+      if (!extractedText) return alert("Nenhum texto extraído ainda!");
+      const mdText = extractedText.replace(/--- Página (\d+) ---/g, "### Página $1");
+      const blob = new Blob([mdText], { type: "text/markdown;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "texto_extraido.md";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function copyText() {
+      if (!extractedText) return alert("Nenhum texto extraído ainda!");
+      navigator.clipboard.writeText(extractedText)
+        .then(() => setStatus("ok", "Copiado para a área de transferência"))
+        .catch(() => alert("Não foi possível copiar. Seu navegador bloqueou a permissão."));
+    }
+
+    // ===== Eventos dos botões =====
+    btnExtract.addEventListener("click", extractText);
+    btnTxt.addEventListener("click", downloadText);
+    btnPdf.addEventListener("click", downloadPDF);
+    btnDocx.addEventListener("click", downloadDOCX);
+    btnMd.addEventListener("click", downloadMarkdown);
+    btnCopy.addEventListener("click", copyText);
+  </script>
+</body>
+</html>

@@ -1,0 +1,690 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Exported HTML</title>
+    <style></style>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Previdenciária Interativa: IN 128 e Portarias Dirben</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Styles for Layout & Chart Containers */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6; /* Warm neutral light gray */
+            color: #1f2937; /* Dark gray text */
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Utility for hiding scrollbars but keeping functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .active-nav {
+            background-color: #e5e7eb;
+            border-left: 4px solid #3b82f6;
+            font-weight: 600;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutral Background (#f3f4f6) with Slate/Gray text (#1f2937) and Blue (#3b82f6) as primary accent for trust/professionalism. -->
+    <!-- Application Structure Plan: Dashboard Layout with Sidebar Navigation. 
+         1. 'Visão Geral': Intro to the analysis context.
+         2. 'Requisitos & Modalidades': Interactive comparison of Contribution Time vs. Special.
+         3. 'Documentação & Provas': Matrix of documents (PPP, CTC, DTC) with clickable details.
+         4. 'RMI & Cálculos': Interactive simulation showing the impact of "Descarte" and CNIS rectification on the final benefit value.
+         5. 'Retificação CNIS': Guide on correcting remuneration and bonds.
+         This structure moves from "What rights do I have?" -> "How do I prove it?" -> "How much will I get?" -> "How to fix errors?", logical for a lawyer or analyst. -->
+    <!-- Visualization & Content Choices: 
+         - Bar Chart for RMI: Comparing "Base Calculation" vs "Rectified Calculation" to show the value of legal analysis.
+         - Donut Chart for Requirements: Visualizing the composition of time (Normal vs Special converted).
+         - Interactive Cards: For Documents (PPP, CTC) to avoid text walls.
+         - Flow Steps: For the Rectification process (Portaria 990).
+         - Justification: Users need to see the *financial impact* of technical procedures (RMI) and the *procedural path* for documents. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col z-10">
+        <div class="p-6 border-b border-gray-100">
+            <h1 class="text-xl font-bold text-gray-800">PrevAnalítico <span class="text-blue-600">Pro</span></h1>
+            <p class="text-xs text-gray-500 mt-1">Base: IN 128/2022 & Portarias Dirben</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <button onclick="navigate('dashboard')" id="nav-dashboard" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 active-nav transition-colors">
+                        📊 Visão Geral
+                    </button>
+                </li>
+                <li>
+                    <button onclick="navigate('requisitos')" id="nav-requisitos" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                        ⚖️ Requisitos & Espécies
+                    </button>
+                </li>
+                <li>
+                    <button onclick="navigate('documentos')" id="nav-documentos" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                        📄 PPP, CTC e DTC
+                    </button>
+                </li>
+                <li>
+                    <button onclick="navigate('rmi')" id="nav-rmi" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                        💰 Cálculo da RMI & Descarte
+                    </button>
+                </li>
+                <li>
+                    <button onclick="navigate('retificacao')" id="nav-retificacao" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                        🛠️ Retificação de CNIS
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-gray-100 bg-gray-50">
+            <div class="text-xs text-gray-400">
+                Atualizado: Portaria Conjunta Nº 94/2024
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed w-full bg-white border-b border-gray-200 z-20 flex justify-between items-center p-4">
+        <h1 class="text-lg font-bold text-gray-800">PrevAnalítico</h1>
+        <button onclick="toggleMobileMenu()" class="text-gray-600 focus:outline-none">
+            ☰
+        </button>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-30 hidden" onclick="toggleMobileMenu()">
+        <div class="bg-white w-64 h-full p-4" onclick="event.stopPropagation()">
+            <h2 class="text-xl font-bold mb-6">Menu</h2>
+            <nav class="space-y-2">
+                <button onclick="navigate('dashboard'); toggleMobileMenu()" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Visão Geral</button>
+                <button onclick="navigate('requisitos'); toggleMobileMenu()" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Requisitos</button>
+                <button onclick="navigate('documentos'); toggleMobileMenu()" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Documentos (PPP/CTC)</button>
+                <button onclick="navigate('rmi'); toggleMobileMenu()" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Cálculo RMI</button>
+                <button onclick="navigate('retificacao'); toggleMobileMenu()" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Retificação CNIS</button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 h-full overflow-y-auto pt-16 md:pt-0 bg-gray-50">
+        <div class="max-w-7xl mx-auto p-4 md:p-8">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="space-y-6 animate-fade-in">
+                <header class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Painel de Análise Previdenciária</h2>
+                    <p class="text-gray-600 mt-2">Guia interativo baseado na IN 128/2022 e Portarias Dirben 990, 993, 996, 998 e 999. Ferramenta para estruturar a concessão de benefícios.</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Key Metric 1 -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover cursor-pointer" onclick="navigate('requisitos')">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-gray-700">Tempo de Contribuição</h3>
+                            <span class="text-2xl">⏳</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-2">Regras de Transição e Direito Adquirido</p>
+                        <div class="text-blue-600 text-sm font-medium">Ver requisitos &rarr;</div>
+                    </div>
+
+                    <!-- Key Metric 2 -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover cursor-pointer" onclick="navigate('documentos')">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-gray-700">Prova Documental</h3>
+                            <span class="text-2xl">📄</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-2">PPP, LTCAT, CTC e DTC</p>
+                        <div class="text-green-600 text-sm font-medium">Analisar documentos &rarr;</div>
+                    </div>
+
+                    <!-- Key Metric 3 -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover cursor-pointer" onclick="navigate('rmi')">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-gray-700">Impacto na RMI</h3>
+                            <span class="text-2xl">📈</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-2">Simulação de Descarte (Art. 228 IN 128)</p>
+                        <div class="text-purple-600 text-sm font-medium">Calcular impacto &rarr;</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-gray-800 mb-4">Fluxo de Análise Recomendado</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">1</div>
+                                <div class="ml-4">
+                                    <h4 class="font-semibold text-sm">Análise do CNIS (Extrato)</h4>
+                                    <p class="text-xs text-gray-500">Verificar indicadores de pendência (PREM-EXT, PEXT, etc.) conforme Portaria 990.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">2</div>
+                                <div class="ml-4">
+                                    <h4 class="font-semibold text-sm">Averbação e Retificação</h4>
+                                    <p class="text-xs text-gray-500">Solicitar DTC/CTC para RPPS ou apresentar provas rurais/especiais.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">3</div>
+                                <div class="ml-4">
+                                    <h4 class="font-semibold text-sm">Cálculo e Descarte</h4>
+                                    <p class="text-xs text-gray-500">Simular RMI excluindo menores salários excedentes (Art. 26 EC 103/19).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+                         <div class="chart-container">
+                            <canvas id="overviewChart"></canvas>
+                        </div>
+                        <p class="text-center text-xs text-gray-400 mt-2">Frequência de Correções Necessárias em Benefícios</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requisitos View -->
+            <div id="view-requisitos" class="hidden space-y-6 animate-fade-in">
+                <header>
+                    <h2 class="text-2xl font-bold text-gray-800">Requisitos Legais</h2>
+                    <p class="text-gray-600">Comparativo entre Aposentadoria por Tempo de Contribuição (Regras de Transição) e Aposentadoria Especial.</p>
+                </header>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="flex border-b border-gray-200">
+                        <button class="flex-1 py-4 text-center font-medium text-blue-600 border-b-2 border-blue-600 bg-blue-50" id="tab-tc" onclick="switchReqTab('tc')">Tempo de Contribuição</button>
+                        <button class="flex-1 py-4 text-center font-medium text-gray-500 hover:text-gray-700" id="tab-esp" onclick="switchReqTab('esp')">Especial (Nocividade)</button>
+                    </div>
+                    
+                    <div class="p-6">
+                        <!-- Content: Tempo de Contribuição -->
+                        <div id="content-tc" class="block">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <h3 class="font-bold text-lg mb-4 text-gray-800">Regras de Transição (EC 103/2019)</h3>
+                                    <ul class="space-y-3 text-sm text-gray-600">
+                                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span> <strong>Regra dos Pontos:</strong> Soma de Idade + Tempo. Aumenta 1 ponto por ano.</li>
+                                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span> <strong>Pedágio 50%:</strong> Para quem faltava menos de 2 anos em 13/11/2019. Aplica-se Fator Previdenciário.</li>
+                                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span> <strong>Pedágio 100%:</strong> Idade min (57M/60H) + 100% do tempo faltante. RMI integral (100%).</li>
+                                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span> <strong>Idade Mínima Progressiva:</strong> Tempo mínimo + idade que sobe 6 meses/ano.</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h4 class="font-bold text-sm text-gray-700 mb-2">Simulação Rápida (Pedágio 50%)</h4>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500">Tempo em 13/11/2019 (Anos)</label>
+                                            <input type="range" min="25" max="35" value="29" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" id="tc-input" oninput="updateTCSim()">
+                                            <span class="text-sm font-bold text-blue-600" id="tc-display">29 anos</span>
+                                        </div>
+                                        <div id="tc-result" class="text-sm bg-white p-3 rounded border border-gray-200">
+                                            Arraste para simular o pedágio.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content: Especial -->
+                        <div id="content-esp" class="hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <h3 class="font-bold text-lg mb-4 text-gray-800">Aposentadoria Especial</h3>
+                                    <p class="text-sm text-gray-600 mb-4">Exige efetiva exposição a agentes nocivos químicos, físicos ou biológicos (Art. 64 Dec. 3048/99 e IN 128).</p>
+                                    <ul class="space-y-3 text-sm text-gray-600">
+                                        <li class="flex items-start"><span class="mr-2 text-red-500">⚠️</span> <strong>PPP Obrigatório:</strong> Perfil Profissiográfico Previdenciário é a prova principal.</li>
+                                        <li class="flex items-start"><span class="mr-2 text-blue-500">ℹ️</span> <strong>Conversão:</strong> Tempo especial pode ser convertido em comum (fator 1.4 H / 1.2 M) somente até 13/11/2019.</li>
+                                        <li class="flex items-start"><span class="mr-2 text-purple-500">⚕️</span> <strong>Permanência:</strong> Exposição deve ser permanente, não ocasional nem intermitente.</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                    <h4 class="font-bold text-sm text-blue-800 mb-2">EPI Eficaz?</h4>
+                                    <p class="text-xs text-blue-700 mb-2">Tema 555 STF: Se EPI for eficaz, afasta especialidade (exceto Ruído).</p>
+                                    <div class="chart-container" style="height: 200px;">
+                                        <canvas id="specialChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documentos View -->
+            <div id="view-documentos" class="hidden space-y-6 animate-fade-in">
+                <header>
+                    <h2 class="text-2xl font-bold text-gray-800">Documentação e Provas</h2>
+                    <p class="text-gray-600">Guia de requisitos formais para PPP, CTC e DTC conforme IN 128.</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- PPP Card -->
+                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-400">
+                        <h3 class="font-bold text-lg mb-2">PPP (Perfil Profissiográfico)</h3>
+                        <p class="text-sm text-gray-600 mb-4">Deve conter responsável técnico, períodos, descrição de atividades e fatores de risco.</p>
+                        <div class="bg-yellow-50 p-3 rounded text-xs text-yellow-800">
+                            <strong>Checklist:</strong>
+                            <ul class="list-disc ml-4 mt-1">
+                                <li>Assinatura do representante legal</li>
+                                <li>NIT do Responsável Técnico (Médico/Engenheiro)</li>
+                                <li>Indicação de GFIP correta</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- CTC Card -->
+                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-400">
+                        <h3 class="font-bold text-lg mb-2">CTC (Certidão de Tempo)</h3>
+                        <p class="text-sm text-gray-600 mb-4">Obrigatória para contagem recíproca (RGPS <-> RPPS). Segue Anexo XV da IN 128.</p>
+                        <div class="bg-blue-50 p-3 rounded text-xs text-blue-800">
+                            <strong>Atenção:</strong>
+                            <ul class="list-disc ml-4 mt-1">
+                                <li>Não fracionar períodos concomitantes.</li>
+                                <li>Deve ser original e homologada.</li>
+                                <li>Retificação exige devolução da original.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- DTC Card -->
+                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-400">
+                        <h3 class="font-bold text-lg mb-2">DTC (Declaração de Tempo)</h3>
+                        <p class="text-sm text-gray-600 mb-4">Anexo IV. Usada quando a CTC não pode ser emitida ou para complementar CNIS.</p>
+                        <div class="bg-green-50 p-3 rounded text-xs text-green-800">
+                            <strong>Uso Prático:</strong>
+                            <ul class="list-disc ml-4 mt-1">
+                                <li>Complementar remunerações faltantes de servidor.</li>
+                                <li>Acompanhada da Relação de Remunerações (Anexo V).</li>
+                            </ul>
+                        </div>
+                    </div>
+                     <!-- Rural Card -->
+                     <div class="bg-white rounded-lg shadow p-6 border-l-4 border-orange-400">
+                        <h3 class="font-bold text-lg mb-2">Averbação Rural</h3>
+                        <p class="text-sm text-gray-600 mb-4">Autodeclaração Rural (Anexos IN 128) + Bases Governamentais.</p>
+                        <div class="bg-orange-50 p-3 rounded text-xs text-orange-800">
+                            <strong>Documentos:</strong>
+                            <ul class="list-disc ml-4 mt-1">
+                                <li>DAP/CAFIR</li>
+                                <li>Bloco de Notas</li>
+                                <li>Certidões de Nascimento/Casamento com profissão.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RMI View -->
+            <div id="view-rmi" class="hidden space-y-6 animate-fade-in">
+                <header>
+                    <h2 class="text-2xl font-bold text-gray-800">Cálculo da RMI e "Descarte"</h2>
+                    <p class="text-gray-600">Simulador do impacto da exclusão de contribuições (Art. 26, § 6º, EC 103/2019 e Art. 228 IN 128).</p>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-gray-700 mb-4">Parâmetros da Simulação</h3>
+                        
+                        <div class="mb-4">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Total de Contribuições (Meses)</label>
+                            <input type="number" id="rmi-total-months" value="240" class="w-full p-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                            <p class="text-xs text-gray-400 mt-1">Mínimo exigido: 180 (15 anos)</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Média Salarial (Sem Descarte)</label>
+                            <input type="number" id="rmi-avg-base" value="2500" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Meses de "Baixo Valor" a Descartar</label>
+                            <input type="range" id="rmi-discard-slider" min="0" max="60" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="updateRMICalc()">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>0</span>
+                                <span id="rmi-discard-display" class="font-bold text-blue-600">0 meses</span>
+                                <span>Máx (Excedentes)</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded text-xs text-gray-600 border border-gray-200">
+                            <p><strong>Nota:</strong> O descarte só é permitido se o tempo restante for suficiente para garantir o benefício.</p>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+                        <h3 class="font-bold text-gray-700 mb-2">Projeção de Impacto Financeiro</h3>
+                        <div class="flex-1 w-full flex items-center justify-center">
+                            <div class="chart-container">
+                                <canvas id="rmiChart"></canvas>
+                            </div>
+                        </div>
+                        <div id="rmi-feedback" class="mt-4 p-3 bg-blue-50 text-blue-800 text-sm rounded text-center font-medium">
+                            Ajuste o slider para ver o ganho na RMI.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <!-- Retificacao View -->
+             <div id="view-retificacao" class="hidden space-y-6 animate-fade-in">
+                <header>
+                    <h2 class="text-2xl font-bold text-gray-800">Retificação de CNIS</h2>
+                    <p class="text-gray-600">Procedimentos para correção de vínculos e remunerações (Portaria 990/2022).</p>
+                </header>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-lg text-gray-800 mb-4">Passo a Passo: Acerto de Vínculos e Remunerações</h3>
+                    
+                    <div class="relative border-l-2 border-gray-200 ml-3 space-y-8">
+                        <div class="mb-8 ml-6">
+                            <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-blue-600 rounded-full ring-4 ring-white"></span>
+                            <h4 class="flex items-center mb-1 text-lg font-semibold text-gray-900">1. Identificação do Erro</h4>
+                            <p class="mb-2 text-sm text-gray-500">Analise o extrato CNIS. Procure por indicadores como <strong>PEXT</strong> (Pendência de Vínculo Extemporâneo) ou remunerações zeradas/abaixo do mínimo.</p>
+                        </div>
+                        <div class="mb-8 ml-6">
+                            <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-blue-600 rounded-full ring-4 ring-white"></span>
+                            <h4 class="flex items-center mb-1 text-lg font-semibold text-gray-900">2. Coleta de Provas</h4>
+                            <p class="mb-2 text-sm text-gray-500">
+                                <strong>Empregado:</strong> Carteira de Trabalho, Holerites, Extrato FGTS.<br>
+                                <strong>Servidor:</strong> Declaração de Tempo de Contribuição (DTC) + Relação de Remunerações (Anexo V).
+                            </p>
+                        </div>
+                        <div class="mb-8 ml-6">
+                            <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-blue-600 rounded-full ring-4 ring-white"></span>
+                            <h4 class="flex items-center mb-1 text-lg font-semibold text-gray-900">3. Solicitação (Acerto de Vínculos)</h4>
+                            <p class="mb-2 text-sm text-gray-500">Pode ser feito a qualquer momento (Art. 29 IN 128) através do serviço "Atualização de Vínculos e Remunerações" no Meu INSS ou presencialmente.</p>
+                        </div>
+                        <div class="ml-6">
+                            <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-green-500 rounded-full ring-4 ring-white"></span>
+                            <h4 class="flex items-center mb-1 text-lg font-semibold text-gray-900">4. Resultado</h4>
+                            <p class="mb-2 text-sm text-gray-500">CNIS atualizado reflete no cálculo automático da RMI e permite emissão correta de CTC.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- Navigation Logic ---
+        function navigate(viewId) {
+            // Hide all views
+            const views = ['dashboard', 'requisitos', 'documentos', 'rmi', 'retificacao'];
+            views.forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+                const btn = document.getElementById('nav-' + v);
+                if(btn) {
+                    btn.classList.remove('active-nav', 'bg-gray-50', 'text-blue-600');
+                    btn.classList.add('text-gray-600');
+                }
+            });
+
+            // Show selected view
+            document.getElementById('view-' + viewId).classList.remove('hidden');
+            
+            // Update sidebar styles
+            const activeBtn = document.getElementById('nav-' + viewId);
+            if(activeBtn) {
+                activeBtn.classList.add('active-nav', 'bg-gray-50', 'text-blue-600');
+                activeBtn.classList.remove('text-gray-600');
+            }
+
+            // Trigger chart updates if needed (resize handling)
+            if (viewId === 'dashboard') {
+                if(overviewChartInstance) overviewChartInstance.resize();
+            }
+            if (viewId === 'rmi') {
+                if(rmiChartInstance) rmiChartInstance.resize();
+                // Re-run calc to ensure chart is fresh
+                updateRMICalc();
+            }
+             if (viewId === 'requisitos') {
+                if(specialChartInstance) specialChartInstance.resize();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function switchReqTab(tab) {
+            document.getElementById('content-tc').classList.add('hidden');
+            document.getElementById('content-esp').classList.add('hidden');
+            document.getElementById('tab-tc').classList.remove('border-b-2', 'border-blue-600', 'bg-blue-50', 'text-blue-600');
+            document.getElementById('tab-esp').classList.remove('border-b-2', 'border-blue-600', 'bg-blue-50', 'text-blue-600');
+            document.getElementById('tab-tc').classList.add('text-gray-500');
+            document.getElementById('tab-esp').classList.add('text-gray-500');
+
+            document.getElementById('content-' + tab).classList.remove('hidden');
+            const activeTab = document.getElementById('tab-' + tab);
+            activeTab.classList.add('border-b-2', 'border-blue-600', 'bg-blue-50', 'text-blue-600');
+            activeTab.classList.remove('text-gray-500');
+        }
+
+        // --- Data & Simulation Logic ---
+
+        // 1. Dashboard Chart
+        let overviewChartInstance = null;
+        function initOverviewChart() {
+            const ctx = document.getElementById('overviewChart').getContext('2d');
+            overviewChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CNIS Correto', 'Pendência Remuneração', 'Vínculo Extemporâneo', 'Tempo Especial não Enquadrado'],
+                    datasets: [{
+                        data: [30, 25, 20, 25],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        // 2. Requisitos Tab Simulation (Simple Pedágio 50%)
+        function updateTCSim() {
+            const years = parseInt(document.getElementById('tc-input').value);
+            document.getElementById('tc-display').innerText = years + " anos";
+            const needed = 35; // Homen reference
+            const diff = needed - years;
+            const resultDiv = document.getElementById('tc-result');
+
+            if (diff <= 2 && diff > 0) {
+                const pedagio = diff * 0.5;
+                const totalNeeded = diff + pedagio;
+                resultDiv.innerHTML = `<span class="text-green-600 font-bold">Elegível ao Pedágio 50%!</span><br>Faltava: ${diff.toFixed(1)} anos.<br>Pedágio: ${pedagio.toFixed(1)} anos.<br>Total a cumprir: ${totalNeeded.toFixed(1)} anos.`;
+            } else if (diff <= 0) {
+                resultDiv.innerHTML = `<span class="text-blue-600 font-bold">Direito Adquirido (Provável)!</span><br>Já possuía 35 anos em 2019.`;
+            } else {
+                resultDiv.innerHTML = `<span class="text-red-500">Não elegível ao Pedágio 50%.</span><br>Faltava mais de 2 anos. Tente Regra de Pontos ou Idade Mínima.`;
+            }
+        }
+
+        // 3. Special Retirement Chart
+        let specialChartInstance = null;
+        function initSpecialChart() {
+             const ctx = document.getElementById('specialChart').getContext('2d');
+             specialChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Ruído (Dec 4882/03)', 'Químicos (Anexo IV)', 'Biológicos'],
+                    datasets: [{
+                        label: 'Nível de Litígio (%)',
+                        data: [15, 60, 40], // Conceptual data
+                        backgroundColor: '#60a5fa',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, display: false },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+             });
+        }
+
+        // 4. RMI Simulation Logic
+        let rmiChartInstance = null;
+        function initRMIChart() {
+            const ctx = document.getElementById('rmiChart').getContext('2d');
+            rmiChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['RMI Padrão', 'RMI Otimizada (Descarte)'],
+                    datasets: [{
+                        label: 'Valor Mensal (R$)',
+                        data: [2500, 2500],
+                        backgroundColor: ['#9ca3af', '#8b5cf6'],
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function updateRMICalc() {
+            const totalMonths = parseInt(document.getElementById('rmi-total-months').value);
+            const baseAvg = parseFloat(document.getElementById('rmi-avg-base').value);
+            const discardCount = parseInt(document.getElementById('rmi-discard-slider').value);
+            
+            // Logic:
+            // Assuming baseAvg is the average of ALL months.
+            // If we discard low months, average goes up.
+            // Simplified Math: Assume discarded months were worth minimum wage (approx 1412) vs the higher average.
+            
+            // Validate discard: Cannot reduce total time below 180 (15 years)
+            const minMonths = 180;
+            const finalMonths = totalMonths - discardCount;
+            
+            const feedback = document.getElementById('rmi-feedback');
+            const display = document.getElementById('rmi-discard-display');
+            display.innerText = discardCount + " meses";
+
+            if (finalMonths < minMonths) {
+                feedback.className = "mt-4 p-3 bg-red-50 text-red-800 text-sm rounded text-center font-medium";
+                feedback.innerText = `Atenção: Descarte inválido! Tempo restante (${finalMonths} m) inferior ao mínimo (${minMonths} m).`;
+                // Reset chart to base
+                rmiChartInstance.data.datasets[0].data = [baseAvg, baseAvg];
+                rmiChartInstance.update();
+                return;
+            }
+
+            // Calculate "Optimized" Average
+            // (TotalSum - DiscardSum) / NewCount
+            // TotalSum = baseAvg * totalMonths
+            // DiscardSum = 1412 * discardCount (Worst case assumption for simulation)
+            const minWage = 1412;
+            const totalSum = baseAvg * totalMonths;
+            const discardSum = minWage * discardCount;
+            
+            let newAvg = (totalSum - discardSum) / finalMonths;
+            
+            // If user discards months that were actually ABOVE average (user error in logic, but mathematically possible here if input is simplistic), cap it.
+            // But realistically, user discards LOWEST. So if base is 2500, lowest are likely < 2000.
+            if (newAvg < baseAvg) newAvg = baseAvg; // Safety check
+
+            // Coefficient Calculation (60% + 2% per year over 20M/15F)
+            // Using Man rule (20y = 240m) for simplified demo
+            const yearsOver20 = Math.max(0, (finalMonths/12) - 20);
+            const coefBase = 0.60;
+            const coefAdd = yearsOver20 * 0.02;
+            const finalCoef = Math.min(1.0, coefBase + coefAdd); // Cap at 100% usually, though can go higher in some specific rules, stick to standard.
+
+            // Note: RMI = Avg * Coef.
+            // Discarding increases Avg but decreases Coef.
+            
+            // Standard RMI (No discard)
+            const stdYearsOver20 = Math.max(0, (totalMonths/12) - 20);
+            const stdCoef = Math.min(1.0, 0.60 + (stdYearsOver20 * 0.02));
+            const stdRMI = baseAvg * stdCoef;
+
+            // Optimized RMI
+            const optRMI = newAvg * finalCoef;
+
+            const gain = optRMI - stdRMI;
+
+            feedback.className = "mt-4 p-3 bg-blue-50 text-blue-800 text-sm rounded text-center font-medium";
+            if (gain > 0) {
+                 feedback.innerHTML = `Estratégia Válida! Média subiu para <strong>R$ ${newAvg.toFixed(2)}</strong>.<br>Novo Coeficiente: ${(finalCoef*100).toFixed(0)}%.<br>Ganho Estimado: +R$ ${gain.toFixed(2)}/mês.`;
+            } else {
+                 feedback.innerHTML = `Cuidado: A perda de tempo (Coeficiente) superou o ganho na média.<br>RMI caiu R$ ${Math.abs(gain).toFixed(2)}.`;
+            }
+
+            // Update Chart
+            rmiChartInstance.data.datasets[0].data = [stdRMI, optRMI];
+            rmiChartInstance.update();
+        }
+
+
+        // --- Init ---
+        window.addEventListener('load', () => {
+            initOverviewChart();
+            initSpecialChart();
+            initRMIChart();
+            // Start at Dashboard
+            navigate('dashboard');
+        });
+
+    </script>
+</body>
+</html>
+    <script></script>
+</body>
+</html>

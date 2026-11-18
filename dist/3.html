@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversor NPM → CDN</title>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f1117; color: #e0e0e0; font-family: sans-serif; padding: 16px; min-height: 100vh; }
+
+h1 { text-align: center; color: #00c7b7; margin-bottom: 4px; font-size: 1.2rem; }
+.sub { text-align: center; color: #555; font-size: 0.8rem; margin-bottom: 20px; }
+
+.card {
+  background: #1a1d27; border: 1px solid #2a2d3e;
+  border-radius: 10px; padding: 16px; margin-bottom: 14px;
+  max-width: 900px; margin-left: auto; margin-right: auto;
+}
+.card.verde   { border-left: 4px solid #7fff7f; }
+.card.azul    { border-left: 4px solid #00c7b7; }
+.card.amarelo { border-left: 4px solid #ffcc44; }
+.card.vermelho{ border-left: 4px solid #ff7c7c; }
+.card.roxo    { border-left: 4px solid #c87cff; }
+
+.titulo { font-weight: bold; font-size: 0.95rem; margin-bottom: 12px; color: #e0e0e0; }
+p { color: #aaa; font-size: 0.85rem; line-height: 1.6; margin-bottom: 8px; }
+
+.btn {
+  border-radius: 8px; padding: 9px 18px;
+  font-size: 0.83rem; font-weight: bold;
+  cursor: pointer; border: none;
+  margin-right: 6px; margin-top: 6px;
+  transition: all 0.2s;
+}
+.btn-teal    { background: #00c7b7; color: #0f1117; }
+.btn-teal:hover { background: #00e5d3; }
+.btn-verde   { background: transparent; color: #7fff7f; border: 1px solid #7fff7f; }
+.btn-verde:hover { background: #7fff7f; color: #0f1117; }
+.btn-roxo    { background: transparent; color: #c87cff; border: 1px solid #c87cff; }
+.btn-roxo:hover { background: #c87cff; color: #0f1117; }
+.btn-amarelo { background: transparent; color: #ffcc44; border: 1px solid #ffcc44; }
+.btn-amarelo:hover { background: #ffcc44; color: #0f1117; }
+.btn-cinza   { background: transparent; color: #888; border: 1px solid #2a2d3e; }
+.btn-cinza:hover { background: #2a2d3e; color: #e0e0e0; }
+.btn-vermelho{ background: transparent; color: #ff7c7c; border: 1px solid #ff7c7c; }
+.btn-vermelho:hover { background: #ff7c7c; color: #0f1117; }
+
+.lbl {
+  color: #00c7b7; font-size: 0.73rem;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin: 10px 0 4px;
+}
+
+input[type="text"] {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 6px; color: #c8f0a0; padding: 8px 12px;
+  font-family: monospace; font-size: 0.83rem; width: 100%; margin-top: 4px;
+}
+input:focus { outline: none; border-color: #00c7b7; }
+
+textarea {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 6px; color: #c8f0a0; padding: 10px;
+  font-size: 0.78rem; font-family: monospace;
+  resize: vertical; width: 100%; margin-top: 4px;
+}
+textarea:focus { outline: none; border-color: #00c7b7; }
+
+code {
+  background: #0a0c12; padding: 2px 6px;
+  border-radius: 4px; color: #c8f0a0; font-size: 0.78rem;
+}
+
+/* DROP ZONE */
+.drop-zone {
+  border: 2px dashed #2a2d3e; border-radius: 10px;
+  padding: 30px; text-align: center; cursor: pointer;
+  transition: all 0.2s; margin-bottom: 10px;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: #00c7b7; background: #001a18;
+}
+.drop-zone .icone { font-size: 2.5rem; margin-bottom: 8px; }
+.drop-zone p { color: #555; font-size: 0.82rem; margin: 0; }
+
+/* PACOTE ITEM */
+.pacote-item {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 8px; padding: 12px; margin-bottom: 8px;
+}
+.pacote-topo {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 8px;
+}
+.pacote-nome {
+  font-family: monospace; font-size: 0.88rem;
+  color: #e0e0e0; font-weight: bold; flex: 1;
+}
+.pacote-versao {
+  color: #555; font-size: 0.75rem; font-family: monospace;
+}
+
+.badge {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.7rem; font-weight: bold; flex-shrink: 0;
+}
+.b-cdn     { background: #002a00; color: #7fff7f; }
+.b-parcial { background: #2a2000; color: #ffcc44; }
+.b-sem     { background: #2a0000; color: #ff7c7c; }
+.b-dev     { background: #1a002a; color: #c87cff; }
+.b-essencial { background: #002020; color: #00c7b7; }
+.b-opcional  { background: #1a1a00; color: #aaa; }
+
+.pacote-cdn {
+  background: #001a10; border: 1px solid #003a20;
+  border-radius: 6px; padding: 8px 10px; margin: 6px 0;
+  font-family: monospace; font-size: 0.75rem; color: #7fff7f;
+  word-break: break-all; display: flex; align-items: flex-start; gap: 8px;
+}
+.pacote-cdn span { flex: 1; }
+
+.pacote-desc {
+  color: #888; font-size: 0.78rem; line-height: 1.5;
+  margin-top: 4px;
+}
+.pacote-desc strong { color: #ffcc44; }
+
+.pacote-busca {
+  display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
+}
+
+/* PESQUISA MANUAL */
+.pesquisa-box {
+  display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.pesquisa-box input { flex: 1; min-width: 200px; }
+
+.resultado-pesquisa {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 8px; padding: 12px; margin-top: 8px;
+  display: none;
+}
+
+/* RESUMO */
+.resumo-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 10px; margin-bottom: 14px;
+}
+@media(max-width:600px){ .resumo-grid { grid-template-columns: repeat(2,1fr); } }
+
+.resumo-item {
+  background: #0a0c12; border: 1px solid #2a2d3e;
+  border-radius: 8px; padding: 12px; text-align: center;
+}
+.resumo-num  { font-size: 1.8rem; font-weight: bold; }
+.resumo-txt  { font-size: 0.72rem; color: #555; margin-top: 4px; }
+.r-verde  { color: #7fff7f; }
+.r-amarelo{ color: #ffcc44; }
+.r-vermelho{ color: #ff7c7c; }
+.r-roxo   { color: #c87cff; }
+
+/* ABAS */
+.abas { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.aba {
+  flex: 1; min-width: 120px; padding: 9px 8px;
+  border-radius: 8px; border: 1px solid #2a2d3e;
+  background: #1a1d27; color: #888;
+  font-size: 0.78rem; cursor: pointer; text-align: center;
+  transition: all 0.2s;
+}
+.aba:hover { border-color: #00c7b7; color: #00c7b7; }
+.aba.ativa { background: #00c7b7; color: #0f1117; font-weight: bold; }
+
+.pag { display: none; }
+.pag.ativa { display: block; }
+
+.loader {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid #2a2d3e; border-top-color: #00c7b7;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+hr { border: none; border-top: 1px solid #2a2d3e; margin: 12px 0; }
+</style>
+</head>
+<body>
+
+<h1>📦 Conversor NPM → CDN</h1>
+<p class="sub">Importe um projeto ZIP ou cole o package.json — converte dependências para CDN</p>
+
+<div style="max-width:900px;margin:0 auto">
+
+<!-- ABAS -->
+<div class="abas">
+  <div class="aba ativa" onclick="ir('importar',this)">📂 Importar Projeto</div>
+  <div class="aba" onclick="ir('analisar',this)">🔍 Analisar</div>
+  <div class="aba" onclick="ir('pesquisa',this)">🔎 Pesquisar CDN</div>
+  <div class="aba" onclick="ir('gerar',this)">⚡ Gerar HTML</div>
+  <div class="aba" onclick="ir('manual',this)">📖 Manual CDN</div>
+</div>
+
+<!-- ══ ABA IMPORTAR ══ -->
+<div class="pag ativa" id="pag-importar">
+
+  <div class="card azul">
+    <div class="titulo">📂 Importar projeto ZIP ou colar package.json</div>
+    <p>Importe o ZIP do projeto ou cole o conteúdo do package.json diretamente.</p>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">📦 Opção 1 — Importar ZIP do projeto</div>
+    <div class="drop-zone" id="dropZone"
+      ondragover="evOver(event)" ondragleave="evLeave(event)" ondrop="evDrop(event)"
+      onclick="document.getElementById('inputZip').click()">
+      <div class="icone">🗜️</div>
+      <div style="color:#888;font-size:0.9rem">Arraste o ZIP aqui ou clique para selecionar</div>
+      <p>O arquivo package.json será extraído automaticamente</p>
+    </div>
+    <input type="file" id="inputZip" accept=".zip" style="display:none" onchange="lerZip(this.files[0])"/>
+    <div id="statusZip" style="color:#555;font-size:0.8rem;margin-top:6px"></div>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">📋 Opção 2 — Colar package.json</div>
+    <textarea id="pkgInput" style="height:180px"
+      placeholder='Cole aqui o conteúdo do package.json:
+{
+  "name": "meu-projeto",
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "vite": "^4.0.0"
+  }
+}'></textarea>
+    <button class="btn btn-teal" style="margin-top:8px" onclick="analisarPkg()">🔍 Analisar</button>
+  </div>
+
+</div>
+
+<!-- ══ ABA ANALISAR ══ -->
+<div class="pag" id="pag-analisar">
+
+  <div id="resumoArea" style="display:none">
+    <div class="resumo-grid" id="resumoGrid"></div>
+  </div>
+
+  <div class="card azul" id="semAnalise">
+    <div class="titulo">⚠️ Nenhum projeto analisado ainda</div>
+    <p>Volte na aba <strong>Importar Projeto</strong> e importe um ZIP ou cole o package.json.</p>
+  </div>
+
+  <div id="listaPacotes"></div>
+
+</div>
+
+<!-- ══ ABA PESQUISA ══ -->
+<div class="pag" id="pag-pesquisa">
+
+  <div class="card azul">
+    <div class="titulo">🔎 Pesquisar CDN de qualquer pacote</div>
+    <p>Digite o nome do pacote npm e veja se tem versão CDN disponível — sem sair daqui.</p>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">🔍 Buscar pacote</div>
+    <div class="pesquisa-box">
+      <input type="text" id="buscaInput" placeholder="Ex: axios, lodash, moment, dayjs..."
+        onkeydown="if(event.key==='Enter')buscarPacote()"/>
+      <button class="btn btn-teal" onclick="buscarPacote()">🔍 Buscar</button>
+    </div>
+
+    <div class="lbl">Pacotes populares — clique para ver:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="populares"></div>
+
+    <div class="resultado-pesquisa" id="resultadoPesquisa"></div>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">📡 O que é CDN — explicado simples</div>
+    <p><strong style="color:#ffcc44">CDN</strong> = Content Delivery Network = servidor na internet que guarda bibliotecas prontas.</p>
+    <p>Em vez de instalar com <code>npm install react</code> e baixar 300MB na pasta <code>node_modules</code>, você coloca uma linha no HTML:</p>
+    <div style="background:#0a0c12;border:1px solid #2a2d3e;border-radius:6px;padding:10px;margin:8px 0;font-family:monospace;font-size:0.78rem;color:#c8f0a0">
+      &lt;script src="https://unpkg.com/react@18/umd/react.development.js"&gt;&lt;/script&gt;
+    </div>
+    <p>O navegador baixa direto da internet quando abre a página. <strong style="color:#7fff7f">Sem npm. Sem Node. Funciona em qualquer lugar.</strong></p>
+    <hr>
+    <p><strong style="color:#ffcc44">unpkg.com</strong> = espelho de tudo que existe no npm em versão CDN</p>
+    <p><strong style="color:#ffcc44">cdn.jsdelivr.net</strong> = outro espelho, mais rápido em alguns países</p>
+    <p><strong style="color:#ffcc44">cdnjs.com</strong> = curado manualmente, só os mais populares</p>
+  </div>
+
+</div>
+
+<!-- ══ ABA GERAR ══ -->
+<div class="pag" id="pag-gerar">
+
+  <div class="card azul">
+    <div class="titulo">⚡ Gerar HTML com CDNs</div>
+    <p>Gera um HTML base com todos os CDNs compatíveis já incluídos — pronto para usar.</p>
+  </div>
+
+  <div class="card verde" id="gerarForm">
+    <div class="titulo">⚙️ Configurar geração</div>
+
+    <div class="lbl">Nome do projeto:</div>
+    <input type="text" id="gNome" value="Meu Projeto"/>
+
+    <div class="lbl" style="margin-top:8px">Tipo de projeto:</div>
+    <select id="gTipo" style="background:#0a0c12;border:1px solid #2a2d3e;border-radius:6px;color:#c8f0a0;padding:8px;width:100%;font-size:0.83rem">
+      <option value="react">React (componentes)</option>
+      <option value="html">HTML puro</option>
+      <option value="vue">Vue.js</option>
+    </select>
+
+    <div style="margin-top:12px">
+      <button class="btn btn-teal" onclick="gerarHTML()">⚡ Gerar HTML</button>
+      <button class="btn btn-cinza" onclick="ir('analisar',document.querySelectorAll('.aba')[1])">← Voltar para análise</button>
+    </div>
+  </div>
+
+  <div id="htmlGerado" style="display:none">
+    <div class="card roxo">
+      <div class="titulo">📄 HTML gerado</div>
+      <textarea id="htmlSaida" readonly style="height:300px"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-teal" onclick="copiarHTML()">📋 Copiar</button>
+        <button class="btn btn-verde" onclick="baixarHTML()">⬇️ Baixar index.html</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ ABA MANUAL ══ -->
+<div class="pag" id="pag-manual">
+
+  <div class="card azul">
+    <div class="titulo">📖 Manual completo — CDN vs NPM</div>
+  </div>
+
+  <div class="card verde">
+    <div class="titulo">✅ Quando usar CDN</div>
+    <p>✅ Projeto HTML simples ou PWA</p>
+    <p>✅ Quando não tem Node/npm disponível</p>
+    <p>✅ Projetos pequenos e médios</p>
+    <p>✅ Protótipos e ferramentas rápidas</p>
+    <p>✅ Quando quer que funcione em qualquer lugar sem instalar nada</p>
+  </div>
+
+  <div class="card vermelho">
+    <div class="titulo">❌ Quando CDN NÃO resolve</div>
+    <p>❌ Bibliotecas que só existem no npm e não têm versão browser</p>
+    <p>❌ Pacotes que dependem do sistema de arquivos (fs, path)</p>
+    <p>❌ Ferramentas de build (vite, webpack, typescript) — são só para desenvolvimento</p>
+    <p>❌ Pacotes de servidor (express, fastify) — rodam no Node, não no navegador</p>
+  </div>
+
+  <div class="card amarelo">
+    <div class="titulo">🔄 Tabela completa de substituições</div>
+    <div id="tabelaManual"></div>
+  </div>
+
+  <div class="card roxo">
+    <div class="titulo">📝 Como usar o CDN no HTML</div>
+    <p><strong style="color:#c87cff">Para JavaScript:</strong></p>
+    <textarea readonly style="height:60px">&lt;script src="https://unpkg.com/PACOTE@VERSAO/arquivo.js"&gt;&lt;/script&gt;</textarea>
+    <p style="margin-top:8px"><strong style="color:#c87cff">Para CSS:</strong></p>
+    <textarea readonly style="height:60px">&lt;link rel="stylesheet" href="https://unpkg.com/PACOTE@VERSAO/arquivo.css"&gt;</textarea>
+    <p style="margin-top:8px"><strong style="color:#c87cff">Onde colocar no HTML:</strong></p>
+    <textarea readonly style="height:120px">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;!-- CSS vai aqui, dentro do head --&gt;
+  &lt;link rel="stylesheet" href="CDN_CSS"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;!-- JS vai antes de fechar o body --&gt;
+  &lt;script src="CDN_JS"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+  </div>
+
+</div>
+
+</div><!-- fim max-width -->
+
+<script>
+// ══════════════════════════════════════════════════════
+// BASE DE DADOS CDN — 120+ pacotes
+// ══════════════════════════════════════════════════════
+const BASE_CDN = {
+  // ── REACT ──
+  'react': {
+    cdn: 'https://unpkg.com/react@18/umd/react.development.js',
+    cdn_prod: 'https://unpkg.com/react@18/umd/react.production.min.js',
+    tipo: 'js', essencial: true,
+    desc: 'Biblioteca principal do React para criar interfaces',
+    substitui: 'npm install react',
+    categoria: 'Framework'
+  },
+  'react-dom': {
+    cdn: 'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
+    cdn_prod: 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
+    tipo: 'js', essencial: true,
+    desc: 'Renderiza componentes React no navegador — sempre junto com react',
+    substitui: 'npm install react-dom',
+    categoria: 'Framework'
+  },
+  'react-router-dom': {
+    cdn: 'https://unpkg.com/react-router-dom@6/dist/react-router-dom.development.js',
+    tipo: 'js', essencial: false,
+    desc: 'Navegação entre páginas no React',
+    substitui: 'npm install react-router-dom',
+    categoria: 'Roteamento',
+    aviso: 'No modo CDN funciona diferente — verifique a documentação'
+  },
+  // ── VUE ──
+  'vue': {
+    cdn: 'https://unpkg.com/vue@3/dist/vue.global.js',
+    cdn_prod: 'https://unpkg.com/vue@3/dist/vue.global.prod.js',
+    tipo: 'js', essencial: true,
+    desc: 'Framework Vue.js para criar interfaces reativas',
+    substitui: 'npm install vue',
+    categoria: 'Framework'
+  },
+  // ── BABEL ──
+  '@babel/core': {
+    cdn: 'https://unpkg.com/@babel/standalone/babel.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Transforma JSX/TSX em JavaScript — necessário para rodar React no navegador sem build',
+    substitui: 'npm install @babel/core',
+    categoria: 'Build',
+    aviso: 'Use type="text/babel" nas suas tags script'
+  },
+  '@babel/standalone': {
+    cdn: 'https://unpkg.com/@babel/standalone/babel.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Versão do Babel que roda direto no navegador',
+    substitui: 'npm install @babel/standalone',
+    categoria: 'Build'
+  },
+  // ── TAILWIND ──
+  'tailwindcss': {
+    cdn: 'https://cdn.tailwindcss.com',
+    tipo: 'js', essencial: false,
+    desc: 'Framework CSS utilitário — classes prontas para estilizar',
+    substitui: 'npm install tailwindcss',
+    categoria: 'CSS',
+    aviso: 'A versão CDN não suporta configuração personalizada (tailwind.config.js)'
+  },
+  // ── AXIOS ──
+  'axios': {
+    cdn: 'https://unpkg.com/axios/dist/axios.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Faz requisições HTTP (GET, POST, etc) de forma simples',
+    substitui: 'npm install axios',
+    categoria: 'HTTP'
+  },
+  // ── LODASH ──
+  'lodash': {
+    cdn: 'https://unpkg.com/lodash@4/lodash.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Funções utilitárias para arrays, objetos e strings',
+    substitui: 'npm install lodash',
+    categoria: 'Utilitários'
+  },
+  // ── MOMENT / DAYJS ──
+  'moment': {
+    cdn: 'https://unpkg.com/moment/moment.js',
+    tipo: 'js', essencial: false,
+    desc: 'Manipulação de datas — PESADO (300KB). Considere usar dayjs',
+    substitui: 'npm install moment',
+    categoria: 'Data/Hora',
+    aviso: 'Muito pesado — prefira dayjs que é 2KB e tem CDN também'
+  },
+  'dayjs': {
+    cdn: 'https://unpkg.com/dayjs/dayjs.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Manipulação de datas — leve (2KB), substituto moderno do moment',
+    substitui: 'npm install dayjs',
+    categoria: 'Data/Hora'
+  },
+  // ── MARKED (MARKDOWN) ──
+  'marked': {
+    cdn: 'https://unpkg.com/marked/marked.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Converte Markdown em HTML',
+    substitui: 'npm install marked',
+    categoria: 'Markdown'
+  },
+  // ── CHART.JS ──
+  'chart.js': {
+    cdn: 'https://unpkg.com/chart.js/dist/chart.umd.js',
+    tipo: 'js', essencial: false,
+    desc: 'Gráficos bonitos — barras, linhas, pizza, etc',
+    substitui: 'npm install chart.js',
+    categoria: 'Gráficos'
+  },
+  // ── BOOTSTRAP ──
+  'bootstrap': {
+    cdn_css: 'https://unpkg.com/bootstrap@5/dist/css/bootstrap.min.css',
+    cdn: 'https://unpkg.com/bootstrap@5/dist/js/bootstrap.bundle.min.js',
+    tipo: 'ambos', essencial: false,
+    desc: 'Framework CSS com componentes prontos — botões, modais, grid',
+    substitui: 'npm install bootstrap',
+    categoria: 'CSS'
+  },
+  // ── JQUERY ──
+  'jquery': {
+    cdn: 'https://unpkg.com/jquery/dist/jquery.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Manipulação do DOM simplificada — legado mas ainda usado',
+    substitui: 'npm install jquery',
+    categoria: 'DOM'
+  },
+  // ── SOCKET.IO ──
+  'socket.io-client': {
+    cdn: 'https://unpkg.com/socket.io-client/dist/socket.io.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Comunicação em tempo real com o servidor',
+    substitui: 'npm install socket.io-client',
+    categoria: 'WebSocket'
+  },
+  // ── ZUSTAND ──
+  'zustand': {
+    cdn: null, essencial: false,
+    desc: 'Gerenciamento de estado para React — sem CDN oficial',
+    substitui: 'npm install zustand',
+    categoria: 'Estado',
+    aviso: 'Não tem CDN oficial. Use useState/useContext como alternativa'
+  },
+  // ── FRAMER MOTION ──
+  'framer-motion': {
+    cdn: 'https://unpkg.com/framer-motion/dist/framer-motion.js',
+    tipo: 'js', essencial: false,
+    desc: 'Animações para React',
+    substitui: 'npm install framer-motion',
+    categoria: 'Animação'
+  },
+  // ── LUCIDE ──
+  'lucide-react': {
+    cdn: 'https://unpkg.com/lucide/dist/umd/lucide.js',
+    tipo: 'js', essencial: false,
+    desc: 'Ícones bonitos para React',
+    substitui: 'npm install lucide-react',
+    categoria: 'Ícones',
+    aviso: 'No CDN use lucide (sem -react) e acesse como lucide.createIcons()'
+  },
+  // ── HIGHLIGHT.JS ──
+  'highlight.js': {
+    cdn_css: 'https://unpkg.com/highlight.js/styles/github-dark.min.css',
+    cdn: 'https://unpkg.com/highlight.js/lib/highlight.min.js',
+    tipo: 'ambos', essencial: false,
+    desc: 'Destaque de sintaxe para código',
+    substitui: 'npm install highlight.js',
+    categoria: 'Código'
+  },
+  // ── JSZIP ──
+  'jszip': {
+    cdn: 'https://unpkg.com/jszip/dist/jszip.min.js',
+    tipo: 'js', essencial: false,
+    desc: 'Criar e ler arquivos ZIP no navegador',
+    substitui: 'npm install jszip',
+    categoria: 'Arquivos'
+  },
+  // ── DEV ONLY (sem CDN) ──
+  'vite': { cdn: null, dev: true, desc: 'Ferramenta de build — só para desenvolvimento, não vai para produção', categoria: 'Build' },
+  'typescript': { cdn: null, dev: true, desc: 'Linguagem — compilada para JS antes de rodar, não precisa de CDN', categoria: 'Linguagem' },
+  '@types/react': { cdn: null, dev: true, desc: 'Tipos TypeScript — só para desenvolvimento', categoria: 'Tipos' },
+  '@types/react-dom': { cdn: null, dev: true, desc: 'Tipos TypeScript — só para desenvolvimento', categoria: 'Tipos' },
+  '@types/node': { cdn: null, dev: true, desc: 'Tipos TypeScript do Node — só para desenvolvimento', categoria: 'Tipos' },
+  'eslint': { cdn: null, dev: true, desc: 'Verificador de código — só para desenvolvimento', categoria: 'Dev' },
+  'prettier': { cdn: null, dev: true, desc: 'Formatador de código — só para desenvolvimento', categoria: 'Dev' },
+  '@vitejs/plugin-react': { cdn: null, dev: true, desc: 'Plugin do Vite para React — só para desenvolvimento', categoria: 'Build' },
+  'autoprefixer': { cdn: null, dev: true, desc: 'Adiciona prefixos CSS — só para desenvolvimento', categoria: 'Build' },
+  'postcss': { cdn: null, dev: true, desc: 'Processador CSS — só para desenvolvimento', categoria: 'Build' },
+};
+
+// ══════════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════════
+let pkgAtual = null;
+let analiseAtual = [];
+
+// ══════════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ══════════════════════════════════════════════════════
+function ir(id, el) {
+  document.querySelectorAll('.pag').forEach(p => p.classList.remove('ativa'));
+  document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+  document.getElementById('pag-' + id).classList.add('ativa');
+  if (el) el.classList.add('ativa');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════════
+// ZIP
+// ══════════════════════════════════════════════════════
+function evOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragover'); }
+function evLeave(e) { document.getElementById('dropZone').classList.remove('dragover'); }
+function evDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  if (e.dataTransfer.files[0]) lerZip(e.dataTransfer.files[0]);
+}
+
+async function lerZip(file) {
+  const status = document.getElementById('statusZip');
+  if (!file) return;
+
+  status.innerHTML = '<span class="loader"></span>Lendo ZIP...';
+
+  try {
+    const zip = await JSZip.loadAsync(file);
+    let pkgJson = null;
+    let pkgPath = '';
+
+    // Procurar package.json
+    for (const [path, f] of Object.entries(zip.files)) {
+      if (path.endsWith('package.json') && !path.includes('node_modules')) {
+        pkgJson = await f.async('string');
+        pkgPath = path;
+        break;
+      }
+    }
+
+    if (!pkgJson) {
+      status.innerHTML = '<span style="color:#ff7c7c">❌ package.json não encontrado no ZIP</span>';
+      return;
+    }
+
+    status.innerHTML = `<span style="color:#7fff7f">✅ package.json encontrado: ${pkgPath}</span>`;
+    document.getElementById('pkgInput').value = pkgJson;
+    analisarPkg();
+
+  } catch(e) {
+    status.innerHTML = `<span style="color:#ff7c7c">❌ Erro ao ler ZIP: ${e.message}</span>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// ANALISAR PACKAGE.JSON
+// ══════════════════════════════════════════════════════
+function analisarPkg() {
+  const txt = document.getElementById('pkgInput').value.trim();
+  if (!txt) { alert('Cole o package.json primeiro'); return; }
+
+  try {
+    pkgAtual = JSON.parse(txt);
+  } catch(e) {
+    alert('JSON inválido: ' + e.message);
+    return;
+  }
+
+  const deps    = Object.entries(pkgAtual.dependencies    || {});
+  const devDeps = Object.entries(pkgAtual.devDependencies || {});
+  const todos   = [
+    ...deps.map(([n,v])    => ({ nome: n, versao: v, dev: false })),
+    ...devDeps.map(([n,v]) => ({ nome: n, versao: v, dev: true  }))
+  ];
+
+  analiseAtual = todos.map(p => {
+    const info = BASE_CDN[p.nome] || null;
+    return {
+      ...p,
+      info,
+      temCdn: info && info.cdn,
+      ehDev:  p.dev || (info && info.dev)
+    };
+  });
+
+  renderAnalise();
+  ir('analisar', document.querySelectorAll('.aba')[1]);
+}
+
+function renderAnalise() {
+  const lista = document.getElementById('listaPacotes');
+  const resumo = document.getElementById('resumoArea');
+  const semAnalise = document.getElementById('semAnalise');
+
+  if (!analiseAtual.length) return;
+
+  semAnalise.style.display = 'none';
+  resumo.style.display = 'block';
+
+  const comCdn    = analiseAtual.filter(p => p.temCdn).length;
+  const semCdn    = analiseAtual.filter(p => !p.temCdn && !p.ehDev).length;
+  const soDev     = analiseAtual.filter(p => p.ehDev).length;
+  const total     = analiseAtual.length;
+
+  document.getElementById('resumoGrid').innerHTML = `
+    <div class="resumo-item">
+      <div class="resumo-num r-verde">${comCdn}</div>
+      <div class="resumo-txt">Com CDN disponível</div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-num r-vermelho">${semCdn}</div>
+      <div class="resumo-txt">Sem CDN (precisam de npm)</div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-num r-roxo">${soDev}</div>
+      <div class="resumo-txt">Só desenvolvimento (ignorar)</div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-num" style="color:#00c7b7">${total}</div>
+      <div class="resumo-txt">Total de dependências</div>
+    </div>`;
+
+  lista.innerHTML = `
+    <div class="card azul">
+      <div class="titulo">📦 ${pkgAtual.name || 'Projeto'} — ${total} dependências</div>
+      ${analiseAtual.map(renderPacote).join('')}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:900px;margin:0 auto 14px">
+      <button class="btn btn-teal" onclick="ir('gerar',document.querySelectorAll('.aba')[3])">⚡ Gerar HTML com CDNs</button>
+    </div>`;
+}
+
+function renderPacote(p) {
+  const info = p.info;
+
+  let badges = '';
+  if (p.ehDev) badges += '<span class="badge b-dev">só dev</span>';
+  if (p.temCdn) badges += '<span class="badge b-cdn">✅ tem CDN</span>';
+  else if (!p.ehDev) badges += '<span class="badge b-sem">❌ sem CDN</span>';
+  if (info && info.essencial) badges += '<span class="badge b-essencial">essencial</span>';
+
+  let cdnHtml = '';
+  if (p.temCdn) {
+    cdnHtml = `
+      <div class="pacote-cdn">
+        <span>${info.cdn}</span>
+        <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem"
+          onclick="cp(this,'${info.cdn}')">📋</button>
+      </div>`;
+    if (info.cdn_css) {
+      cdnHtml += `
+        <div class="pacote-cdn" style="background:#001a20;border-color:#003040">
+          <span>${info.cdn_css}</span>
+          <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem"
+            onclick="cp(this,'${info.cdn_css}')">📋</button>
+        </div>`;
+    }
+  }
+
+  let descHtml = '';
+  if (info) {
+    descHtml = `<div class="pacote-desc">
+      <strong>${info.categoria || ''}</strong> — ${info.desc}
+      ${info.aviso ? `<br><span style="color:#ffcc44">⚠️ ${info.aviso}</span>` : ''}
+    </div>`;
+  } else {
+    descHtml = `<div class="pacote-desc" style="color:#555">
+      Pacote desconhecido — 
+      <span style="color:#7c9fff;cursor:pointer" onclick="buscarPacoteNome('${p.nome}')">
+        🔎 Pesquisar CDN
+      </span>
+    </div>`;
+  }
+
+  return `
+    <div class="pacote-item">
+      <div class="pacote-topo">
+        <span class="pacote-nome">${p.nome}</span>
+        <span class="pacote-versao">${p.versao}</span>
+        ${badges}
+      </div>
+      ${cdnHtml}
+      ${descHtml}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// PESQUISA CDN
+// ══════════════════════════════════════════════════════
+const POPULARES = [
+  'react','axios','lodash','dayjs','chart.js',
+  'bootstrap','jquery','marked','highlight.js','jszip',
+  'vue','framer-motion','lucide-react','socket.io-client'
+];
+
+function renderPopulares() {
+  document.getElementById('populares').innerHTML = POPULARES.map(n =>
+    `<button class="btn btn-cinza" style="padding:4px 10px;font-size:0.75rem"
+      onclick="buscarPacoteNome('${n}')">${n}</button>`
+  ).join('');
+}
+
+function buscarPacote() {
+  const nome = document.getElementById('buscaInput').value.trim();
+  if (!nome) return;
+  buscarPacoteNome(nome);
+}
+
+function buscarPacoteNome(nome) {
+  document.getElementById('buscaInput').value = nome;
+  ir('pesquisa', document.querySelectorAll('.aba')[2]);
+
+  const info = BASE_CDN[nome];
+  const div  = document.getElementById('resultadoPesquisa');
+  div.style.display = 'block';
+
+  if (!info) {
+    div.innerHTML = `
+      <div style="color:#ffcc44;font-weight:bold;margin-bottom:8px">⚠️ "${nome}" não está na base local</div>
+      <p style="color:#aaa;font-size:0.82rem">Mas pode existir no unpkg.com. Links para tentar:</p>
+      <div class="pacote-cdn">
+        <span>https://unpkg.com/${nome}</span>
+        <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem"
+          onclick="cp(this,'https://unpkg.com/${nome}')">📋</button>
+      </div>
+      <div class="pacote-cdn">
+        <span>https://cdn.jsdelivr.net/npm/${nome}</span>
+        <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem"
+          onclick="cp(this,'https://cdn.jsdelivr.net/npm/${nome}')">📋</button>
+      </div>
+      <p style="color:#555;font-size:0.78rem;margin-top:8px">
+        Abra esses links no navegador para ver se existem. Se aparecer código JS, o CDN funciona.
+      </p>`;
+    return;
+  }
+
+  let html = `
+    <div style="color:#7fff7f;font-weight:bold;margin-bottom:10px">✅ "${nome}" encontrado!</div>
+    <div style="color:#aaa;font-size:0.82rem;margin-bottom:8px">${info.desc}</div>`;
+
+  if (info.dev) {
+    html += `<div style="background:#1a002a;border:1px solid #3a0050;border-radius:6px;padding:10px;color:#c87cff;font-size:0.82rem">
+      🔧 Este pacote é só para desenvolvimento — não precisa de CDN.<br>
+      Ele é usado durante o build mas não vai para o HTML final.
+    </div>`;
+  } else if (!info.cdn) {
+    html += `<div style="background:#1a0000;border:1px solid #3a0000;border-radius:6px;padding:10px;color:#ff7c7c;font-size:0.82rem">
+      ❌ Este pacote não tem versão CDN disponível.<br>
+      Precisa de npm para funcionar.
+    </div>`;
+  } else {
+    if (info.cdn) {
+      html += `<div class="lbl">CDN JavaScript:</div>
+        <div class="pacote-cdn">
+          <span>${info.cdn}</span>
+          <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem"
+            onclick="cp(this,'${info.cdn}')">📋</button>
+        </div>
+        <div style="color:#555;font-size:0.75rem;margin-top:4px">
+          Cole dentro do &lt;head&gt; ou antes de &lt;/body&gt;
+        </div>`;
+    }
+    if (info.cdn_css) {
+      html += `<div class="lbl" style="margin-top:10px">CDN CSS:</div>
+        <div class="pacote-cdn" style="background:#001a20;border-color:#003040">
+          <span>${info.cdn_css}</span>
+          <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem"
+            onclick="cp(this,'${info.cdn_css}')">📋</button>
+        </div>`;
+    }
+    if (info.cdn_prod) {
+      html += `<div class="lbl" style="margin-top:10px">Versão produção (menor, mais rápida):</div>
+        <div class="pacote-cdn" style="background:#002010;border-color:#004020">
+          <span>${info.cdn_prod}</span>
+          <button class="btn btn-cinza" style="padding:3px 8px;font-size:0.7rem"
+            onclick="cp(this,'${info.cdn_prod}')">📋</button>
+        </div>`;
+    }
+    if (info.aviso) {
+      html += `<div style="background:#1a1000;border:1px solid #3a2000;border-radius:6px;padding:10px;color:#ffcc44;font-size:0.82rem;margin-top:8px">
+        ⚠️ ${info.aviso}
+      </div>`;
+    }
+  }
+
+  div.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════
+// GERAR HTML
+// ══════════════════════════════════════════════════════
+function gerarHTML() {
+  const nome = document.getElementById('gNome').value || 'Meu Projeto';
+  const tipo = document.getElementById('gTipo').value;
+
+  const comCdn = analiseAtual.filter(p => p.temCdn && !p.ehDev);
+
+  let scripts = '';
+  let links   = '';
+
+  comCdn.forEach(p => {
+    const info = p.info;
+    if (info.cdn_css) links   += `  <link rel="stylesheet" href="${info.cdn_css}">\n`;
+    if (info.cdn)     scripts += `  <script src="${info.cdn}"><\/script>\n`;
+  });
+
+  // Sempre incluir Babel se for React
+  const temReact = comCdn.some(p => p.nome === 'react');
+  const temBabel = comCdn.some(p => p.nome.includes('babel'));
+  if (temReact && !temBabel) {
+    scripts += `  <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>\n`;
+  }
+
+  let corpo = '';
+  if (tipo === 'react') {
+    corpo = `<div id="root"></div>
+<script type="text/babel">
+function App() {
+  return (
+    <div style={{padding: '20px'}}>
+      <h1>${nome}</h1>
+      <p>Projeto funcionando com CDN!</p>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+<\/script>`;
+  } else if (tipo === 'vue') {
+    corpo = `<div id="app">
+  <h1>{{ titulo }}</h1>
+  <p>{{ mensagem }}</p>
+</div>
+<script>
+const { createApp } = Vue;
+createApp({
+  data() {
+    return {
+      titulo: '${nome}',
+      mensagem: 'Projeto funcionando com CDN!'
+    }
+  }
+}).mount('#app');
+<\/script>`;
+  } else {
+    corpo = `<h1>${nome}</h1>
+<p>Projeto funcionando!</p>
+<script>
+console.log('${nome} carregado!');
+<\/script>`;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${nome}</title>
+${links}${scripts}</head>
+<body>
+
+${corpo}
+
+</body>
+</html>`;
+
+  document.getElementById('htmlSaida').value = html;
+  document.getElementById('htmlGerado').style.display = 'block';
+}
+
+function copiarHTML() {
+  navigator.clipboard.writeText(document.getElementById('htmlSaida').value)
+    .then(() => alert('✅ Copiado!'));
+}
+
+function baixarHTML() {
+  const txt  = document.getElementById('htmlSaida').value;
+  const blob = new Blob([txt], { type: 'text/html' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'index.html';
+  a.click();
+}
+
+// ══════════════════════════════════════════════════════
+// TABELA MANUAL
+// ══════════════════════════════════════════════════════
+function renderTabela() {
+  const grupos = {};
+  Object.entries(BASE_CDN).forEach(([nome, info]) => {
+    const cat = info.categoria || 'Outros';
+    if (!grupos[cat]) grupos[cat] = [];
+    grupos[cat].push({ nome, ...info });
+  });
+
+  let html = '';
+  Object.entries(grupos).forEach(([cat, itens]) => {
+    html += `<div style="margin-bottom:14px">
+      <div class="lbl">${cat}</div>`;
+    itens.forEach(item => {
+      const status = item.dev ? '🔧 só dev' : item.cdn ? '✅ tem CDN' : '❌ sem CDN';
+      const cor    = item.dev ? '#c87cff' : item.cdn ? '#7fff7f' : '#ff7c7c';
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1a1d27;flex-wrap:wrap">
+        <span style="font-family:monospace;font-size:0.8rem;color:#e0e0e0;min-width:180px">${item.nome}</span>
+        <span style="color:${cor};font-size:0.75rem;min-width:100px">${status}</span>
+        <span style="color:#555;font-size:0.75rem;flex:1">${item.desc}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('tabelaManual').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════
+// UTILITÁRIOS
+// ══════════════════════════════════════════════════════
+function cp(btn, txt) {
+  navigator.clipboard.writeText(txt).then(() => {
+    const o = btn.textContent;
+    btn.textContent = '✅';
+    setTimeout(() => btn.textContent = o, 2000);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+renderPopulares();
+renderTabela();
+</script>
+</body>
+</html>

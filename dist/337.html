@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitor de CNIS - Visual</title>
+    <!-- Biblioteca para ler o PDF direto no navegador (sem precisar de Python) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <style>
+        /* O MESMO VISUAL DARK QUE VOCÊ GOSTA */
+        body { background: #0a0a0a; color: #cbd5e1; font-family: system-ui, sans-serif; margin: 0; padding: 24px; }
+        .wrap { max-width: 900px; margin: 0 auto; }
+        header { display: flex; align-items: center; border-bottom: 2px solid #a3a082; padding-bottom: 24px; margin-bottom: 32px; gap: 16px; }
+        .avatar { width: 56px; height: 56px; background: #a3a082; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; font-size: 22px; border: 2px solid white; }
+        .title { color: #a3a082; font-weight: bold; font-size: 20px; margin: 0; }
+        .sub { font-size: 9px; letter-spacing: 4px; opacity: 0.6; text-transform: uppercase; margin: 0; }
+        
+        .upload-zone { padding: 40px; border-radius: 16px; border: 2px dashed #2d2d2a; text-align: center; cursor: pointer; background: #161614; margin-bottom: 24px; transition: 0.3s; }
+        .upload-zone:hover { border-color: #a3a082; }
+        
+        .status { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-weight: bold; font-size: 13px; display: none; text-align: center; }
+        .status.ok { background: rgba(16,185,129,0.1); color: #4ade80; border: 1px solid rgba(16,185,129,0.3); display: block; }
+        .status.err { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.3); display: block; }
+
+        /* Tabela para mostrar os vínculos do CNIS */
+        table { width: 100%; border-collapse: collapse; background: #161614; border-radius: 10px; overflow: hidden; border: 1px solid #2d2d2a; }
+        th { background: #000; color: #a3a082; padding: 15px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 15px; border-bottom: 1px solid #2d2d2a; font-size: 13px; font-weight: bold; }
+        tr:last-child td { border-bottom: none; }
+        .tag-aberto { background: rgba(239,68,68,0.2); color: #f87171; padding: 4px 8px; border-radius: 6px; font-size: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <!-- CABEÇALHO -->
+    <header>
+        <div class="avatar">M</div>
+        <div>
+            <p class="title">MAIKON CALDEIRA</p>
+            <p class="sub">Extrator Visual de CNIS (Sem Python)</p>
+        </div>
+    </header>
+
+    <div id="msg-status" class="status"></div>
+
+    <!-- ÁREA DE UPLOAD -->
+    <div class="upload-zone" onclick="document.getElementById('file-upload').click()">
+        <input type="file" id="file-upload" accept=".pdf" style="display:none" onchange="lerCNIS(event)">
+        <div style="font-size:36px; margin-bottom:8px;">📊</div>
+        <p style="font-weight:bold; color:white; margin:0;">Clique aqui para importar o PDF do CNIS</p>
+        <p style="font-size:10px; color:#475569; margin:4px 0 0; text-transform:uppercase; letter-spacing:2px;">O sistema vai extrair as empresas e as datas</p>
+    </div>
+
+    <!-- RESULTADO DOS VÍNCULOS -->
+    <div id="area-resultado" style="display: none;">
+        <h3 style="color: #a3a082; text-transform: uppercase; font-size: 12px; letter-spacing: 2px;">🏢 Vínculos Encontrados</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nº</th>
+                    <th>Empregador</th>
+                    <th>Data Início</th>
+                    <th>Data Fim</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-vinculos">
+                <!-- Os dados vão aparecer aqui -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Configuração do PDF.js (A biblioteca que substitui o Python no navegador)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+    function mostrarStatus(tipo, texto) {
+        const div = document.getElementById('msg-status');
+        div.className = 'status ' + tipo;
+        div.innerText = texto;
+    }
+
+    // Função que lê o PDF
+    async function lerCNIS(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        mostrarStatus('ok', '⏳ Lendo o CNIS... aguarde!');
+        document.getElementById('area-resultado').style.display = 'none';
+        
+        try {
+            const buffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+            let textoCompleto = '';
+            
+            // Lê todas as páginas do PDF
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                // Junta o texto mantendo as quebras de linha para facilitar a busca
+                textoCompleto += content.items.map(item => item.str).join(' ') + '\n';
+            }
+            
+            extrairVinculos(textoCompleto);
+            
+        } catch (err) {
+            mostrarStatus('err', 'Erro ao ler o PDF: ' + err.message);
+        }
+    }
+
+    // A MÁGICA ACONTECE AQUI (A lógica do Python traduzida para JavaScript)
+    function extrairVinculos(texto) {
+        const linhas = texto.split('\n');
+        const vinculos = [];
+        const padraoData = /\d{2}\/\d{2}\/\d{4}/g; // O "Regex" que acha datas
+
+        for (let i = 0; i < linhas.length; i++) {
+            let linha = linhas[i];
+            
+            // Se achar a palavra Empregador
+            if (linha.includes("Empregador:") || linha.includes("Nome do Empregador:")) {
+                let nomeEmpregador = linha.split(":").pop().trim();
+                let dataInicio = null;
+                let dataFim = null;
+
+                // Olha as próximas 5 linhas para caçar as datas
+                for (let j = 1; j <= 5; j++) {
+                    if (i + j < linhas.length) {
+                        let linhaProxima = linhas[i + j];
+                        
+                        if (linhaProxima.includes("Data Início") || padraoData.test(linhaProxima)) {
+                            let datas = linhaProxima.match(padraoData);
+                            if (datas && datas.length >= 1 && !dataInicio) dataInicio = datas[0];
+                            if (datas && datas.length >= 2 && !dataFim) dataFim = datas[1];
+                        }
+                        if (linhaProxima.includes("Data Fim")) {
+                            let datasFim = linhaProxima.match(padraoData);
+                            if (datasFim && datasFim.length >= 1) dataFim = datasFim[0];
+                        }
+                    }
+                }
+                
+                vinculos.push({
+                    empregador: nomeEmpregador,
+                    inicio: dataInicio || "Não encontrada",
+                    fim: dataFim || "Aberto"
+                });
+            }
+        }
+
+        mostrarNaTela(vinculos);
+    }
+
+    // Pega os dados extraídos e desenha a tabela na tela
+    function mostrarNaTela(vinculos) {
+        const tbody = document.getElementById('tabela-vinculos');
+        tbody.innerHTML = ''; // Limpa a tabela
+
+        if (vinculos.length === 0) {
+            mostrarStatus('err', '❌ Nenhum vínculo encontrado. Verifique se o PDF é realmente um CNIS.');
+            return;
+        }
+
+        vinculos.forEach((v, index) => {
+            let tr = document.createElement('tr');
+            
+            // Se o vínculo estiver aberto, coloca uma tag vermelha
+            let tagFim = v.fim === "Aberto" ? `<span class="tag-aberto">VÍNCULO ABERTO</span>` : v.fim;
+
+            tr.innerHTML = `
+                <td style="color:#475569;">${index + 1}</td>
+                <td style="color:white;">${v.empregador}</td>
+                <td style="color:#4ade80;">${v.inicio}</td>
+                <td>${tagFim}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('area-resultado').style.display = 'block';
+        mostrarStatus('ok', `✅ Sucesso! Encontramos ${vinculos.length} vínculos neste CNIS.`);
+    }
+</script>
+</body>
+</html>

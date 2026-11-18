@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Laudo de Auditoria - Dr. Braulino</title>
+    <style>
+        :root { --navy: #0f172a; --gold: #b45309; --slate: #1e293b; }
+        /* VISUAL DA TELA (O QUE O SENHOR VÊ) */
+        body { font-family: 'Segoe UI', sans-serif; background: var(--navy); color: white; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 450px; background: var(--slate); padding: 20px; overflow-y: auto; border-right: 3px solid var(--gold); }
+        .main { flex: 1; background: #475569; padding: 25px; overflow-y: auto; display: flex; justify-content: center; }
+        .paper { width: 210mm; background: white; color: black; padding: 20mm; box-shadow: 0 0 30px rgba(0,0,0,0.5); font-family: "Times New Roman", serif; min-height: 297mm; }
+        
+        /* AJUSTES DE FORMULÁRIO */
+        .group { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #334155; }
+        label { display: block; font-size: 10px; color: #94a3b8; text-transform: uppercase; }
+        input, textarea, select { width: 100%; padding: 8px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 4px; font-size: 12px; margin-top: 5px; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 10px; }
+        .btn-calc { background: #10b981; color: white; }
+        .btn-pdf { background: #2563eb; color: white; }
+
+        /* ESTILO DO LAUDO (O QUE O JUIZ VÊ) */
+        .h1-laudo { text-align: center; border-bottom: 2px solid black; margin-bottom: 15px; text-transform: uppercase; font-size: 18pt; }
+        .section-title { background: #f2f2f2; padding: 6px; font-weight: bold; border: 1px solid black; margin-top: 15px; font-size: 11pt; }
+        table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 5px; text-align: right; }
+        .card-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .card { border: 1px solid #ccc; padding: 10px; background: #fafafa; }
+
+        /* 🚀 O SEGREDO DA IMPRESSÃO ESTÁ AQUI 🚀 */
+        @media print {
+            body { background: white !important; color: black !important; display: block !important; }
+            .sidebar { display: none !important; } /* ESCONDE A BARRA LATERAL */
+            .main { background: white !important; padding: 0 !important; display: block !important; overflow: visible !important; }
+            .paper { 
+                box-shadow: none !important; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                border: none !important;
+            }
+            .btn, h2, .group { display: none !important; } /* GARANTE QUE NADA DO SISTEMA APAREÇA */
+            table { font-size: 8pt !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <h2 style="color:var(--gold)">⚙️ Configuração do Laudo</h2>
+    <div class="group">
+        <label>Processo / Cliente</label>
+        <input type="text" id="proc" value="0008868-79.2018.8.13.0395">
+        <input type="text" id="cliente" value="Leandro Santiago Souza">
+        <label>Valor Principal (R$)</label>
+        <input type="number" id="v_base" value="3512.10">
+    </div>
+    <div class="group">
+        <label>Cenário A (Banco) - Juros % / Mora %</label>
+        <input type="number" id="j_banco" value="9.0">
+        <input type="number" id="mora_a" value="1.0">
+        <label>Multa Contratual %</label>
+        <input type="number" id="multa_a" value="2.0">
+    </div>
+    <div class="group">
+        <label>Cenário B (Juiz) - Série BCB</label>
+        <input type="text" id="serie" value="25464">
+        <button onclick="buscarBCB()" style="width:100%; margin-bottom:5px; cursor:pointer;">Sincronizar BCB</button>
+        <label>Mora % / Multa CPC %</label>
+        <input type="number" id="mora_b" value="1.0">
+        <input type="number" id="multa_b" value="10.0">
+        <label>Tabela TJMG (Data e Fator)</label>
+        <textarea id="tjmg_raw" rows="3" placeholder="Cole aqui..."></textarea>
+    </div>
+    <div class="group">
+        <label>Honorários (%)</label>
+        <input type="number" id="p_hon" value="10.0">
+    </div>
+    <button class="btn btn-calc" onclick="processar()">GERAR CONFRONTO</button>
+    <button class="btn btn-pdf" onclick="window.print()">IMPRIMIR / SALVAR PDF</button>
+</div>
+
+<div class="main">
+    <div class="paper" id="laudo_print">
+        <div class="h1-laudo">Parecer Técnico de Auditoria</div>
+        <p style="text-align:center;"><strong>Processo:</strong> <span id="out_proc">---</span> | <strong>Requerente:</strong> <span id="out_cliente">---</span></p>
+        
+        <div class="section-title">I. QUADRO DE PROVEITO ECONÔMICO</div>
+        <div id="resumo_area"></div>
+
+        <div class="section-title">II. MEMORIAL DE CÁLCULO (CONFRONTO)</div>
+        <div id="tabela_area"></div>
+
+        <div style="margin-top:60px; text-align:center;">
+            <p>________________________________________________</p>
+            <p><strong>DR. MAIKON DA ROCHA CALDEIRA</strong> - OAB/MG 183.712</p>
+            <p>Patrono da Causa</p>
+        </div>
+    </div>
+</div>
+<script>
+let BCB_MAP = new Map();
+let TJMG_MAP = new Map();
+
+async function buscarBCB() {
+    const s = document.getElementById('serie').value;
+    try {
+        const r = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${s}/dados?formato=json`);
+        const d = await r.json();
+        d.forEach(i => { const [dia, mes, ano] = i.data.split('/'); BCB_MAP.set(`${ano}-${mes}`, parseFloat(i.valor)); });
+        alert("Dados do Banco Central Sincronizados!");
+    } catch(e) { alert("Erro na API do BCB."); }
+}
+
+function parseTJMG() {
+    const raw = document.getElementById('tjmg_raw').value;
+    raw.split('\n').forEach(l => {
+        const partes = l.trim().split(/\s+/);
+        if(partes.length >= 2) {
+            const d = partes[0].split('/');
+            if(d.length === 3) TJMG_MAP.set(`${d[2]}-${d[1]}`, parseFloat(partes[1].replace(',', '.')));
+        }
+    });
+}
+
+const f = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+function processar() {
+    parseTJMG();
+    const v_ini = parseFloat(document.getElementById('v_base').value);
+    const d_ini = new Date("2017-09-01T12:00:00");
+    const d_fim = new Date("2026-02-21T12:00:00");
+    
+    let s_a = v_ini; let s_b_p = v_ini; let s_b_j = 0; let meses = 0;
+    let html = `<table><thead><tr><th>Mês/Ano</th><th>Banco (A)</th><th>Fator TJMG</th><th>Juros BCB</th><th>Mora Juiz</th><th>Saldo Juiz (B)</th></tr></thead><tbody>`;
+
+    let curr = new Date(d_ini.getFullYear(), d_ini.getMonth(), 1);
+    while(curr <= d_fim) {
+        meses++;
+        const key = `${curr.getFullYear()}-${String(curr.getMonth()+1).padStart(2, '0')}`;
+        s_a *= (1 + (parseFloat(document.getElementById('j_banco').value)/100) + (parseFloat(document.getElementById('mora_a').value)/100));
+        
+        const fat_at = TJMG_MAP.get(key);
+        const fat_an = TJMG_MAP.get(getPrevKey(curr));
+        if(fat_at && fat_an) s_b_p *= (fat_at / fat_an);
+
+        let t_bcb = (BCB_MAP.get(key) || 1.5) / 100;
+        if(t_bcb > 0.5) t_bcb /= 100;
+        const j_mes_b = s_b_p * (t_bcb + (parseFloat(document.getElementById('mora_b').value)/100));
+        s_b_j += j_mes_b;
+
+        let rowStyle = ""; if(meses % 12 === 0) { rowStyle = "style='background:#fff9c4; font-weight:bold;'"; s_b_p += s_b_j; s_b_j = 0; }
+
+        html += `<tr ${rowStyle}><td>${key}</td><td>${f(s_a)}</td><td>${fat_at ? fat_at.toFixed(6) : '1.000'}</td><td>${(t_bcb*100).toFixed(2)}%</td><td>${f(s_b_j)}</td><td>${f(s_b_p + s_b_j)}</td></tr>`;
+        curr.setMonth(curr.getMonth() + 1);
+    }
+
+    html += "</tbody></table>";
+    document.getElementById('tabela_area').innerHTML = html;
+    document.getElementById('out_proc').innerText = document.getElementById('proc').value;
+    document.getElementById('out_cliente').innerText = document.getElementById('cliente').value;
+
+    const total_a = s_a * (1 + parseFloat(document.getElementById('multa_a').value)/100);
+    const total_b = (s_b_p + s_b_j) * (1 + parseFloat(document.getElementById('multa_b').value)/100);
+    const diff = total_a - total_b;
+    const hon = diff * (parseFloat(document.getElementById('p_hon').value)/100);
+
+    document.getElementById('resumo_area').innerHTML = `
+        <div class="card-resumo">
+            <div class="card"><p>VALOR DO BANCO (A)</p><div style="color:red; font-size:14pt; font-weight:bold;">${f(total_a)}</div></div>
+            <div class="card"><p>VALOR DA SENTENÇA (B)</p><div style="color:green; font-size:14pt; font-weight:bold;">${f(total_b)}</div></div>
+            <div class="card" style="grid-column: span 2; border: 2px solid blue; background: #eef2ff;">
+                <p>PROVEITO ECONÔMICO (DIFERENÇA)</p><div style="color:blue; font-size:16pt; font-weight:bold;">${f(diff)}</div>
+                <p style="margin-top:5px;">HONORÁRIOS SUCUMBENCIAIS (SOBRE PROVEITO)</p><div style="color:var(--gold); font-size:14pt; font-weight:bold;">${f(hon)}</div>
+            </div>
+        </div>`;
+}
+
+function getPrevKey(date) { let d = new Date(date); d.setMonth(d.getMonth() - 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`; }
+</script>
+</body>
+</html>

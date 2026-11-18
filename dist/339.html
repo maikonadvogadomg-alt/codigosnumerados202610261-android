@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Calculadora de Honorários & Liquidação (Anual vs Mensal)</title>
+<style>
+  :root { --bg: #0f172a; --panel: #1e293b; --text: #f1f5f9; --accent: #8b5cf6; --success: #10b981; --danger: #ef4444; --gold: #fbbf24; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+  body { background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  
+  /* Layout */
+  header { background: var(--panel); padding: 15px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+  h1 { font-size: 1.2rem; text-transform: uppercase; color: var(--gold); letter-spacing: 1px; }
+  .container { display: flex; flex: 1; overflow: hidden; }
+  
+  /* Coluna Esquerda (Inputs) */
+  .controls { width: 380px; background: var(--panel); overflow-y: auto; padding: 15px; border-right: 1px solid #334155; display: flex; flex-direction: column; gap: 15px; }
+  .section { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #334155; }
+  .section h2 { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+  
+  label { display: block; font-size: 0.75rem; color: #cbd5e1; margin-top: 8px; margin-bottom: 2px; }
+  input, select, textarea { width: 100%; background: #0f172a; border: 1px solid #475569; color: white; padding: 8px; border-radius: 4px; font-size: 0.9rem; }
+  textarea { min-height: 80px; font-family: monospace; font-size: 0.75rem; white-space: pre; }
+  
+  button { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; margin-top: 10px; transition: 0.2s; }
+  .btn-calc { background: var(--success); color: #064e3b; }
+  .btn-calc:hover { opacity: 0.9; transform: scale(1.02); }
+  .btn-imp { background: var(--accent); color: white; margin-top: 5px; font-size: 0.7rem; padding: 6px; }
+
+  /* Coluna Direita (Resultados) */
+  .results { flex: 1; padding: 20px; overflow-y: auto; background: #0f172a; }
+  
+  /* Cards de Resumo */
+  .cards-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+  .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+  .card h3 { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; }
+  .card .val { font-size: 1.4rem; font-weight: bold; margin: 5px 0; color: white; }
+  .card .sub { font-size: 0.75rem; color: #64748b; }
+
+  /* Destaque Honorários */
+  .hon-box { background: linear-gradient(135deg, #451a03 0%, #78350f 100%); border: 1px solid var(--gold); padding: 20px; border-radius: 12px; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .hon-box::after { content: '$'; position: absolute; right: -20px; bottom: -20px; font-size: 100px; color: rgba(255,255,255,0.05); transform: rotate(15deg); }
+  .hon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; position: relative; z-index: 2; }
+  
+  /* Tabela */
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; color: #cbd5e1; }
+  th { background: #1e293b; padding: 10px; text-align: right; position: sticky; top: 0; color: var(--gold); }
+  td { padding: 8px 10px; border-bottom: 1px solid #334155; text-align: right; }
+  td:first-child { text-align: center; color: #94a3b8; }
+  tr:hover { background: rgba(255,255,255,0.05); }
+
+  /* Utility */
+  .row { display: flex; gap: 10px; }
+  .badge { background: #334155; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Calculadora Judicial & Honorários</h1>
+  <div style="font-size:0.8rem">OAB System v3.0</div>
+</header>
+
+<div class="container">
+  
+  <div class="controls">
+    <div class="section">
+      <h2>1. Dados do Processo</h2>
+      <label>Valor Original da Dívida (R$)</label>
+      <input type="number" id="valorPrincipal" value="3520.00">
+      <div class="row">
+        <div><label>Início</label><input type="date" id="dataInicio" value="2018-01-01"></div>
+        <div><label>Fim (Cálculo)</label><input type="date" id="dataFim" value="2025-02-15"></div>
+      </div>
+    </div>
+
+    <div class="section" style="border-left: 3px solid var(--danger);">
+      <h2>2. Cenário Banco (O Abusivo)</h2>
+      <label>Taxa de Juros Mensal (%)</label>
+      <input type="number" id="taxaBanco" value="9.0">
+      <label>Capitalização</label>
+      <select id="capBanco" disabled style="opacity:0.7"><option>Mensal (Juros sobre Juros)</option></select>
+    </div>
+
+    <div class="section" style="border-left: 3px solid var(--success);">
+      <h2>3. Cenário Juiz (Sentença)</h2>
+      
+      <label>A) Correção Monetária (Cole TJMG)</label>
+      <textarea id="txtTJMG" placeholder="Data    Fator
+01/2018 1.002
+02/2018 1.003..."></textarea>
+      
+      <label style="margin-top:10px">B) Juros Variáveis (Cole Bacen - Série 25442?)</label>
+      <textarea id="txtBacen" placeholder="Data    Valor
+01/2018 4.5
+02/2018 4.2..."></textarea>
+      
+      <label style="color:var(--gold); margin-top:10px; font-weight:bold;">Regra de Capitalização</label>
+      <select id="capJuiz">
+        <option value="anual">Anual (Determinada na Sentença)</option>
+        <option value="simples">Simples (Linear - Melhor ainda)</option>
+        <option value="mensal">Mensal (Padrão Banco - Pior)</option>
+      </select>
+    </div>
+
+    <div class="section" style="border-left: 3px solid var(--gold);">
+      <h2>4. Seus Honorários</h2>
+      <label>% Honorários Sucumbenciais</label>
+      <input type="number" id="pctHonorarios" value="10">
+    </div>
+
+    <button class="btn-calc" onclick="calcular()">CALCULAR AGORA</button>
+    <div id="msgStatus" style="font-size:0.75rem; color:var(--success); margin-top:5px; text-align:center"></div>
+  </div>
+
+  <div class="results">
+    
+    <div class="hon-box">
+      <h2 style="color:var(--gold); margin-bottom:15px; border-bottom:1px solid rgba(251,191,36,0.3); padding-bottom:5px">SIMULAÇÃO DE HONORÁRIOS</h2>
+      <div class="hon-grid">
+        <div>
+          <div style="font-size:0.8rem; color:#fde047; text-transform:uppercase">Sobre o Valor da Condenação (Cenário Juiz)</div>
+          <div class="val" id="honCondenacao" style="font-size:1.8rem; font-weight:bold; color:white">R$ 0,00</div>
+          <div class="sub" style="color:#fbbf24" id="baseCondenacao">Base: R$ 0,00</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:0.8rem; color:#fde047; text-transform:uppercase">Sobre o Proveito Econômico (Economia)</div>
+          <div class="val" id="honProveito" style="font-size:1.8rem; font-weight:bold; color:var(--success)">R$ 0,00</div>
+          <div class="sub" style="color:#fbbf24" id="baseProveito">Base: R$ 0,00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards-wrapper">
+      <div class="card" style="border-color:var(--danger)">
+        <h3>Cenário Banco (9% a.m.)</h3>
+        <div class="val" id="resBanco">R$ 0,00</div>
+        <div class="sub">Capitalização Mensal</div>
+      </div>
+      <div class="card" style="border-color:var(--success)">
+        <h3>Cenário Juiz (Sentença)</h3>
+        <div class="val" id="resJuiz">R$ 0,00</div>
+        <div class="sub" id="lblCapJuiz">Capitalização Anual</div>
+      </div>
+      <div class="card" style="border-color:var(--accent)">
+        <h3>Diferença (Economia)</h3>
+        <div class="val" id="resDiff">R$ 0,00</div>
+        <div class="sub">Indébito evitado</div>
+      </div>
+    </div>
+
+    <div style="background:var(--panel); padding:10px; border-radius:8px;">
+      <h3 style="color:#94a3b8; font-size:0.9rem; margin-bottom:10px">Evolução Mês a Mês (Cenário Juiz)</h3>
+      <div style="overflow-x:auto; max-height:400px;">
+        <table id="tabelaDetalhada">
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Principal (Att)</th>
+              <th>Correção (TJMG)</th>
+              <th>Taxa Juros</th>
+              <th>Juros Mês (R$)</th>
+              <th>Juros Acumulados (Sacola)</th>
+              <th>Total (Saldo)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7" style="text-align:center">Aguardando cálculo...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// --- PARSER DE DADOS (IMPORTAÇÃO) ---
+function parseDataInput(text) {
+  if (!text) return [];
+  const lines = text.trim().split('\n');
+  const dataMap = new Map();
+  
+  lines.forEach(line => {
+    // Regex para pegar data (DD/MM/YYYY ou MM/YYYY) e número
+    // Aceita tabulação ou espaço como separador
+    const parts = line.replace(',', '.').match(/(\d{1,2}[\/-]\d{4}).+?([\d\.]+)/);
+    if (parts) {
+      let dateStr = parts[1];
+      if (dateStr.length === 7) dateStr = "01/" + dateStr; // Normaliza MM/YYYY para 01/MM/YYYY
+      const val = parseFloat(parts[2]);
+      
+      // Converte dateStr para YYYY-MM para chave
+      const [d, m, y] = dateStr.split(/[\/-]/);
+      const key = `${y}-${m}`;
+      dataMap.set(key, val);
+    }
+  });
+  return dataMap;
+}
+
+// --- FORMATAÇÃO ---
+const toBRL = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+// --- CÁLCULO CENTRAL ---
+function calcular() {
+  // Inputs
+  const P0 = parseFloat(document.getElementById('valorPrincipal').value);
+  const dtIni = new Date(document.getElementById('dataInicio').value);
+  const dtFim = new Date(document.getElementById('dataFim').value);
+  const pctHon = parseFloat(document.getElementById('pctHonorarios').value) / 100;
+  
+  // Banco
+  const taxaBanco = parseFloat(document.getElementById('taxaBanco').value) / 100;
+  
+  // Juiz Dados
+  const mapTJMG = parseDataInput(document.getElementById('txtTJMG').value);
+  const mapBacen = parseDataInput(document.getElementById('txtBacen').value);
+  const regraCap = document.getElementById('capJuiz').value;
+
+  // Variáveis de Estado
+  let saldoBanco = P0;
+  
+  let saldoJuiz_Principal = P0; // Principal Corrigido
+  let saldoJuiz_SacolaJuros = 0; // Onde os juros ficam esperando o aniversário (Cap Anual)
+  let saldoJuiz_JurosSimples = 0; // Para Cap Simples
+  
+  let current = new Date(dtIni.getFullYear(), dtIni.getMonth(), 1);
+  const end = new Date(dtFim.getFullYear(), dtFim.getMonth(), 1);
+  
+  // Identificar mês de aniversário para Cap Anual
+  const mesAniversario = dtIni.getMonth(); 
+
+  let htmlRows = "";
+  let mesesCorridos = 0;
+
+  while (current <= end) {
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    const key = `${y}-${m}`;
+    
+    // --- 1. CENÁRIO BANCO (CAP MENSAL FIXA) ---
+    // M = P * (1 + i)^n ... fazendo mês a mês
+    saldoBanco = saldoBanco * (1 + taxaBanco);
+
+
+    // --- 2. CENÁRIO JUIZ ---
+    // A. Correção Monetária (TJMG)
+    // Se o input for Fator (ex: 1.002), multiplica. Se for % (0.2), converte.
+    // Vamos assumir Fator Acumulado Mensal ou Percentual.
+    // Tente detectar: Se valor < 2, provavelmente é fator (1.005). Se for > 2, pode ser índice acumulado? 
+    // Assumindo FATOR MENSAL (ex: 1.0056) ou PERCENTUAL (0.56)
+    
+    let fatorTJMG = 1.0;
+    let rawTJMG = mapTJMG.get(key);
+    
+    if (rawTJMG !== undefined) {
+      if (rawTJMG > 2) { 
+         // Provavelmente é número índice cheio, ignorar ou tratar diferença? 
+         // Para simplificar: assumindo que o usuário colou Fator de Correção Mensal
+         fatorTJMG = 1; 
+      } else if (rawTJMG < 0.15) { 
+         // Provavelmente percentual em decimal 0.05
+         fatorTJMG = 1 + rawTJMG;
+      } else if (rawTJMG >= 1.0) {
+         // Provavelmente Fator direto (1.005)
+         fatorTJMG = rawTJMG;
+      } else {
+         // Percentual inteiro (ex: 0.5%)
+         fatorTJMG = 1 + (rawTJMG/100);
+      }
+    }
+    
+    // Aplica Correção no Principal
+    const correcaoMes = saldoJuiz_Principal * (fatorTJMG - 1);
+    saldoJuiz_Principal += correcaoMes;
+
+
+    // B. Juros Bacen
+    let taxaBacen = mapBacen.get(key) || 0; // ex: 4.5
+    // Se vier > 1, assume percentual (ex: 4.5%). Se vier < 1, assume decimal?
+    // Bacen costuma ser % a.a. ou % a.m. - Série 25442 é % a.m.
+    let jurosMesReais = 0;
+    
+    // Calcula o juro do mês sobre o Principal Corrigido
+    jurosMesReais = saldoJuiz_Principal * (taxaBacen / 100);
+
+    // C. Aplicação da Capitalização (O Pulo do Gato)
+    if (regraCap === 'simples') {
+        saldoJuiz_JurosSimples += jurosMesReais;
+    } 
+    else if (regraCap === 'anual') {
+        // Guarda na sacola
+        saldoJuiz_SacolaJuros += jurosMesReais;
+        // Verifica se é mês de aniversário (e não é o primeiro mês)
+        if (current.getMonth() === mesAniversario && mesesCorridos > 0) {
+            // Incorpora juros ao principal (Anatocismo Anual)
+            saldoJuiz_Principal += saldoJuiz_SacolaJuros;
+            saldoJuiz_SacolaJuros = 0; // Esvazia sacola
+        }
+    } 
+    else { // mensal
+        saldoJuiz_Principal += jurosMesReais;
+    }
+
+    mesesCorridos++;
+
+    // Saldo Total Juiz no momento
+    let totalJuizAgora = saldoJuiz_Principal + saldoJuiz_SacolaJuros + saldoJuiz_JurosSimples;
+
+    // Gerar Linha Tabela
+    htmlRows += `
+      <tr>
+        <td>${m}/${y}</td>
+        <td>${toBRL(saldoJuiz_Principal)}</td>
+        <td style="color:var(--gold)">${rawTJMG ? rawTJMG.toFixed(4) : '-'}</td>
+        <td style="color:var(--success)">${taxaBacen.toFixed(2)}%</td>
+        <td>${toBRL(jurosMesReais)}</td>
+        <td>${toBRL(saldoJuiz_SacolaJuros)}</td>
+        <td style="font-weight:bold">${toBRL(totalJuizAgora)}</td>
+      </tr>
+    `;
+
+    // Avançar data
+    current.setMonth(current.getMonth() + 1);
+  }
+
+  // --- RESULTADOS FINAIS ---
+  let finalJuiz = saldoJuiz_Principal + saldoJuiz_SacolaJuros + saldoJuiz_JurosSimples;
+  
+  // Atualiza Cards
+  document.getElementById('resBanco').innerText = toBRL(saldoBanco);
+  document.getElementById('resJuiz').innerText = toBRL(finalJuiz);
+  document.getElementById('lblCapJuiz').innerText = "Regra: Cap. " + regraCap.toUpperCase();
+  
+  const diferenca = saldoBanco - finalJuiz;
+  document.getElementById('resDiff').innerText = toBRL(diferenca);
+
+  // --- CÁLCULO DE HONORÁRIOS ---
+  const honCond = finalJuiz * pctHon;
+  const honProv = diferenca * pctHon;
+
+  document.getElementById('honCondenacao').innerText = toBRL(honCond);
+  document.getElementById('baseCondenacao').innerText = `Base: ${toBRL(finalJuiz)}`;
+
+  document.getElementById('honProveito').innerText = toBRL(honProv);
+  document.getElementById('baseProveito').innerText = `Base: ${toBRL(diferenca)}`;
+
+  // Tabela
+  document.getElementById('tabelaDetalhada').querySelector('tbody').innerHTML = htmlRows;
+  document.getElementById('msgStatus').innerText = "Cálculo realizado com sucesso!";
+}
+</script>
+</body>
+</html>

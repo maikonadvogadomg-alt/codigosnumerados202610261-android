@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual 1</title>
+<style>
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Básico: Variáveis de Ambiente e Chaves Secretas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f8f8;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #007bff;
+            margin-top: 30px;
+            border-bottom: 1px solid #007bff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #28a745;
+            margin-top: 20px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #e0e0e0;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #333;
+            color: #eee;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .key-example {
+            background-color: #f0f8ff;
+            border-left: 4px solid #007bff;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manual Básico: Variáveis de Ambiente e Chaves Secretas</h1>
+        <p>Este guia explica o que são as "chaves secretas" e "variáveis de ambiente" que seu projeto usa, por que elas são importantes e como lidar com elas.</p>
+
+        <div class="alert alert-danger">
+            <strong>ATENÇÃO:</strong> Este documento contém informações sensíveis sobre segurança. Leia com cuidado.
+        </div>
+
+        <h2>1. O que são Variáveis de Ambiente?</h2>
+        <p>Imagine que seu aplicativo é uma casa. Ele precisa de algumas informações para funcionar, como o endereço do banco (onde guardar as coisas), a senha do Wi-Fi (para acessar a internet), ou o número do telefone do vizinho (para pedir ajuda). Essas informações podem mudar dependendo de onde a casa está (se é uma casa de teste ou a casa de verdade).</p>
+        <p><strong>Variáveis de Ambiente</strong> são como "bilhetinhos" que você deixa na casa com essas informações. Elas são:</p>
+        <ul>
+            <li><strong>Externas ao código:</strong> Não ficam escritas diretamente no código do aplicativo.</li>
+            <li><strong>Configuráveis:</strong> Você pode mudar o valor delas sem precisar mexer no código.</li>
+            <li><strong>Secretas:</strong> Muitas delas contêm senhas e informações que ninguém mais deve saber.</li>
+        </ul>
+        <p>O arquivo mais comum para guardar essas variáveis é o <code>.env</code> (lê-se "dot-env").</p>
+        <div class="key-example">
+            <h3>Exemplo de .env:</h3>
+            <pre><code>DATABASE_URL=postgres://usuario:senha@host:porta/banco
+SESSION_SECRET=uma-senha-secreta-aleatoria
+API_KEY_OPENAI=sk-proj-sua-chave-openai-aqui</code></pre>
+        </div>
+
+        <h2>2. O que são Chaves Secretas (API Keys, Tokens, Senhas)?</h2>
+        <p>São códigos únicos que funcionam como "senhas" ou "identificações" para acessar serviços online ou partes específicas do seu sistema.</p>
+        <ul>
+            <li><strong>API Key (Chave de API):</strong> É como a chave da sua casa para um serviço online. Quando seu aplicativo quer usar a inteligência artificial da OpenAI ou do Google Gemini, ele precisa apresentar uma API Key para provar que tem permissão.</li>
+            <li><strong>Token:</strong> É uma "senha temporária" ou uma "identificação" que prova quem você é. Por exemplo, o Token do GitHub permite que seu aplicativo (CodeLens) faça coisas no seu GitHub em seu nome (como enviar código).</li>
+            <li><strong>Senhas (Passwords):</strong> São as senhas tradicionais, como a do seu banco de dados ou a senha de login do seu aplicativo.</li>
+        </ul>
+
+        <h2>3. Por que elas são SECRETAS e IMPORTANTES?</h2>
+        <p>Elas são secretas porque dão acesso a coisas importantes e custosas. Se alguém tiver suas chaves:</p>
+        <ul>
+            <li>Pode usar sua conta de IA e gerar **cobranças enormes** para você.</li>
+            <li>Pode acessar seu banco de dados e **roubar ou apagar seus projetos e dados**.</li>
+            <li>Pode acessar seu GitHub e **modificar ou apagar seu código**.</li>
+            <li>Pode se passar por você no seu aplicativo.</li>
+        </ul>
+        <div class="alert alert-danger">
+            <strong>NUNCA, JAMAIS</strong> compartilhe suas chaves secretas publicamente (ex: em repositórios do GitHub abertos, em conversas online sem criptografia).
+        </div>
+
+        <h2>4. Onde Obter Suas Chaves (Exemplos)</h2>
+        <div class="step">
+            <h3>4.1. Chaves de IA (OpenAI, Google Gemini, Anthropic)</h3>
+            <p>Você as obtém nos sites dos próprios provedores de IA:</p>
+            <ul>
+                <li><strong>OpenAI (GPT):</strong> <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></li>
+                <li><strong>Google Gemini:</strong> <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a></li>
+                <li><strong>Anthropic (Claude):</strong> <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a></li>
+            </ul>
+            <p><strong>Lembre-se:</strong> Cada provedor tem sua própria chave. E os preços variam muito! Use a calculadora que eu te dei para comparar.</p>
+            <div class="key-example">
+                <h3>Exemplo de Chave de API:</h3>
+                <pre><code>AI_INTEGRATIONS_OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>4.2. Token do GitHub</h3>
+            <p>Você o gera no seu perfil do GitHub:</p>
+            <ul>
+                <li>Vá em <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></li>
+                <li>Clique em "Generate new token" (Gerar novo token).</li>
+                <li>Dê um nome (ex: "CodeLens") e selecione as permissões necessárias (geralmente "repo" completo para seu caso).</li>
+                <li><strong>Copie o token IMEDIATAMENTE</strong>, pois ele só aparece uma vez.</li>
+            </ul>
+            <div class="key-example">
+                <h3>Exemplo de Token GitHub:</h3>
+                <pre><code>GITHUB_PERSONAL_ACCESS_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>4.3. URL do Banco de Dados (Neon.tech)</h3>
+            <p>Você a obtém no painel do Neon.tech:</p>
+            <ul>
+                <li>Vá em <a href="https://neon.tech" target="_blank">neon.tech</a>, faça login.</li>
+                <li>No seu projeto, procure pela "Connection String" ou "URL de Conexão".</li>
+            </ul>
+            <div class="key-example">
+                <h3>Exemplo de URL de Banco de Dados:</h3>
+                <pre><code>DATABASE_URL=postgres://usuario:senha@host:porta/banco?sslmode=require</code></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>4.4. Chaves PDPJ (CPF, Senha, Chave Privada)</h3>
+            <p>Essas são credenciais específicas para acesso a sistemas judiciais. Você as obtém através dos órgãos competentes ou de provedores de certificação.</p>
+            <div class="key-example">
+                <h3>Exemplo de Chave Privada (PEM):</h3>
+                <pre><code>PDPJ_PEM_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCwPDENUEIvn4ZB
+... (conteúdo muito longo) ...
+-----END PRIVATE KEY-----"</code></pre>
+                <p class="alert-warning"><strong>CUIDADO:</strong> Chaves privadas são extremamente sensíveis. Elas devem ser tratadas com a máxima segurança.</p>
+            </div>
+        </div>
+
+        <h2>5. Boas Práticas de Segurança</h2>
+        <ul>
+            <li><strong>Nunca salve chaves diretamente no código:</strong> Use sempre o arquivo <code>.env</code>.</li>
+            <li><strong>Nunca envie o <code>.env</code> para o GitHub:</strong> Adicione <code>.env</code> ao seu arquivo <code>.gitignore</code> para que ele não seja enviado acidentalmente.</li>
+            <li><strong>Use chaves diferentes para ambientes diferentes:</strong> Uma chave para testes, outra para produção.</li>
+            <li><strong>Gere chaves fortes:</strong> Use senhas complexas e tokens longos.</li>
+            <li><strong>Revogue chaves antigas:</strong> Se suspeitar que uma chave foi comprometida, revogue-a imediatamente e gere uma nova.</li>
+        </ul>
+
+        <p>Maikon, este manual é para te dar o conhecimento básico para lidar com essas informações cruciais. Guarde-o bem.</p>
+    </div>
+</body>
+</html>
+<script>
+
+</script>
+</body>
+</html>

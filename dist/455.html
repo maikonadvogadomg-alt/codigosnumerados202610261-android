@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 JWT RS256 - Front-end</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { 
+            max-width: 1000px; margin: 0 auto; 
+            background: white; border-radius: 20px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(45deg, #e74c3c, #c0392b); 
+            color: white; padding: 30px; text-align: center;
+        }
+        .content { padding: 30px; }
+        .tabs { display: flex; margin-bottom: 30px; }
+        .tab { flex: 1; padding: 15px; background: #f8f9fa; 
+               border: none; cursor: pointer; font-weight: 600; 
+               border-radius: 10px 10px 0 0; transition: all 0.3s; }
+        .tab.active { background: #e74c3c; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        textarea { 
+            width: 100%; padding: 15px; border: 2px solid #e1e5e9; 
+            border-radius: 10px; font-size: 14px; font-family: 'Courier New', monospace;
+            resize: vertical; min-height: 120px; transition: border-color 0.3s;
+        }
+        textarea:focus { outline: none; border-color: #e74c3c; 
+                        box-shadow: 0 0 0 3px rgba(231,76,60,0.1); }
+        .btn { 
+            background: linear-gradient(45deg, #e74c3c, #c0392b); 
+            color: white; border: none; padding: 15px 30px; 
+            border-radius: 10px; font-size: 16px; font-weight: 600; 
+            cursor: pointer; margin: 5px; transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-success { background: linear-gradient(45deg, #27ae60, #229954); }
+        .btn-secondary { background: linear-gradient(45deg, #7f8c8d, #95a5a6); }
+        .output { 
+            background: #1a1a1a; color: #00ff88; border: 2px solid #333; 
+            border-radius: 10px; padding: 20px; margin: 20px 0; 
+            font-family: 'Courier New', monospace; word-break: break-all;
+            min-height: 80px; display: flex; align-items: center;
+            font-size: 13px; line-height: 1.5;
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .key-info { background: #ecf0f1; padding: 15px; border-radius: 10px; margin-top: 15px; font-size: 13px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } .tabs { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 JWT RS256 Generator</h1>
+            <p>Assinatura digital com chaves RSA • Web Crypto API • Offline</p>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('generate')">📤 Gerar RS256</button>
+                <button class="tab" onclick="switchTab('verify')">🔍 Verificar RS256</button>
+            </div>
+
+            <!-- ABA GERAR -->
+            <div id="generate" class="tab-content active">
+                <div class="grid">
+                    <div>
+                        <h3>🔑 Chaves RSA (PEM)</h3>
+                        <div class="form-group">
+                            <label>Chave Privada (-----BEGIN PRIVATE KEY-----):</label>
+                            <textarea id="privateKey" placeholder="Cole sua chave privada RSA aqui...">-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7v...
+-----END PRIVATE KEY-----</textarea>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>📋 Payload JWT</h3>
+                        <div class="form-group">
+                            <label>Payload JSON:</label>
+                            <textarea id="payload" rows="6">{
+  "sub": "advogado123",
+  "name": "Dr. João Silva - OAB/MG 123456",
+  "iat": 1737032000,
+  "exp": 1737118400,
+  "aud": "pdtj.mg.gov.br",
+  "processo": "1085382-01.2026.8.13.0001"
+}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="generateRS256()">🚀 Gerar JWT RS256</button>
+                <button class="btn btn-secondary" onclick="generateKeys()">🔑 Gerar Novo Par RSA</button>
+            </div>
+
+            <!-- ABA VERIFICAR -->
+            <div id="verify" class="tab-content">
+                <div class="grid">
+                    <div>
+                        <h3>🔍 JWT Token</h3>
+                        <div class="form-group">
+                            <label>JWT assinado:</label>
+                            <textarea id="verifyToken" rows="4" placeholder="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>🔑 Chave Pública</h3>
+                        <div class="form-group">
+                            <label>Chave Pública (-----BEGIN PUBLIC KEY-----):</label>
+                            <textarea id="publicKey" rows="4" placeholder="Cole sua chave pública RSA aqui...">-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu7v...
+-----END PUBLIC KEY-----</textarea>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="verifyRS256()">✅ Verificar Assinatura</button>
+            </div>
+
+            <!-- RESULTADO -->
+            <div class="form-group">
+                <label>JWT RS256 Resultado:</label>
+                <div class="output" id="result">Aguardando geração/verificação...</div>
+            </div>
+
+            <div class="key-info" id="keyInfo" style="display: none;">
+                <strong>ℹ️ Chaves RSA geradas:</strong><br>
+                <strong>Privada:</strong> <span id="newPrivateKey"></span><br>
+                <strong>Pública:</strong> <span id="newPublicKey"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Trocar abas
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Gerar par de chaves RSA
+        async function generateKeys() {
+            try {
+                const keyPair = await crypto.subtle.generateKey(
+                    { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+                    true,
+                    ['sign', 'verify']
+                );
+
+                const privateKeyPem = await exportKey('private', keyPair.privateKey);
+                const publicKeyPem = await exportKey('public', keyPair.publicKey);
+
+                document.getElementById('privateKey').value = privateKeyPem;
+                document.getElementById('publicKey').value = publicKeyPem;
+                
+                document.getElementById('newPrivateKey').textContent = privateKeyPem.substring(0, 100) + '...';
+                document.getElementById('newPublicKey').textContent = publicKeyPem.substring(0, 100) + '...';
+                document.getElementById('keyInfo').style.display = 'block';
+
+                showResult('✅ Par de chaves RSA 2048 gerado com sucesso!', 'success');
+            } catch (error) {
+                showResult('❌ Erro ao gerar chaves: ' + error.message, 'error');
+            }
+        }
+
+        // Gerar JWT RS256
+        async function generateRS256() {
+            try {
+                const privateKeyPem = document.getElementById('privateKey').value;
+                const payloadStr = document.getElementById('payload').value;
+
+                if (!privateKeyPem || !payloadStr) {
+                    showResult('❌ Preencha chave privada e payload!', 'error');
+                    return;
+                }
+
+                // Parse payload
+                let payload = JSON.parse(payloadStr);
+                if (!payload.iat) payload.iat = Math.floor(Date.now() / 1000);
+
+                // Criar segmentos JWT
+                const header = base64UrlEncode(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+                const payloadEncoded = base64UrlEncode(JSON.stringify(payload));
+                
+                // Importar chave privada
+                const privateKey = await importKey('private', privateKeyPem);
+                const signature = await signRS256(header + '.' + payloadEncoded, privateKey);
+                
+                const jwt = header + '.' + payloadEncoded + '.' + signature;
+                
+                document.getElementById('verifyToken').value = jwt;
+                showResult(jwt, 'success');
+                
+            } catch (error) {
+                showResult('❌ Erro RS256: ' + error.message, 'error');
+            }
+        }
+
+        // Verificar JWT RS256
+        async function verifyRS256() {
+            try {
+                const publicKeyPem = document.getElementById('publicKey').value;
+                const token = document.getElementById('verifyToken').value.trim();
+
+                if (!publicKeyPem || !token) {
+                    showResult('❌ Preencha chave pública e token!', 'error');
+                    return;
+                }
+
+                const [headerB64, payloadB64, signatureB64] = token.split('.');
+                if (!headerB64 || !payloadB64 || !signatureB64) {
+                    showResult('❌ JWT inválido!', 'error');
+                    return;
+                }
+
+                // Importar chave pública
+                const publicKey = await importKey('public', publicKeyPem);
+                
+                // Verificar assinatura
+                const isValid = await verifyRS256(token, publicKey);
+                
+                const payload = JSON.parse(base64UrlDecode(payloadB64));
+                
+                showResult(
+                    `✅ VÁLIDO! Payload: ${JSON.stringify(payload, null, 1)}`,
+                    isValid ? 'success' : 'error'
+                );
+
+            } catch (error) {
+                showResult('❌ Erro na verificação: ' + error.message, 'error');
+            }
+        }
+
+        // Importar chave PEM
+        async function importKey(type, pem) {
+            const keyData = pemToBuffer(pem);
+            return crypto.subtle.importKey(
+                type === 'public' ? 'spki' : 'pkcs8',
+                keyData,
+                { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+                true,
+                type === 'public' ? ['verify'] : ['sign']
+            );
+        }
+
+        // Assinar RS256
+        async function signRS256(data, privateKey) {
+            const encoder = new TextEncoder();
+            const signature = await crypto.subtle.sign(
+                { name: 'RSASSA-PKCS1-v1_5', saltLength: 128 },
+                privateKey,
+                encoder.encode(data)
+            );
+            return base64UrlEncode(new Uint8Array(signature));
+        }
+
+        // Verificar RS256
+        async function verifyRS256(token, publicKey) {
+            const [headerB64, payloadB64, signatureB64] = token.split('.');
+            const data = headerB64 + '.' + payloadB64;
+            
+            const encoder = new TextEncoder();
+            const signature = base64UrlDecode(signatureB64);
+            
+            return crypto.subtle.verify(
+                { name: 'RSASSA-PKCS1-v1_5', saltLength: 128 },
+                publicKey,
+                signature,
+                encoder.encode(data)
+            );
+        }
+
+        // PEM para ArrayBuffer
+        function pemToBuffer(pem) {
+            const b64 = pem.replace(/-----BEGIN [A-Zs]+-----|-----END [A-Zs]+-----/g, '').replace(/s+/g, '');
+            const binary = atob(b64);
+            const buffer = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                buffer[i] = binary.charCodeAt(i);
+            }
+            return buffer.buffer;
+        }
+
+        // Exportar chave PEM (para geração)
+        async function exportKey(type, key) {
+            const exported = await crypto.subtle.exportKey(type === 'public' ? 'spki' : 'pkcs8', key);
+            const exportedAsBase64 = btoa(String.fromCharCode(...new Uint8Array(exported)));
+            const PEMHeader = type === 'public' ? 'PUBLIC KEY' : 'PRIVATE KEY';
+            return `-----BEGIN ${PEMHeader}-----
+` +
+                   exportedAsBase64.match(/.{1,64}/g).join('
+') +
+                   `
+-----END ${PEMHeader}-----`;
+        }
+
+        // Base64 URL
+        function base64UrlEncode(buffer) {
+            return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+                .replace(/+/g, '-').replace(///g, '_').replace(/=/g, '');
+        }
+
+        function base64UrlDecode(str) {
+            str = str.replace(/-/g, '+').replace(/_/g, '/');
+            while (str.length % 4) str += '=';
+            return atob(str);
+        }
+
+        // Mostrar resultado
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.style.borderColor = type === 'success' ? '#00ff88' : '#ff4757';
+            result.style.background = type === 'success' ? '#1a3a1a' : '#3a1a1a';
+        }
+
+        // Inicializar com exemplo
+        generateKeys();
+    </script>
+</body>
+</html>

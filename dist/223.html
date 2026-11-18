@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Comparador Jurídico Completo (Com Busca BCB)</title>
+<style>
+:root{
+  --bg:#1e293b;--panel:#0f172a;--txt:#f1f5f9;--muted:#94a3b8;--accent:#f59e0b;
+  --good:#10b981;--bad:#ef4444;--info:#3b82f6;--paper:#fff;--border:#334155;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#e2e8f0;color:#0f172a;overflow:hidden}
+header{background:var(--bg);color:var(--txt);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:15px;letter-spacing:.5px;text-transform:uppercase}
+.clock{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.wrap{display:flex;height:calc(100vh - 50px)}
+.left{width:440px;background:var(--panel);color:var(--txt);overflow-y:auto;padding:16px}
+.right{flex:1;background:#cbd5e1;overflow-y:auto;padding:16px}
+h2{font-size:13px;margin:16px 0 8px;color:var(--accent);text-transform:uppercase;letter-spacing:.4px}
+.box{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
+input,select,textarea{
+  width:100%;background:rgba(0,0,0,.25);color:var(--txt);border:1px solid var(--border);
+  border-radius:6px;padding:9px;font-size:13px;outline:none
+}
+textarea{min-height:100px;font-family:ui-monospace,monospace;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+button{
+  border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;
+  text-transform:uppercase;font-size:11px;letter-spacing:.3px;transition:0.2s;
+}
+button:hover{opacity:0.9;}
+.b1{background:var(--accent);color:#111}
+.b2{background:var(--bad);color:#fff}
+.b3{background:var(--good);color:#052e16}
+.b4{background:var(--info);color:#fff}
+
+/* Tabela de Resultados */
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+th,td{padding:10px;text-align:right;border-bottom:1px solid #e2e8f0}
+th{background:#f8fafc;color:#64748b;font-weight:600;text-transform:uppercase;font-size:11px}
+td:first-child,th:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+.diff-pos{color:var(--bad);font-weight:700}
+.diff-neg{color:var(--good);font-weight:700}
+
+/* Cards de Resumo */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+.card{background:#fff;padding:16px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card h3{font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:6px}
+.card .val{font-size:20px;font-weight:700;color:#0f172a}
+.card .sub{font-size:12px;color:#ef4444;margin-top:4px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Comparador Jurídico (BCB Integrado)</h1>
+  <div class="clock" id="clock">00:00</div>
+</header>
+
+<div class="wrap">
+  <!-- COLUNA ESQUERDA: CONTROLES -->
+  <div class="left">
+    
+    <!-- 1. DADOS DO CONTRATO -->
+    <h2>1) Dados do Contrato</h2>
+    <div class="box">
+      <label>Valor da Dívida (R$)</label>
+      <input type="number" id="valorPrincipal" value="10000" step="0.01">
+      
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label>Data Início</label>
+          <input type="date" id="dataInicio" value="2020-01-01">
+        </div>
+        <div>
+          <label>Data Fim (Cálculo)</label>
+          <input type="date" id="dataFim" value="2023-12-31">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. IMPORTAR ÍNDICES -->
+    <h2>2) Importar Índices</h2>
+    <div class="box">
+      <label>Buscar Série BCB (Automático)</label>
+      <div class="row3">
+        <input id="bcbSerie" placeholder="Cód. SGS (ex: 20742)" value="25433"> <!-- Ex: Taxa média PJ capital de giro -->
+        <input id="bcbCampo" placeholder="Nome Coluna" value="taxa_bcb">
+        <button class="b4" id="btnFetchBCB">Buscar BCB</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin:6px 0 10px">
+        * Digite o código da série SGS e clique em Buscar. O sistema preencherá o campo abaixo.
+      </div>
+
+      <label>JSON / CSV de Índices (Manual ou Automático)</label>
+      <textarea id="indicesText" placeholder='Ex JSON:
+[
+  {"data":"2020-01", "tjmg":1.005, "cdi":0.003},
+  ...
+]'></textarea>
+      <button class="b4" id="btnLoadIndices" style="width:100%;margin-top:8px">Carregar Índices no Sistema</button>
+    </div>
+
+    <!-- 3. CONFIGURAR CENÁRIOS -->
+    <h2>3) Configurar Cenários</h2>
+    <div class="box">
+      <label>Cenário A (Banco/Contrato)</label>
+      <div class="row">
+        <input id="nomeA" value="Banco (Contrato)">
+        <input id="taxaA" placeholder="Taxa Fixa % (ex: 5.5)" value="5.5">
+      </div>
+      <label style="margin-top:6px">Ou use coluna de índice variável:</label>
+      <input id="colA" placeholder="Nome da coluna (ex: taxa_banco)">
+
+      <hr style="border:0;border-top:1px solid var(--border);margin:12px 0">
+
+      <label>Cenário B (Revisional/Justiça)</label>
+      <div class="row">
+        <input id="nomeB" value="Revisional (Média Mercado)">
+        <input id="taxaB" placeholder="Taxa Fixa % (ex: 1.5)">
+      </div>
+      <label style="margin-top:6px">Ou use coluna de índice variável:</label>
+      <input id="colB" placeholder="Nome da coluna (ex: taxa_bcb)" value="taxa_bcb">
+    </div>
+
+    <!-- AÇÃO -->
+    <div style="margin-top:20px">
+      <button class="b1" id="btnCalc" style="width:100%;font-size:14px;padding:14px">Calcular Comparativo</button>
+    </div>
+
+  </div>
+
+  <!-- COLUNA DIREITA: RESULTADOS -->
+  <div class="right">
+    <div id="resultsArea" style="display:none">
+      
+      <!-- CARDS -->
+      <div class="cards">
+        <div class="card">
+          <h3 id="lblCenarioA">Cenário A</h3>
+          <div class="val" id="valFinalA">R$ 0,00</div>
+          <div style="font-size:12px;color:#64748b">Total Acumulado</div>
+        </div>
+        <div class="card">
+          <h3 id="lblCenarioB">Cenário B</h3>
+          <div class="val" id="valFinalB">R$ 0,00</div>
+          <div style="font-size:12px;color:#10b981">Valor Recalculado</div>
+        </div>
+        <div class="card">
+          <h3>Diferença (Indébito)</h3>
+          <div class="val" id="valDiff" style="color:var(--accent)">R$ 0,00</div>
+          <div class="sub" id="txtDiff">A pagar a mais</div>
+        </div>
+      </div>
+
+      <!-- TABELA -->
+      <div style="background:#fff;padding:10px;border-radius:8px">
+        <h3 style="font-size:14px;margin-bottom:10px;text-transform:uppercase;color:#475569">Evolução Mês a Mês</h3>
+        <div style="overflow-x:auto">
+          <table id="tabelaRes">
+            <thead>
+              <tr>
+                <th>Mês/Ano</th>
+                <th>Principal</th>
+                <th>Taxa A (%)</th>
+                <th>Juros A</th>
+                <th>Total A</th>
+                <th>Taxa B (%)</th>
+                <th>Juros B</th>
+                <th>Total B</th>
+                <th>Diferença</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <div id="emptyState" style="text-align:center;margin-top:100px;color:#64748b">
+      <h3 style="font-size:18px;margin-bottom:10px">Aguardando Cálculo</h3>
+      <p>Configure os dados à esquerda e clique em CALCULAR.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* --- ESTADO GLOBAL --- */
+let INDICES = []; // Array de objetos {data: "YYYY-MM", ...colunas}
+
+/* --- UTILITÁRIOS --- */
+const $ = id => document.getElementById(id);
+const toMoney = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const toNum = v => parseFloat(v)||0;
+const parseDate = s => new Date(s+"T00:00:00");
+const dateToYM = d => d.toISOString().slice(0,7); // "2023-05"
+
+// Formata data para API do BCB (DD/MM/AAAA)
+function formatDateBR(d){
+  const dd=String(d.getDate()).padStart(2,"0");
+  const mm=String(d.getMonth()+1).padStart(2,"0");
+  const yy=d.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+}
+
+/* --- LÓGICA DE BUSCA BCB --- */
+async function fetchBCBSerieToText(serie, colName, dataInicio, dataFim){
+  try {
+    const btn = $("btnFetchBCB");
+    const originalText = btn.innerText;
+    btn.innerText = "Buscando...";
+    btn.disabled = true;
+
+    // URL da API do BCB
+    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${serie}/dados?formato=json&dataInicial=${formatDateBR(dataInicio)}&dataFinal=${formatDateBR(dataFim)}`;
+    
+    const resp = await fetch(url);
+    if(!resp.ok) throw new Error("Erro ao acessar BCB");
+    const data = await resp.json(); 
+
+    // Processar dados: agrupar por mês (pegar último valor do mês)
+    const mapMes = new Map();
+    data.forEach(item => {
+      // item.data vem "DD/MM/AAAA"
+      const parts = item.data.split('/');
+      if(parts.length===3){
+        const isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
+        const ym = `${parts[2]}-${parts[1]}`; // YYYY-MM
+        const val = parseFloat(item.valor);
+        // Sobrescreve, garantindo que o último dia do mês fique valendo
+        mapMes.set(ym, val);
+      }
+    });
+
+    // Converter para o formato JSON do nosso sistema
+    // Se já tiver texto no textarea, tenta mesclar. Se não, cria novo.
+    let currentIndices = [];
+    try {
+      const txt = $("indicesText").value.trim();
+      if(txt) currentIndices = JSON.parse(txt);
+    } catch(e) { currentIndices = []; }
+
+    // Cria um mapa mestre dos índices atuais
+    const masterMap = new Map();
+    currentIndices.forEach(obj => masterMap.set(obj.data, obj));
+
+    // Adiciona os dados do BCB
+    for (const [ym, val] of mapMes) {
+      if(!masterMap.has(ym)) {
+        masterMap.set(ym, { data: ym });
+      }
+      const obj = masterMap.get(ym);
+      obj[colName] = val; // Adiciona a coluna nova (ex: taxa_bcb)
+    }
+
+    // Reconverte para array e ordena
+    const finalArr = Array.from(masterMap.values()).sort((a,b) => a.data.localeCompare(b.data));
+
+    // Joga no textarea
+    $("indicesText").value = JSON.stringify(finalArr, null, 2);
+    alert(`Sucesso! ${mapMes.size} registros do BCB importados para a coluna "${colName}".`);
+
+  } catch(err) {
+    alert("Erro ao buscar BCB: " + err.message);
+  } finally {
+    const btn = $("btnFetchBCB");
+    btn.innerText = "Buscar BCB";
+    btn.disabled = false;
+  }
+}
+
+/* --- EVENTOS --- */
+
+// Botão Buscar BCB
+$("btnFetchBCB").addEventListener("click", () => {
+  const serie = $("bcbSerie").value.trim();
+  const col = $("bcbCampo").value.trim();
+  const dIni = parseDate($("dataInicio").value);
+  const dFim = parseDate($("dataFim").value);
+
+  if(!serie || !col) return alert("Preencha o código da série e o nome da coluna.");
+  
+  fetchBCBSerieToText(serie, col, dIni, dFim);
+});
+
+// Botão Carregar Índices (do Textarea para Memória)
+$("btnLoadIndices").addEventListener("click", () => {
+  try {
+    const txt = $("indicesText").value;
+    if(!txt) return alert("Cole o JSON ou busque do BCB primeiro.");
+    INDICES = JSON.parse(txt);
+    alert(`Carregado! ${INDICES.length} meses disponíveis.`);
+  } catch(e) {
+    alert("JSON inválido. Verifique a formatação.");
+  }
+});
+
+// Botão Calcular
+$("btnCalc").addEventListener("click", () => {
+  const vp = toNum($("valorPrincipal").value);
+  const dIni = $("dataInicio").value; // YYYY-MM-DD
+  const dFim = $("dataFim").value;
+  
+  // Cenários
+  const nomeA = $("nomeA").value;
+  const taxaAFixo = toNum($("taxaA").value);
+  const colA = $("colA").value.trim();
+
+  const nomeB = $("nomeB").value;
+  const taxaBFixo = toNum($("taxaB").value);
+  const colB = $("colB").value.trim();
+
+  // Preparar loop
+  let currentData = parseDate(dIni);
+  const endData = parseDate(dFim);
+  
+  // Saldos acumulados
+  let saldoA = vp;
+  let saldoB = vp;
+
+  const linhas = [];
+
+  // Loop mês a mês
+  while(currentData <= endData){
+    const ym = dateToYM(currentData);
+    
+    // Achar índice do mês
+    const rowIdx = INDICES.find(x => x.data === ym) || {};
+    
+    // Definir taxas do mês
+    // Se tiver coluna definida e existir no JSON, usa. Senão usa a fixa.
+    let tA = (colA && rowIdx[colA] !== undefined) ? parseFloat(rowIdx[colA]) : taxaAFixo;
+    let tB = (colB && rowIdx[colB] !== undefined) ? parseFloat(rowIdx[colB]) : taxaBFixo;
+
+    // Calcular Juros Simples ou Composto? 
+    // Simplificação: Juros sobre o saldo acumulado (Composto mensal)
+    const jurosA = saldoA * (tA / 100);
+    const jurosB = saldoB * (tB / 100);
+
+    saldoA += jurosA;
+    saldoB += jurosB;
+
+    linhas.push({
+      mes: ym,
+      tA, jA: jurosA, sA: saldoA,
+      tB, jB: jurosB, sB: saldoB,
+      diff: saldoA - saldoB
+    });
+
+    // Avançar 1 mês
+    currentData.setMonth(currentData.getMonth() + 1);
+  }
+
+  renderTable(linhas, nomeA, nomeB);
+});
+
+function renderTable(linhas, nA, nB){
+  $("emptyState").style.display = "none";
+  $("resultsArea").style.display = "block";
+  
+  $("lblCenarioA").innerText = nA;
+  $("lblCenarioB").innerText = nB;
+
+  const final = linhas[linhas.length-1];
+  $("valFinalA").innerText = toMoney(final.sA);
+  $("valFinalB").innerText = toMoney(final.sB);
+  
+  const diff = final.sA - final.sB;
+  $("valDiff").innerText = toMoney(diff);
+  $("txtDiff").innerText = diff > 0 ? "Economia Potencial" : "Cenário B é mais caro";
+
+  const tbody = document.querySelector("#tabelaRes tbody");
+  tbody.innerHTML = "";
+
+  linhas.forEach(l => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${l.mes}</td>
+      <td>-</td> 
+      <td>${l.tA.toFixed(2)}%</td>
+      <td>${toMoney(l.jA)}</td>
+      <td>${toMoney(l.sA)}</td>
+      <td>${l.tB.toFixed(2)}%</td>
+      <td>${toMoney(l.jB)}</td>
+      <td>${toMoney(l.sB)}</td>
+      <td class="${l.diff > 0 ? 'diff-pos' : 'diff-neg'}">${toMoney(l.diff)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Relógio
+setInterval(() => {
+  const now = new Date();
+  $("clock").innerText = now.toLocaleTimeString();
+}, 1000);
+
+</script>
+</body>
+</html>

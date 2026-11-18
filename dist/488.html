@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground HTML</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 { color: #58a6ff; margin-bottom: 1rem; font-size: 1.8rem; }
+    p { color: #8b949e; line-height: 1.6; margin-bottom: 1rem; }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    button {
+      background: #238636;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.4rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    button:hover { background: #2ea043; }
+    .badge {
+      display: inline-block;
+      background: #1f6feb;
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Playground HTML</h1>
+  <p>
+    <span class="badge">Cole</span>
+    <span class="badge">Edite</span>
+    <span class="badge">Visualize</span>
+  </p>
+  <p>Edite o código ao lado e clique em <strong>Executar</strong> para ver o resultado aqui em tempo real.</p>
+  <div class="card">
+    <p>Este é um card de exemplo. Modifique o HTML, CSS e JavaScript como quiser!</p>
+    <button onclick="alert('Funcionou! ✅')">Clique para testar</button>
+  </div>
+  <script>
+    console.log('Playground HTML iniciado! 🎯');
+  </script>
+</body>
+</html>

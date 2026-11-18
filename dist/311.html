@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Jurídica - Juros e Correção</title>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #059669;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1e3a8a; }
+        
+        .btn-success { background: var(--secondary); color: white; }
+        .btn-success:hover { background: #047857; }
+        
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+        
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { background: #d97706; }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .result-box h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: #f1f5f9;
+        }
+
+        .highlight-positive {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .highlight-negative {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            color: #92400e;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border-left: 4px solid var(--secondary);
+            color: #065f46;
+        }
+
+        textarea {
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        #indicesTable {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--text);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⚖️ Calculadora Jurídica de Juros e Correção Monetária</h1>
+    <p class="subtitle">Análise comparativa para defesa e cumprimento de sentença</p>
+
+    <div class="grid">
+        <!-- Painel 1: Dados Básicos -->
+        <div class="panel">
+            <h2>📋 Dados do Contrato</h2>
+            
+            <div class="form-group">
+                <label>Valor Original do Débito (R$)</label>
+                <input type="number" id="valorOriginal" value="100000" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label>Data Inicial (competência)</label>
+                <input type="month" id="dataInicial" value="2020-01">
+            </div>
+
+            <div class="form-group">
+                <label>Data Final (apuração)</label>
+                <input type="month" id="dataFinal">
+            </div>
+
+            <div class="info-box">
+                💡 <strong>Dica:</strong> A data inicial é a competência do débito original. A data final é quando você quer apurar o valor atualizado.
+            </div>
+        </div>
+
+        <!-- Painel 2: Cenário ANTES da Sentença -->
+        <div class="panel">
+            <h2>📊 Cenário ANTES da Sentença (Tabela Price)</h2>
+            
+            <div class="form-group">
+                <label>Tipo de Juros</label>
+                <select id="tipoJurosAntes">
+                    <option value="compostos_mensal">Juros Compostos Mensais (Tabela Price)</option>
+                    <option value="compostos_anual">Juros Compostos Anuais</option>
+                    <option value="simples">Juros Simples</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Taxa de Juros (% ao mês)</label>
+                    <input type="number" id="taxaJurosAntes" value="1.0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Correção Monetária</label>
+                    <select id="correcaoAntes">
+                        <option value="ipca">IPCA</option>
+                        <option value="inpc">INPC</option>
+                        <option value="igpm">IGP-M</option>
+                        <option value="tr">TR</option>
+                        <option value="manual">Manual (importar)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="alert alert-warning">
+                ⚠️ Este cenário representa o cálculo COM capitalização mensal (anatocismo).
+            </div>
+        </div>
+
+        <!-- Painel 3: Cenário DEPOIS da Sentença -->
+        <div class="panel">
+            <h2>✅ Cenário DEPOIS da Sentença (Afastada Tabela Price)</h2>
+            
+            <div class="form-group">
+                <label>Tipo de Juros</label>
+                <select id="tipoJurosDepois">
+                    <option value="simples" selected>Juros Simples</option>
+                    <option value="compostos_anual">Juros Compostos Anuais</option>
+                    <option value="compostos_mensal">Juros Compostos Mensais</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Taxa de Juros de Mora (% ao ano)</label>
+                    <input type="number" id="taxaMoraDepois" value="12.0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Taxa de Juros Remuneratórios (% ao ano)</label>
+                    <input type="number" id="taxaRemDepois" value="6.0" step="0.01">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Correção Monetária</label>
+                <select id="correcaoDepois">
+                    <option value="ipca" selected>IPCA</option>
+                    <option value="inpc">INPC</option>
+                    <option value="igpm">IGP-M</option>
+                    <option value="tr">TR</option>
+                    <option value="selic">SELIC</option>
+                    <option value="manual">Manual (importar)</option>
+                </select>
+            </div>
+
+            <div class="alert alert-success">
+                ✅ Este cenário representa o cálculo SEM capitalização mensal, conforme sentença.
+            </div>
+        </div>
+
+        <!-- Painel 4: Importação de Índices -->
+        <div class="panel">
+            <h2>📥 Importação de Índices</h2>
+            
+            <div class="form-group">
+                <label>Importar Índices (CSV ou JSON)</label>
+                <input type="file" id="fileIndices" accept=".csv,.json">
+            </div>
+
+            <div class="info-box">
+                <strong>Formato CSV esperado:</strong><br>
+                <code>mes,ano,ipca,inpc,igpm,tr,selic</code><br>
+                <code>01,2020,0.21,0.11,0.48,0.00,0.40</code><br>
+                <code>02,2020,0.25,0.25,0.04,0.00,0.32</code>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" id="btnImportIndices">Importar Índices</button>
+                <button class="btn btn-warning" id="btnBaixarBCB">Baixar do BCB</button>
+            </div>
+
+            <div id="indicesTable"></div>
+        </div>
+
+        <!-- Painel 5: Honorários -->
+        <div class="panel">
+            <h2>💰 Cálculo de Honorários Sucumbenciais</h2>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label>Percentual de Honorários (%)</label>
+                    <input type="number" id="percHonorarios" value="10" step="0.1" min="0" max="20">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Cálculo</label>
+                    <select id="tipoHonorarios">
+                        <option value="proveito">Sobre Proveito Econômico</option>
+                        <option value="diferenca">Sobre Diferença (Antes - Depois)</option>
+                        <option value="valor_causa">Sobre Valor da Causa</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="info-box">
+                💡 <strong>Proveito Econômico:</strong> Diferença entre o que seria pago (antes) e o que efetivamente será pago (depois da sentença).
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="panel">
+        <div class="btn-group">
+            <button class="btn btn-primary" id="btnCalcular">🧮 Calcular Comparação</button>
+            <button class="btn btn-success" id="btnExportarPDF">📄 Exportar PDF</button>
+            <button class="btn btn-success" id="btnExportarExcel">📊 Exportar Excel</button>
+            <button class="btn btn-warning" id="btnExportarJSON">💾 Salvar Configuração</button>
+            <button class="btn btn-danger" id="btnLimpar">🗑️ Limpar Tudo</button>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    <div id="resultados"></div>
+</div>
+
+<div class="status" id="status"></div>
+
+<script>
+// ============================================================================
+// VARIÁVEIS GLOBAIS
+// ============================================================================
+let indicesImportados = {};
+let ultimoCalculo = null;
+
+// ============================================================================
+// FUNÇÕES AUXILIARES
+// ============================================================================
+
+function setStatus(msg, duration = 3000) {
+    const statusEl = document.getElementById('status');
+    statusEl.textContent = msg;
+    statusEl.style.display = 'block';
+    setTimeout(() => { statusEl.style.display = 'none'; }, duration);
+}
+
+function formatarMoeda(valor) {
+    return new Intl.NumberFormat('pt-BR', { 
+        style: 'currency', 
+        currency: 'BRL' 
+    }).format(valor);
+}
+
+function formatarPercentual(valor) {
+    return (valor * 100).toFixed(4) + '%';
+}
+
+function parseData(mesAno) {
+    const [ano, mes] = mesAno.split('-');
+    return { ano: parseInt(ano), mes: parseInt(mes) };
+}
+
+function getMesesEntre(dataInicial, dataFinal) {
+    const inicio = parseData(dataInicial);
+    const fim = parseData(dataFinal);
+    
+    const meses = [];
+    let atual = { ano: inicio.ano, mes: inicio.mes };
+    
+    while (atual.ano < fim.ano || (atual.ano === fim.ano && atual.mes <= fim.mes)) {
+        meses.push({ ...atual });
+        atual.mes++;
+        if (atual.mes > 12) {
+            atual.mes = 1;
+            atual.ano++;
+        }
+    }
+    
+    return meses;
+}
+
+// ============================================================================
+// CÁLCULO DE JUROS
+// ============================================================================
+
+function calcularJurosSimples(principal, taxaMensal, meses) {
+    return principal * (1 + (taxaMensal / 100) * meses);
+}
+
+function calcularJurosCompostosMensal(principal, taxaMensal, meses) {
+    return principal * Math.pow(1 + taxaMensal / 100, meses);
+}
+
+function calcularJurosCompostosAnual(principal, taxaAnual, meses) {
+    const anos = meses / 12;
+    return principal * Math.pow(1 + taxaAnual / 100, anos);
+}
+
+function calcularCorrecao(principal, indice, meses) {
+    let valorCorrigido = principal;
+    
+    for (const mes of meses) {
+        const chave = `${mes.ano}-${String(mes.mes).padStart(2, '0')}`;
+        const taxa = indicesImportados[chave]?.[indice] || 0;
+        valorCorrigido *= (1 + taxa / 100);
+    }
+    
+    return valorCorrigido;
+}
+
+// ============================================================================
+// CÁLCULO PRINCIPAL
+// ============================================================================
+
+function calcularCenario(config) {
+    const { 
+        valorOriginal, 
+        dataInicial, 
+        dataFinal, 
+        tipoJuros, 
+        taxaJuros,
+        taxaMora,
+        taxaRem,
+        correcao 
+    } = config;
+    
+    const meses = getMesesEntre(dataInicial, dataFinal);
+    const numMeses = meses.length;
+    
+    // 1. Aplicar Correção Monetária
+    let valorCorrigido = valorOriginal;
+    if (correcao !== 'manual' || Object.keys(indicesImportados).length > 0) {
+        valorCorrigido = calcularCorrecao(valorOriginal, correcao, meses);
+    }
+    
+    // 2. Aplicar Juros
+    let valorFinal;
+    
+    if (tipoJuros === 'simples') {
+        const taxaTotal = (taxaMora || 0) + (taxaRem || 0);
+        const taxaMensal = taxaTotal / 12;
+        valorFinal = calcularJurosSimples(valorCorrigido, taxaMensal, numMeses);
+    } 
+    else if (tipoJuros === 'compostos_mensal') {
+        valorFinal = calcularJurosCompostosMensal(valorCorrigido, taxaJuros, numMeses);
+    } 
+    else if (tipoJuros === 'compostos_anual') {
+        const taxaTotal = (taxaMora || 0) + (taxaRem || 0);
+        valorFinal = calcularJurosCompostosAnual(valorCorrigido, taxaTotal, numMeses);
+    }
+    
+    return {
+        valorOriginal,
+        valorCorrigido,
+        valorFinal,
+        juros: valorFinal - valorCorrigido,
+        correcao: valorCorrigido - valorOriginal,
+        numMeses
+    };
+}
+
+// ============================================================================
+// EVENTO: CALCULAR
+// ============================================================================
+
+document.getElementById('btnCalcular').addEventListener('click', function() {
+    try {
+        const valorOriginal = parseFloat(document.getElementById('valorOriginal').value);
+        const dataInicial = document.getElementById('dataInicial').value;
+        const dataFinal = document.getElementById('dataFinal').value;
+        
+        if (!dataInicial || !dataFinal) {
+            alert('Por favor, preencha as datas inicial e final.');
+            return;
+        }
+        
+        // Cenário ANTES
+        const cenarioAntes = calcularCenario({
+            valorOriginal,
+            dataInicial,
+            dataFinal,
+            tipoJuros: document.getElementById('tipoJurosAntes').value,
+            taxaJuros: parseFloat(document.getElementById('taxaJurosAntes').value),
+            correcao: document.getElementById('correcaoAntes').value
+        });
+        
+        // Cenário DEPOIS
+        const cenarioDepois = calcularCenario({
+            valorOriginal,
+            dataInicial,
+            dataFinal,
+            tipoJuros: document.getElementById('tipoJurosDepois').value,
+            taxaMora: parseFloat(document.getElementById('taxaMoraDepois').value),
+            taxaRem: parseFloat(document.getElementById('taxaRemDepois').value),
+            correcao: document.getElementById('correcaoDepois').value
+        });
+        
+        // Diferença (Proveito Econômico)
+        const diferenca = cenarioAntes.valorFinal - cenarioDepois.valorFinal;
+        const percDiferenca = (diferenca / cenarioAntes.valorFinal) * 100;
+        
+        // Honorários
+        const percHonorarios = parseFloat(document.getElementById('percHonorarios').value);
+        const tipoHonorarios = document.getElementById('tipoHonorarios').value;
+        
+        let baseHonorarios;
+        if (tipoHonorarios === 'proveito') {
+            baseHonorarios = Math.abs(diferenca);
+        } else if (tipoHonorarios === 'diferenca') {
+            baseHonorarios = Math.abs(diferenca);
+        } else {
+            baseHonorarios = valorOriginal;
+        }
+        
+        const honorarios = baseHonorarios * (percHonorarios / 100);
+        
+        // Salvar último cálculo
+        ultimoCalculo = {
+            cenarioAntes,
+            cenarioDepois,
+            diferenca,
+            percDiferenca,
+            honorarios,
+            baseHonorarios,
+            percHonorarios
+        };
+        
+        // Exibir resultados
+        exibirResultados(ultimoCalculo);
+        
+        setStatus('✅ Cálculo realizado com sucesso!');
+        
+    } catch (error) {
+        console.error(error);
+        alert('Erro ao calcular: ' + error.message);
+    }
+});
+
+// ============================================================================
+// EXIBIR RESULTADOS
+// ============================================================================
+
+function exibirResultados(calc) {
+    const html = `
+        <div class="panel">
+            <h2>📊 Resultados da Comparação</h2>
+            
+            <div class="result-box">
+                <h3>💼 Cenário ANTES da Sentença (Tabela Price)</h3>
+                <div class="result-item">
+                    <span class="result-label">Valor Original:</span>
+                    <span class="result-value">${formatarMoeda(calc.cenarioAntes.valorOriginal)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Correção Monetária:</span>
+                    <span class="result-value">${formatarMoeda(calc.cenarioAntes.correcao)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Juros Capitalizados:</span>
+                    <span class="result-value">${formatarMoeda(calc.cenarioAntes.juros)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">VALOR FINAL:</span>
+                    <span class="result-value">${formatarMoeda(calc.cenarioAntes.valorFinal)}</span>
+                </div>
+            </div>
+            
+            <div class="result-box" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-top: 20px;">
+                <h3>✅ Cenário DEPOIS da Sentença (Sem Tabela Price)</h3>
+                <div class="result-item">
+                    <span class="result-label">Valor Original:</span>
+                    <span class="result-value">${formatarMoeda(calc.cenarioDepois.valorOriginal)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Correção Monetária:</span>
+                    <span class="result-value">${formatarMoeda(calc.cenarioDepois.correcao)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Juros (Simples/Anuais):</span>
+                    <span class="result-value">${formatarMoeda(calc.cenarioDepois.juros)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">VALOR FINAL:</span>
+                    <span class="result-value">${formatarMoeda(calc.cenarioDepois.valorFinal)}</span>
+                </div>
+            </div>
+            
+            <div class="result-box" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); margin-top: 20px;">
+                <h3>💰 Proveito Econômico e Honorários</h3>
+                <div class="result-item">
+                    <span class="result-label">Diferença (Economia):</span>
+                    <span class="result-value ${calc.diferenca > 0 ? 'highlight-positive' : 'highlight-negative'}">
+                        ${formatarMoeda(Math.abs(calc.diferenca))}
+                    </span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Percentual de Redução:</span>
+                    <span class="result-value">${calc.percDiferenca.toFixed(2)}%</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Base de Cálculo Honorários:</span>
+                    <span class="result-value">${formatarMoeda(calc.baseHonorarios)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Honorários (${calc.percHonorarios}%):</span>
+                    <span class="result-value">${formatarMoeda(calc.honorarios)}</span>
+                </div>
+            </div>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Antes (Tabela Price)</th>
+                        <th>Depois (Sentença)</th>
+                        <th>Diferença</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Valor Original</td>
+                        <td>${formatarMoeda(calc.cenarioAntes.valorOriginal)}</td>
+                        <td>${formatarMoeda(calc.cenarioDepois.valorOriginal)}</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Correção Monetária</td>
+                        <td>${formatarMoeda(calc.cenarioAntes.correcao)}</td>
+                        <td>${formatarMoeda(calc.cenarioDepois.correcao)}</td>
+                        <td>${formatarMoeda(calc.cenarioAntes.correcao - calc.cenarioDepois.correcao)}</td>
+                    </tr>
+                    <tr>
+                        <td>Juros</td>
+                        <td>${formatarMoeda(calc.cenarioAntes.juros)}</td>
+                        <td>${formatarMoeda(calc.cenarioDepois.juros)}</td>
+                        <td class="${calc.cenarioAntes.juros > calc.cenarioDepois.juros ? 'highlight-positive' : 'highlight-negative'}">
+                            ${formatarMoeda(calc.cenarioAntes.juros - calc.cenarioDepois.juros)}
+                        </td>
+                    </tr>
+                    <tr style="font-weight: bold; background: #f1f5f9;">
+                        <td>TOTAL</td>
+                        <td>${formatarMoeda(calc.cenarioAntes.valorFinal)}</td>
+                        <td>${formatarMoeda(calc.cenarioDepois.valorFinal)}</td>
+                        <td class="highlight-positive">${formatarMoeda(calc.diferenca)}</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="alert alert-success" style="margin-top: 20px;">
+                <strong>✅ Conclusão:</strong> Com o afastamento da Tabela Price, houve uma economia de 
+                <strong>${formatarMoeda(calc.diferenca)}</strong> (${calc.percDiferenca.toFixed(2)}% do valor original com capitalização).
+                Os honorários sucumbenciais calculados sobre o proveito econômico são de <strong>${formatarMoeda(calc.honorarios)}</strong>.
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('resultados').innerHTML = html;
+}
+
+// ============================================================================
+// IMPORTAÇÃO DE ÍNDICES
+// ============================================================================
+
+document.getElementById('btnImportIndices').addEventListener('click', function() {
+    const fileInput = document.getElementById('fileIndices');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Selecione um arquivo CSV ou JSON.');
+        return;
+    }
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const conteudo = e.target.result;
+            
+            if (file.name.endsWith('.json')) {
+                indicesImportados = JSON.parse(conteudo);
+            } else if (file.name.endsWith('.csv')) {
+                indicesImportados = parseCSV(conteudo);
+            }
+            
+            exibirIndices();
+            setStatus('✅ Índices importados com sucesso!');
+            
+        } catch (error) {
+            alert('Erro ao importar arquivo: ' + error.message);
+        }
+    };
+    
+    reader.readAsText(file);
+});
+
+function parseCSV(csv) {
+    const linhas = csv.trim().split('\n');
+    const cabecalho = linhas[0].split(',').map(s => s.trim());
+    const indices = {};
+    
+    for (let i = 1; i < linhas.length; i++) {
+        const valores = linhas[i].split(',').map(s => s.trim());
+        const mes = valores[0];
+        const ano = valores[1];
+        const chave = `${ano}-${mes.padStart(2, '0')}`;
+        
+        indices[chave] = {};
+        for (let j = 2; j < cabecalho.length; j++) {
+            indices[chave][cabecalho[j]] = parseFloat(valores[j]) || 0;
+        }
+    }
+    
+    return indices;
+}
+
+function exibirIndices() {
+    const chaves = Object.keys(indicesImportados).sort();
+    
+    if (chaves.length === 0) {
+        document.getElementById('indicesTable').innerHTML = '<p style="color: var(--muted);">Nenhum índice importado.</p>';
+        return;
+    }
+    
+    let html = '<table class="comparison-table"><thead><tr><th>Mês/Ano</th>';
+    
+    const primeiraChave = chaves[0];
+    const indices = Object.keys(indicesImportados[primeiraChave]);
+    
+    indices.forEach(indice => {
+        html += `<th>${indice.toUpperCase()}</th>`;
+    });
+    
+    html += '</tr></thead><tbody>';
+    
+    chaves.forEach(chave => {
+        html += `<tr><td>${chave}</td>`;
+        indices.forEach(indice => {
+            const valor = indicesImportados[chave][indice] || 0;
+            html += `<td>${formatarPercentual(valor / 100)}</td>`;
+        });
+        html += '</tr>';
+    });
+    
+    html += '</tbody></table>';
+    
+    document.getElementById('indicesTable').innerHTML = html;
+}
+
+// ============================================================================
+// BAIXAR DO BANCO CENTRAL (SIMULAÇÃO)
+// ============================================================================
+
+document.getElementById('btnBaixarBCB').addEventListener('click', function() {
+    alert('⚠️ Funcionalidade em desenvolvimento.\n\nPor enquanto, baixe os índices manualmente do site do Banco Central e importe via CSV.');
+    
+    // TODO: Implementar integração com API do BCB
+    // https://api.bcb.gov.br/dados/serie/bcdata.sgs.{codigo}/dados?formato=json
+});
+
+// ============================================================================
+// EXPORTAÇÃO
+// ============================================================================
+
+document.getElementById('btnExportarJSON').addEventListener('click', function() {
+    if (!ultimoCalculo) {
+        alert('Realize um cálculo antes de exportar.');
+        return;
+    }
+    
+    const config = {
+        valorOriginal: document.getElementById('valorOriginal').value,
+        dataInicial: document.getElementById('dataInicial').value,
+        dataFinal: document.getElementById('dataFinal').value,
+        cenarioAntes: {
+            tipoJuros: document.getElementById('tipoJurosAntes').value,
+            taxaJuros: document.getElementById('taxaJurosAntes').value,
+            correcao: document.getElementById('correcaoAntes').value
+        },
+        cenarioDepois: {
+            tipoJuros: document.getElementById('tipoJurosDepois').value,
+            taxaMora: document.getElementById('taxaMoraDepois').value,
+            taxaRem: document.getElementById('taxaRemDepois').value,
+            correcao: document.getElementById('correcaoDepois').value
+        },
+        honorarios: {
+            percentual: document.getElementById('percHonorarios').value,
+            tipo: document.getElementById('tipoHonorarios').value
+        },
+        resultados: ultimoCalculo
+    };
+    
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `calculo_juridico_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    
+    setStatus('✅ Configuração exportada!');
+});
+
+document.getElementById('btnExportarPDF').addEventListener('click', function() {
+    alert('⚠️ Exportação para PDF em desenvolvimento.\n\nPor enquanto, use Ctrl+P para imprimir a página.');
+});
+
+document.getElementById('btnExportarExcel').addEventListener('click', function() {
+    if (!ultimoCalculo) {
+        alert('Realize um cálculo antes de exportar.');
+        return;
+    }
+    
+    // Gerar CSV
+    let csv = 'Item,Antes (Tabela Price),Depois (Sentença),Diferença\n';
+    csv += `Valor Original,${ultimoCalculo.cenarioAntes.valorOriginal},${ultimoCalculo.cenarioDepois.valorOriginal},0\n`;
+    csv += `Correção,${ultimoCalculo.cenarioAntes.correcao},${ultimoCalculo.cenarioDepois.correcao},${ultimoCalculo.cenarioAntes.correcao - ultimoCalculo.cenarioDepois.correcao}\n`;
+    csv += `Juros,${ultimoCalculo.cenarioAntes.juros},${ultimoCalculo.cenarioDepois.juros},${ultimoCalculo.cenarioAntes.juros - ultimoCalculo.cenarioDepois.juros}\n`;
+    csv += `TOTAL,${ultimoCalculo.cenarioAntes.valorFinal},${ultimoCalculo.cenarioDepois.valorFinal},${ultimoCalculo.diferenca}\n`;
+    csv += `\nHonorários (${ultimoCalculo.percHonorarios}%),${ultimoCalculo.honorarios},,\n`;
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `comparacao_juros_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    
+    setStatus('✅ Dados exportados para CSV!');
+});
+
+// ============================================================================
+// LIMPAR
+// ============================================================================
+
+document.getElementById('btnLimpar').addEventListener('click', function() {
+    if (confirm('Deseja realmente limpar todos os dados?')) {
+        document.getElementById('valorOriginal').value = '100000';
+        document.getElementById('dataInicial').value = '2020-01';
+        document.getElementById('dataFinal').value = '';
+        document.getElementById('taxaJurosAntes').value = '1.0';
+        document.getElementById('taxaMoraDepois').value = '12.0';
+        document.getElementById('taxaRemDepois').value = '6.0';
+        document.getElementById('percHonorarios').value = '10';
+        document.getElementById('resultados').innerHTML = '';
+        indicesImportados = {};
+        ultimoCalculo = null;
+        exibirIndices();
+        setStatus('🗑️ Dados limpos!');
+    }
+});
+
+// ============================================================================
+// INICIALIZAÇÃO
+// ============================================================================
+
+// Definir data final como mês atual
+document.getElementById('dataFinal').value = new Date().toISOString().slice(0, 7);
+
+// Exibir tabela de índices vazia
+exibirIndices();
+
+setStatus('✅ Sistema carregado. Preencha os dados e clique em "Calcular Comparação".', 5000);
+
+</script>
+
+</body>
+</html>

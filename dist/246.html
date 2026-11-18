@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Extrator de Dados Jurídicos</title>
+<style>
+body { font-family: Arial, sans-serif; margin:20px; }
+textarea { width:100%; height:200px; }
+pre { background:#f4f4f4; padding:10px; }
+</style>
+</head>
+<body>
+
+<h2>Colar Resumo do Processo</h2>
+<textarea id="resumo"></textarea>
+<button onclick="extrair()">Extrair Dados</button>
+
+<h2>Dados Extraídos</h2>
+<pre id="saida"></pre>
+
+<script>
+function extrair(){
+  let texto = document.getElementById("resumo").value;
+
+  // Expressões regulares simples
+  let processos = texto.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/g) || [];
+  let datas = texto.match(/\d{2}\/\d{2}\/\d{4}/g) || [];
+  let artigos = texto.match(/art\.?\s*\d+[A-Za-z0-9º\-]*/gi) || [];
+  let leis = texto.match(/Lei\s*\d+\.\d+\/\d{4}/gi) || [];
+
+  let resultado = "📌 Processos encontrados:\n" + processos.join("\n") +
+                  "\n\n📅 Datas encontradas:\n" + datas.join("\n") +
+                  "\n\n📖 Artigos citados:\n" + artigos.join("\n") +
+                  "\n\n⚖️ Leis citadas:\n" + leis.join("\n");
+
+  document.getElementById("saida").textContent = resultado;
+}
+</script>
+
+</body>
+</html>

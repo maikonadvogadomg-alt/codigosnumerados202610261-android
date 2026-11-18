@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Oficina Digital do Mike da Galera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 1. SETUP & THEME (Inspirado em Consultoria Tech) */
+        * { box-sizing: border-box; }
+        body { background-color: #0f172a; margin: 0; display: grid; gap: 20px; place-items: center; min-height: 100vh; padding: 20px 0; }
+
+        .slide-container {
+            width: 1280px; height: 720px;
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Urbanist', sans-serif;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Design Elements: Gradient Blobs */
+        .slide-container::before {
+            content: ''; position: absolute; top: -20%; right: -10%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .slide-container>* { position: relative; z-index: 1; }
+
+        /* TYPOGRAPHY */
+        h1 { font-size: 72px; font-weight: 700; color: #3b82f6; margin: 0; letter-spacing: -2px; line-height: 1.1; }
+        .slide-title { font-size: 42px; font-weight: 600; color: #3b82f6; margin-bottom: 40px; text-align: left; width: 100%; border-left: 6px solid #22c55e; padding-left: 20px; }
+        p, li { font-size: 20px; color: #94a3b8; line-height: 1.6; }
+        .subtitle { font-size: 24px; color: #f8fafc; margin-top: 20px; opacity: 0.8; }
+
+        .content-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; }
+
+        /* LAYOUTS */
+        .title-layout { text-align: center; }
+        .title-layout h1 { color: #f8fafc; }
+        .title-layout span { color: #3b82f6; }
+
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; width: 100%; align-items: center; }
+        
+        .tiled-content { display: flex; gap: 20px; width: 100%; }
+        .tile { flex: 1; background: #1e293b; padding: 30px; border-radius: 16px; border: 1px solid #334155; }
+        .tile .icon { font-size: 40px; color: #22c55e; margin-bottom: 20px; }
+        .tile h3 { font-size: 24px; margin: 0 0 10px 0; color: #f8fafc; }
+
+        .image-wrapper { border-radius: 16px; overflow: hidden; height: 380px; width: 100%; border: 1px solid #334155; }
+        .image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Bleed Image Right */
+        .slide-container.bleed-image-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; align-items: start; }
+        .bleed-image-layout .content-container { padding: 60px; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .bleed-image-layout .image-container { height: 720px; overflow: hidden; }
+        .bleed-image-layout img.bleed-image-side { height: 720px; width: 100%; object-fit: cover; }
+
+        /* Charts */
+        .chart-container { background: #1e293b; padding: 30px; border-radius: 16px; width: 100%; }
+        .area-chart-svg { width: 100%; height: 300px; }
+        .line-stroke { fill: none; stroke: #3b82f6; stroke-width: 4; }
+        .area-fill { fill: rgba(59, 130, 246, 0.2); }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 18px; text-align: left; border-bottom: 1px solid #334155; }
+        th { color: #3b82f6; font-weight: 600; background: #1e293b; }
+
+        /* Numbers */
+        .number { font-size: 140px; font-weight: 700; color: #22c55e; line-height: 1; }
+    </style>
+</head>
+<body>
+
+<div class="slide-container" id="slide1">
+    <div class="title-layout">
+        <h1><span>Oficina Digital:</span><br>O Futuro do Direito</h1>
+        <p class="subtitle">Estratégia Mike da Galera de Automação Jurídica Unificada</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide2">
+    <h2 class="slide-title">A Estratégia de Organização</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-folder-tree"></i></div>
+                <h3>Arquitetura Limpa</h3>
+                <p>Abordagem baseada em diretórios organizados (Index, CSS, JS) para garantir manutenção rápida e escalabilidade do escritório.</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <h3>Deployment Ágil</h3>
+                <p>Uso do Netlify como infraestrutura central, permitindo atualizações em tempo real e acesso global seguro.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide3">
+    <h2 class="slide-title">O Playground Pro: A Fábrica</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div>
+                <h3>Desenvolvimento & Teste</h3>
+                <p>O Playground Pro atua como o laboratório central. Antes de subir qualquer ferramenta, validamos o visual e a lógica em tempo real.</p>
+                <ul>
+                    <li>Edição simultânea de HTML, CSS e JS.</li>
+                    <li>Visualização imediata sem refresh.</li>
+                    <li>Exportação nomeada automática para o Drive.</li>
+                </ul>
+            </div>
+            <div class="image-wrapper">
+                <img src="http://googleusercontent.com/image_artifact_3" alt="Espaço de trabalho de desenvolvedor digital">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide4">
+    <h2 class="slide-title">Fluxo de Trabalho Unificado</h2>
+    <div class="content-area">
+        <div class="tiled-content">
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-keyboard"></i></div>
+                <h3>1. Ideação</h3>
+                <p>Criação do código no Playground Pro focado em dores reais (BPC, Juros, Prazos).</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-file-export"></i></div>
+                <h3>2. Exportação</h3>
+                <p>Download dos arquivos nomeados e organizados para backup no Google Drive.</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-rocket"></i></div>
+                <h3>3. Lançamento</h3>
+                <p>Upload da pasta completa no Netlify para ativação do portal jurídico oficial.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container bleed-image-layout" id="slide5">
+    <div class="content-container">
+        <h2 class="slide-title">Portal Centralizado</h2>
+        <div class="content-area">
+            <h3>A Peça de Index.html</h3>
+            <p>O arquivo Index funciona como o "Cérebro" do ecossistema Mike da Galera. Ele unifica todas as ferramentas sob um único link profissional.</p>
+            <p>Design moderno, intuitivo e focado em produtividade para advogados de alta performance.</p>
+        </div>
+    </div>
+    <div class="image-container">
+        <img src="http://googleusercontent.com/image_artifact_1" class="bleed-image-side" alt="Dashboard digital jurídico moderno">
+    </div>
+</div>
+
+<div class="slide-container" id="slide6">
+    <h2 class="slide-title">Mobilidade com PWA</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="image-wrapper" style="border-radius: 50%; height: 400px; width: 400px; margin: auto;">
+                <img src="http://googleusercontent.com/image_artifact_2" alt="Ícone de aplicativo jurídico no celular">
+            </div>
+            <div>
+                <h3>Instalação em um Clique</h3>
+                <p>Graças ao Manifesto e ao Service Worker, seu site no Netlify se transforma em um aplicativo real no seu Opera ou celular Android/iOS.</p>
+                <ul>
+                    <li>Ícone personalizado na tela inicial.</li>
+                    <li>Navegação sem barras do browser.</li>
+                    <li>Aparência de software nativo de elite.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide7">
+    <h2 class="slide-title">Performance Ininterrupta</h2>
+    <div class="content-area">
+        <div class="chart-container">
+            <svg class="area-chart-svg" viewBox="0 0 1000 300">
+                <path class="area-fill" d="M0,280 L200,150 L400,180 L600,80 L800,100 L1000,40 L1000,300 L0,300 Z"></path>
+                <polyline class="line-stroke" points="0,280 200,150 400,180 600,80 800,100 1000,40"></polyline>
+                <text x="500" y="280" fill="#94a3b8" font-size="20">Velocidade de Processamento (Web Workers)</text>
+            </svg>
+        </div>
+        <p style="text-align: center; margin-top: 20px;">O uso de <b>Web Workers</b> garante que tarefas pesadas (filtragem de 5.000+ linhas) ocorram em segundo plano, mantendo a interface sempre fluida.</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide8">
+    <h2 class="slide-title">Filtrador Jurídico PRO</h2>
+    <div class="content-area">
+        <div style="background: #1e293b; padding: 40px; border-radius: 16px;">
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 20px;"><i class="fa-solid fa-check-circle" style="color: #22c55e; margin-right: 15px;"></i> <strong>Zero Latência:</strong> Processamento multi-thread via script <code>worker.js</code>.</li>
+                <li style="margin-bottom: 20px;"><i class="fa-solid fa-check-circle" style="color: #22c55e; margin-right: 15px;"></i> <strong>Filtros Inteligentes:</strong> Remoção automática de "lixo" como assinaturas digitais e numerações de página.</li>
+                <li style="margin-bottom: 20px;"><i class="fa-solid fa-check-circle" style="color: #22c55e; margin-right: 15px;"></i> <strong>Privacidade Total:</strong> Todo o processamento ocorre no navegador, sem enviar dados para a internet.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide9">
+    <h2 class="slide-title">Impacto na Calculadora TJMG</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div style="text-align: center;">
+                <div class="number">100%</div>
+                <p style="font-weight: bold; color: #22c55e;">Precisão Matemática</p>
+            </div>
+            <div>
+                <h3>Cálculos em Tempo Real</h3>
+                <p>Substituímos o fator simulado por lógica real de atualização. O Mike consegue agora confrontar cálculos bancários com rapidez industrial.</p>
+                <p>Menos tempo em planilhas, mais tempo na estratégia jurídica.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide10">
+    <h2 class="slide-title">Infraestrutura Blindada</h2>
+    <div class="content-area">
+        <div class="tiled-content">
+            <div class="tile" style="padding: 10px;">
+                <div class="image-wrapper" style="height: 200px;">
+                    <img src="http://googleusercontent.com/image_artifact_6" alt="Cloud computing hosting">
+                </div>
+                <h3 style="margin-top: 15px;">Netlify Edge</h3>
+                <p style="font-size: 16px;">Hospedagem estática que carrega instantaneamente em qualquer lugar do Brasil.</p>
+            </div>
+            <div class="tile" style="padding: 10px;">
+                <div class="image-wrapper" style="height: 200px;">
+                    <img src="http://googleusercontent.com/image_artifact_4" alt="Digital connections blue background">
+                </div>
+                <h3 style="margin-top: 15px;">Modo Offline</h3>
+                <p style="font-size: 16px;">O Service Worker permite que as ferramentas funcionem mesmo sem internet no fórum.</p>
+            </div>
+            <div class="tile" style="padding: 10px;">
+                <div class="image-wrapper" style="height: 200px;">
+                    <img src="http://googleusercontent.com/image_artifact_5" alt="Professional using tablet">
+                </div>
+                <h3 style="margin-top: 15px;">Fácil Acesso</h3>
+                <p style="font-size: 16px;">Painel de controle unificado que centraliza todos os links do escritório.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide11">
+    <h2 class="slide-title">Roadmap de Evolução</h2>
+    <div class="content-area">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fase</th>
+                    <th>Funcionalidade</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Fase 1</td>
+                    <td>Playground Pro e Exportação Nomeada</td>
+                    <td style="color: #22c55e;">✅ Concluído</td>
+                </tr>
+                <tr>
+                    <td>Fase 2</td>
+                    <td>Portal Centralizado (Index) no Netlify</td>
+                    <td style="color: #22c55e;">✅ Ativo</td>
+                </tr>
+                <tr>
+                    <td>Fase 3</td>
+                    <td>Modo Offline Total e Instalação PWA</td>
+                    <td style="color: #22c55e;">✅ Ativo</td>
+                </tr>
+                <tr>
+                    <td>Fase 4</td>
+                    <td>Integração com API do Banco Central</td>
+                    <td style="color: #fbbf24;">🕒 Planejado</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="slide-container" id="slide12">
+    <div class="title-layout">
+        <h1>Perguntas & Respostas</h1>
+        <p class="subtitle">Oficina Jurídica do Mike - Pronto para o Próximo Nível?</p>
+        <div style="margin-top: 50px; font-size: 18px; color: #94a3b8;">
+            Acesse seu escritório: <strong>mike-oficina.netlify.app</strong>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
